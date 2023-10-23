@@ -78,7 +78,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticManager();
+    virtual ~TurbulenceStatisticManager() = default;
 
 
     //! @name managing methods

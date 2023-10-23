@@ -131,10 +131,6 @@ void FLD::TimIntRedModels::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntRedModels::~TimIntRedModels() { return; }
 
 /*----------------------------------------------------------------------*
  | evaluate special boundary conditions                        bk 12/13 |

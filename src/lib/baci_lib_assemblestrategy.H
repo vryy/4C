@@ -52,7 +52,7 @@ namespace DRT
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Destruct
-    virtual ~AssembleStrategy();
+    virtual ~AssembleStrategy() = default;
 
     int FirstDofSet() const { return firstdofset_; }
 

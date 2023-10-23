@@ -300,10 +300,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   return;
 }  // TimIntImpl::Init()
 
-/*----------------------------------------------------------------------*
- | Destructor dtor                                 (public) vuong 08/16 |
- *----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::TimIntImpl::~TimIntImpl() { return; }
 
 
 /*========================================================================*/
@@ -1269,7 +1265,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
 
     // initialize counter vector (will store how many times the node has been evaluated)
     Teuchos::RCP<Epetra_Vector> counter = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
-    ;
 
     // call loop over elements
     discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
@@ -1314,7 +1309,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolidPressures()
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
-  ;
 
   // create strategy for assembly of solid pressure
   DRT::AssembleStrategy strategysolidpressure(
@@ -1392,7 +1386,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
-  ;
 
   // create strategy for assembly of porosity
   DRT::AssembleStrategy strategyporosity(

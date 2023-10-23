@@ -170,10 +170,7 @@ namespace DRT
       */
       Beam3k(const Beam3k& old);
 
-      /*!
-      \brief Destructor
-      */
-      ~Beam3k() override;
+
 
       /*!
       \brief Deep copy this instance of Beam3k and return pointer to the copy

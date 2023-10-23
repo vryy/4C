@@ -46,9 +46,6 @@ namespace MAT
   {
    public:
     CylinderCoordinateSystemAnisotropyExtension();
-
-    ~CylinderCoordinateSystemAnisotropyExtension() override = default;
-
     ///@name Packing and Unpacking
     /// @{
 

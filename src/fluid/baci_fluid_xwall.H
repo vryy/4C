@@ -55,7 +55,7 @@ namespace FLD
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
 
     /// Destructor
-    virtual ~XWall() { return; };
+    virtual ~XWall() = default;
 
     // set element params for xwall EnrichmentType
     virtual void SetXWallParams(Teuchos::ParameterList& eleparams);

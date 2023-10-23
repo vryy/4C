@@ -48,9 +48,6 @@ namespace ADAPTER
     //! constructor
     explicit AleFluidWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    ~AleFluidWrapper() override {}
-
     //@}
 
     //! communicate object at the interface

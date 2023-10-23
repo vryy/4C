@@ -183,8 +183,6 @@ namespace DRT
       /// \ref Pack and \ref Unpack are used to communicate this element
       void Unpack(const std::vector<char>& data) override;
 
-      /// Destructor
-      ~Wall1() override;
 
       //@}
 
@@ -866,8 +864,6 @@ namespace DRT
       /// \ref Pack and \ref Unpack are used to communicate this element
       void Unpack(const std::vector<char>& data) override;
 
-      /// Destructor
-      ~Wall1Line() override;
 
       //@}
 

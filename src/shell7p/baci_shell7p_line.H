@@ -74,8 +74,6 @@ namespace DRT::ELEMENTS
     ///! copy constructor
     Shell7pLine(const Shell7pLine& old);
 
-    //! destructor
-    ~Shell7pLine() override = default;
 
     //! copy assignment operator
     Shell7pLine& operator=(const Shell7pLine& other) = default;

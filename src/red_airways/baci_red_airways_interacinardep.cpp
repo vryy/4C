@@ -199,11 +199,6 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::~RedInterAcinarDep() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  Print this element (public)                             ismail 01/10|

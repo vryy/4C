@@ -57,8 +57,7 @@ namespace DRT
       //! Empty constructor
       FluidIntFaceStab() {}
       //! Empty destructor
-      virtual ~FluidIntFaceStab() {}
-
+      virtual ~FluidIntFaceStab() = default;
       /*!
         \brief Evaluate the surface elements edge-oriented stabilization and ghost penalty
 

@@ -59,7 +59,7 @@ namespace NOX
         Factory();
 
         //! Destructor.
-        virtual ~Factory(){};
+        virtual ~Factory() = default;
 
         Teuchos::RCP<NOX::Solver::Generic> BuildSolver(
             const Teuchos::RCP<NOX::Abstract::Group>& grp,

@@ -23,10 +23,6 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyStd::MeshtyingStrategyStd(
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                             kremheller 04/18 |
-*-----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::MeshtyingStrategyStd::~MeshtyingStrategyStd() { return; }
 
 /*----------------------------------------------------------------------*
  | prepare time loop                                   kremheller 04/18 |

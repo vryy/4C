@@ -52,11 +52,6 @@ namespace UTILS
     */
     ConstraintDofSet();
 
-    /*!
-    \brief Destructor
-
-    */
-    ~ConstraintDofSet() override;
 
 
     //! @name Access methods

@@ -113,11 +113,6 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nu
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 02/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::~Wall1Nurbs() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Wall1 and return pointer to it (public) |

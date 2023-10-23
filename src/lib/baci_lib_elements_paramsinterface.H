@@ -267,7 +267,7 @@ namespace DRT
     {
      public:
       //! destructor
-      virtual ~ParamsInterface(){};
+      virtual ~ParamsInterface() = default;
 
       //! @name Access general control parameters
       //! @{

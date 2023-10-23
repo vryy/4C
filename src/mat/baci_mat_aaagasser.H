@@ -36,9 +36,6 @@ namespace MAT
       /// standard constructor
       AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~AAAgasser() override { ; }
-
       /// @name material parameters
       //@{
 

@@ -63,7 +63,6 @@ void DRT::ELEMENTS::RedAirBloodScatraType::SetupElementDefinition(
                       .AddNamedDouble("WallThickness")
                       .AddNamedDouble("PercentageOfDiffusionArea")
                       .Build();
-  ;
 }
 
 
@@ -191,11 +190,6 @@ void DRT::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 05/13|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatra::~RedAirBloodScatra() { return; }
 
 
 /*----------------------------------------------------------------------*

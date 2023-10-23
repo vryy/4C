@@ -38,12 +38,6 @@ namespace CONTACT
     CoCoupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~CoCoupling2d() override {}
-
     //! @name Evlauation methods
 
     /*!
@@ -113,11 +107,6 @@ namespace CONTACT
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~CoCoupling2dManager() override {}
 
     /*!
     \brief Get communicator

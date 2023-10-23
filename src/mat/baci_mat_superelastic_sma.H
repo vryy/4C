@@ -54,9 +54,6 @@ namespace MAT
       //! standard constructor
       SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~SuperElasticSMA() override { ; }
-
       //! @name material parameters
       //@{
 

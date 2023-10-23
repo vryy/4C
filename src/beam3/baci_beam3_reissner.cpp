@@ -374,10 +374,7 @@ DRT::Element* DRT::ELEMENTS::Beam3r::Clone() const
   return newelement;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 01/08 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3r::~Beam3r() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
@@ -742,7 +739,6 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
   }
 
   return CORE::DRT::UTILS::GaussRule1D::undefined;
-  ;
 }
 
 /*------------------------------------------------------------------------------------------------*

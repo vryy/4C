@@ -62,11 +62,6 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~TimInt() override;
 
     void Init() override = 0;
 

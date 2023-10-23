@@ -44,9 +44,6 @@ namespace DRT
       ArteryEleCalcPresBased(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      ~ArteryEleCalcPresBased() override{};
-
       //! Singleton access method
       static ArteryEleCalcPresBased<distype>* Instance(
           const int numdofpernode, const std::string& disname);

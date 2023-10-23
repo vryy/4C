@@ -87,8 +87,7 @@ namespace CORE::VOLMORTAR
      \brief Destructor
 
      */
-    virtual ~VolMortarCoupl() {}
-
+    virtual ~VolMortarCoupl() = default;
     /*!
      \brief Evaluate volmortar coupling (basic routine)
 

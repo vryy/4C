@@ -58,9 +58,6 @@ namespace ADAPTER
     //! Constructor
     StructureFSITimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
-    //! Destructor
-    ~StructureFSITimIntAda() override { ; }
-
     //! Do one time step with auxiliary time integration scheme
     virtual void TimeStepAuxiliar();
 

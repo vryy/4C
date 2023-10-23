@@ -433,14 +433,6 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
 }  // TurbulenceStatisticsBfda::TurbulenceStatisticsBfda
 
 
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfda::~TurbulenceStatisticsBfda()
-{
-  return;
-}  // TurbulenceStatisticsBfda::~TurbulenceStatisticsBfda()
-
 
 void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
 {

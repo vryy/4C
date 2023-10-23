@@ -102,8 +102,6 @@ namespace FSI
     /// create using a Epetra_Comm
     explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// virtual destructor to support polymorph destruction
-    ~MonolithicBase() override;
 
     /// read restart data
     void ReadRestart(int step) override;

@@ -51,9 +51,6 @@ namespace CONTACT
       /// constructor
       ActiveSet(Strategy& strategy) : strategy_(strategy){};
 
-      /// destructor
-      ~ActiveSet() = default;
-
       /** @brief Update the active set status
        *
        *  @param(in) cparams  Contact parameter interface

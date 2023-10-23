@@ -67,8 +67,7 @@ namespace CORE::GEO
       Side(int sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges);
 
       /// destructor
-      virtual ~Side() {}
-
+      virtual ~Side() = default;
       /// \brief Returns the ID of the side
       int Id() const { return sid_; }
 
@@ -673,9 +672,6 @@ namespace CORE::GEO
               " than 2!");
       }
 
-      /// destructor
-      ~ConcreteSide() override{};
-
       /// Returns the geometrical shape of this side
       ::DRT::Element::DiscretizationType Shape() const override { return sidetype; }
 
@@ -1036,7 +1032,7 @@ namespace CORE::GEO
      public:
       SideFactory(){};
 
-      virtual ~SideFactory(){};
+      virtual ~SideFactory() = default;
 
       Side* CreateSide(::DRT::Element::DiscretizationType sidetype, int sid,
           const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const;

@@ -928,7 +928,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
   tmp61.Multiply(PlAniso_full_, eta_v);
   double absHeta = NormStressLike(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
-  ;
   if (abseta_H < -1.e-16)
     dserror("this should not happen. eta : H : eta =%f < 0", abseta_H);
   else if (abseta_H >= 0.)

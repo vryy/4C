@@ -68,7 +68,7 @@ namespace CORE::DRT::NURBS::UTILS
     //--------------------------------------------------
     //! \brief destructor
     //--------------------------------------------------
-    virtual ~BsplinePolynomial();
+    virtual ~BsplinePolynomial() = default;
     //--------------------------------------------------
     //! \brief copy constructor
     //!

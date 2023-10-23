@@ -33,9 +33,6 @@ namespace CONTACT
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
-        /// destructor
-        ~Strategy() override{};
-
         /// return the current solving strategy type
         INPAR::CONTACT::SolvingStrategy Type() const override
         {

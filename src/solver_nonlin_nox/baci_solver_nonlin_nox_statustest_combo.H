@@ -40,9 +40,6 @@ namespace NOX
         Combo(ComboType t, const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b,
             const NOX::Utils* u = nullptr);
 
-        //! Destructor
-        ~Combo() override{};
-
         //! Add another test to this combination.
         /*!
           Calls isSafe() to determine if it is safe to add \c a to the combination.

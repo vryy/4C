@@ -46,9 +46,6 @@ namespace NOX
         //! Constructor
         Factory();
 
-        //! Destructor
-        ~Factory() override{};
-
         /*! \brief Factory to build user-defined direction objects.
 
             \note All direction methods which differ from the default NOX direction

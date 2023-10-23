@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       ArrheniusSpec(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ArrheniusSpec() override { ; }
-
       /// @name material parameters
       //@{
 

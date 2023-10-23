@@ -45,9 +45,6 @@ namespace POROELASTSCATRA
     explicit PoroScatraBase(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
-    /// virtual destructor
-    ~PoroScatraBase() override{};
-
     //! Main time loop.
     virtual void Timeloop() = 0;
 
@@ -59,22 +56,18 @@ namespace POROELASTSCATRA
 
     //! perform iteration loop between fields
     virtual void Solve() { dserror("not implemented in base class. override in subclass."); };
-    ;
 
     //! prepare output
     virtual void PrepareOutput()
     {
       dserror("not implemented in base class. override in subclass.");
     };
-    ;
 
     //! update time step
     void Update() override { dserror("not implemented in base class. override in subclass."); };
-    ;
 
     //! write output print to screen
     void Output() override { dserror("not implemented in base class. override in subclass."); };
-    ;
 
     //! read and set fields needed for restart
     void ReadRestart(int restart) override = 0;

@@ -78,7 +78,7 @@ namespace DRT
         AssembleInterface(const bool inittimederiv) : inittimederiv_(inittimederiv){};
 
         //! destructor
-        virtual ~AssembleInterface(){};
+        virtual ~AssembleInterface() = default;
 
         virtual int NumPhasesToAssembleInto() const = 0;
 
@@ -101,9 +101,6 @@ namespace DRT
         //! constructor
         AssembleStandard(int curphase, const bool inittimederiv)
             : AssembleInterface(inittimederiv), curphase_(curphase){};
-
-        //! destructor
-        ~AssembleStandard() override{};
 
         int NumPhasesToAssembleInto() const override { return 1; };
 
@@ -130,9 +127,6 @@ namespace DRT
           phasestoassemble_[0] = curphase;
           phasestoassemble_[1] = otherphase;
         };
-
-        //! destructor
-        ~AssembleAlsoIntoOtherPhase() override{};
 
         int NumPhasesToAssembleInto() const override { return 2; };
 
@@ -175,7 +169,7 @@ namespace DRT
         EvaluatorInterface(){};
 
         //! destructor
-        virtual ~EvaluatorInterface(){};
+        virtual ~EvaluatorInterface() = default;
 
         //! factory method
         static Teuchos::RCP<EvaluatorInterface<nsd, nen>> CreateEvaluator(
@@ -261,9 +255,6 @@ namespace DRT
        public:
         //! constructor
         MultiEvaluator(){};
-
-        //! destructor
-        ~MultiEvaluator() override{};
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
@@ -389,9 +380,6 @@ namespace DRT
         //! constructor
         EvaluatorBase(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : assembler_(assembler), myphase_(curphase){};
-
-        //! destructor
-        ~EvaluatorBase() override{};
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
@@ -638,7 +626,7 @@ namespace DRT
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
         //! destructor
-        virtual ~EvaluatorConv(){};
+        virtual ~EvaluatorConv() = default;
 
        protected:
         //! evaluate element matrix
@@ -730,9 +718,6 @@ namespace DRT
         EvaluatorDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorDivVel() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -823,9 +808,6 @@ namespace DRT
         EvaluatorSatDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorDivVel<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorSatDivVel() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -915,9 +897,6 @@ namespace DRT
         //! constructor
         EvaluatorBiotStab(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorBiotStab() override{};
 
        protected:
         //! evaluate element matrix
@@ -1010,9 +989,6 @@ namespace DRT
         EvaluatorDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorDiff() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1103,9 +1079,6 @@ namespace DRT
         EvaluatorReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorReac() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1195,9 +1168,6 @@ namespace DRT
         //! constructor
         EvaluatorMassPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorMassPressure() override{};
 
        protected:
         //! evaluate element matrix
@@ -1300,9 +1270,6 @@ namespace DRT
         //! constructor
         EvaluatorMassSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorMassSolidPressure() override{};
 
        protected:
         //! evaluate element matrix
@@ -1408,9 +1375,6 @@ namespace DRT
         EvaluatorMassSolidPressureSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorMassSolidPressureSat() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1500,9 +1464,6 @@ namespace DRT
         //! constructor
         EvaluatorMassSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorMassSaturation() override{};
 
        protected:
         //! evaluate element matrix
@@ -1606,9 +1567,6 @@ namespace DRT
         EvaluatorPressureAndSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorPressureAndSaturation() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1698,9 +1656,6 @@ namespace DRT
         //! constructor
         EvaluatorSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorSolidPressure() override{};
 
        protected:
         //! evaluate element matrix
@@ -1795,9 +1750,6 @@ namespace DRT
         EvaluatorValidVolFracPressures(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorValidVolFracPressures() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -1887,9 +1839,6 @@ namespace DRT
         //! constructor
         EvaluatorPorosity(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorPorosity() override{};
 
        protected:
         //! evaluate element matrix
@@ -1983,9 +1932,6 @@ namespace DRT
             : EvaluatorBase<nsd, nen>(assembler, curphase),
               domainint_funct_(domainint_funct),
               numscal_(numscal){};
-
-        //! destructor
-        ~EvaluatorDomainIntegrals() override{};
 
        protected:
         //! evaluate element matrix
@@ -2087,9 +2033,6 @@ namespace DRT
         ReconstructFluxLinearization(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~ReconstructFluxLinearization() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2180,9 +2123,6 @@ namespace DRT
         //! constructor
         ReconstructFluxRHS(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~ReconstructFluxRHS() override{};
 
        protected:
         //! evaluate element matrix
@@ -2276,9 +2216,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracAddInstatTerms(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracAddInstatTerms() override{};
 
        protected:
         //! evaluate element matrix
@@ -2383,9 +2320,6 @@ namespace DRT
         EvaluatorVolFracAddDivVelTerm(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorVolFracAddDivVelTerm() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2478,9 +2412,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracAddDivVelTermSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracAddDivVelTermSat() override{};
 
        protected:
         //! evaluate element matrix
@@ -2575,9 +2506,6 @@ namespace DRT
         EvaluatorVolFracAddInstatTermsSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorVolFracAddInstatTermsSat() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2668,9 +2596,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracInstat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracInstat() override{};
 
        protected:
         //! evaluate element matrix
@@ -2763,9 +2688,6 @@ namespace DRT
         EvaluatorVolFracDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorVolFracDivVel() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -2855,9 +2777,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracDiff() override{};
 
        protected:
         //! evaluate element matrix
@@ -2949,9 +2868,6 @@ namespace DRT
         EvaluatorVolFracReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorVolFracReac() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -3041,9 +2957,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracAddFlux(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracAddFlux() override{};
 
        protected:
         //! evaluate element matrix
@@ -3135,9 +3048,6 @@ namespace DRT
         EvaluatorVolFracPressureDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
-        //! destructor
-        ~EvaluatorVolFracPressureDiff() override{};
-
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
@@ -3228,9 +3138,6 @@ namespace DRT
         //! constructor
         EvaluatorVolFracPressureReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
-
-        //! destructor
-        ~EvaluatorVolFracPressureReac() override{};
 
        protected:
         //! evaluate element matrix

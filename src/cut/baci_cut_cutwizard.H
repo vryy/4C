@@ -68,7 +68,7 @@ namespace CORE::GEO
         if (backdis.is_null()) dserror("null pointer to background dis, invalid!");
       }
 
-      virtual ~BackMesh(){};
+      virtual ~BackMesh() = default;
 
       void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
@@ -130,11 +130,6 @@ namespace CORE::GEO
       {
       }
 
-      /*!
-      \brief Destructor
-      */
-      ~CutterMesh(){};
-
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
@@ -165,7 +160,7 @@ namespace CORE::GEO
     /*!
     \brief Destructor
     */
-    virtual ~CutWizard(){};
+    virtual ~CutWizard() = default;
 
     //@}
 

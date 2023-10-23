@@ -46,9 +46,6 @@ namespace POROMULTIPHASE
     PoroMultiPhaseMonolithicTwoWay(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    ~PoroMultiPhaseMonolithicTwoWay() override{};
-
     /// initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
@@ -292,9 +289,6 @@ namespace POROMULTIPHASE
     /// create using a Epetra_Comm
     PoroMultiPhaseMonolithicTwoWayArteryCoupling(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    /// virtual destructor
-    ~PoroMultiPhaseMonolithicTwoWayArteryCoupling() override{};
 
     //! extract the field vectors from a given composed vector.
     /*!

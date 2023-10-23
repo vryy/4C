@@ -41,8 +41,7 @@ namespace DRT
       FluidBoundaryParentInterface() {}
 
       //! empty destructor
-      virtual ~FluidBoundaryParentInterface() {}
-
+      virtual ~FluidBoundaryParentInterface() = default;
       virtual void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* ele1,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,

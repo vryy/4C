@@ -4837,8 +4837,6 @@ namespace CORE::LINALG
    public:
     /// Constructor
     FixedSizeSerialDenseSolver();
-    /// Destructor
-    ~FixedSizeSerialDenseSolver();
 
     /// Is matrix factored?
     /*!
@@ -4936,11 +4934,6 @@ namespace CORE::LINALG
   {
     DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
     DENSEERROR::Checker<rows == cols>::Matrix_size_in_solver_must_be_square();
-  }
-
-  template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::~FixedSizeSerialDenseSolver()
-  {
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>

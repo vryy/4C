@@ -31,8 +31,6 @@ namespace STR
       //! constructor
       Explicit();
 
-      //! destructor
-      ~Explicit() override = default;
 
       void Setup() override;
 

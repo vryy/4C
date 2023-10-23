@@ -28,7 +28,6 @@ namespace NOX
       namespace Test
       {
         class Generic;
-        ;
       }  // namespace Test
 
       /** \brief Modified Newton method
@@ -51,8 +50,6 @@ namespace NOX
         /// constructor
         ModifiedNewton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& p);
 
-        /// destructor
-        ~ModifiedNewton() override = default;
 
         bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
             const NOX::Solver::Generic& solver) override;

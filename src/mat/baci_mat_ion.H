@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       Ion(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Ion() override { ; }
-
       /// @name material parameters
       //@{
 

@@ -32,9 +32,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// virtual destructor
-    ~ScaTraTimIntPoroMulti() override{};
-
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
@@ -109,8 +106,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~ScaTraTimIntPoroMultiOST() override;
 
     //! initialize time integration scheme
     void Init() override;
@@ -132,8 +127,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~ScaTraTimIntPoroMultiBDF2() override;
 
     //! initialize time integration scheme
     void Init() override;
@@ -155,8 +148,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~ScaTraTimIntPoroMultiGenAlpha() override;
 
     //! initialize time integration scheme
     void Init() override;
@@ -178,8 +169,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~ScaTraTimIntPoroMultiStationary() override;
 
     //! initialize time integration scheme
     void Init() override;

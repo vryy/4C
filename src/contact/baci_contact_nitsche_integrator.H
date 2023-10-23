@@ -57,8 +57,6 @@ namespace CONTACT
     {
     }
 
-    ~CoIntegratorNitsche() override = default;
-
    protected:
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,

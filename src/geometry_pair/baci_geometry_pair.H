@@ -41,7 +41,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~GeometryPair(){};
+    virtual ~GeometryPair() = default;
 
     /**
      * \brief Initialize the pair.

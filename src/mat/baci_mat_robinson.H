@@ -48,9 +48,6 @@ namespace MAT
       //! standard constructor
       Robinson(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~Robinson() override { ; }
-
       //! @name material parameters
       //@{
 

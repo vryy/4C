@@ -246,7 +246,6 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
         refPtsGmsh_ = it->second.second;
-        ;
         found_refplane = true;
       }
     }
@@ -340,7 +339,6 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
         refPtsGmsh_ = it->second.second;
-        ;
         found_refplane = true;
       }
     }

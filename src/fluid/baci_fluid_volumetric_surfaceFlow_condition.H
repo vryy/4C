@@ -52,7 +52,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidVolumetricSurfaceFlowWrapper();
+      virtual ~FluidVolumetricSurfaceFlowWrapper() = default;
 
 
       /*!
@@ -106,7 +106,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~TotalTractionCorrector();
+      virtual ~TotalTractionCorrector() = default;
 
 
       /*!
@@ -180,8 +180,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidVolumetricSurfaceFlowBc() {}
-
+      virtual ~FluidVolumetricSurfaceFlowBc() = default;
 
       /*!
       \brief calculates the center of mass

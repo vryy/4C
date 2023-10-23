@@ -31,7 +31,7 @@ namespace STR
         Factory();
 
         //! destructor
-        virtual ~Factory(){};
+        virtual ~Factory() = default;
 
         //! build the specific nonlinear solver
         Teuchos::RCP<STR::NLN::SOLVER::Generic> BuildNlnSolver(

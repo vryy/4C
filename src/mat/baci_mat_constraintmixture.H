@@ -42,9 +42,6 @@ namespace MAT
       /// standard constructor
       ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ConstraintMixture() override { ; }
-
       /// @name material parameters
       //@{
       /// density

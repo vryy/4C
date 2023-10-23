@@ -35,9 +35,6 @@ namespace ADAPTER
     /// constructor
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
-    /// destructor
-    ~FSIStructureWrapperImmersed() override { ; }
-
     /// return the combined interface (matching fsi + immersed)
     const Teuchos::RCP<CORE::LINALG::MapExtractor> CombinedInterface()
     {

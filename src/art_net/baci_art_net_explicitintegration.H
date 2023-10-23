@@ -53,11 +53,6 @@ namespace ART
         FILE* errfile, IO::DiscretizationWriter& output);
 
 
-    /*!
-    \brief Destructor
-
-    */
-    ~ArtNetExplicitTimeInt() override;
 
     /*!
     \brief Initialization

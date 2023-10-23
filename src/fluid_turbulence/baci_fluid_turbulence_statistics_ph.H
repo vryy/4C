@@ -65,7 +65,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticsPh();
+    virtual ~TurbulenceStatisticsPh() = default;
 
 
     //! @name functions for averaging

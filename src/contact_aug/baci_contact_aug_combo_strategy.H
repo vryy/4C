@@ -59,9 +59,6 @@ namespace CONTACT
           const plain_lin_solver_set& lin_solvers, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof);
 
-      /// destructor
-      ~ComboStrategy() override{};
-
       /* Hide the public derived methods as well, since we do not want to access
        * any of these methods directly.                         hiermeier 03/17 */
      protected:
@@ -416,9 +413,6 @@ namespace CONTACT
       class Output
       {
        public:
-        Output() = default;
-        ~Output() = default;
-
         /// init this class
         void initScreenOutput(bool print2screen);
 
@@ -456,7 +450,7 @@ namespace CONTACT
       Switching(ComboStrategy& combo, const Teuchos::ParameterList& p_combo);
 
       /// destructor
-      virtual ~Switching(){};
+      virtual ~Switching() = default;
 
       /// return the ID of the given solving strategy
       unsigned Id(enum INPAR::CONTACT::SolvingStrategy sol_type) const;
@@ -497,9 +491,6 @@ namespace CONTACT
      public:
       /// constructor
       PreAsymptoticSwitching(ComboStrategy& combo, const Teuchos::ParameterList& p_combo);
-
-      /// destructor
-      ~PreAsymptoticSwitching() override{};
 
      private:
       /// derived

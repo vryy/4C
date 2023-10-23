@@ -115,7 +115,7 @@ namespace NOX
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
 
       //! destructor
-      virtual ~GlobalData(){};
+      virtual ~GlobalData() = default;
 
       //! return the nox_utils class
       const NOX::Utils& GetNoxUtils() const;

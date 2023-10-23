@@ -125,15 +125,6 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
 
 /*----------------------------------------------------------------------*
- | destructor (public)                                      farah 11/13 |
- *----------------------------------------------------------------------*/
-WEAR::Partitioned::~Partitioned()
-{
-  // empty
-}
-
-
-/*----------------------------------------------------------------------*
  | general time loop                                        farah 10/13 |
  *----------------------------------------------------------------------*/
 void WEAR::Partitioned::TimeLoop()

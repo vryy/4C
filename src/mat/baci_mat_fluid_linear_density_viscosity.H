@@ -30,9 +30,6 @@ namespace MAT
       /// standard constructor
       LinearDensityViscosity(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~LinearDensityViscosity() override { ; }
-
       /// @name material parameters
       //@{
 

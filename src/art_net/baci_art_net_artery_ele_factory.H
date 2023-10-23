@@ -30,8 +30,7 @@ namespace DRT
       ArtNetFactory() { return; }
 
       //! dtor
-      virtual ~ArtNetFactory() { return; }
-
+      virtual ~ArtNetFactory() = default;
       //! ProvideImpl
       static ArteryEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
           INPAR::ARTDYN::ImplType problem, const std::string& disname);

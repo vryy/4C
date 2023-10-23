@@ -63,7 +63,7 @@ namespace DRT
         VariableManagerMinAccess(){};
 
         //! destructor
-        virtual ~VariableManagerMinAccess(){};
+        virtual ~VariableManagerMinAccess() = default;
 
         virtual const std::vector<double>* Phinp() const = 0;
         virtual const std::vector<double>* Scalarnp() const = 0;
@@ -100,9 +100,6 @@ namespace DRT
        public:
         //! constructor
         VariableManagerInterface(){};
-
-        //! destructor
-        ~VariableManagerInterface() override{};
 
         //! factory method
         static Teuchos::RCP<VariableManagerInterface<nsd, nen>> CreateVariableManager(
@@ -171,9 +168,6 @@ namespace DRT
               numdofpernode_(numdofpernode),
               isextracted_(false),
               isevaluated_(false){};
-
-        //! destructor
-        ~VariableManagerBase() override{};
 
         //! check if EvaluateGPVariables has been called
         void CheckIsEvaluated() const override
@@ -299,9 +293,6 @@ namespace DRT
               ephinp_(numdofpernode),
               phinp_(numdofpernode, 0.0){};
 
-        //! destructor
-        ~VariableManagerPhi() override{};
-
         //! extract node values related to the state vector 'phinp'
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -358,9 +349,6 @@ namespace DRT
         VariableManagerPhiGradPhi(int numdofpernode)
             : VariableManagerPhi<nsd, nen>(numdofpernode), gradphi_(numdofpernode){};
 
-        //! destructor
-        ~VariableManagerPhiGradPhi() override{};
-
         //! evaluate phi and its gradient at gauss point
         void EvaluateGPVariables(
             const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
@@ -402,9 +390,6 @@ namespace DRT
         //! constructor
         VariableManagerDecorator(Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerInterface<nsd, nen>(), varmanager_(varmanager){};
-
-        //! destructor
-        ~VariableManagerDecorator() override{};
 
         //! @name Access methods
         const std::vector<double>* Phinp() const override { return varmanager_->Phinp(); };
@@ -487,9 +472,6 @@ namespace DRT
               phidtnp_(varmanager->NumDofPerNode(), 0.0),
               hist_(varmanager->NumDofPerNode(), 0.0){};
 
-        //! destructor
-        ~VariableManagerInstat() override{};
-
         //! extract node values related to time derivatives
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -561,9 +543,6 @@ namespace DRT
               divconvelint_(0.0),
               convelint_(true),
               dispint_(true){};
-
-        //! destructor
-        ~VariableManagerStruct() override{};
 
         //! extract variables related to structure coupling
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -651,9 +630,6 @@ namespace DRT
               scalarnp_(),
               gradscalarnp_(){};
 
-        //! destructor
-        ~VariableManagerScalar() override{};
-
         //! extract node values related to ScaTra coupling
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -724,9 +700,6 @@ namespace DRT
               ele_has_valid_volfrac_press_(numvolfrac_, false),
               ele_has_valid_volfrac_spec_(numvolfrac_, false),
               multiphasemat_(multiphasemat){};
-
-        //! destructor
-        ~VariableManagerMaximumNodalVolFracValue() override{};
 
         //! extract node values related to time derivatives
         //! dofsetnum is the number of the porofluid-dofset on the current element

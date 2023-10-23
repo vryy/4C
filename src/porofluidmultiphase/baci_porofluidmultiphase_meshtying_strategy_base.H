@@ -37,7 +37,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! destructor
-    virtual ~MeshtyingStrategyBase() { return; };
+    virtual ~MeshtyingStrategyBase() = default;
 
     //! prepare time loop
     virtual void PrepareTimeLoop() = 0;

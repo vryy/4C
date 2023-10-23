@@ -31,8 +31,7 @@ namespace MORTAR
    public:
     MortarProjector(){};
 
-    virtual ~MortarProjector() {}
-
+    virtual ~MortarProjector() = default;
     //! @name Access methods
 
     /// 1. Internal implementation class

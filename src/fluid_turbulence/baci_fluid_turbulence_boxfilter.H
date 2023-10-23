@@ -58,7 +58,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~Boxfilter();
+    virtual ~Boxfilter() = default;
 
     void AddScatra(Teuchos::RCP<DRT::Discretization> scatradis);
 

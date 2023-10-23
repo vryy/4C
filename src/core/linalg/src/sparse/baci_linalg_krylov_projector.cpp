@@ -53,13 +53,6 @@ CORE::LINALG::KrylovProjector::KrylovProjector(
   invwTc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(nsdim_, nsdim_));
 }  // CORE::LINALG::KrylovProjector::KrylovProjector
 
-/* --------------------------------------------------------------------
-                          Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::KrylovProjector::~KrylovProjector()
-{
-  return;
-}  // CORE::LINALG::KrylovProjector::~KrylovProjector
 
 /* --------------------------------------------------------------------
                   Give out Teuchos::RCP to c_ for change

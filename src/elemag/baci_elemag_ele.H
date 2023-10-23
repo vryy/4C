@@ -103,10 +103,7 @@ namespace DRT
       */
       DRT::Element* Clone() const override;
 
-      /*!
-      \brief Destructor
-      */
-      ~Elemag() override;
+
 
       /*!
       \brief Get shape type of element
@@ -543,11 +540,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~ElemagBoundary() override;
 
       //@}
 
@@ -827,10 +819,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-      */
-      ~ElemagIntFace() override;
+
 
       //@}
 

@@ -33,7 +33,7 @@ namespace FLD
    \brief Destructor
 
    */
-    virtual ~FluidDiscretExtractor();
+    virtual ~FluidDiscretExtractor() = default;
 
     //! get child discretization
     const Teuchos::RCP<DRT::Discretization> GetChildDiscretization() { return childdiscret_; }

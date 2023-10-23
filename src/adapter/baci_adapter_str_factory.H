@@ -31,7 +31,7 @@ namespace ADAPTER
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
       //! Build the structural adapter object
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(

@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidParamsBase(){};
+    virtual ~BeamToSolidParamsBase() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.

@@ -50,8 +50,6 @@ namespace ART
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         FILE* errfile, IO::DiscretizationWriter& output);
 
-    //! Destructor
-    ~TimInt() override;
 
     //! initialize time integration
     void Init(const Teuchos::ParameterList& globaltimeparams,

@@ -840,7 +840,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     std::set<int> free_nodes = FreeFaceNodes(free_edge_nodes, node_pair);
     std::ostringstream nodesetname;
     nodesetname << "ext_free_bnd" << highestns;
-    ;
     EXODUS::NodeSet newnodeset(free_nodes, nodesetname.str(), nodesetname.str());
     newnodesets.insert(std::pair<int, EXODUS::NodeSet>(highestns, newnodeset));
     highestns++;

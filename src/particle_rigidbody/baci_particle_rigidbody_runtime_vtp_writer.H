@@ -57,9 +57,6 @@ namespace PARTICLERIGIDBODY
      */
     explicit RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm);
 
-    //! destructor
-    ~RigidBodyRuntimeVtpWriter() = default;
-
     /*!
      * \brief init rigid body runtime vtp writer
      *

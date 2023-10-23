@@ -36,8 +36,7 @@ namespace DRT
       /// Empty constructor
       RedAirwayImplInterface() {}
       /// Empty destructor
-      virtual ~RedAirwayImplInterface() {}
-      /// Evaluate the element
+      virtual ~RedAirwayImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,

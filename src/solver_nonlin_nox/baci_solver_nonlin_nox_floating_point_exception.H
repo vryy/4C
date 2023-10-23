@@ -31,12 +31,6 @@ namespace NOX
     class FloatingPointException
     {
      public:
-      /// constructor
-      FloatingPointException() = default;
-
-      /// destructor
-      ~FloatingPointException() = default;
-
       /** \brief Wrapper function which disables the floating point exception
        *  checks if desired.
        *

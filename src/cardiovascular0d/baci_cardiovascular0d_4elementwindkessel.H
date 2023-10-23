@@ -71,11 +71,7 @@ namespace UTILS
         std::vector<int>& curID       ///< current ID
     );
 
-    /*!
-        \brief Destructor
 
-     */
-    ~Cardiovascular0D4ElementWindkessel() override { return; };
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning

@@ -34,10 +34,6 @@ CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(const BsplinePolyn
   return;
 }
 
-//--------------------------------------------------
-// Destructor
-//--------------------------------------------------
-CORE::DRT::NURBS::UTILS::BsplinePolynomial::~BsplinePolynomial() { return; }
 
 
 void CORE::DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string errormessage)

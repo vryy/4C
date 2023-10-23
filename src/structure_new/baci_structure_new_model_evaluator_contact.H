@@ -36,9 +36,6 @@ namespace STR
     class Contact : public Generic
     {
      public:
-      //! destructor
-      ~Contact() override = default;
-
       //! setup class variables [derived]
       void Setup() override;
 

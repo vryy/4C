@@ -22,10 +22,6 @@ MAT::PAR::Bundle::Bundle() : materialreadfromproblem_(0) {}
 
 
 /*----------------------------------------------------------------------*/
-MAT::PAR::Bundle::~Bundle() {}
-
-
-/*----------------------------------------------------------------------*/
 void MAT::PAR::Bundle::Insert(int matid, Teuchos::RCP<MAT::PAR::Material> mat)
 {
   matmap_.insert(std::pair<int, Teuchos::RCP<MAT::PAR::Material>>(matid, mat));

@@ -29,9 +29,6 @@ namespace LAGPENCONSTRAINT
     /// constructor
     NoxInterface();
 
-    /// destructor
-    ~NoxInterface() override{};
-
     /// initialize important member variables
     void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
@@ -100,9 +97,6 @@ namespace LAGPENCONSTRAINT
    public:
     /// constructor
     NoxInterfacePrec();
-
-    /// destructor
-    ~NoxInterfacePrec() override{};
 
     /// initialize important member variables
     void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);

@@ -290,11 +290,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~NStet5() override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node

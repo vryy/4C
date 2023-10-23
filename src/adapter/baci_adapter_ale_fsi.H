@@ -50,9 +50,6 @@ namespace ADAPTER
     //! constructor
     explicit AleFsiWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    ~AleFsiWrapper() override {}
-
     //@}
 
     //! communicate object at the interface

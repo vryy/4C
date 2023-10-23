@@ -218,11 +218,6 @@ void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinus::~RedAcinus() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|

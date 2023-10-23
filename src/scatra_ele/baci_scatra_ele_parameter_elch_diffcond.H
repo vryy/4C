@@ -32,9 +32,6 @@ namespace DRT
     class ScaTraEleParameterElchDiffCond : public ScaTraEleParameterBase
     {
      public:
-      //! destructor
-      ~ScaTraEleParameterElchDiffCond() override = default;
-
       //! singleton access method
       static ScaTraEleParameterElchDiffCond* Instance(
           const std::string& disname  //!< name of discretization

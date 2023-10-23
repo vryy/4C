@@ -385,7 +385,6 @@ namespace DRT
 
       //! setup EAS for each evaluation
       virtual void EasSetup();
-      ;
 
       // evaluate EAS shape functions
       virtual void EasShape(const int gp);

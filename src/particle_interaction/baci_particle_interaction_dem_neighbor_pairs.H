@@ -52,9 +52,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMNeighborPairs();
 
-    //! destructor
-    ~DEMNeighborPairs() = default;
-
     //! init neighbor pair handler
     void Init();
 

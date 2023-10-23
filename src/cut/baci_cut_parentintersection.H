@@ -111,7 +111,7 @@ namespace CORE::GEO
       }
 
       /// destructor
-      virtual ~ParentIntersection(){};
+      virtual ~ParentIntersection() = default;
 
       /*========================================================================*/
       //! @name set and get routines for options

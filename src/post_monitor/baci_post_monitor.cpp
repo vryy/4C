@@ -601,7 +601,6 @@ void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void StructMonWriter::FieldError(int node)
 {
-  ;
   dserror("Node %i does not belong to structure field!", node);
 }
 

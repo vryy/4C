@@ -178,11 +178,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_tet10() override;
       //@}
 
       //! @name Acess methods

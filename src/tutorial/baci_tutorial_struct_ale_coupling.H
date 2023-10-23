@@ -24,9 +24,6 @@ namespace TUTORIAL
     /// constructor (ctor)
     StructAleCoupling();
 
-    /// constructor (ctor)
-    ~StructAleCoupling() override{};
-
    protected:
     /// print the type of the tutorial to screen
     void PrintTutorialType() override;

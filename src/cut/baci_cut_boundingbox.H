@@ -68,7 +68,7 @@ namespace CORE::GEO
 
      public:
       /// destructor
-      virtual ~BoundingBox(){};
+      virtual ~BoundingBox() = default;
 
       /*!
        \brief Make the boundingbox larger to include this edge within the box
@@ -153,9 +153,6 @@ namespace CORE::GEO
      public:
       /// empty constructor
       ConcreteBoundingBox() : BoundingBox(){};
-
-      /// destructor
-      ~ConcreteBoundingBox() override{};
 
       /** add a new point under consideration of the problem dimension. If a
        *  2-dimensional problem is observed, we ignore the z-coordinate and keep

@@ -90,11 +90,6 @@ namespace DRT
       */
       DRT::NURBS::ControlPoint* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~ControlPoint() override;
 
       /*!
       \brief Return unique ParObject id

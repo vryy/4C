@@ -79,8 +79,6 @@ namespace MAT
       /// Makes a deep copy of a condition
       Material(const MAT::PAR::Material& old);
 
-      /// Destructor
-      ~Material() override;
 
       /// Return unique ParObject id
       ///

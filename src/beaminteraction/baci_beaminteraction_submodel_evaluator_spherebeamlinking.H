@@ -42,9 +42,6 @@ namespace BEAMINTERACTION
       //! constructor
       SphereBeamLinking();
 
-      //! destructor
-      ~SphereBeamLinking() override{};
-
       //! setup class variables
       void Setup() override;
 

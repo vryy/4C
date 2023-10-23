@@ -3143,7 +3143,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID())
@@ -3159,7 +3158,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->FriData().Slip() = true;
@@ -3348,7 +3346,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->Active() = false;
@@ -3361,7 +3358,6 @@ bool WEAR::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    ;
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID()) frinode->FriData().Slip() = false;

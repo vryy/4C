@@ -1676,7 +1676,6 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           filename << 0;
         else if (problemcount < 100000)
         {
-          ;
         }
         else
           dserror("Gmsh output implemented for a maximum of 9.999 problem polygons");
@@ -2498,7 +2497,6 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       filename << 0;
     else if (gmshcount < 100000)
     {
-      ;
     }
     else
       dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");

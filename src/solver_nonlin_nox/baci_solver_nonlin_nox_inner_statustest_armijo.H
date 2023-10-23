@@ -40,9 +40,6 @@ namespace NOX
           Armijo(
               const double& c_1, const bool& isMonotone = true, const std::size_t& maxHistSize = 1);
 
-          //! destructor
-          ~Armijo() override{};
-
           //! %Test the line search stopping criterion
           /*!
             The test can (and should, if possible) be skipped if

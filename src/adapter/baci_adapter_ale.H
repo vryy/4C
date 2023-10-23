@@ -76,7 +76,7 @@ namespace ADAPTER
   {
    public:
     //! virtual to get polymorph destruction
-    virtual ~Ale(){};
+    virtual ~Ale() = default;
 
     //! @name Vector access
 
@@ -261,7 +261,7 @@ namespace ADAPTER
     );
 
     //! virtual destructor to support polymorph destruction
-    virtual ~AleBaseAlgorithm();
+    virtual ~AleBaseAlgorithm() = default;
 
     //! Teuchos::RCP version of ale field solver
     Teuchos::RCP<Ale> AleField() { return ale_; }

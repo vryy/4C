@@ -26,9 +26,6 @@ namespace MAT
       /// standard constructor
       Spring(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Spring() override { ; }
-
       /// @name material parameters
       //@{
 

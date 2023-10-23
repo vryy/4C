@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~WeaklyCompressibleFluid() override { ; }
-
       /// @name material parameters
       //@{
 

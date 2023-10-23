@@ -28,8 +28,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// Destructor
-    ~LevelSetTimIntStationary() override;
 
     /// initialize time-integration scheme
     void Init() override;

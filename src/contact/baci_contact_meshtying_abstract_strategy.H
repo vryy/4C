@@ -537,13 +537,11 @@ namespace CONTACT
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
-      ;
     }
 
     //! modify result after linear solve
     virtual void RunPostApplyJacobianInverse(Epetra_Vector& result)
     { /* do nothing */
-      ;
     }
 
     //! evaluate force terms

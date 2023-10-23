@@ -33,10 +33,6 @@ SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                               hoermann 09/15 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainHDG::~TimIntCardiacMonodomainHDG() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                          hoermann 09/15 |

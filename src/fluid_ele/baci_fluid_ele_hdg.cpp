@@ -172,13 +172,6 @@ DRT::Element* DRT::ELEMENTS::FluidHDG::Clone() const
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                      kronbichler 05/13|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDG::~FluidHDG() {}
-
-
-
-/*----------------------------------------------------------------------*
  |  Pack data (public)                                kronbichler 05/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidHDG::Pack(DRT::PackBuffer& data) const

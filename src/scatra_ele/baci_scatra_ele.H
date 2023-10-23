@@ -190,11 +190,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Transport() override;
 
       //@}
 
@@ -553,11 +548,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~TransportBoundary() override;
 
       //@}
 

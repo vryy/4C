@@ -55,10 +55,6 @@ ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm() {}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {

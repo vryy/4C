@@ -24,8 +24,6 @@ namespace STR
       //! constructor
       Gemm();
 
-      //! destructor
-      ~Gemm() override = default;
 
       //! Setup the class variables
       void Setup() override;

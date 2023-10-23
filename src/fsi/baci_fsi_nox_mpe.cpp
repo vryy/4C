@@ -40,8 +40,6 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(
 }
 
 
-NOX::FSI::MinimalPolynomial::~MinimalPolynomial() {}
-
 
 bool NOX::FSI::MinimalPolynomial::reset(
     const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)

@@ -39,7 +39,7 @@ namespace ART
     /// constructor
     explicit ArteryScatraCloneStrategy() {}
     /// destructor
-    virtual ~ArteryScatraCloneStrategy() {}
+    virtual ~ArteryScatraCloneStrategy() = default;
 
    protected:
     /// determine element type string and whether element is copied or not

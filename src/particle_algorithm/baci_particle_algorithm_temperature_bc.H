@@ -48,9 +48,6 @@ namespace PARTICLEALGORITHM
      */
     explicit TemperatureBoundaryConditionHandler(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~TemperatureBoundaryConditionHandler() = default;
-
     /*!
      * \brief init temperature boundary condition handler
      *

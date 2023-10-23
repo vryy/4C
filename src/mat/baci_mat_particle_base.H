@@ -34,9 +34,6 @@ namespace MAT
       //! constructor
       ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! desctructor
-      ~ParticleMaterialBase() override{};
-
       //! @name material parameters
       //@{
 

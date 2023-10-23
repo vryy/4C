@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       Hemoglobin_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Hemoglobin_0d_O2_saturation() override {}
-
       /// @name material parameters
       //@{
       /// how much of blood satisfies this rule

@@ -23,7 +23,7 @@ namespace BEAMINTERACTION
     BeamContactRuntimeVtkOutputParams();
 
     //! destructor
-    virtual ~BeamContactRuntimeVtkOutputParams(){};
+    virtual ~BeamContactRuntimeVtkOutputParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

@@ -29,11 +29,6 @@ SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(Teuchos::RCP<DRT::Dis
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                              rasthofer 09/13 |
-*-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntStationary::~LevelSetTimIntStationary() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |

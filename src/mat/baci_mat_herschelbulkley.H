@@ -27,9 +27,6 @@ namespace MAT
       /// standard constructor
       HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~HerschelBulkley() override { ; }
-
       /// @name material parameters
       //@{
 

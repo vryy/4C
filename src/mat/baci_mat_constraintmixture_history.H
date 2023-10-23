@@ -39,8 +39,6 @@ namespace MAT
    public:
     /// construct empty history object
     ConstraintMixtureHistory() { ; }
-    /// destruct history object
-    ~ConstraintMixtureHistory() override { ; }
 
     //! @name Packing and Unpacking
     int UniqueParObjectId() const override

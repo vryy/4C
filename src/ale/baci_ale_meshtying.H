@@ -68,7 +68,7 @@ namespace ALE
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
-    virtual ~Meshtying() { return; };
+    virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
     virtual Teuchos::RCP<CORE::LINALG::SparseOperator> Setup(

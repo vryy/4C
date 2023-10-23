@@ -484,13 +484,6 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
   return;
 }  // TurbulenceStatisticsPh::TurbulenceStatisticsPh
 
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsPh::~TurbulenceStatisticsPh()
-{
-  return;
-}  // TurbulenceStatisticsPh::~TurbulenceStatisticsPh()
 
 
 //----------------------------------------------------------------------

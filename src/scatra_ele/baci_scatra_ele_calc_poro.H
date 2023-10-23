@@ -41,8 +41,6 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      ~ScaTraEleCalcPoro() override {}
-
       /// Singleton access method
       static ScaTraEleCalcPoro<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -232,7 +230,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerPoro(){};
+      virtual ~ScaTraEleInternalVariableManagerPoro() = default;
 
       /*========================================================================*/
       //! @name return methods for internal variables
@@ -247,29 +245,30 @@ namespace DRT
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const {//    if(k<NO_CONVECTION_NR)
-      {return my::conv_;
-}  // namespace DRT
-   //    else
-   //      return zeroconv_;
-}
-;
+  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const
+  {  //    if(k<NO_CONVECTION_NR)
+    {
+      return my::conv_;
+    }  // namespace DRT
+       //    else
+       //      return zeroconv_;
+  }
 
-//! return convective term of current scalar value
-virtual const double& ConvPhi(const int k) const {//    if(k<NO_CONVECTION_NR)
-    {return my::conv_phi_[k];
-}
-//    else
-//      return zero_;
-}
-;
+  //! return convective term of current scalar value
+  virtual const double& ConvPhi(const int k) const
+  {  //    if(k<NO_CONVECTION_NR)
+    {
+      return my::conv_phi_[k];
+    }
+    //    else
+    //      return zero_;
+  }
 
-private:
-CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
-CORE::LINALG::Matrix<NEN, 1> zeroconv_;
-double zero_;
-}
-;
+ private:
+  CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
+  CORE::LINALG::Matrix<NEN, 1> zeroconv_;
+  double zero_;
+};  // namespace DRT
 }
 }
 

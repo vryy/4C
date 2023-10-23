@@ -21,9 +21,6 @@ namespace POROMULTIPHASE
     PoroMultiPhaseMonolithic(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
-    /// virtual destructor
-    ~PoroMultiPhaseMonolithic() override{};
-
 
   };  // PoroMultiPhaseMonolithic
 

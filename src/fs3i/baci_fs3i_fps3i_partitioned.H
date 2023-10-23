@@ -61,9 +61,6 @@ namespace FS3I
     //! constructor of base class for partitioned FPS3I
     PartFPS3I(const Epetra_Comm& comm);
 
-    //! destructor of base class for partitioned FPS3I
-    ~PartFPS3I() override{};
-
     //! initialize this class
     void Init() override;
 

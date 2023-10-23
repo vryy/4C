@@ -35,8 +35,6 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
-    // destructor
-    ~MeshtyingStrategyStdElch() override = default;
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 

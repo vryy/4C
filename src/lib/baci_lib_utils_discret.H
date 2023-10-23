@@ -226,7 +226,7 @@ namespace DRT
       Dbc(){};
 
       /// destructor
-      virtual ~Dbc(){};
+      virtual ~Dbc() = default;
 
       /** \brief Extract parameters and setup some temporal variables, before the actual
        *  evaluation process can start

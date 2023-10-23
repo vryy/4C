@@ -78,7 +78,7 @@ namespace STRUMULTI
     \brief Destructor
 
     */
-    virtual ~MicroStatic(){};
+    virtual ~MicroStatic() = default;
 
     /*!
     \brief Read restart

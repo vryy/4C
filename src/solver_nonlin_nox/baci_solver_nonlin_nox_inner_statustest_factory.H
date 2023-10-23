@@ -39,7 +39,7 @@ namespace NOX
           Factory();
 
           //! Destructor.
-          virtual ~Factory(){};
+          virtual ~Factory() = default;
 
           //! Returns a inner status test set from a parameter list.
           Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,

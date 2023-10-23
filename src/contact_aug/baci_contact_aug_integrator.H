@@ -42,9 +42,6 @@ namespace CONTACT
       IntegrationWrapper(Teuchos::ParameterList& params, DRT::Element::DiscretizationType slavetype,
           const Epetra_Comm& comm);
 
-      /// destructor
-      ~IntegrationWrapper() override{};
-
       //! @name 2D augmented Lagrange integration methods
       //! @{
       //! [derived]
@@ -145,7 +142,7 @@ namespace CONTACT
       IntegratorGeneric(CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator& wrapper)
           : cparams_(&cparams), wrapper_(dynamic_cast<IntegrationWrapper*>(&wrapper)){};
 
-      virtual ~IntegratorGeneric(){};
+      virtual ~IntegratorGeneric() = default;
 
       //! @name segment based integration methods
       //! @{
@@ -415,7 +412,7 @@ namespace CONTACT
 
       Evaluator(const class_type& source) = delete;
 
-      virtual ~Evaluator(){};
+      virtual ~Evaluator() = default;
 
       virtual Type GetType() const = 0;
 

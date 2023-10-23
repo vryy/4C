@@ -36,8 +36,7 @@ namespace CORE::GEO
     class ElementHandle
     {
      public:
-      virtual ~ElementHandle() {}
-
+      virtual ~ElementHandle() = default;
       //--------------------------------------------------------------------------//
       //! @name access to cut/intersection status of the element
 

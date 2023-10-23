@@ -33,7 +33,7 @@ namespace CORE::ADAPTER
     CouplingBase(){};
 
     /// virtual destructor
-    virtual ~CouplingBase(){};
+    virtual ~CouplingBase() = default;
 
     /// @name Conversion between master and slave
     //!@{

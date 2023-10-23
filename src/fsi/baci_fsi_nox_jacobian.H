@@ -42,8 +42,6 @@ namespace NOX
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
           const NOX::Epetra::Vector& cloneVector);
 
-      //! Pure virtual destructor
-      ~FSIMatrixFree() override;
 
       //! If set true, transpose of this operator will be applied.
       /*! This flag allows the transpose of the given operator to be used implicitly.  Setting this

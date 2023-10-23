@@ -123,11 +123,6 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 
 
 /*----------------------------------------------------------------------*
- | destructor (public)                                     schott 08/14 |
- *----------------------------------------------------------------------*/
-FSI::AlgorithmXFEM::~AlgorithmXFEM() {}
-
-/*----------------------------------------------------------------------*
  | setup (public)                                            ager 12/16 |
  *----------------------------------------------------------------------*/
 void FSI::AlgorithmXFEM::Setup()

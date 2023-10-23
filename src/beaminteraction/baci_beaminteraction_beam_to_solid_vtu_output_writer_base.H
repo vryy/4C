@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVtuOutputWriterBase(){};
+    virtual ~BeamToSolidVtuOutputWriterBase() = default;
 
     /**
      * \brief Create a new visualization writer in this object.

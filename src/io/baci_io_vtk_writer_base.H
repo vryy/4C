@@ -104,8 +104,7 @@ class VtkWriterBase
   VtkWriterBase();
 
   //! destructor
-  virtual ~VtkWriterBase() {}
-
+  virtual ~VtkWriterBase() = default;
   /** \brief initialize object with required input data
    *
    *  \author grill

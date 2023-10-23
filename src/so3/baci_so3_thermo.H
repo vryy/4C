@@ -61,8 +61,6 @@ namespace DRT
       //! Makes a deep copy of a Element
       So3_Thermo(const So3_Thermo& old);
 
-      //! Destructor
-      ~So3_Thermo() override = default;
 
       //@}
 

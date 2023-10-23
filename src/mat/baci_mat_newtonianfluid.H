@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       NewtonianFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~NewtonianFluid() override { ; }
-
       /// @name material parameters
       //@{
 

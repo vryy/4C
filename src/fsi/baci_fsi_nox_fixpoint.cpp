@@ -19,8 +19,6 @@ NOX::FSI::FixPoint::FixPoint(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::Par
 }
 
 
-NOX::FSI::FixPoint::~FixPoint() {}
-
 
 bool NOX::FSI::FixPoint::reset(
     const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)

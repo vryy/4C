@@ -86,11 +86,6 @@ namespace CORE::LINALG
     LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A, bool project,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~LinalgProjectedOperator() override;
 
 
     //! @name Atribute set methods required to support the Epetra_Operator interface

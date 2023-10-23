@@ -103,9 +103,6 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
-
-    ~SSICouplingMatchingVolume() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -175,9 +172,6 @@ namespace SSI
           extractor_(Teuchos::null),
           issetup_(false),
           isinit_(false){};
-
-    ~SSICouplingNonMatchingBoundary() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -266,9 +260,6 @@ namespace SSI
    public:
     SSICouplingNonMatchingVolume()
         : volcoupl_structurescatra_(Teuchos::null), issetup_(false), isinit_(false){};
-
-    ~SSICouplingNonMatchingVolume() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 
@@ -344,9 +335,6 @@ namespace SSI
   {
    public:
     SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
-
-    ~SSICouplingMatchingVolumeAndBoundary() override = default;
-
     void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<SSI::SSIBase> ssi_base) override;
 

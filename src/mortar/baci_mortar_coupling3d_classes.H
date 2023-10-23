@@ -53,11 +53,6 @@ namespace MORTAR
         const DRT::Element::DiscretizationType& shape, const int numnode, const int* nodeids,
         std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~IntElement() override {}
 
     /*!
     \brief Return local id of this IntElement
@@ -172,8 +167,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~IntCell() {}
-
+    virtual ~IntCell() = default;
     //! @name Access methods
 
     /*!
@@ -400,8 +394,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~Vertex() {}
-
+    virtual ~Vertex() = default;
     //! @name Access methods
 
     /*!

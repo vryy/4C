@@ -36,9 +36,6 @@ namespace NOX
         //! constructor
         ActiveSet(const NOX::NLN::StatusTest::QuantityType& qtype, const int& max_cycle_size);
 
-        //! destructor
-        ~ActiveSet() override{};
-
         NOX::StatusTest::StatusType checkStatus(
             const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 

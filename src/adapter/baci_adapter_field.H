@@ -55,8 +55,7 @@ namespace ADAPTER
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Field() {}
-
+    virtual ~Field() = default;
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method

@@ -151,10 +151,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   }
 }
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                             kremheller 03/18|
- *----------------------------------------------------------------------*/
-ART::ArtNetImplStationary::~ArtNetImplStationary() { return; }
+
 
 /*----------------------------------------------------------------------*
  | (Linear) Solve.                                                      |

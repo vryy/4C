@@ -66,8 +66,6 @@ namespace FPSI
     explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
-    //! dtor
-    ~MonolithicBase() override;
 
     //! read restart data
     void ReadRestart(int step) override;

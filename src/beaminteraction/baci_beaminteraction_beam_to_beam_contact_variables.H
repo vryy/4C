@@ -47,7 +47,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamToBeamContactVariables(){};
+    virtual ~BeamToBeamContactVariables() = default;
     //@}
 
 

@@ -27,7 +27,7 @@ namespace BEAMINTERACTION
     BeamPotentialParams();
 
     //! destructor
-    virtual ~BeamPotentialParams(){};
+    virtual ~BeamPotentialParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

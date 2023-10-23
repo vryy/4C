@@ -31,10 +31,6 @@ SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainOST::~TimIntCardiacMonodomainOST() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -131,10 +127,6 @@ SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainBDF2::~TimIntCardiacMonodomainBDF2() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -220,10 +212,6 @@ SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainGenAlpha::~TimIntCardiacMonodomainGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |

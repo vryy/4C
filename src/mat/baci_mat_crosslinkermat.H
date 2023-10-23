@@ -31,9 +31,6 @@ namespace MAT
       /// standard constructor
       CrosslinkerMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~CrosslinkerMat() override { ; }
-
       /// number of material for underlying linker element
       int const link_element_matnum_;
 

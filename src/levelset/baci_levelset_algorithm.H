@@ -42,8 +42,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// virtual destructor
-    ~LevelSetAlgorithm() override;
 
     // -----------------------------------------------------------------
     // general methods

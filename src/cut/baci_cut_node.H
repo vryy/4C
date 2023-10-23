@@ -59,7 +59,7 @@ namespace CORE::GEO
       /// constructor for CompositeNodalDofSet
       explicit NodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos);
 
-      virtual ~NodalDofSet(){};
+      virtual ~NodalDofSet() = default;
 
       /// return the composite of all connected volumecells between elements and the element's
       /// sub-elements

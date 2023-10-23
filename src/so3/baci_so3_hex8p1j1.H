@@ -182,11 +182,6 @@ namespace DRT
         }
       };
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_Hex8P1J1() override;
 
 
       //@}

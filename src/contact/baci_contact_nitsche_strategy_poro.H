@@ -57,9 +57,6 @@ namespace CONTACT
         const int step, const int iter, bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
-
-    ~CoNitscheStrategyPoro() override = default;
-
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;

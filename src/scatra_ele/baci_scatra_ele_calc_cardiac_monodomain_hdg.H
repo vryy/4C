@@ -41,9 +41,6 @@ namespace DRT
       std::vector<double> gp_mat_alpha_;
 
      public:
-      ~ScaTraEleCalcHDGCardiacMonodomain() override {}
-
-
       /// Singleton access method
       static ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);

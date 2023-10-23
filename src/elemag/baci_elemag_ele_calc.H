@@ -77,7 +77,6 @@ namespace DRT
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
 
-      ~ElemagEleCalc() override {}
 
       /// Singleton access method.
       static ElemagEleCalc<distype>* Instance(

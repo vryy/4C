@@ -71,9 +71,6 @@ namespace CONTACT
     void Setup(bool redistributed, bool init) override;
 
     void UpdateTraceIneqEtimates() override;
-
-    ~CoNitscheStrategyTsi() override = default;
-
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;

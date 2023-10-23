@@ -40,8 +40,7 @@ namespace DRT
       //! Empty constructor
       TemperBoundaryImplInterface() {}
       //! Empty destructor
-      virtual ~TemperBoundaryImplInterface() {}
-
+      virtual ~TemperBoundaryImplInterface() = default;
       //! Evaluate the element in the case of multiple dofsets
       //!
       //! This class does not provide a definition for this function, it

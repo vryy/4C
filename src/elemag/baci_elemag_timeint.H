@@ -75,7 +75,7 @@ namespace ELEMAG
         const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
     /// Virtual destructor.
-    virtual ~ElemagTimeInt();
+    virtual ~ElemagTimeInt() = default;
 
     /// Initialization routine.
     virtual void Init();

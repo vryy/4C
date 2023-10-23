@@ -39,9 +39,6 @@ namespace ADAPTER
     /// constructor
     explicit PoroFluidMultiphaseWrapper(Teuchos::RCP<PoroFluidMultiphase> porofluid);
 
-    /// virtual destructor to support polymorph destruction
-    ~PoroFluidMultiphaseWrapper() override{};
-
     /// initialization
     void Init(const bool isale,         ///< ALE flag
         const int nds_disp,             ///< number of dofset associated with displacements

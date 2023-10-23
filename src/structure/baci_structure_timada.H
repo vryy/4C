@@ -113,8 +113,7 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~TimAda() { ; }
-
+    virtual ~TimAda() = default;
     //! @name Actions
     //@{
 

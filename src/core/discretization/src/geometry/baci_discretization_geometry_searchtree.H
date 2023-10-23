@@ -215,7 +215,7 @@ namespace CORE::GEO
           const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treeType);
 
       //! destructor
-      virtual ~TreeNode();
+      virtual ~TreeNode() = default;
 
       /*!
        \brief checks, if this node has a parent node
@@ -349,7 +349,7 @@ namespace CORE::GEO
     );
 
     //! destructor
-    virtual ~SearchTree();
+    virtual ~SearchTree() = default;
 
     /*!
      \brief destroys the old tree if its exists and builds the root

@@ -39,9 +39,6 @@ namespace MAT
       /// standard constructor
       AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~AAAneohooke_stopro() override { ; }
-
       /// @name material parameters
       //@{
 

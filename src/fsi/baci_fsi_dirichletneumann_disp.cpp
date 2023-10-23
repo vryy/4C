@@ -78,7 +78,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::StructOp(
   {
     // SD relaxation calculation
     return StructureField()->RelaxationSolve(iforce);
-    ;
   }
   else
   {

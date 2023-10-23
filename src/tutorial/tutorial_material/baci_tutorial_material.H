@@ -53,7 +53,7 @@ namespace TUTORIAL
       methods. This is an indicator, that this class is supposed to be part of some inheritance
       line. Check the internet on why it is then important to declare the destructor virtual.
       */
-      virtual ~TutorialMat(){};
+      virtual ~TutorialMat() = default;
 
       /*!
       \brief evaluate stress and material linearization (called for each integration point of

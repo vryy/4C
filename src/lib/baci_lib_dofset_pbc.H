@@ -61,11 +61,6 @@ namespace DRT
     */
     PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~PBCDofSet() override;
 
     /// Get maximum GID of degree of freedom row map
     int MaxAllGID() const override;

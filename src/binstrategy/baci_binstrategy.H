@@ -99,11 +99,6 @@ namespace BINSTRATEGY
     BinningStrategy();
 
     /*!
-     * \brief destructor
-     */
-    ~BinningStrategy(){};
-
-    /*!
      * \brief initialize binning strategy
      *
      * \param[in] discret vector of discretizations as basis for build up of binning domain

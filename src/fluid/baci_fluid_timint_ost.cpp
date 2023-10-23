@@ -57,10 +57,6 @@ void FLD::TimIntOneStepTheta::Init()
   return;
 }
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*-----------------------------------------------------------------------*/
-FLD::TimIntOneStepTheta::~TimIntOneStepTheta() { return; }
 
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |

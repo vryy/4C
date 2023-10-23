@@ -42,7 +42,7 @@ namespace CORE::VOLMORTAR
     \brief destructor
 
     */
-    virtual ~Cell(){};
+    virtual ~Cell() = default;
 
     /*!
     \brief calc jacobian

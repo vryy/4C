@@ -35,8 +35,6 @@ namespace ART
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         FILE* errfile, IO::DiscretizationWriter& output);
 
-    // destructor
-    ~ArtNetImplStationary() override;
 
     // initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,

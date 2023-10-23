@@ -37,8 +37,6 @@ namespace LOMA
     Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    ~Algorithm() override;
 
     /*! \brief Initialize this object
 

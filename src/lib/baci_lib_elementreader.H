@@ -98,8 +98,7 @@ namespace DRT
           std::string sectionname, const std::set<std::string>& elementtypes);
 
       //! Destructor
-      virtual ~ElementReader() { ; }
-
+      virtual ~ElementReader() = default;
       // Return list of unique nodes
       std::set<int> GetUniqueNodes() const { return nodes_; }
 

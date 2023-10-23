@@ -86,7 +86,7 @@ namespace IO
     DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step);
 
     /// destructor
-    virtual ~DiscretizationReader(){};
+    virtual ~DiscretizationReader() = default;
 
     /**
      * \brief read in and return vector

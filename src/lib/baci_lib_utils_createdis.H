@@ -43,8 +43,7 @@ namespace DRT
       explicit DiscretizationCreatorBase() : numeleskips_(0) {}
 
       //! destructor
-      virtual ~DiscretizationCreatorBase() {}
-
+      virtual ~DiscretizationCreatorBase() = default;
       //! copy given conditions from source to target discretization
       void CopyConditions(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis,
           const std::map<std::string, std::string>& conditions_to_copy) const;
@@ -284,9 +283,6 @@ namespace DRT
      public:
       /// constructor
       explicit DiscretizationCreator(){};
-
-      /// destructor
-      ~DiscretizationCreator() override{};
 
       /// Create the clone field material map from the input file
       void CreateCloneFieldMatMap(std::map<int, int>& matmap, const DRT::Discretization& sourcedis,

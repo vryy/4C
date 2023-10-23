@@ -156,9 +156,6 @@ namespace POROMULTIPHASESCATRA
     //! constructor
     PoroMultiPhaseScatraArteryCouplingPair();
 
-    //! destructor
-    ~PoroMultiPhaseScatraArteryCouplingPair() override{};
-
     //! Init
     void Init(std::vector<DRT::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,

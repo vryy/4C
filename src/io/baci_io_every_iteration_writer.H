@@ -40,7 +40,7 @@ namespace IO
     EveryIterationWriterInterface(){};
 
     /// destructor
-    virtual ~EveryIterationWriterInterface(){};
+    virtual ~EveryIterationWriterInterface() = default;
 
     /// Prepare the output before it is accessed via OutputState.
     virtual void PrepareOutput(bool force_prepare) = 0;
@@ -128,8 +128,6 @@ namespace IO
     /// Empty default constructor
     EveryIterationWriter();
 
-    /// destructor
-    ~EveryIterationWriter(){};
 
     /** @brief Initialize the object
      *

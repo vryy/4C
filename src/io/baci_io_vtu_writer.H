@@ -30,9 +30,6 @@ class VtuWriter : public VtkWriterBase
   //! constructor
   VtuWriter();
 
-  //! destructor
-  ~VtuWriter() override {}
-
   //! write the geometry defining this unstructured grid
   void WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
       const std::vector<IO::index_type>& point_cell_connectivity,

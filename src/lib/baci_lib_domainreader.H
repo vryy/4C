@@ -58,8 +58,7 @@ namespace DRT
           Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
 
       //! Destructor
-      virtual ~DomainReader() { ; }
-
+      virtual ~DomainReader() = default;
       /// give the discretization this reader fills
       Teuchos::RCP<Discretization> MyDis() const { return dis_; }
 

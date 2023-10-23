@@ -40,7 +40,7 @@ namespace SCATRA
     );
 
     //! destructor
-    virtual ~MeshtyingStrategyS2IElch() { return; };
+    virtual ~MeshtyingStrategyS2IElch() = default;
 
     //! compute time step size
     void ComputeTimeStepSize(double& dt) final;

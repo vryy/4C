@@ -308,7 +308,6 @@ void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
     else  // more than 2 intersections for bcell is unlikely (???). Not tested enough
     {
       int count = 0, numcut = intersections.size();
-      ;
       std::vector<double> x1(numcut);
       for (std::map<double, int>::iterator j = intersections.begin(); j != intersections.end(); j++)
       {

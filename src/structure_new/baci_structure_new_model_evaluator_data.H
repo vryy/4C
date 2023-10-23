@@ -86,8 +86,6 @@ namespace STR
       //! constructor
       Data();
 
-      //! destructor
-      ~Data() override = default;
 
       //! initialize the stuff coming from outside
       void Init(const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
@@ -977,9 +975,6 @@ namespace STR
       //! constructor
       BeamData();
 
-      //! destructor
-      ~BeamData() override{};
-
       //! initialize the stuff coming from outside
       void Init();
 
@@ -1082,9 +1077,6 @@ namespace STR
      public:
       //! constructor
       ContactData();
-
-      //! destructor
-      ~ContactData() override{};
 
       //! initialize the stuff coming from outside
       void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
@@ -1287,9 +1279,6 @@ namespace STR
      public:
       //! constructor
       BrownianDynData();
-
-      //! destructor
-      ~BrownianDynData() override{};
 
       //! initialize the stuff coming from outside
       void Init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);

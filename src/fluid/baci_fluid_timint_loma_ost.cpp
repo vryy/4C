@@ -42,9 +42,3 @@ void FLD::TimIntLomaOst::Init()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntLomaOst::~TimIntLomaOst() { return; }

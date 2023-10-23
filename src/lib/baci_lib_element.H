@@ -213,11 +213,6 @@ namespace DRT
     */
     Element(const DRT::Element& old);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~Element() override;
 
     /*!
     \brief Deep copy the derived class and return pointer to it

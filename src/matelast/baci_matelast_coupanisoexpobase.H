@@ -26,7 +26,7 @@ namespace MAT
     class CoupAnisoExpoBaseInterface
     {
      public:
-      ~CoupAnisoExpoBaseInterface() = default;
+      virtual ~CoupAnisoExpoBaseInterface() = default;
 
       /*!
        * \brief Returns the scalar product of the fibers

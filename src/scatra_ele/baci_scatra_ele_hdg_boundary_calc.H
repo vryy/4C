@@ -38,8 +38,7 @@ namespace DRT
       //! Empty constructor
       ScaTraHDGBoundaryImplInterface() {}
       //! Empty destructor
-      virtual ~ScaTraHDGBoundaryImplInterface() {}
-
+      virtual ~ScaTraHDGBoundaryImplInterface() = default;
       //! Evaluate a Neumann boundary condition
       /*!
         This class does not provide a definition for this function, it

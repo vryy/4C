@@ -58,9 +58,6 @@ namespace XFEM
         MeshCouplingFPI::coupled_field field  ///< which field is coupled to the fluid
     );
 
-    //! destructor
-    ~MeshCouplingFPI() override { return; }
-
     //! cutter dis should be loaded into the cut?
     bool CutGeometry() override { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
 

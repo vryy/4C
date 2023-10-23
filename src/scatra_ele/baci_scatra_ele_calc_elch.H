@@ -279,9 +279,6 @@ namespace DRT
       ScaTraEleDiffManagerElch(int numscal) : ScaTraEleDiffManager(numscal), valence_(numscal, 0.0)
       {
       }
-
-      ~ScaTraEleDiffManagerElch() override = default;
-
       //! Set valence of the single ionic species
       virtual void SetValence(const double valence, const int k) { valence_[k] = valence; };
 
@@ -332,9 +329,6 @@ namespace DRT
             sgconv_(true)
       {
       }
-
-      ~ScaTraEleInternalVariableManagerElch() override = default;
-
       // compute and set internal variables used by Nernst-Planck formulation and the
       // Diffusion-Conduction formulation
 

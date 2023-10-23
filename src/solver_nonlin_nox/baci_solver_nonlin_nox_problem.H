@@ -78,7 +78,7 @@ namespace NOX
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! destructor
-      virtual ~Problem(){};
+      virtual ~Problem() = default;
 
       //! initialize stuff (can be overloaded in derived classes)
       virtual void Initialize(const Teuchos::RCP<NOX::Epetra::Vector>& x,

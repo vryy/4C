@@ -105,8 +105,7 @@ namespace XFEM
     }
 
     //! destructor
-    virtual ~XFluid_Contact_Comm() { return; }
-
+    virtual ~XFluid_Contact_Comm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
     void InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,

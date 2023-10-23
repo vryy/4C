@@ -95,7 +95,7 @@ namespace FSI
     InterfaceCorrector() : idisp_(Teuchos::null){};
 
     /// destructor
-    virtual ~InterfaceCorrector(){};
+    virtual ~InterfaceCorrector() = default;
 
     virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
@@ -123,7 +123,7 @@ namespace FSI
     VolCorrector() : dim_(-1){};
 
     /// destructor
-    virtual ~VolCorrector(){};
+    virtual ~VolCorrector() = default;
 
     virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 

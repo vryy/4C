@@ -27,7 +27,7 @@ namespace DRT
       PoroFluidMultiPhaseBoundaryFactory() { return; };
 
       //! dtor
-      virtual ~PoroFluidMultiPhaseBoundaryFactory() { return; };
+      virtual ~PoroFluidMultiPhaseBoundaryFactory() = default;
 
       //! ProvideImpl
       static PoroFluidMultiPhaseEleInterface* ProvideImpl(

@@ -36,8 +36,7 @@ namespace DRT
       /// Empty constructor
       RedInterAcinarDepImplInterface() {}
       /// Empty destructor
-      virtual ~RedInterAcinarDepImplInterface() {}
-      /// Evaluate the element
+      virtual ~RedInterAcinarDepImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,

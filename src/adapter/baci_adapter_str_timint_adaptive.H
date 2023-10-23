@@ -40,9 +40,6 @@ namespace ADAPTER
     /// Constructor
     StructureTimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
-    /// Destructor
-    ~StructureTimIntAda() override { ; }
-
     /// @name Time step helpers
     //@{
 

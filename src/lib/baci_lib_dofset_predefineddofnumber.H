@@ -85,9 +85,6 @@ namespace DRT
       return;
     }
 
-    /// Destructor
-    ~DofSetPredefinedDoFNumber() override{};
-
     /// create a copy of this object
     Teuchos::RCP<DofSet> Clone() override
     {

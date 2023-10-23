@@ -47,7 +47,7 @@ namespace STR
       Generic();
 
       //! destructor
-      virtual ~Generic(){};
+      virtual ~Generic() = default;
 
       //! initialize the base class variables
       virtual void Init(const enum INPAR::STR::PredEnum& type,

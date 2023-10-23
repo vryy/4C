@@ -19,8 +19,7 @@ namespace FSI
   class MonolithicInterface
   {
    public:
-    virtual ~MonolithicInterface() {}
-
+    virtual ~MonolithicInterface() = default;
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers

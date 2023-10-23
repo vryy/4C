@@ -35,8 +35,6 @@ namespace STR
         //! constructor
         FullNewton();
 
-        //! destructor
-        ~FullNewton() override = default;
 
         //! derived from the base class
         void Setup() override;

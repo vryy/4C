@@ -34,8 +34,6 @@ namespace MORTAR
     /// c-tor
     MultiFieldCoupling(){};
 
-    /// d-tor
-    ~MultiFieldCoupling(){};
 
     /// add a new discretization to perform coupling on
     void PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,  ///< discretization

@@ -38,11 +38,6 @@ FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Parameter
 
 
 /*----------------------------------------------------------------------*
- | Destructor (public)                                                  |
- |                                                           krank 09/13|
- *----------------------------------------------------------------------*/
-FLD::Vreman::~Vreman() { return; }
-/*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::Vreman::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)

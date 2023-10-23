@@ -279,11 +279,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
 
-      */
-      ~FluidImmersed() override { return; }
 
      private:
       int is_immersed_;       //!< true if all nodes of this element are covered by immersed

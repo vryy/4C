@@ -45,9 +45,6 @@ namespace MAT
       /// standard constructor
       Membrane_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Membrane_ElastHyper() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

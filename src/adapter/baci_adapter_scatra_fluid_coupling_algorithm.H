@@ -48,9 +48,6 @@ namespace ADAPTER
         const std::string scatra_disname,  ///< scatra discretization name
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    ~ScaTraFluidCouplingAlgorithm() override{};
-
     /// setup this class
     void Setup() override;
 

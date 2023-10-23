@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       ModPowerLaw(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ModPowerLaw() override { ; }
-
       /// @name material parameters
       //@{
       const double m_cons_;  /* consistency */

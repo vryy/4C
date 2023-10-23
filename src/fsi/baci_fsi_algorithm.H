@@ -59,8 +59,6 @@ namespace FSI
     /// create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
-    /// virtual destructor to support polymorph destruction
-    ~Algorithm() override;
 
     /// setup this object
     virtual void Setup();

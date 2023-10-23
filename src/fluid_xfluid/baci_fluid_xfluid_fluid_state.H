@@ -47,9 +47,6 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
         const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
-    /// dtor
-    ~XFluidFluidState() override {}
-
     /// setup map extractors for dirichlet maps & velocity/pressure maps
     void SetupMapExtractors(const Teuchos::RCP<DRT::Discretization>& xfluiddiscret,
         const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);

@@ -36,8 +36,6 @@ namespace MAT
       /// standard constructor
       Growth(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Growth() override = default;
 
       /// @name material parameters
       //@{

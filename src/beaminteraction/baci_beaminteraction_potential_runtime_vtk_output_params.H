@@ -26,7 +26,7 @@ namespace BEAMINTERACTION
     BeamToBeamPotentialRuntimeVtkParams();
 
     //! destructor
-    virtual ~BeamToBeamPotentialRuntimeVtkParams(){};
+    virtual ~BeamToBeamPotentialRuntimeVtkParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(const Teuchos::ParameterList& beam_contact_vtk_paramslist);

@@ -790,10 +790,6 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 }
 
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                 ismail 01/09|
- *----------------------------------------------------------------------*/
-ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt() { return; }
 
 /*----------------------------------------------------------------------*
  | Calculate the post processing values (public)            ismail 04/10|

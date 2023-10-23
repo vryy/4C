@@ -280,10 +280,6 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiOST::~ScaTraTimIntPoroMultiOST() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -327,10 +323,6 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiBDF2::~ScaTraTimIntPoroMultiBDF2() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -375,10 +367,6 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiGenAlpha::~ScaTraTimIntPoroMultiGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -422,10 +410,6 @@ void SCATRA::ScaTraTimIntPoroMultiStationary::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  vuong  08/16 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiStationary::~ScaTraTimIntPoroMultiStationary() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |

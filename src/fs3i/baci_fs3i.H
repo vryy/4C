@@ -54,7 +54,7 @@ namespace FS3I
     FS3I_Base();
 
     /// destructor of base class
-    virtual ~FS3I_Base(){};
+    virtual ~FS3I_Base() = default;
 
     /// initialize this class
     virtual void Init();

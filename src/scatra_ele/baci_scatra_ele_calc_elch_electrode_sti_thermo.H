@@ -136,8 +136,6 @@ namespace DRT
             ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>(numscal, elchpara),
             ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>(){};
 
-      //! destructor
-      ~ScaTraEleInternalVariableManagerElchElectrodeSTIThermo() override = default;
 
       //! set internal variables for element evaluation
       void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< shape functions

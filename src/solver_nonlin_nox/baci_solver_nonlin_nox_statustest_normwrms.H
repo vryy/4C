@@ -41,9 +41,6 @@ namespace NOX
             const double& alpha, const double& beta,
             const std::vector<bool>& disable_implicit_weighting);
 
-        //! Destructor
-        ~NormWRMS() override{};
-
         NOX::StatusTest::StatusType checkStatus(
             const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 

@@ -41,9 +41,6 @@ namespace NOX
           Combo(NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
               const Teuchos::RCP<Generic>& b, const NOX::Utils* u = nullptr);
 
-          //! Destructor
-          ~Combo() override{};
-
           StatusType CheckStatus(const Interface::Required& interface,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
               NOX::StatusTest::CheckType checkType) override;

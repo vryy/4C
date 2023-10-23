@@ -64,7 +64,7 @@ namespace CORE::GEO
             // empty
           }
 
-          virtual ~Graph(){};
+          virtual ~Graph() = default;
 
           void AddEdge(int row, int col);
 
@@ -126,7 +126,7 @@ namespace CORE::GEO
         PointGraph(Side *side);
 
         /// destructor
-        virtual ~PointGraph(){};
+        virtual ~PointGraph() = default;
 
         facet_iterator fbegin() { return GetGraph().main_cycles_.begin(); }
 

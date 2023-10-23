@@ -31,8 +31,6 @@ class LineIntegration
   {
   }
 
-  ~LineIntegration(){};
-
   /*!
   \brief Integration of a function along the line using standard Gaussian rule
   */

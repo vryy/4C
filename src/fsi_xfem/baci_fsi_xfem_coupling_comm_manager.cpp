@@ -61,10 +61,6 @@ XFEM::Coupling_Comm_Manager::Coupling_Comm_Manager(
   Setup(dis);
 }
 
-/*-----------------------------------------------------------------------------------------*
-| dstructor (public)                                                         ager 03/2016|
-*-----------------------------------------------------------------------------------------*/
-XFEM::Coupling_Comm_Manager::~Coupling_Comm_Manager() {}
 
 /*--------------------------------------------------------------------------------------------------------------*
 | Transfer conditioned part of Vector from Discretization A --> B with different transfer types ager

@@ -403,10 +403,6 @@ namespace FLD
   }
 
 
-  /*
-    Destructor
-  */
-  TurbulenceStatisticManager::~TurbulenceStatisticManager() { return; }
 
   /*----------------------------------------------------------------------
 

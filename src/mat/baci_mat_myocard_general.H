@@ -24,8 +24,7 @@ class Myocard_General
   explicit Myocard_General(const double eps_deriv_myocard, const std::string tissue);
 
   /// destructor
-  virtual ~Myocard_General() { ; }
-
+  virtual ~Myocard_General() = default;
   /// compute reaction coefficient for multiple Gauss points
   virtual double ReaCoeff(const double phi, const double dt, int gp)
   {

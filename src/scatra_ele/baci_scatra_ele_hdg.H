@@ -86,11 +86,6 @@ namespace DRT
       */
       DRT::Element* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~ScaTraHDG() override;
 
       /*!
       \brief Return unique ParObject id
@@ -490,10 +485,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-      */
-      ~ScaTraHDGBoundary() override;
+
 
       //@}
 
@@ -776,10 +768,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-      */
-      ~ScaTraHDGIntFace() override;
+
 
       //@}
 

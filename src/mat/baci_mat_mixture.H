@@ -37,8 +37,6 @@ namespace MAT
       /// parameter sets of the hyperelastic summands.
       explicit Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      /// destructor
-      ~Mixture() override = default;
 
       /// @name material parameters
       /// @{

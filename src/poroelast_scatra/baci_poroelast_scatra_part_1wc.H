@@ -43,9 +43,6 @@ namespace POROELASTSCATRA
     explicit PoroScatraPart1WCPoroToScatra(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //! virtual destructor
-    ~PoroScatraPart1WCPoroToScatra() override{};
-
     //! actual time loop
     void Timeloop() override;
 
@@ -65,9 +62,6 @@ namespace POROELASTSCATRA
     //! constructor
     explicit PoroScatraPart1WCScatraToPoro(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
-
-    //! virtual destructor
-    ~PoroScatraPart1WCScatraToPoro() override{};
 
     //! actual time loop
     void Timeloop() override;

@@ -40,7 +40,7 @@ namespace NOX
         Factory();
 
         //! destructor
-        virtual ~Factory(){};
+        virtual ~Factory() = default;
 
         /** \brief get a valid merit function pointer
          *

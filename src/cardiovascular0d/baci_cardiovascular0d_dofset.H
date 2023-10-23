@@ -56,11 +56,6 @@ namespace UTILS
     */
     Cardiovascular0DDofSet();
 
-    /*!
-    \brief Destructor
-
-    */
-    ~Cardiovascular0DDofSet() override;
 
 
     //! @name Access methods

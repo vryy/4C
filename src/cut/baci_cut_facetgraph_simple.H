@@ -26,9 +26,6 @@ namespace CORE::GEO
       /// constructor
       SimpleFacetGraph_1D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
-      /// destructor
-      ~SimpleFacetGraph_1D() override{};
-
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
      private:
@@ -45,9 +42,6 @@ namespace CORE::GEO
      public:
       /// constructor
       SimpleFacetGraph_2D(const std::vector<Side*>& sides, const plain_facet_set& facets);
-
-      /// destructor
-      ~SimpleFacetGraph_2D() override{};
 
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 

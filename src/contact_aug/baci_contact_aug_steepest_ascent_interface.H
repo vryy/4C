@@ -41,9 +41,6 @@ namespace CONTACT
             const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
             bool selfcontact);
 
-        /// destructor
-        ~Interface() override{};
-
        protected:
         Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy()
             override;
@@ -69,11 +66,7 @@ namespace CONTACT
           explicit NodeBasedAssembleStrategy(Interface* inter)
               : CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>(inter)
           { /* empty */
-            ;
           }
-
-          /// destructor
-          ~NodeBasedAssembleStrategy() override{};
 
           /// derived
           void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;

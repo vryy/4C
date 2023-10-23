@@ -55,8 +55,7 @@ namespace CORE::GEO
           int eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active);
 
       //! destructor
-      virtual ~Element() {}
-
+      virtual ~Element() = default;
       /*! \brief Returns the ID of the element */
       int Id() const { return eid_; }
 
@@ -649,9 +648,6 @@ namespace CORE::GEO
           : Element(eid, sides, nodes, active)
       {
       }
-
-      //! destructor
-      ~ConcreteElement() override{};
 
       //! return element shape
       ::DRT::Element::DiscretizationType Shape() const override { return elementtype; }

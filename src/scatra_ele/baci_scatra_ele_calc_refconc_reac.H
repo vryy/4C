@@ -32,8 +32,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~ScaTraEleCalcRefConcReac() override {}
-
       /// Singleton access method
       static ScaTraEleCalcRefConcReac<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

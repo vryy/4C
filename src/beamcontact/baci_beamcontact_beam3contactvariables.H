@@ -55,7 +55,7 @@ namespace CONTACT
     /*!
     \brief Destructor
     */
-    virtual ~Beam3contactvariables(){};
+    virtual ~Beam3contactvariables() = default;
     //@}
 
 

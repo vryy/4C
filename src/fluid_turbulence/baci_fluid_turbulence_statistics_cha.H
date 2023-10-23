@@ -98,7 +98,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticsCha();
+    virtual ~TurbulenceStatisticsCha() = default;
 
     //! @name functions for (spatial) averaging
 

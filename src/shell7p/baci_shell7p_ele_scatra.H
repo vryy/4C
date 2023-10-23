@@ -84,8 +84,6 @@ namespace DRT::ELEMENTS
     //! copy Constructor
     Shell7pScatra(const Shell7pScatra& other);
 
-    //! destructor
-    ~Shell7pScatra() override = default;
 
     //! copy assignment operator
     Shell7pScatra& operator=(const Shell7pScatra& other);

@@ -112,8 +112,6 @@ namespace DRT
       }
 
      public:
-      ~FluidEleCalcXFEM() override {}
-
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

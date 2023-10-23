@@ -33,8 +33,6 @@ namespace DRT
       FluidEleCalcImmersed();
 
      public:
-      ~FluidEleCalcImmersed() override {}
-
       /// Singleton access method
       static FluidEleCalcImmersed<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

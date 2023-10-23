@@ -28,8 +28,6 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    ~TimIntACOst() override;
 
     /// read restart data
     void ReadRestart(int step) override;

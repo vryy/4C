@@ -55,8 +55,6 @@ namespace NOX
         //! Constructor
         Factory();
 
-        //! Destructor
-        ~Factory(){};
 
         /*! \brief Factory to build a line search object.
 

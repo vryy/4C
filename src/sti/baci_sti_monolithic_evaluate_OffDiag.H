@@ -171,8 +171,6 @@ namespace STI
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
-    //! destructor
-    ~ScatraThermoOffDiagCouplingMatchingNodes() override = default;
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(

@@ -47,7 +47,7 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtWriteGnuplotWrapper(){};
+      virtual ~ArtWriteGnuplotWrapper() = default;
 
       /*!
       \brief Standard write
@@ -96,7 +96,7 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtWriteGnuplot() {}
+      virtual ~ArtWriteGnuplot() = default;
 
      protected:
       /*!

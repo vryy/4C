@@ -21,11 +21,6 @@
 UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : DRT::DofSet() { return; }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DDofSet::~Cardiovascular0DDofSet() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|

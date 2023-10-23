@@ -65,7 +65,7 @@ class PeriodicBoundaryConditions
   \brief Destructor
 
   */
-  virtual ~PeriodicBoundaryConditions();
+  virtual ~PeriodicBoundaryConditions() = default;
 
   //! @name Framework
 

@@ -59,7 +59,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
@@ -175,11 +174,6 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::~So_shw6() { return; }
 
 
 /*----------------------------------------------------------------------*

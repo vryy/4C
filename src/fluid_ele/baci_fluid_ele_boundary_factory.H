@@ -27,7 +27,7 @@ namespace DRT
       FluidBoundaryFactory() { return; };
 
       //! dtor
-      virtual ~FluidBoundaryFactory() { return; };
+      virtual ~FluidBoundaryFactory() = default;
 
       //! ProvideImpl
       static FluidBoundaryInterface* ProvideImpl(

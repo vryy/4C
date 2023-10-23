@@ -106,10 +106,6 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 12/12 |
- *----------------------------------------------------------------------*/
-FLD::TDSEleData::~TDSEleData() { return; }
 
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)           gjb 12/12 |

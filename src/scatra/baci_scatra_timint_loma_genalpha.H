@@ -29,8 +29,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// Destructor
-    ~TimIntLomaGenAlpha() override;
 
     /// initialize time integration scheme
     void Init() override;

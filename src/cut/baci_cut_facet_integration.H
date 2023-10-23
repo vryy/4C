@@ -44,8 +44,6 @@ namespace CORE::GEO
       {
       }
 
-      ~FacetIntegration(){};
-
       /*!
       \brief Select the base function to be integrated
       */

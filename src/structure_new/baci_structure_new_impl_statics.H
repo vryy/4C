@@ -26,8 +26,6 @@ namespace STR
       //! constructor
       Statics();
 
-      //! destructor
-      ~Statics() override = default;
 
       //! Setup the class variables
       void Setup() override;

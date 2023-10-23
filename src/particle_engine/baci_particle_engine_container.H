@@ -37,9 +37,6 @@ namespace PARTICLEENGINE
     //! constructor
     explicit ParticleContainer();
 
-    //! destructor
-    ~ParticleContainer() = default;
-
     /*!
      * \brief init particle container
      *

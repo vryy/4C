@@ -50,7 +50,7 @@ namespace STR
         Generic();
 
         //! destructor
-        virtual ~Generic(){};
+        virtual ~Generic() = default;
 
         //! initialization
         virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate,

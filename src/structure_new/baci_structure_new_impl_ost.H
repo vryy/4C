@@ -27,8 +27,6 @@ namespace STR
       //! constructor
       OneStepTheta();
 
-      //! destructor
-      ~OneStepTheta() override = default;
 
       //! Setup the class variables
       void Setup() override;

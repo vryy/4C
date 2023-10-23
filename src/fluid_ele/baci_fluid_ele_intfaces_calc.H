@@ -51,8 +51,7 @@ namespace DRT
       FluidIntFaceImplInterface() {}
 
       /// Empty destructor
-      virtual ~FluidIntFaceImplInterface() {}
-
+      virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element

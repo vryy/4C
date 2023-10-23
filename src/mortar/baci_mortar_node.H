@@ -322,11 +322,7 @@ namespace MORTAR
      */
     MORTAR::MortarNode* Clone() const override;
 
-    /*!
-     \brief Destructor
 
-     */
-    ~MortarNode() override { return; }
 
     /*!
      \brief Return unique ParObject id

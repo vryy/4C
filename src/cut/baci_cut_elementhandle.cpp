@@ -1548,7 +1548,6 @@ void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, ::DRT::Element::hex20>(nodes_, xyz);
 
   bool success = pos->Compute(1e-10);
-  ;
   if (not success)
   {
     std::cout << "local coordinates for hex20 element could not be determined" << std::endl;

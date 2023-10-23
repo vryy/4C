@@ -52,8 +52,6 @@ namespace CONTACT
     {
     }
 
-    ~CoIntegratorNitscheTsi() override = default;
-
    protected:
     /*!
      \brief Perform integration at GP

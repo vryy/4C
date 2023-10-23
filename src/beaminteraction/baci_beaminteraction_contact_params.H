@@ -34,7 +34,7 @@ namespace BEAMINTERACTION
     BeamContactParams();
 
     //! destructor
-    virtual ~BeamContactParams(){};
+    virtual ~BeamContactParams() = default;
 
     //! builds a new BeamToBeamContactParams object
     void BuildBeamToBeamContactParams();

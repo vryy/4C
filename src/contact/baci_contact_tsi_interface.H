@@ -30,8 +30,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoTSIInterface() {}
-
+    virtual ~CoTSIInterface() = default;
 
 
     enum LinDM_X_mode

@@ -41,11 +41,6 @@ namespace GEOMETRYPAIR
     LineToSurfaceEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 
     /**
-     * \brief Destructor.
-     */
-    ~LineToSurfaceEvaluationData() override {}
-
-    /**
      * \brief Reset the evaluation data (derived).
      */
     void Clear() override;

@@ -74,7 +74,7 @@ namespace STR
     Integrator();
 
     //! destructor
-    virtual ~Integrator(){};
+    virtual ~Integrator() = default;
 
     /*! \brief Initialization
      *

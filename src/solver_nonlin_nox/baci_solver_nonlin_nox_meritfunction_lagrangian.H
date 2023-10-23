@@ -45,9 +45,6 @@ namespace NOX
         //! Constructor
         Lagrangian(const std::string& identifier, const Teuchos::RCP<NOX::Utils>& u);
 
-        //! Destructor
-        ~Lagrangian() override{};
-
         /** \brief Computes the Lagrangian merit function
          *
          *  \f$ f = \mathcal{L}(x,\lambda) \f$. */

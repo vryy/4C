@@ -53,8 +53,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~LineToSurfaceCoupling3d() {}
-
+    virtual ~LineToSurfaceCoupling3d() = default;
     /*!
      \brief Evaluate coupling (3D)
 
@@ -407,8 +406,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~LineToLineCouplingPoint3d() {}
-
+    virtual ~LineToLineCouplingPoint3d() = default;
     /*!
      \brief Evaluate coupling (3D)
 

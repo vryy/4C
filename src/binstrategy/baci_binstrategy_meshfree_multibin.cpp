@@ -71,10 +71,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeM
   return;
 }
 
-/*--------------------------------------------------------------------------*
- |  dtor                                               (public) ghamm 04/13 |
- *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeMultiBin::~MeshfreeMultiBin() { return; }
+
 
 /*--------------------------------------------------------------------------*
  |  clone-ctor (public)                                          ghamm 04/13|

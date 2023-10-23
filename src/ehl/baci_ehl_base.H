@@ -44,9 +44,6 @@ namespace EHL
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder
 
-    /// virtual destructor
-    ~Base() override{};
-
     /// setup
     virtual void SetupSystem() = 0;
 

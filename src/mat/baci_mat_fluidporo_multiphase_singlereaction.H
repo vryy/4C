@@ -44,9 +44,6 @@ namespace MAT
       /// standard constructor
       FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FluidPoroSingleReaction() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

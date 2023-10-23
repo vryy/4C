@@ -63,8 +63,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamContactPair() {}
-
+    virtual ~BeamContactPair() = default;
     //! Initialization
     virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
         std::vector<DRT::Element const*> elements);

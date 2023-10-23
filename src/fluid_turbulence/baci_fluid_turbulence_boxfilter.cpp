@@ -97,12 +97,6 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
 }
 
 
-/*----------------------------------------------------------------------*
- | Destructor (public)                                                  |
- |                                                           gammi 09/08|
- *----------------------------------------------------------------------*/
-FLD::Boxfilter::~Boxfilter() { return; }
-
 
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |

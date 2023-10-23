@@ -27,9 +27,6 @@ namespace FS3I
     //! constructor of one-way coupled FPS3I
     PartFPS3I_1WC(const Epetra_Comm& comm);
 
-    //! Destructor of one-way coupled FPS3I
-    ~PartFPS3I_1WC() override{};
-
     //! initialize this class
     void Init() override;
 

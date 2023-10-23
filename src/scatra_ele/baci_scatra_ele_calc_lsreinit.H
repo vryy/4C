@@ -39,8 +39,6 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      ~ScaTraEleCalcLsReinit() override {}
-
       //! Singleton access method
       static ScaTraEleCalcLsReinit<distype, probDim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

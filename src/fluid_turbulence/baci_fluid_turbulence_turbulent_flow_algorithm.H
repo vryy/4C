@@ -27,7 +27,7 @@ namespace FLD
     explicit TurbulentFlowAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& fdyn);
 
     /// virtual destructor
-    virtual ~TurbulentFlowAlgorithm();
+    virtual ~TurbulentFlowAlgorithm() = default;
 
     /// do time loop
     void TimeLoop();

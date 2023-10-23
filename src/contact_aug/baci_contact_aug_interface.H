@@ -31,9 +31,6 @@ namespace CONTACT
     /** container for the element evaluation times */
     struct EleEvaluateTimes
     {
-      EleEvaluateTimes() = default;
-      ~EleEvaluateTimes() = default;
-
       /// vector containing the evaluation times of all column slave elements
       Teuchos::RCP<Epetra_Vector> sele_col_;
 
@@ -55,9 +52,6 @@ namespace CONTACT
      public:
       /// constructor
       InterfaceDataContainer();
-
-      /// destructor
-      ~InterfaceDataContainer() override{};
 
       /// @name Accessors
       /// @{
@@ -215,8 +209,7 @@ namespace CONTACT
           bool selfcontact);
 
       //! Destructor
-      virtual ~Interface() {}
-
+      virtual ~Interface() = default;
       //! @name Accessors
       //! @{
 
@@ -558,7 +551,7 @@ namespace CONTACT
         explicit AssembleStrategy(Interface* inter);
 
         /// destructor
-        virtual ~AssembleStrategy(){};
+        virtual ~AssembleStrategy() = default;
 
         /** \brief Assemble Dn and Mn matrices
          *
@@ -633,9 +626,6 @@ namespace CONTACT
        public:
         /// constructor
         explicit NodeBasedAssembleStrategy(Interface* inter);
-
-        /// destructor
-        ~NodeBasedAssembleStrategy() override{};
 
         /// derived
         void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const override;

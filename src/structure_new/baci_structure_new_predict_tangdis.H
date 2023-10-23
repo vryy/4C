@@ -33,9 +33,6 @@ namespace STR
     {
      public:
       TangDis();
-
-      ~TangDis() override = default;
-
       //! setup class specific stuff
       void Setup() override;
 
@@ -81,8 +78,6 @@ namespace NOX
           //! constructor
           TangDis(const Teuchos::RCP<const ::STR::PREDICT::TangDis>& tang_predict_ptr);
 
-          //! destructor
-          ~TangDis() override = default;
 
           //! add the linear reaction forces
           void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;

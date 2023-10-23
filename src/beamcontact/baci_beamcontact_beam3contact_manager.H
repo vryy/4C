@@ -66,7 +66,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~Beam3cmanager(){};
+    virtual ~Beam3cmanager() = default;
 
     //@}
 

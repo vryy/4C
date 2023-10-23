@@ -34,7 +34,7 @@ namespace FLD
       FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor);
 
       //! destructor
-      virtual ~FluidInfNormScaling(){};
+      virtual ~FluidInfNormScaling() = default;
 
       //! perform infnorm-scaling of linear system
       void ScaleSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);

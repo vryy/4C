@@ -400,7 +400,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SelfDualEdge(){};
+    virtual ~SelfDualEdge() = default;
 
     /*!
     \brief Return costs

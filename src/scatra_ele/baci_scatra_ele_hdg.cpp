@@ -188,13 +188,6 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                         hoermann 09/15|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDG::~ScaTraHDG() {}
-
-
-
-/*----------------------------------------------------------------------*
  |  Pack data (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDG::Pack(DRT::PackBuffer& data) const
@@ -695,11 +688,6 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                         hoermann 09/15|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGBoundary::~ScaTraHDGBoundary() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                          hoermann 09/15 |
@@ -904,10 +892,6 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                        hoermann 09/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGIntFace::~ScaTraHDGIntFace() { return; }
 
 
 /*----------------------------------------------------------------------*

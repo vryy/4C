@@ -360,7 +360,7 @@ namespace DRT
      public:
       RestartManager();
 
-      virtual ~RestartManager();
+      virtual ~RestartManager() = default;
 
       /// setup of restart manager
       void SetupRestartManager(const double restartinterval, const int restartevry);

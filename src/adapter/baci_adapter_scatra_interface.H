@@ -45,7 +45,7 @@ namespace ADAPTER
     ScatraInterface(){};
 
     //! virtual to get polymorph destruction
-    virtual ~ScatraInterface(){};
+    virtual ~ScatraInterface() = default;
 
     //! return discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() const = 0;

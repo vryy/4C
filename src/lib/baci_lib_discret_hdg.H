@@ -47,12 +47,6 @@ namespace DRT
     */
     DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~DiscretizationHDG() override { return; };
-
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
@@ -132,9 +126,6 @@ namespace DRT
      public:
       /// constructor
       DbcHDG(){};
-
-      /// destructor
-      ~DbcHDG() override{};
 
      protected:
       /** \brief Determine Dirichlet condition

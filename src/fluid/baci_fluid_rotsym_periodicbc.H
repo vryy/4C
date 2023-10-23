@@ -49,7 +49,7 @@ namespace FLD
     explicit RotationallySymmetricPeriodicBC() : rotangle_(0.0), rotmat_(true) { return; };
 
     /// empty destructor
-    virtual ~RotationallySymmetricPeriodicBC(){};
+    virtual ~RotationallySymmetricPeriodicBC() = default;
 
 
     /// is any rotation needed on the element level?

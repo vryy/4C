@@ -27,8 +27,6 @@ namespace STR
       //! constructor
       ForwardEuler();
 
-      //! destructor
-      ~ForwardEuler() override = default;
 
       //! Setup class variables (derived)
       void Setup() override;

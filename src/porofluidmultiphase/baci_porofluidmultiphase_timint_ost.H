@@ -26,8 +26,6 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<IO::DiscretizationWriter> output          //!< output writer
     );
 
-    /// Destructor
-    ~TimIntOneStepTheta() override;
 
     /// Print information about current time step to screen (reimplementation for OST)
     void PrintTimeStepInfo() override;

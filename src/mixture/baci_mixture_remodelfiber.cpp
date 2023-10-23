@@ -664,9 +664,6 @@ MIXTURE::RemodelFiber<numstates>::RemodelFiber(
 }
 
 template <int numstates>
-MIXTURE::RemodelFiber<numstates>::~RemodelFiber() = default;
-
-template <int numstates>
 void MIXTURE::RemodelFiber<numstates>::Pack(DRT::PackBuffer& data) const
 {
   impl_->Pack(data);

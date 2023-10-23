@@ -29,8 +29,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~ScaTraEleCalcLS() override {}
-
       /// Singleton access method
       static ScaTraEleCalcLS<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

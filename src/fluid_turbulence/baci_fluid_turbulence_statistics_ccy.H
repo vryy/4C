@@ -71,7 +71,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticsCcy();
+    virtual ~TurbulenceStatisticsCcy() = default;
 
 
     //! @name functions for (spatial) averaging

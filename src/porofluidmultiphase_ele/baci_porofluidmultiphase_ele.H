@@ -99,11 +99,6 @@ namespace DRT
       */
       DRT::Element* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~PoroFluidMultiPhase() override;
 
       //@}
 
@@ -445,11 +440,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~PoroFluidMultiPhaseBoundary() override;
 
       //@}
 

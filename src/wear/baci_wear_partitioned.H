@@ -63,8 +63,6 @@ namespace WEAR
     /// create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm);
 
-    /// virtual destructor to support polymorph destruction
-    ~Partitioned() override;
 
     // write output for ale and structure
     void Output() override;

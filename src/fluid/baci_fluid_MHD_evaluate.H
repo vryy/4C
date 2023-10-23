@@ -58,7 +58,7 @@ namespace FLD
    \brief Destructor
 
    */
-    virtual ~FluidMHDEvaluate();
+    virtual ~FluidMHDEvaluate() = default;
 
 
     void BoundaryElementLoop(Teuchos::ParameterList& mhdbcparams,

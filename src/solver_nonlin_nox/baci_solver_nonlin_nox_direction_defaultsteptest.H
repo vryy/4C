@@ -39,7 +39,7 @@ namespace NOX
           Generic(const Teuchos::RCP<NOX::Utils>& utils) : utils_(utils){};
 
           /// destructor
-          virtual ~Generic(){};
+          virtual ~Generic() = default;
 
           /// this routine is called in the first attempt
           virtual bool initAndCheckTest(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp) = 0;
@@ -71,9 +71,6 @@ namespace NOX
          public:
           /// constructor
           VolumeChange(const Teuchos::RCP<NOX::Utils>& utils) : Generic(utils){};
-
-          /// destructor
-          ~VolumeChange() override{};
 
          protected:
           /** \brief return true if the internally used test combination indicates acceptance

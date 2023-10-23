@@ -5135,11 +5135,6 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
   return dta_;
 }  // end EvaluateDtWithCFL
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                  gammi 04/07|
- *----------------------------------------------------------------------*/
-FLD::FluidImplicitTimeInt::~FluidImplicitTimeInt() = default;
-
 
 /*----------------------------------------------------------------------*
  | calculate lift and drag forces as well as angular moment: chfoe 11/07|

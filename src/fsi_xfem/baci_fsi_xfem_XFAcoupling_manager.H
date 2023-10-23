@@ -38,9 +38,6 @@ namespace XFEM
     //! @name Destruction
     //@{
 
-    /// virtual to get polymorph destruction
-    ~XFACoupling_Manager() override {}
-
     //! predict states in the coupling object
     void PredictCouplingStates() override;
 

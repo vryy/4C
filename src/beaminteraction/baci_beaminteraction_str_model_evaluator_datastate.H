@@ -53,7 +53,7 @@ namespace STR
       BeamInteractionDataState();
 
       /// destructor
-      virtual ~BeamInteractionDataState(){};
+      virtual ~BeamInteractionDataState() = default;
 
       /// initialize class variables
       void Init();

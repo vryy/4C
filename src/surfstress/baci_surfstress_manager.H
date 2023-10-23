@@ -64,12 +64,6 @@ namespace UTILS
 
 
     /*!
-      \brief Destructor
-    */
-    ~SurfStressManager(){};
-
-
-    /*!
       \brief Return if there are surface stress conditions
     */
     bool HaveSurfStress() const { return havesurfstress_; };

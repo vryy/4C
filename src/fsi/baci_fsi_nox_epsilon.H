@@ -26,8 +26,6 @@ namespace NOX
       //! Constructor
       EpsilonExtrapolation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      //! Destructor
-      ~EpsilonExtrapolation() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;

@@ -44,9 +44,6 @@ namespace STR
         Teuchos::RCP<TimInt> tis                             //!< marching time integrator
     );
 
-    //! Destructor
-    ~TimAdaZienXie() override { ; }
-
     //! @name Actions
     //@{
 

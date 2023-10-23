@@ -55,8 +55,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~ScaTraEleCalcMultiPoroReac() override {}
-
       /// Singleton access method
       static ScaTraEleCalcMultiPoroReac<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

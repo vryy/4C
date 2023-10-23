@@ -24,8 +24,6 @@ namespace DRT
     class FluidEleParameterXFEM : public FluidEleParameterStd
     {
      public:
-      ~FluidEleParameterXFEM() override {}
-
       /// Singleton access method
       static FluidEleParameterXFEM* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

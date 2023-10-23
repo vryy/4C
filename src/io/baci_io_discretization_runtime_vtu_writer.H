@@ -50,8 +50,7 @@ class DiscretizationRuntimeVtuWriter
       IO::VisualizationParameters parameters);
 
   /// Destructor
-  virtual ~DiscretizationRuntimeVtuWriter() {}
-
+  virtual ~DiscretizationRuntimeVtuWriter() = default;
   /**
    * @brief reset state depending if the maps changed or not
    */

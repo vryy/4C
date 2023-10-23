@@ -104,12 +104,6 @@ namespace CORE::GEN
     };
 
    public:
-    /// constructor
-    AnyDataContainer() = default;
-
-    /// destructor
-    ~AnyDataContainer() = default;
-
     /// @name any data
     /// @{
 

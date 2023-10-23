@@ -28,7 +28,7 @@ namespace DRT
       ScaTraBoundaryFactory() { return; };
 
       //! dtor
-      virtual ~ScaTraBoundaryFactory() { return; };
+      virtual ~ScaTraBoundaryFactory() = default;
 
       //! ProvideImpl
       static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,

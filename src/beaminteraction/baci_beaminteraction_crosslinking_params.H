@@ -34,7 +34,7 @@ namespace BEAMINTERACTION
     CrosslinkingParams();
 
     //! destructor
-    virtual ~CrosslinkingParams(){};
+    virtual ~CrosslinkingParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(STR::TIMINT::BaseDataGlobalState const& gstate);
@@ -130,7 +130,6 @@ namespace BEAMINTERACTION
     {
       CheckInitSetup();
       return init_box_;
-      ;
     };
 
     // distance between two binding spots on a filament

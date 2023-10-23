@@ -33,9 +33,6 @@ namespace FLD
       /// constructor
       DbcHDG_Fluid(){};
 
-      /// destructor
-      ~DbcHDG_Fluid() override{};
-
      protected:
       /** \brief Determine Dirichlet condition
        *

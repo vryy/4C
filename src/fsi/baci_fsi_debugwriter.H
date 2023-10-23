@@ -82,8 +82,7 @@ namespace FSI
      public:
       SimpleDebugWriter(Teuchos::RCP<DRT::Discretization> dis, const std::string& name);
 
-      virtual ~SimpleDebugWriter() {}
-
+      virtual ~SimpleDebugWriter() = default;
       /// announce new time step
       /*!
         Results in a new control file
@@ -124,8 +123,7 @@ namespace FSI
      public:
       MonolithicDebugWriter(FSI::Monolithic& algorithm);
 
-      virtual ~MonolithicDebugWriter() {}
-
+      virtual ~MonolithicDebugWriter() = default;
       /// announce new time step
       /*!
         Results in a new control file

@@ -137,7 +137,7 @@ namespace CORE::GEO
       Position(){/* intentionally left blank */};
 
       /// destructor
-      virtual ~Position(){};
+      virtual ~Position() = default;
 
       virtual unsigned Dim() const = 0;
 
@@ -275,9 +275,6 @@ namespace CORE::GEO
         ConstructBoundingBox();
       }
 
-      /// destructor
-      ~PositionGeneric() override{};
-
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
@@ -413,9 +410,6 @@ namespace CORE::GEO
           const CORE::LINALG::Matrix<probdim, 1>& xyz)
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
 
-      /// destructor
-      ~ComputePosition() override{};
-
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
@@ -465,9 +459,6 @@ namespace CORE::GEO
       {
         this->xsi_.SetView(xsi_aug_.A());
       };
-
-      /// destructor
-      ~ComputeEmbeddedPosition() override{};
 
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */

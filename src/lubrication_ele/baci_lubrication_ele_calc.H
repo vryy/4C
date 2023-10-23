@@ -75,7 +75,7 @@ namespace DRT
       LubricationEleCalc(const std::string& disname);
 
      public:
-      virtual ~LubricationEleCalc(){};
+      virtual ~LubricationEleCalc() = default;
 
       //! singleton access method
       static LubricationEleCalc<distype, probdim>* Instance(const std::string& disname);
@@ -404,7 +404,7 @@ namespace DRT
      public:
       LubricationEleInternalVariableManager() : prenp_(0.0), gradpre_(true) { return; }
 
-      virtual ~LubricationEleInternalVariableManager(){};
+      virtual ~LubricationEleInternalVariableManager() = default;
 
       // compute and set internal variables
       void SetInternalVariables(CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
@@ -454,7 +454,7 @@ namespace DRT
      public:
       LubricationEleViscManager() : visc_(0.0) { return; }
 
-      virtual ~LubricationEleViscManager(){};
+      virtual ~LubricationEleViscManager() = default;
 
       //! Set the isotropic diffusion coefficient
       virtual void SetIsotropicVisc(const double visc)

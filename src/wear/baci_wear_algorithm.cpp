@@ -91,11 +91,6 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 }
 
 
-/*----------------------------------------------------------------------*
- | Destructor                                               farah 11/13 |
- *----------------------------------------------------------------------*/
-WEAR::Algorithm::~Algorithm() {}
-
 
 /*----------------------------------------------------------------------*
  | Check compatibility of input parameters                  farah 09/14 |

@@ -60,9 +60,6 @@ namespace CONTACT
     //! constructor
     AbstractStratDataContainer();
 
-    //! destructor
-    ~AbstractStratDataContainer() override{};
-
     //! @name Accessors
     //!@{
 
@@ -738,8 +735,6 @@ namespace CONTACT
      for initialization of the active set. */
     virtual void Setup(bool redistributed, bool init);
 
-    //! Destructor
-    ~CoAbstractStrategy() override = default;
 
     //! return the current solution type
     virtual INPAR::CONTACT::SolvingStrategy Type() const { return stype_; }
@@ -963,7 +958,6 @@ namespace CONTACT
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
-      ;
     }
 
     /*! Return the condensed matrix block pointer (read-only)

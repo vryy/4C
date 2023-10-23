@@ -25,9 +25,6 @@ namespace MAT
           Teuchos::RCP<MAT::PAR::Material> matdata, bool constrelpermeability)
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
-      /// destructor
-      ~FluidPoroRelPermeabilityLaw() override { ; }
-
       // get relative permeability
       virtual double GetRelPermeability(const double saturation) const = 0;
 
@@ -50,9 +47,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~FluidPoroRelPermeabilityLawConstant() override { ; }
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
@@ -86,9 +80,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~FluidPoroRelPermeabilityLawExponent() override { ; }
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };

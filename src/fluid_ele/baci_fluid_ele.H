@@ -214,12 +214,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Fluid() override;
-
       //@}
 
       //! @name Geometry related methods
@@ -548,11 +542,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~FluidBoundary() override;
 
       //@}
 
@@ -855,10 +844,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-      */
-      ~FluidIntFace() override;
+
 
       //@}
 

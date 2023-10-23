@@ -53,7 +53,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidImpedanceWrapper(){};
+      virtual ~FluidImpedanceWrapper() = default;
 
       /*!
         \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
@@ -125,7 +125,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~FluidImpedanceBc() {}
+      virtual ~FluidImpedanceBc() = default;
 
      protected:
       /*!

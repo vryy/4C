@@ -43,7 +43,6 @@ namespace CORE::LINALG
     BlockSparseMatrixBase(const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps,
         int npr, bool explicitdirichlet = true, bool savegraph = false);
 
-    ~BlockSparseMatrixBase() override {}
 
     /// make a copy of me
     virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) = 0;

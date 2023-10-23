@@ -318,11 +318,6 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           vuong 08/16 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhase::~PoroFluidMultiPhase() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
@@ -521,10 +516,6 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>&
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           vuong 08/16 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::~PoroFluidMultiPhaseBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*

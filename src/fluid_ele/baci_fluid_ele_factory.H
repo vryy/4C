@@ -36,8 +36,7 @@ namespace DRT
       FluidFactory() { return; }
 
       //! dtor
-      virtual ~FluidFactory() { return; }
-
+      virtual ~FluidFactory() = default;
       //! ProvideImpl
       static FluidEleInterface* ProvideImpl(
           DRT::Element::DiscretizationType distype, std::string problem);

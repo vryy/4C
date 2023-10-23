@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       MurnaghanTaitFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~MurnaghanTaitFluid() override { ; }
-
       /// @name material parameters
       //@{
 

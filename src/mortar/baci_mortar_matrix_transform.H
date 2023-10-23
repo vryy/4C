@@ -38,8 +38,6 @@ namespace MORTAR
     /// constructor
     MatrixRowColTransformer(const unsigned num_transformer);
 
-    /// destructor
-    ~MatrixRowColTransformer(){};
 
     void Init(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column,

@@ -42,9 +42,6 @@ namespace NOX
         //! Constructor.
         Jacobian(){};
 
-        //! Destructor.
-        ~Jacobian() override{};
-
         /*! \brief Compute RHS and Jacobian at once.
          *
          *  \return TRUE if computation was successful. */

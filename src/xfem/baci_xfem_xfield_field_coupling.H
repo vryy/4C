@@ -53,9 +53,6 @@ namespace XFEM
       /// constructor
       Coupling();
 
-      /// destructor
-      ~Coupling() override{};
-
       /// initialize class member variables
       void Init(const enum MinDofDiscretization& min_dof_dis);
 

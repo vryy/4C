@@ -60,9 +60,6 @@ namespace STR
     //! Copy constructor
     TimIntCentrDiff(const TimIntCentrDiff& old) : TimIntExpl(old) { ; }
 
-    //! Destructor
-    ~TimIntCentrDiff() override { ; }
-
     /*! \brief Initialize this object
 
     Hand in all objects/parameters/etc. from outside.

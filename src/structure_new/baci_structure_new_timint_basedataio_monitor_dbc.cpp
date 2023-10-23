@@ -47,7 +47,6 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
 
   // file type
   file_type_ = IO_monitor_dbc_structure_paramslist.get<std::string>("FILE_TYPE");
-  ;
 
   // write header in csv file
   write_header_ =

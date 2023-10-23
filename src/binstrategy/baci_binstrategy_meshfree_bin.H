@@ -61,13 +61,6 @@ namespace DRT
 
       /*------------------------------------------------------------------------*/
       /*!
-       * \brief Destructor
-       *///                                                  (public) ghamm 11/12
-      /*------------------------------------------------------------------------*/
-      ~MeshfreeBin() override;
-
-      /*------------------------------------------------------------------------*/
-      /*!
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from

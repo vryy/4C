@@ -1914,7 +1914,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
                        mffsvelint_(rr, 0) * (mffsvelint_(0, 0) * vderxy_(rr, 0) +
                                                 mffsvelint_(1, 0) * vderxy_(rr, 1) +
                                                 mffsvelint_(2, 0) * vderxy_(rr, 2)));
-        ;
 
         eps_mfscross -= densaf_ * fac_ *
                         (mffsvelint_(rr, 0) * conv_old_(rr, 0) +

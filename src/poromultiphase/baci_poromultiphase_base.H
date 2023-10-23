@@ -35,9 +35,6 @@ namespace POROMULTIPHASE
     PoroMultiPhaseBase(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
-    /// virtual destructor
-    ~PoroMultiPhaseBase() override{};
-
     /// initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,

@@ -36,7 +36,7 @@ namespace TSI
       //! constructor
       explicit ThermoStructureCloneStrategy() {}
       //! destructor
-      virtual ~ThermoStructureCloneStrategy() {}
+      virtual ~ThermoStructureCloneStrategy() = default;
 
      protected:
       //! determine element type std::string and whether element is copied or not
@@ -86,9 +86,6 @@ namespace TSI
      public:
       //! constructor
       TSIMaterialStrategy(){};
-
-      //! destructor
-      ~TSIMaterialStrategy() override{};
 
       //! assignment of thermo material to structure material
       void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,

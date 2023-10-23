@@ -27,9 +27,6 @@ namespace MAT
       /// standard constructor
       Sutherland(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Sutherland() override { ; }
-
       /// @name material parameters
       //@{
 

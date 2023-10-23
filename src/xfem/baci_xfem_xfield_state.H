@@ -39,7 +39,7 @@ namespace XFEM
     XFieldState();
 
     /// destructor
-    virtual ~XFieldState(){};
+    virtual ~XFieldState() = default;
 
     /** \brief initialize member variables for xfield<-->field couplings
      *

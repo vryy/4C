@@ -49,7 +49,7 @@ namespace CONTACT
       static ProjectorBase* Get(const unsigned probdim, DRT::Element::DiscretizationType ref_type,
           DRT::Element::DiscretizationType tar_type, const bool debug = false);
 
-      virtual ~ProjectorBase(){};
+      virtual ~ProjectorBase() = default;
 
       /** \brief project a point defined on the reference element onto a target
        *  element
@@ -185,9 +185,6 @@ namespace CONTACT
     class EmptyProjDebugger
     {
      public:
-      EmptyProjDebugger() = default;
-      ~EmptyProjDebugger() = default;
-
       inline void writeVector(std::ostream& os, ...) const {};
       inline void writeMatrix(std::ostream& os, ...) const {};
     };
@@ -197,9 +194,6 @@ namespace CONTACT
     class ProjDebugger
     {
      public:
-      ProjDebugger() = default;
-      ~ProjDebugger() = default;
-
       inline void writeVector(
           std::ostream& os, unsigned dim, double* vals, const std::string& msg) const
       {

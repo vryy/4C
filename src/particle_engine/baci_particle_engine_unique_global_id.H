@@ -60,9 +60,6 @@ namespace PARTICLEENGINE
      */
     explicit UniqueGlobalIdHandler(const Epetra_Comm& comm, const std::string& objectname);
 
-    //! destructor
-    ~UniqueGlobalIdHandler() = default;
-
     /*!
      * \brief init unique global identifier handler
      *

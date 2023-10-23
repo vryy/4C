@@ -66,7 +66,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullS
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
@@ -167,10 +166,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            seitz 03/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::~So_pyramid5fbar() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              seitz 03/15 |

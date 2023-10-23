@@ -107,9 +107,6 @@ namespace CONTACT
         /* nothing stored in nitsche strategy that would need to be written */};
     void ComputeContactStresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void ReconnectParentElements();
-
-    ~CoNitscheStrategy() override = default;
-
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     /*!

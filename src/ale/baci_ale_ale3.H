@@ -247,11 +247,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Ale3() override;
 
       //@}
 
@@ -655,11 +650,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Ale3Surface() override;
 
       //@}
 
@@ -769,8 +759,7 @@ namespace DRT
       /// Empty constructor
       Ale3Surface_Impl_Interface() {}
 
-      virtual ~Ale3Surface_Impl_Interface() {}
-
+      virtual ~Ale3Surface_Impl_Interface() = default;
       /// Internal implementation class for ale surface element
       static Ale3Surface_Impl_Interface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
 
@@ -785,8 +774,6 @@ namespace DRT
       Ale3Surface_Impl() {}
 
      public:
-      ~Ale3Surface_Impl() override {}
-
       /// Singleton access method
       static Ale3Surface_Impl<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

@@ -60,7 +60,7 @@ namespace STR
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
       //! build the desired linear solvers
       Teuchos::RCP<LinSolMap> BuildLinSolvers(

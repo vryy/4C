@@ -64,10 +64,6 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
   if (linsolvernumber_ == -1) dserror("Set a valid linear solver for arterial network");
 }
 
-/*----------------------------------------------------------------------*
- | Destructor dtor                            (public) kremheller 03/18 |
- *----------------------------------------------------------------------*/
-ART::TimInt::~TimInt() { return; }
 
 
 /*------------------------------------------------------------------------*

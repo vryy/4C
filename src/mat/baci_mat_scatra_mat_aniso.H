@@ -26,9 +26,6 @@ namespace MAT
       /// standard constructor
       ScatraMatAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ScatraMatAniso() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

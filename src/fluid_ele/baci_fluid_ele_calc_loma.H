@@ -30,8 +30,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~FluidEleCalcLoma() override {}
-
       /// Singleton access method
       static FluidEleCalcLoma<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

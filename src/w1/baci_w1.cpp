@@ -61,7 +61,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
-  ;
 }
 
 void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
@@ -293,11 +292,6 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1::~Wall1() { return; }
 
 
 /*----------------------------------------------------------------------*

@@ -35,9 +35,6 @@ namespace MAT
       /// standard constructor
       FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FluidPoroMultiPhase() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

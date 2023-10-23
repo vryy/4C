@@ -43,7 +43,7 @@ namespace CORE::GEO
       FacetGraph(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
       /// destructor
-      virtual ~FacetGraph(){};
+      virtual ~FacetGraph() = default;
 
       void Print() const
       {

@@ -54,11 +54,6 @@ namespace DRT
     */
     IndependentDofSet(const IndependentDofSet& old);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~IndependentDofSet() override;
 
     /// create a copy of this object
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }

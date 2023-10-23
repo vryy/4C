@@ -42,8 +42,6 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(
 }
 
 
-NOX::FSI::AitkenRelaxation::~AitkenRelaxation() {}
-
 
 bool NOX::FSI::AitkenRelaxation::reset(
     const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)

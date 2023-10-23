@@ -23,9 +23,6 @@ namespace POROMULTIPHASE
     PoroMultiPhasePartitionedTwoWay(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    ~PoroMultiPhasePartitionedTwoWay() override{};
-
     /// initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,

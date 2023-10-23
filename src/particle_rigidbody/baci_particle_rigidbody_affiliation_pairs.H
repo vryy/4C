@@ -58,9 +58,6 @@ namespace PARTICLERIGIDBODY
      */
     explicit RigidBodyAffiliationPairs(const Epetra_Comm& comm);
 
-    //! destructor
-    ~RigidBodyAffiliationPairs() = default;
-
     /*!
      * \brief init affiliation pair handler
      *

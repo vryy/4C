@@ -66,8 +66,6 @@ namespace NOX
             const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
             const NOX::Epetra::Vector& cloneVector);
 
-        //! Destructor.
-        ~LinearSystem() override = default;
 
         //! sets the options of the underlying solver
         void SetSolverOptions(Teuchos::ParameterList& p,

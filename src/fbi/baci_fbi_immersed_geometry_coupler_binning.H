@@ -50,9 +50,6 @@ namespace FBI
     friend FBI::GeometryCouplerFactory;
 
    public:
-    /// empty destructor
-    ~FBIBinningGeometryCoupler() override = default;
-
     /**
      * \brief Sets the binning strategy in the binning coupler
      *

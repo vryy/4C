@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamInteractionConditionBase(){};
+    virtual ~BeamInteractionConditionBase() = default;
 
     /**
      * \brief Create the beam contact pair needed for this condition.
@@ -148,7 +148,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamInteractionConditions(){};
+    virtual ~BeamInteractionConditions() = default;
 
     /**
      * \brief Get all beam interaction conditions from the discretization.

@@ -29,9 +29,6 @@ namespace DRT
       //! constructor
       ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0){};
 
-      //! destructor
-      ~ParamsMinimal() override{};
-
       //! @name Access general control parameters
       //! @{
       //! get the desired action type

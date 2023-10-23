@@ -33,7 +33,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~GeometryEvaluationDataBase(){};
+    virtual ~GeometryEvaluationDataBase() = default;
 
     /**
      * \brief Clear data in this evaluation container.

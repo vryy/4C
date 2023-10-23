@@ -234,9 +234,6 @@ namespace MAT
       /// standard constructor
       ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ScatraReactionMat() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

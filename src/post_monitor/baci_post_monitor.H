@@ -37,8 +37,7 @@ class MonWriter
   MonWriter(PostProblem& problem, std::string& infieldtype, int node);
 
   //! destructor
-  virtual ~MonWriter() {}
-
+  virtual ~MonWriter() = default;
   //! write something
   virtual void WriteMonFile(PostProblem& problem, std::string& infieldtype, int node);
 
@@ -133,9 +132,6 @@ class FieldMonWriter : public MonWriter
   {
   }
 
-  //! destructor
-  ~FieldMonWriter() override {}
-
  protected:
   PostField* GetFieldPtr(PostProblem& problem) override;
 
@@ -155,9 +151,6 @@ class FluidMonWriter : public FieldMonWriter
       : FieldMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~FluidMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
@@ -187,9 +180,6 @@ class RedAirwayMonWriter : public FieldMonWriter
   {
   }
 
-  //! destructor
-  ~RedAirwayMonWriter() override {}
-
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
 
@@ -217,9 +207,6 @@ class StructMonWriter : public FieldMonWriter
       : FieldMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~StructMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
@@ -260,9 +247,6 @@ class AleMonWriter : public FieldMonWriter
   {
   }
 
-  //! destructor
-  ~AleMonWriter() override {}
-
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
 
@@ -290,9 +274,6 @@ class ScatraMonWriter : public FieldMonWriter
       : FieldMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~ScatraMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
@@ -323,9 +304,6 @@ class ThermoMonWriter : public FieldMonWriter
       : FieldMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~ThermoMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override;
@@ -366,9 +344,6 @@ class FsiFluidMonWriter : public FluidMonWriter
   {
   }
 
-  //! destructor
-  ~FsiFluidMonWriter() override {}
-
  protected:
   void CheckInfieldType(std::string& infieldtype) override{};
 
@@ -397,9 +372,6 @@ class FsiStructMonWriter : public StructMonWriter
       : StructMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~FsiStructMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override{};
@@ -430,9 +402,6 @@ class FsiAleMonWriter : public AleMonWriter
   {
   }
 
-  //! destructor
-  ~FsiAleMonWriter() override {}
-
  protected:
   void CheckInfieldType(std::string& infieldtype) override{};
 
@@ -457,9 +426,6 @@ class TsiStructMonWriter : public StructMonWriter
   {
   }
 
-  //! destructor
-  ~TsiStructMonWriter() override {}
-
  protected:
   void CheckInfieldType(std::string& infieldtype) override{};
 
@@ -482,9 +448,6 @@ class TsiThermoMonWriter : public ThermoMonWriter
       : ThermoMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~TsiThermoMonWriter() override {}
 
  protected:
   void CheckInfieldType(std::string& infieldtype) override{};
@@ -512,9 +475,6 @@ class PoroFluidMultiMonWriter : public FieldMonWriter
     output_porosity_ = false;
     if (problem.optquantitytype() == "porosity") output_porosity_ = true;
   }
-
-  //! destructor
-  ~PoroFluidMultiMonWriter() override {}
 
  protected:
   //! check if infieldtype is correct
@@ -556,9 +516,6 @@ class PoroMultiElastScatraFluidMonWriter : public PoroFluidMultiMonWriter
   {
   }
 
-  //! destructor
-  ~PoroMultiElastScatraFluidMonWriter() override {}
-
  protected:
   //! get pointer to field
   PostField* GetFieldPtr(PostProblem& problem) override;
@@ -584,9 +541,6 @@ class PoroMultiElastScatraScatraMonWriter : public ScatraMonWriter
       : ScatraMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~PoroMultiElastScatraScatraMonWriter() override {}
 
  protected:
   //! get pointer to field
@@ -614,9 +568,6 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
       : ScatraMonWriter(problem, infieldtype, node)
   {
   }
-
-  //! destructor
-  ~PoroMultiElastScatraArteryScatraMonWriter() override {}
 
  protected:
   //! get pointer to field

@@ -31,8 +31,6 @@ NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(
 }
 
 
-NOX::FSI::EpsilonExtrapolation::~EpsilonExtrapolation() {}
-
 
 bool NOX::FSI::EpsilonExtrapolation::reset(
     const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)

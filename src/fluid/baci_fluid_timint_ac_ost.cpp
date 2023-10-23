@@ -27,11 +27,6 @@ FLD::TimIntACOst::TimIntACOst(const Teuchos::RCP<DRT::Discretization>& actdis,
 }
 
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   Thon 12/14 |
-*----------------------------------------------------------------------*/
-FLD::TimIntACOst::~TimIntACOst() { return; }
-
-/*----------------------------------------------------------------------*
  |  read restart data                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntACOst::ReadRestart(int step)

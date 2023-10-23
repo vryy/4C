@@ -44,8 +44,6 @@ namespace FSI
         const Teuchos::RCP<Epetra_Operator>& M, const NOX::Epetra::Vector& cloneVector,
         const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
-    /// virtual destructor to support polymorph destruction
-    ~MonolithicLinearSystem() override;
 
     /// overload the solve to incorporate our own convergence test
     bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,

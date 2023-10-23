@@ -66,7 +66,7 @@ namespace AIRWAY
     \brief Destructor
 
     */
-    virtual ~RedAirwayImplicitTimeInt();
+    virtual ~RedAirwayImplicitTimeInt() = default;
 
     /*!
     \brief start time loop for startingalgo, normal problems and restarts

@@ -104,7 +104,7 @@ namespace ADAPTER
   {
    public:
     /// virtual to get polymorph destruction
-    virtual ~Thermo();
+    virtual ~Thermo() = default;
 
     /// @name Vector access
     //@{
@@ -273,7 +273,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ThermoBaseAlgorithm();
+    virtual ~ThermoBaseAlgorithm() = default;
 
     /// thermal field solver
     Thermo& ThermoField() { return *thermo_; }

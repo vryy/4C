@@ -72,11 +72,6 @@ void SCATRA::TimIntStationary::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   gjb 08/08 |
-*----------------------------------------------------------------------*/
-SCATRA::TimIntStationary::~TimIntStationary() { return; }
-
 
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |

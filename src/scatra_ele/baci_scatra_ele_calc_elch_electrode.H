@@ -260,12 +260,7 @@ namespace DRT
             tempderivdiff_(numscal, std::vector<double>(numscal, 0.0)),
             cond_(0.0),
             concderivcond_(numscal, 0.0),
-            tempderivcond_(numscal, 0.0)
-      {
-      }
-
-      ~ScaTraEleDiffManagerElchElectrode() override = default;
-      ;
+            tempderivcond_(numscal, 0.0){};
 
       /*========================================================================*/
       //! @name access methods
@@ -394,8 +389,6 @@ namespace DRT
       {
       }
 
-      //! destructor
-      ~ScaTraEleInternalVariableManagerElchElectrode() override = default;
 
       //! compute and set internal electrode-specific variables
       void SetInternalVariablesElchElectrode(

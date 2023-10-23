@@ -52,9 +52,6 @@ namespace MAT
       /// standard constructor
       BeamElastHyperMaterialParameterGeneric(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~BeamElastHyperMaterialParameterGeneric() override {}
-
       /// @name accessors to 'modal' constitutive parameters
       //@{
       virtual double GetAxialRigidity() const = 0;
@@ -117,9 +114,6 @@ namespace MAT
      public:
       /// standard constructor
       BeamReissnerElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~BeamReissnerElastHyperMaterialParams() override {}
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -228,9 +222,6 @@ namespace MAT
       /// standard constructor
       BeamReissnerElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~BeamReissnerElastHyperMaterialParamsByMode() override {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
@@ -316,9 +307,6 @@ namespace MAT
      public:
       /// standard constructor
       BeamKirchhoffElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~BeamKirchhoffElastHyperMaterialParams() override {}
 
 
       /// @name derived: accessors to 'modal' constitutive parameters
@@ -412,9 +400,6 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~BeamKirchhoffElastHyperMaterialParamsByMode() override {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
@@ -498,9 +483,6 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffTorsionFreeElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~BeamKirchhoffTorsionFreeElastHyperMaterialParams() override {}
-
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
@@ -574,9 +556,6 @@ namespace MAT
       /// standard constructor
       BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(
           Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode() override {}
 
 
       /// @name derived: accessors to 'modal' constitutive parameters

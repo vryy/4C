@@ -36,7 +36,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual ~TriadInterpolation(){};
+    virtual ~TriadInterpolation() = default;
 
     /** \brief return appropriate derived (templated) class (acts as a simple factory)
      *

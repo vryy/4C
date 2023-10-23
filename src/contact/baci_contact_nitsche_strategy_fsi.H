@@ -60,9 +60,6 @@ namespace CONTACT
           INPAR::CONTACT::friction_none)
         dserror("CoNitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
-
-    ~CoNitscheStrategyFsi() override = default;
-
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,

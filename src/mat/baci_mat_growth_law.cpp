@@ -551,7 +551,6 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta(double& dgrowth
     dktheta = (gammarev / taurev) *
               pow(((theta - thetamin) / (thetamax - thetamin)), gammarev - 1.) /
               (thetamax - thetamin);
-    ;
   }
 
   // calculate F_g^(-1)
@@ -835,7 +834,6 @@ void MAT::GrowthLawAnisoStressConstTrig::EvaluateGrowthFunctionDerivTheta(double
     dktheta = (gammarev / taurev) *
               pow(((theta - thetamin) / (thetamax - thetamin)), gammarev - 1.) /
               (thetamax - thetamin);
-    ;
   }
 
   dgrowthfunctheta = dktheta * (growthtrig - pcrit);

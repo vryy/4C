@@ -50,12 +50,6 @@ namespace CONTACT
     CoCoupling3d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
-    /*!
-     \brief Destructor
-
-     */
-    ~CoCoupling3d() override {}
-
     //! @name Evlauation methods
 
     /*!
@@ -211,11 +205,6 @@ namespace CONTACT
         Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
-    /*!
-     \brief Destructor
-
-     */
-    ~CoCoupling3dQuad() override {}
 
     //! @name Access methods
 
@@ -283,8 +272,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoCoupling3dManager() {}
-
+    virtual ~CoCoupling3dManager() = default;
     /*!
      \brief Get coupling slave element
 
@@ -427,11 +415,6 @@ namespace CONTACT
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
-    /*!
-     \brief Destructor
-
-     */
-    ~CoCoupling3dQuadManager() override {}
 
     /*!
      \brief Get number of slave / master integration pairs of this interface (proc local)

@@ -784,7 +784,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         {
           det = xjm(0, 0) * xjm(1, 1) - xjm(0, 1) * xjm(1, 0);
           detJ = Jmat(0, 0) * Jmat(1, 1) - Jmat(0, 1) * Jmat(1, 0);
-          ;
         }
         else
           dserror("not implemented");

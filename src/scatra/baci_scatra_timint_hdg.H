@@ -26,9 +26,6 @@ namespace SCATRA
         const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! destructor
-    ~TimIntHDG() override {}
-
     //! setup
     void Setup() override;
 

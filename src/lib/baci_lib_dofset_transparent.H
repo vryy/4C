@@ -37,10 +37,7 @@ namespace DRT
     */
     explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel = false);
 
-    /*!
-    \brief Destructor
-    */
-    ~TransparentDofSet() override { return; }
+
 
     /// create a copy of this object
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }

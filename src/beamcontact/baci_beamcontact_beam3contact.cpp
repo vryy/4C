@@ -1091,7 +1091,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 0);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1124,7 +1123,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 0);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1157,7 +1155,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(0, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1190,7 +1187,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(0, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1220,7 +1216,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1251,7 +1246,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1281,7 +1275,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):
@@ -1311,7 +1304,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
 
         std::pair<int, int> integration_ids = std::make_pair(1, 1);
         std::pair<int, int> leftpoint_ids = std::make_pair(segid1, segid2);
-        ;
 
         // Create data container for each end point
         // in case of end-point-contact the variable integration_ids contains two bool values (a,b):

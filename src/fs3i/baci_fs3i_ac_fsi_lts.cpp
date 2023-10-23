@@ -451,7 +451,6 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
   Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
-  ;
 
   if (structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric)
   {

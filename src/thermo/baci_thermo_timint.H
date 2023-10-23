@@ -91,9 +91,6 @@ namespace THR
     //! Copy constructor
     TimInt(const TimInt& old) { ; }
 
-    //! Destructor
-    ~TimInt() override { DetachEnergyFile(); }
-
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 

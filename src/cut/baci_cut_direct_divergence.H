@@ -39,8 +39,6 @@ namespace CORE::GEO
       {
       }
 
-      ~DirectDivergence(){};
-
       /*!
       \brief Generate integration points on the facets of the volumecell
       */

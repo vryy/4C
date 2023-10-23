@@ -54,9 +54,6 @@ namespace PARTICLEENGINE
      */
     explicit ParticleRuntimeVtpWriter(const Epetra_Comm& comm);
 
-    //! destructor
-    ~ParticleRuntimeVtpWriter() = default;
-
     /*!
      * \brief init particle runtime vtp writer
      *

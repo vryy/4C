@@ -79,7 +79,7 @@ namespace STR
     ModelEvaluator();
 
     //! destructor
-    virtual ~ModelEvaluator(){};
+    virtual ~ModelEvaluator() = default;
 
     /*! \brief Initialize
      *

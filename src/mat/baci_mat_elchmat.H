@@ -27,9 +27,6 @@ namespace MAT
       /// standard constructor
       ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ElchMat() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

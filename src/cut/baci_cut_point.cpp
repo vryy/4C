@@ -335,7 +335,6 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
     if (x.Norm2() > (Tolerance() + p1->Tolerance() + p2->Tolerance()))
     {
       std::ofstream file("point_not_on_on_edge.pos");
-      ;
       CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, std::string("Edge"));
       CORE::GEO::CUT::OUTPUT::GmshPointDump(
           file, this, this->Id(), std::string("Point"), false, nullptr);

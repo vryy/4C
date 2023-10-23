@@ -68,7 +68,7 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtJunctionWrapper();
+      virtual ~ArtJunctionWrapper() = default;
 
 
       /*!
@@ -141,7 +141,7 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtJunctionBc() {}
+      virtual ~ArtJunctionBc() = default;
 
      protected:
       /*!

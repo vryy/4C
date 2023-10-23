@@ -36,8 +36,6 @@ namespace STR
       //! constructor
       Structure();
 
-      //! destructor
-      ~Structure() override = default;
 
       void Setup() override;
 

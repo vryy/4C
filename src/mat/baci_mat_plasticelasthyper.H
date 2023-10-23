@@ -56,9 +56,6 @@ namespace MAT
       /// parameter sets of the hyperelastic summands.
       PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~PlasticElastHyper() override { ; }
-
       /// @name material parameters
       //@{
 

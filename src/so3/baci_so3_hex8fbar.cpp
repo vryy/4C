@@ -163,10 +163,7 @@ void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             popp 07/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8fbar::~So_hex8fbar() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|

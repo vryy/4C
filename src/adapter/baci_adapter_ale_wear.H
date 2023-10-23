@@ -41,9 +41,6 @@ namespace ADAPTER
     //! constructor
     explicit AleWearWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    ~AleWearWrapper() override {}
-
     //@}
 
     //! communicate object at the interface

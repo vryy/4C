@@ -57,7 +57,7 @@ namespace ADAPTER
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~LubricationBaseAlgorithm(){};
+    virtual ~LubricationBaseAlgorithm() = default;
 
     /// access to the Lubrication field solver
     Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }

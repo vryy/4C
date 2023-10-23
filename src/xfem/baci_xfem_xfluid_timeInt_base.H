@@ -367,8 +367,7 @@ namespace XFEM
     );
 
     //! destructor
-    virtual ~XFLUID_TIMEINT_BASE() { return; }
-
+    virtual ~XFLUID_TIMEINT_BASE() = default;
     //! perform the computation
     virtual void compute(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsn,
         std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsnp)
@@ -647,9 +646,6 @@ namespace XFEM
         const double& dt,                         ///< time step size
         const bool initialize                     ///< is initialization?
     );
-
-    //! destructor
-    ~XFLUID_STD() override { return; }
 
     /*========================================================================*/
     //! compute routines

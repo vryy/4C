@@ -136,7 +136,7 @@ namespace XFEM
     MultiFieldMapExtractor();
 
     /// destructor
-    virtual ~MultiFieldMapExtractor(){};
+    virtual ~MultiFieldMapExtractor() = default;
 
     /** \brief Initialize the MultiMapExtractor using a set of filled discretizations
      *

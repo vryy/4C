@@ -45,8 +45,6 @@ namespace DRT
         Interface function for supporting methods of the element
        */
 
-      ~ScaTraEleCalcHDG() override { return; }
-
       //! Singleton access method
       static ScaTraEleCalcHDG<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);

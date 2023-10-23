@@ -27,13 +27,6 @@ CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_O
   return;
 }  // CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator
 
-/* --------------------------------------------------------------------
-                          Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
-{
-  return;
-}  // CORE::LINALG::LinalgPrecondOperator::~KrylovProjector
 
 /* --------------------------------------------------------------------
                     (Modified) ApplyInverse call

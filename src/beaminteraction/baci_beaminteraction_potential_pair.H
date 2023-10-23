@@ -54,8 +54,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamPotentialPair() {}
-
+    virtual ~BeamPotentialPair() = default;
     //! Initialization
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
         DRT::Element const* element1, DRT::Element const* element2);

@@ -34,8 +34,7 @@ namespace POROMULTIPHASE
       /// constructor
       explicit PoroFluidMultiPhaseCloneStrategy() {}
       /// destructor
-      virtual ~PoroFluidMultiPhaseCloneStrategy() {}
-
+      virtual ~PoroFluidMultiPhaseCloneStrategy() = default;
       /// returns conditions names to be copied (source and target name)
       virtual std::map<std::string, std::string> ConditionsToCopy() const;
 

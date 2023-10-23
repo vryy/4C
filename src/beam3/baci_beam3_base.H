@@ -83,9 +83,6 @@ namespace DRT
       */
       Beam3Base(const Beam3Base& old);
 
-      //! Destructor
-      ~Beam3Base() override{};
-
       /*!
       \brief Pack this class so it can be communicated
 

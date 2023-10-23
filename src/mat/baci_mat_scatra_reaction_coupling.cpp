@@ -709,11 +709,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
     case 2:
       return CalcReaBodyForceDerivInternal<2>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
-      ;
     case 3:
       return CalcReaBodyForceDerivInternal<3>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
@@ -782,11 +780,9 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
     case 2:
       return CalcReaBodyForceDerivAddVariablesInternal<2>(
           k, derivs, variables, constants, couprole, scale_reac);
-      ;
     case 3:
       return CalcReaBodyForceDerivAddVariablesInternal<3>(
           k, derivs, variables, constants, couprole, scale_reac);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }
@@ -835,10 +831,8 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
       return AddAdditionalVariablesInternal<1>(k, variables, couprole);
     case 2:
       return AddAdditionalVariablesInternal<2>(k, variables, couprole);
-      ;
     case 3:
       return AddAdditionalVariablesInternal<3>(k, variables, couprole);
-      ;
     default:
       dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
   }

@@ -28,11 +28,6 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
 }
 
 /*----------------------------------------------------------------------*
-| Destructor (public)                                        Thon 12/14 |
-*-----------------------------------------------------------------------*/
-FLD::TimIntAC::~TimIntAC() { return; }
-
-/*----------------------------------------------------------------------*
  | output of solution vector to binio                        Thon 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)

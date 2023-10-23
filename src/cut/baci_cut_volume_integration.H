@@ -46,8 +46,6 @@ namespace CORE::GEO
       {
       }
 
-      ~VolumeIntegration(){};
-
       /*!
       \brief Compute Gauss point weights by solving the moment fitting equations and returns the
       coordinates of Gauss points and their corresponding weights

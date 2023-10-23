@@ -47,7 +47,7 @@ namespace ELEMAG
       /// constructor
       explicit ScatraCloneStrategy() {}
       /// destructor
-      virtual ~ScatraCloneStrategy() {}
+      virtual ~ScatraCloneStrategy() = default;
 
      protected:
       /// determine element type string and whether element is copied or not

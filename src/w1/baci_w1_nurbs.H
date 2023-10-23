@@ -67,11 +67,6 @@ namespace DRT
         */
         Wall1Nurbs(const Wall1Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        ~Wall1Nurbs() override;
 
         /*!
         \brief Deep copy this instance of Wall1 and return pointer to it

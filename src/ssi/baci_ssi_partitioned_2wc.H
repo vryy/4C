@@ -23,8 +23,6 @@ namespace SSI
     //! constructor
     SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WC() override = default;
 
     /*! \brief Initialize this object
 
@@ -141,8 +139,6 @@ namespace SSI
     SSIPart2WCSolidToScatraRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCSolidToScatraRelax() override = default;
 
     /*!
     \brief Setup this object
@@ -181,8 +177,6 @@ namespace SSI
     SSIPart2WCSolidToScatraRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCSolidToScatraRelaxAitken() override = default;
 
     /*!
     \brief Setup all class internal objects and members
@@ -222,8 +216,6 @@ namespace SSI
     SSIPart2WCScatraToSolidRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCScatraToSolidRelax() override = default;
 
     /*!
     \brief Setup this object
@@ -262,8 +254,6 @@ namespace SSI
     SSIPart2WCScatraToSolidRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart2WCScatraToSolidRelaxAitken() override = default;
 
     /*!
     \brief Setup all class internal objects and members

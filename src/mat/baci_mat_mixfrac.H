@@ -26,9 +26,6 @@ namespace MAT
       /// standard constructor
       MixFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~MixFrac() override { ; }
-
       /// @name material parameters
       //@{
 

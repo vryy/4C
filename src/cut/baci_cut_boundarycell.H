@@ -41,8 +41,7 @@ namespace CORE::GEO
           const std::vector<Point*>& points);
 
       /// destructor
-      virtual ~BoundaryCell() {}
-
+      virtual ~BoundaryCell() = default;
       /*!
       \brief Returns the shape of the boundarycell
        */

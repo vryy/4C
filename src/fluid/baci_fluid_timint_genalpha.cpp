@@ -68,11 +68,6 @@ void FLD::TimIntGenAlpha::Init()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*-----------------------------------------------------------------------*/
-FLD::TimIntGenAlpha::~TimIntGenAlpha() { return; }
-
 
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |

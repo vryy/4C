@@ -33,8 +33,6 @@ namespace MAT
       //! constructor
       explicit Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~Electrode() override = default;
 
       //! create instance of electrode material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

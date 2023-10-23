@@ -55,8 +55,6 @@ namespace NOX
         //! Constructor.
         Factory();
 
-        //! Destructor.
-        ~Factory(){};
 
         Teuchos::RCP<NOX::Epetra::LinearSystem> BuildLinearSystem(
             const NOX::NLN::LinSystem::LinearSystemType& linsystype,

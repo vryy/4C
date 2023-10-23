@@ -350,12 +350,6 @@ namespace FLD
 
 
   /*--------------------------------------------------------------*
-   | deconstructor                                rasthofer 04/13 |
-   *--------------------------------------------------------------*/
-  TurbulenceStatisticsHit::~TurbulenceStatisticsHit() { return; }
-
-
-  /*--------------------------------------------------------------*
    | do sampling                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHit::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
@@ -1822,11 +1816,6 @@ namespace FLD
 
     return;
   }
-
-  /*--------------------------------------------------------------*
-   | deconstructor                                       bk 03/15 |
-   *--------------------------------------------------------------*/
-  TurbulenceStatisticsHitHDG::~TurbulenceStatisticsHitHDG() { return; }
 
   /*--------------------------------------------------------------*
    | do sampling                                         bk 03/15 |

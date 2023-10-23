@@ -42,9 +42,6 @@ namespace STR
       //! constructor
       StructAle();
 
-      //! destructor
-      ~StructAle() override{};
-
       //! get pointer to mat. displ. vector at time level n+1 (full structural map).
       const Teuchos::RCP<Epetra_Vector>& GetMaterialDisplacementNpPtr()
       {

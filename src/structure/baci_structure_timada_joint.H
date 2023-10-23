@@ -135,9 +135,6 @@ namespace STR
       return;
     }
 
-    //! Destructor
-    ~TimAdaJoint() override { ; }
-
     //@}
 
     //! @name Actions

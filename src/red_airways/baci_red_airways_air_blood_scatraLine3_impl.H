@@ -36,8 +36,7 @@ namespace DRT
       /// Empty constructor
       RedAirBloodScatraLine3ImplInterface() {}
       /// Empty destructor
-      virtual ~RedAirBloodScatraLine3ImplInterface() {}
-      /// Evaluate the element
+      virtual ~RedAirBloodScatraLine3ImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,

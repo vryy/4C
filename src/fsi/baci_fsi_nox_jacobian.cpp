@@ -56,8 +56,6 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
 }
 
 
-NOX::FSI::FSIMatrixFree::~FSIMatrixFree() {}
-
 
 int NOX::FSI::FSIMatrixFree::SetUseTranspose(bool UseTranspose)
 {

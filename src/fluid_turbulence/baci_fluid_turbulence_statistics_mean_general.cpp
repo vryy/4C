@@ -124,15 +124,6 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
-//----------------------------------------------------------------------
-//
-//                                 Destructor
-//
-//----------------------------------------------------------------------
-FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
-{
-  return;
-}  // FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean
 
 
 //----------------------------------------------------------------------

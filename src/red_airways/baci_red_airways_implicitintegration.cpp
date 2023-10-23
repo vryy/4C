@@ -2413,11 +2413,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 }  // EvalResidual
 
 
-/*----------------------------------------------------------------------*
- | Destructor dtor (public)                                 ismail 01/10|
- *----------------------------------------------------------------------*/
-AIRWAY::RedAirwayImplicitTimeInt::~RedAirwayImplicitTimeInt() { return; }
-
 
 /*----------------------------------------------------------------------*
  |                                                                      |

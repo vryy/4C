@@ -44,7 +44,7 @@ namespace ALE
       /// constructor
       explicit AleCloneStrategy() {}
       /// destructor
-      virtual ~AleCloneStrategy() {}
+      virtual ~AleCloneStrategy() = default;
 
      protected:
       /// determine element type string and whether element is copied or not

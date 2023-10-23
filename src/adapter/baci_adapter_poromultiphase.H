@@ -35,7 +35,7 @@ namespace ADAPTER
     PoroMultiPhase(){};
 
     /// virtual destructor
-    virtual ~PoroMultiPhase(){};
+    virtual ~PoroMultiPhase() = default;
 
     /// initialization
     virtual void Init(const Teuchos::ParameterList& globaltimeparams,

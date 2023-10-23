@@ -258,10 +258,7 @@ DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              gee 03/12|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStet5::~NStet5() { return; }
+
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

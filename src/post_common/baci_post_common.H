@@ -309,9 +309,6 @@ class PostField
       const int numele                              ///< [in] Number of elements
   );
 
-  //! Destructor
-  ~PostField();
-
   //@}
 
   // @{ \name Access methods

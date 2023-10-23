@@ -60,10 +60,6 @@ DRT::NURBS::ControlPoint* DRT::NURBS::ControlPoint::Clone() const
   return newcp;
 }
 
-/*
-  Destructor
-*/
-DRT::NURBS::ControlPoint::~ControlPoint() { return; }
 
 /*
   Pack this class so it can be communicated

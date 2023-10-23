@@ -27,9 +27,6 @@ namespace MAT
       /// standard constructor
       StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~StructPoroReaction() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

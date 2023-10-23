@@ -49,8 +49,6 @@ namespace NOX
       //! Constructor
       FixPoint(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      //! Destructor
-      ~FixPoint() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;

@@ -43,8 +43,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~ScaTraEleCalcLoma() override {}
-
       /// Singleton access method
       static ScaTraEleCalcLoma<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
@@ -248,7 +246,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleReaManagerLoma(){};
+      virtual ~ScaTraEleReaManagerLoma() = default;
 
       //! Set reaction / temperature term for rhs
       void SetReaTempRhs(const double reatemprhs, const int k)

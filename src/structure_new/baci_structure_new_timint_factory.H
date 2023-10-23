@@ -40,7 +40,7 @@ namespace STR
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
       //! Build the implicit or explicit time integration strategies
       Teuchos::RCP<STR::TIMINT::Base> BuildStrategy(const Teuchos::ParameterList& sdyn) const;

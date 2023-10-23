@@ -39,16 +39,6 @@ namespace PARTICLERIGIDBODY
   {
    public:
     /*!
-     * \brief constructor
-     *
-     * \author Sebastian Fuchs \date 08/2020
-     */
-    explicit RigidBodyDataState() = default;
-
-    //! destructor
-    ~RigidBodyDataState() = default;
-
-    /*!
      * \brief init rigid body data state container
      *
      * \author Sebastian Fuchs \date 08/2020

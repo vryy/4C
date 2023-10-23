@@ -27,9 +27,6 @@ namespace MAT
       /// standard constructor
       TempDepWater(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~TempDepWater() override { ; }
-
       /// @name material parameters
       //@{
 

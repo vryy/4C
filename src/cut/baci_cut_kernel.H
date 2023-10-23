@@ -2101,7 +2101,6 @@ namespace CORE::GEO
           CORE::DRT::UTILS::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
 
           CORE::LINALG::Matrix<probDim, 1, floatType> x1;
-          ;
 
           x1.Multiply(*xyze_side_, surface);
 
@@ -2631,11 +2630,7 @@ namespace CORE::GEO
         PointOnSurfaceLoc GetSideLocation() { return location_; }
         const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
 
-        const std::vector<int>& GetTouchedNodes()
-        {
-          return touched_nodes_ids_;
-          ;
-        }
+        const std::vector<int>& GetTouchedNodes() { return touched_nodes_ids_; }
 
         void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
 
@@ -3637,11 +3632,11 @@ namespace CORE::GEO
             std::stringstream str;
             str << "Newton scheme did not converge:\n  "
 #ifndef CLN_CALC
-                << (*xyze_side_) << (*xyze_edge_)
+                << (*xyze_side_)
+                << (*xyze_edge_)
 #endif
-                ;
 #ifndef CLN_CALC
-            DumpDoubles(str, xyze_side_->A(), xyze_side_->M() * xyze_side_->N());
+                       DumpDoubles(str, xyze_side_->A(), xyze_side_->M() * xyze_side_->N());
             str << "\n";
             DumpDoubles(str, xyze_edge_->A(), xyze_edge_->M() * xyze_edge_->N());
 #endif
@@ -4562,7 +4557,6 @@ namespace CORE::GEO
           // Calculating interpolation from the shapefunction of the edge
 
           CORE::LINALG::Matrix<probDim, 1> globxyz_edge;
-          ;
           CORE::LINALG::Matrix<numNodesEdge, 1> edgeFunct;
           CORE::LINALG::Matrix<probDim, 1> locxyz_edge(locxyz.A() + dimSide, true);
 

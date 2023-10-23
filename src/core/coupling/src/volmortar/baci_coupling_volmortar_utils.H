@@ -54,7 +54,7 @@ namespace CORE::VOLMORTAR
       DefaultMaterialStrategy(){};
 
       //! virtual destructor
-      virtual ~DefaultMaterialStrategy(){};
+      virtual ~DefaultMaterialStrategy() = default;
 
       //! assign material of discretization B
       virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,

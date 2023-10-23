@@ -43,9 +43,6 @@ namespace POROELASTSCATRA
     /// Constructor
     explicit PoroScatraPart(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// destructor
-    ~PoroScatraPart() override{};
-
     // Methods
 
     //! solve one time/incremental step of porous media problem (depending on coupling algorithm)

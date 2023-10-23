@@ -34,9 +34,6 @@ namespace DRT
       using my::numderiv2_;
 
      public:
-      /// dtor
-      ~FluidEleCalcXWall() override {}
-
       /// Singleton access method
       static FluidEleCalcXWall<distype, enrtype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

@@ -186,11 +186,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Membrane() override;
 
       //@}
 
@@ -671,11 +666,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~MembraneLine() override;
 
       //@}
 

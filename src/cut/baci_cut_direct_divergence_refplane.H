@@ -36,8 +36,6 @@ namespace CORE::GEO
       {
       }
 
-      ~DirectDivergenceGlobalRefplane(){};
-
       /*!
       \Compute the reference plane for this element
        */

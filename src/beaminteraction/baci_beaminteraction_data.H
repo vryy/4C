@@ -45,7 +45,7 @@ namespace BEAMINTERACTION
     BeamInteractionParams();
 
     //! destructor
-    virtual ~BeamInteractionParams(){};
+    virtual ~BeamInteractionParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -109,7 +109,7 @@ namespace BEAMINTERACTION
       CrosslinkerData();
 
       //! destructor
-      virtual ~CrosslinkerData(){};
+      virtual ~CrosslinkerData() = default;
 
 
       //!@name data access functions
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
       BeamData();
 
       //! destructor
-      virtual ~BeamData(){};
+      virtual ~BeamData() = default;
 
 
       //!@name data access functions
@@ -321,7 +321,7 @@ namespace BEAMINTERACTION
       BindEventData();
 
       //! destructor
-      virtual ~BindEventData(){};
+      virtual ~BindEventData() = default;
 
       //! Init
       void Init(int clgid, int elegid, int bspotlocn, int requestproc, int permission);
@@ -395,7 +395,7 @@ namespace BEAMINTERACTION
       UnBindEventData();
 
       //! destructor
-      virtual ~UnBindEventData(){};
+      virtual ~UnBindEventData() = default;
 
       //!@name data access functions
       //! @{
@@ -458,7 +458,7 @@ namespace BEAMINTERACTION
       BspotLinkerData();
 
       //! destructor
-      virtual ~BspotLinkerData(){};
+      virtual ~BspotLinkerData() = default;
 
       //!@name data access functions
       //! @{

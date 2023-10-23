@@ -93,8 +93,6 @@ namespace EHL
         const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname, const std::string lubrication_disname);
 
-    //! virtual destructor to support polymorph destruction
-    ~Monolithic() override;
 
 
     /*! do the setup for the monolithic system
@@ -378,101 +376,6 @@ namespace EHL
 
   };  // Monolithic
 
-
-  //  class MortarCellInterface
-  //  {
-  //    public:
-  //
-  //    //! evaluate single mortar integration cell of particular slave-side and master-side
-  //    discretization types virtual void Evaluate(
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-  //        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
-  //        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
-  //        const DRT::Discretization&           idiscret,          //!< interface discretization
-  //        const Teuchos::ParameterList&        params,            //!< parameter list
-  //        DRT::Element&               slaveelement,      //!< slave-side mortar element
-  //        DRT::Element&               masterelement,     //!< master-side mortar element
-  //        MORTAR::IntCell&                     cell,              //!< mortar integration cell
-  //        DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-  //        DRT::Element::LocationArray&         la_master          //!< master-side location array
-  //        )=0;
-  //
-  //    protected:
-  //
-  //      //! protected constructor for singletons
-  //      MortarCellInterface(){};
-  //
-  //      //! protected destructor for singletons
-  //      virtual ~MortarCellInterface(){return;};
-  //  };
-  //
-  //  template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-  //  class MortarCellCalc : public MortarCellInterface
-  //  {
-  //    public:
-  //
-  //      //! singleton access method
-  //      static MortarCellCalc<distypeS,distypeM>* Instance(
-  //          bool create = true);
-  //
-  //      //! singleton destruction
-  //      virtual void Done();
-  //
-  //      //! evaluate single mortar integration cell of particular slave-side and master-side
-  //      discretization types virtual void Evaluate(
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-  //          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual
-  //          vector Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side
-  //          residual vector const DRT::Discretization&           idiscret,          //!< interface
-  //          discretization const Teuchos::ParameterList&        params,            //!< parameter
-  //          list DRT::Element&               slaveelement,      //!< slave-side mortar element
-  //          DRT::Element&               masterelement,     //!< master-side mortar element
-  //          MORTAR::IntCell&                     cell,              //!< mortar integration cell
-  //          DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-  //          DRT::Element::LocationArray&         la_master          //!< master-side location
-  //          array
-  //          );
-  //
-  //    protected:
-  //
-  //      //! protected constructor for singletons
-  //      MortarCellCalc(){};
-  //
-  //  }; // class MortarCellCalc
-  //
-  //  class MortarCellFactory
-  //  {
-  //    public:
-  //
-  //      //! constructor
-  //      MortarCellFactory(){return;};
-  //
-  //      //! destructor
-  //      virtual ~MortarCellFactory(){return;};
-  //
-  //      //! provide instance of mortar cell evaluation class of particular slave-side
-  //      discretization type static MortarCellInterface* MortarCellCalc(
-  //          const DRT::Element&        slaveelement,    //!< slave-side mortar element
-  //          const DRT::Element&        masterelement   //!< master-side mortar element
-  //          );
-  //
-  //    private:
-  //
-  //      //! provide instance of mortar cell evaluation class of particular slave-side and
-  //      master-side discretization types template<DRT::Element::DiscretizationType distypeS>
-  //      static MortarCellInterface* MortarCellCalc(
-  //          const DRT::Element&        masterelement        //!< master-side mortar element
-  //          );
-  //
-  //      //! provide specific instance of mortar cell evaluation class
-  //      template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType
-  //      distypeM> static MortarCellInterface* MortarCellCalc();
-  //
-  //  }; // class MortarCellFactory
 }  // namespace EHL
 
 

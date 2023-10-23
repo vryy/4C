@@ -55,7 +55,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingWrapperBase() = 0;
+      virtual ~Fluid_couplingWrapperBase() = default;
 
       /*!
       \brief Wrapper for Fluid_couplingWrapper::FlowRateCalculation
@@ -202,7 +202,7 @@ namespace FLD
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingBc() {}
+      virtual ~Fluid_couplingBc() = default;
 
      protected:
       /*!

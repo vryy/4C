@@ -31,7 +31,7 @@ namespace DRT
       FluidRuntimeVtuOutputParams() = default;
 
       /// destructor
-      virtual ~FluidRuntimeVtuOutputParams(){};
+      virtual ~FluidRuntimeVtuOutputParams() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_fluid_paramslist);

@@ -62,8 +62,6 @@ namespace NOX
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
-        //! Destructor
-        ~SingleStep() override = default;
 
         [[nodiscard]] NOX::StatusTest::StatusType getStatus() const override;
 

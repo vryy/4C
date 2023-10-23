@@ -51,8 +51,6 @@ namespace STR
       /// constructor
       Base();
 
-      /// destructor
-      ~Base() override = default;
 
       /// initialize (all already existing) class variables
       virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,

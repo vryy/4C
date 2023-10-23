@@ -84,8 +84,6 @@ namespace TSI
    public:
     explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams);
 
-    //! virtual destructor to support polymorph destruction
-    ~Monolithic() override;
 
 
     /*! do the setup for the monolithic system

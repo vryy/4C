@@ -39,9 +39,6 @@ namespace CONTACT
      */
     CoIntegratorNitscheFsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
         const Epetra_Comm& comm);
-
-    ~CoIntegratorNitscheFsi() override = default;
-
     //! @name Derived functions
     //! @{
 

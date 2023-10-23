@@ -43,8 +43,7 @@ namespace MORTAR
    public:
     MortarIntegrator(){};
 
-    virtual ~MortarIntegrator() {}
-
+    virtual ~MortarIntegrator() = default;
     //! @name Access methods
     /// Internal implementation class
     static MortarIntegrator* Impl(
@@ -102,9 +101,6 @@ namespace MORTAR
 
     */
     MortarIntegratorCalc(const Teuchos::ParameterList& params);
-
-    // destructor
-    ~MortarIntegratorCalc() override{};
 
 
     /// Singleton access method
