@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_MATERIALDEFINITION_H
-#define BACI_LIB_MATERIALDEFINITION_H
+#ifndef BACI_IO_MATERIALDEFINITION_H
+#define BACI_IO_MATERIALDEFINITION_H
 
 /*----------------------------------------------------------------------*/
 /* headers */

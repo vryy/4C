@@ -10,7 +10,7 @@
 #include "baci_inpar_validmaterials.H"
 
 #include "baci_inpar_material.H"
-#include "baci_lib_materialdefinition.H"
+#include "baci_io_materialdefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
