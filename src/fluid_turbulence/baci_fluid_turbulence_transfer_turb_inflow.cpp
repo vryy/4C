@@ -13,10 +13,10 @@ boundary of the actual domain
 
 #include "baci_fluid_turbulence_transfer_turb_inflow.H"
 
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_matchingoctree.H"
 
 
 
@@ -166,7 +166,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     }
 
     // build processor local octree
-    DRT::UTILS::NodeMatchingOctree nodematchingoctree = DRT::UTILS::NodeMatchingOctree();
+    auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
     nodematchingoctree.Init(*dis_, masternodeids, maxnodeperleaf, tol);
     nodematchingoctree.Setup();
 

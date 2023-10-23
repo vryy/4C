@@ -19,9 +19,9 @@
 #include "baci_lib_periodicbc.H"
 
 #include "baci_comm_utils.H"
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_pbc.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
@@ -641,7 +641,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_));
 
   // build processor local octree
-  DRT::UTILS::NodeMatchingOctree nodematchingoctree = DRT::UTILS::NodeMatchingOctree();
+  auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
 
   nodematchingoctree.Init(*discret_, masternodeids, maxnodeperleaf, tol);
   nodematchingoctree.Setup();

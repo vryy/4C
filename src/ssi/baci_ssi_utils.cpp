@@ -13,8 +13,8 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
+#include "baci_coupling_matchingoctree.H"
 #include "baci_inpar_s2i.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -1104,7 +1104,7 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
     DRT::UTILS::AddOwnedNodeGIDVector(*dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
-    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+    auto tree = CORE::COUPLING::NodeMatchingOctree();
     tree.Init(*dis, inodegidvec_a, 150, 1.0e-8);
     tree.Setup();
 
@@ -1338,7 +1338,7 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
     }
   }
 
-  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  auto tree = CORE::COUPLING::NodeMatchingOctree();
   tree.Init(*dis, inodegidvec_slave, 150, 1.0e-8);
   tree.Setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;

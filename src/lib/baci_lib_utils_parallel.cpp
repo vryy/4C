@@ -13,8 +13,8 @@
 #include "baci_lib_utils_parallel.H"
 
 #include "baci_binstrategy.H"
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_lib_node.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_linalg_utils_densematrix_communication.H"
@@ -384,7 +384,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
 
 
     // initialize search tree for matching with template (source,master) elements
-    DRT::UTILS::ElementMatchingOctree elementmatchingtree = DRT::UTILS::ElementMatchingOctree();
+    auto elementmatchingtree = CORE::COUPLING::ElementMatchingOctree();
     elementmatchingtree.Init(*dis_from_template_condition, my_template_colelegid_vec, 150, 1e-06);
     elementmatchingtree.Setup();
 
@@ -495,7 +495,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     }
 
     // initialize search tree for matching with template (source) nodes
-    DRT::UTILS::NodeMatchingOctree nodematchingtree = DRT::UTILS::NodeMatchingOctree();
+    auto nodematchingtree = CORE::COUPLING::NodeMatchingOctree();
     nodematchingtree.Init(dis_template, my_template_nodegid_vec, 150, 1e-06);
     nodematchingtree.Setup();
 
@@ -671,7 +671,7 @@ void DRT::UTILS::MatchElementRowColDistribution(const DRT::Discretization& dis_t
     my_redistribute_elegid_vec.push_back(redistribute_elerowmap->GID(lid));
 
   // initialize search tree for matching with template (source,master) elements
-  DRT::UTILS::ElementMatchingOctree elementmatchingtree = DRT::UTILS::ElementMatchingOctree();
+  auto elementmatchingtree = CORE::COUPLING::ElementMatchingOctree();
   elementmatchingtree.Init(dis_template, my_template_elegid_vec, 150, 1e-07);
   elementmatchingtree.Setup();
 
@@ -728,7 +728,7 @@ void DRT::UTILS::MatchNodalRowColDistribution(const DRT::Discretization& dis_tem
     my_redistribute_nodegid_vec.push_back(redistribute_noderowmap->GID(lid));
 
   // initialize search tree for matching with template (source) nodes
-  DRT::UTILS::NodeMatchingOctree nodematchingtree = DRT::UTILS::NodeMatchingOctree();
+  auto nodematchingtree = CORE::COUPLING::NodeMatchingOctree();
   nodematchingtree.Init(dis_template, my_template_nodegid_vec, 150, 1e-07);
   nodematchingtree.Setup();
 
