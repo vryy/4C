@@ -9,10 +9,10 @@
 
 #include "baci_comm_utils.H"
 #include "baci_global_legacy_module.H"
+#include "baci_io_inputreader.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 
 #include <utility>
 

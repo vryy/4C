@@ -12,7 +12,7 @@
 #ifndef BACI_LIB_LINEDEFINITION_H
 #define BACI_LIB_LINEDEFINITION_H
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 #include <iostream>
 #include <memory>

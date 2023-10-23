@@ -12,8 +12,8 @@
 #ifndef BACI_LIB_NODEREADER_H
 #define BACI_LIB_NODEREADER_H
 
+#include "baci_io_inputreader.H"
 #include "baci_lib_elementreader.H"
-#include "baci_lib_inputreader.H"
 
 #include <Epetra_Map.h>
 

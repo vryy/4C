@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy_utils.H"
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_lib_parobject.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
