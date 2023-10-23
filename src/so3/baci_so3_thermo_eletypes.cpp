@@ -7,7 +7,7 @@
 
 #include "baci_so3_thermo_eletypes.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_so3_thermo.H"
 
 /*----------------------------------------------------------------------------*

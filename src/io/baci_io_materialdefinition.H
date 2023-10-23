@@ -9,15 +9,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_MATERIALDEFINITION_H
-#define BACI_LIB_MATERIALDEFINITION_H
+#ifndef BACI_IO_MATERIALDEFINITION_H
+#define BACI_IO_MATERIALDEFINITION_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_inpar_material.H"
 #include "baci_io_inputreader.H"
+#include "baci_io_linecomponent.H"
 #include "baci_lib_container.H"
-#include "baci_lib_linecomponent.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 

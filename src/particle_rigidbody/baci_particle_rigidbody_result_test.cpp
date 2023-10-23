@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody_result_test.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_particle_rigidbody_datastate.H"
 #include "baci_particle_rigidbody_interface.H"
 #include "baci_utils_exceptions.H"

@@ -9,8 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_UTILS_READER_H
-#define BACI_LIB_UTILS_READER_H
+#ifndef BACI_IO_UTILS_READER_H
+#define BACI_IO_UTILS_READER_H
+
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/replace.hpp>

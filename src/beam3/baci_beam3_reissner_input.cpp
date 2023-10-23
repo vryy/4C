@@ -10,7 +10,7 @@
 
 #include "baci_beam3_reissner.H"
 #include "baci_discretization_fem_general_largerotations.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_beam_material_generic.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

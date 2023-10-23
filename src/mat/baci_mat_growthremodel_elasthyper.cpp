@@ -15,8 +15,8 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 /* headers */
 #include "baci_mat_growthremodel_elasthyper.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"

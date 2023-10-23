@@ -10,7 +10,7 @@
 
 #include "baci_inpar_poro.H"
 #include "baci_inpar_scatra.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_utils_exceptions.H"
 
 namespace STR::UTILS::READELEMENT

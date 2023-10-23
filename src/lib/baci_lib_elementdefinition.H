@@ -14,7 +14,7 @@
 #ifndef BACI_LIB_ELEMENTDEFINITION_H
 #define BACI_LIB_ELEMENTDEFINITION_H
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 
 #include <Teuchos_RCP.hpp>
 

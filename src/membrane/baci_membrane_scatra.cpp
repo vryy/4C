@@ -10,7 +10,7 @@
 
 #include "baci_membrane_scatra.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   sfuchs 05/18 |

@@ -8,7 +8,7 @@
 
 #include "baci_matelast_remodelfiber.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_par_material.H"

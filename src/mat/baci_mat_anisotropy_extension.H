@@ -12,7 +12,7 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_H
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy.H"

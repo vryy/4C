@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_LINECOMPONENT_H
-#define BACI_LIB_LINECOMPONENT_H
+#ifndef BACI_IO_LINECOMPONENT_H
+#define BACI_IO_LINECOMPONENT_H
 
 
 #include "baci_lib_container.H"

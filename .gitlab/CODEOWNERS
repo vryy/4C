@@ -182,11 +182,11 @@ inpar/baci_inpar_validcontactconstitutivelaw*            @baci/team_contact
 inpar/baci_inpar_validmaterials*                         @baci/team_material
 
 io/                        @baci/team_input @baci/team_output
+io/baci_io_material*              @baci/team_material
 
 levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
-lib/baci_lib_material*              @baci/team_material
 lib/baci_lib_parobject*             @baci/team_infrastructure
 
 linalg/                    @baci/team_solvers
