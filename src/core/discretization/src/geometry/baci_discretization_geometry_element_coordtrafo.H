@@ -645,8 +645,7 @@ namespace CORE::GEO
     //  dserror("This function seems to deliver wrong results! Check carefully before use or use a
     //  different function, e.g. CORE::GEO::CUT::Position");
     // REMARK: Added a scaling of the function -> biggest entry is 1 and thus this function should
-    // work for elements far away
-    //         from the origin as well. (27.07.2015 winter & seitz)
+    // work for elements far away from the origin as well. (27.07.2015 winter & seitz)
 
     // number space dimensions for element
     const size_t dim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
@@ -691,8 +690,6 @@ namespace CORE::GEO
     //               | 0   0  s_3|
 
     CORE::LINALG::Matrix<3, 1> scale_vector;
-    //  for(int i=0; i<(int)xyze.N(); ++i)
-    //    for(int j=0; j<(int)xyze.M(); ++j)
     for (int i = 0; i < (int)nen; ++i)
       for (int j = 0; j < (int)dim; ++j)
         scale_vector(j) = std::max(scale_vector(j), fabs(xyze(j, i)));
@@ -730,7 +727,7 @@ namespace CORE::GEO
       residual = b.Norm2();
       iter++;
 
-      if (iter >= maxiter || CORE::GEO::SumOfFabsEntries(xsi) > CORE::GEO::TOLPLUS8)
+      if (iter >= maxiter || xsi.Norm1() > CORE::GEO::TOLPLUS8)
       {
         nodeWithinElement = false;
         break;
@@ -1077,10 +1074,10 @@ namespace CORE::GEO
     }
   }
 
-  /*----------------------------------------------------------------------*
-   |  RQI:    compute element coordinates from a given point              |
-   |          in the 3-dim physical space lies on a given line element    |
-   *----------------------------------------------------------------------*/
+  /*!
+  \brief compute element coordinates from a given point in the 3-dim physical space lies on a given
+  line element
+  */
   template <class M>
   static void CurrentToLineElementCoordinates(const ::DRT::Element::DiscretizationType distype,
       const M& xyze_lineElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
@@ -1106,7 +1103,6 @@ namespace CORE::GEO
    | GM:      transforms a point in global coordinates        schott 07/12|
    |          into local element coordinates                              |
    *----------------------------------------------------------------------*/
-  // template <::DRT::Element::DiscretizationType DISTYPE>
   template <::DRT::Element::DiscretizationType DISTYPE>
   static bool ComputeLocalCoordinates(
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
@@ -1196,8 +1192,6 @@ namespace CORE::GEO
 
     return inelement;
   }
-
-
 
 }  // namespace CORE::GEO
 

@@ -10,10 +10,7 @@
 
 #include "baci_utils_exceptions.H"
 
-/*----------------------------------------------------------------------*
- |  returns the number of nodes                              a.ger 11/07|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getNumberOfElementNodes(const ::DRT::Element::DiscretizationType& distype)
 {
   int numnodes = 0;
@@ -104,10 +101,6 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const ::DRT::Element::Discretizati
 }
 
 
-/*----------------------------------------------------------------------*
- |  returns the number of corner nodes                       u.may 08/07|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
 int CORE::DRT::UTILS::getNumberOfElementCornerNodes(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -150,10 +143,6 @@ int CORE::DRT::UTILS::getNumberOfElementCornerNodes(
 }
 
 
-/*----------------------------------------------------------------------*
- |  returns the number of corner nodes                 berardocco 04/18 |
- |  for each face of an element for each discretization type            |
- *----------------------------------------------------------------------*/
 std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -216,10 +205,7 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
   return faceNodeMap;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the number of internal nodes               berardocco 04/18 |
- |  for each surface of a volume element for each discretization type   |
- *----------------------------------------------------------------------*/
+
 std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -299,10 +285,7 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
   return faceNodeMap;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the number of lines                              a.ger 08/07|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getNumberOfElementLines(const ::DRT::Element::DiscretizationType& distype)
 {
   int numLines = 0;
@@ -352,10 +335,6 @@ int CORE::DRT::UTILS::getNumberOfElementLines(const ::DRT::Element::Discretizati
 }
 
 
-/*----------------------------------------------------------------------*
- |  returns the number of surfaces                           a.ger 08/07|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
 int CORE::DRT::UTILS::getNumberOfElementSurfaces(const ::DRT::Element::DiscretizationType& distype)
 {
   int numSurf = 0;
@@ -401,10 +380,7 @@ int CORE::DRT::UTILS::getNumberOfElementSurfaces(const ::DRT::Element::Discretiz
   return numSurf;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the number of volumes                             ehrl 03/10|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getNumberOfElementVolumes(const ::DRT::Element::DiscretizationType& distype)
 {
   int numVol = 0;
@@ -441,10 +417,7 @@ int CORE::DRT::UTILS::getNumberOfElementVolumes(const ::DRT::Element::Discretiza
   return numVol;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the number of faces                        kronbichler 05/13|
- |  for each discretization type                                        |
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::DiscretizationType& distype)
 {
   const int dim = getDimension(distype);
@@ -460,9 +433,7 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::Discretizati
   return 0;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the face discretization type               kronbichler 06/14|
- *----------------------------------------------------------------------*/
+
 ::DRT::Element::DiscretizationType CORE::DRT::UTILS::getEleFaceShapeType(
     const ::DRT::Element::DiscretizationType& distype, const unsigned int face)
 {
@@ -550,13 +521,9 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::Discretizati
   return type;
 }
 
-/*----------------------------------------------------------------------*
- |  Fills a std::vector< std::vector<int> > with all nodes for  b.schott 07/14|
- |  every face (surface in 3D, line in 2D) for each discretization type  |
- *----------------------------------------------------------------------*/
+
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
-    const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-)
+    const ::DRT::Element::DiscretizationType& distype)
 {
   const int nsd = getDimension(distype);
 
@@ -579,11 +546,6 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  Fills a std::vector< std::vector<int> > with all nodes for    u.may 08/07|
- |  every surface for each discretization type                          |
- *----------------------------------------------------------------------*/
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -798,11 +760,6 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
- |  every line for each discretization type                             |
- *----------------------------------------------------------------------*/
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -1045,10 +1002,6 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
 }
 
 
-/*----------------------------------------------------------------------*
- |  Fills a std::vector< std::vector<int> > with all surfaces for      u.may 08/07|
- |  every line for each discretization type                             |
- *----------------------------------------------------------------------*/
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(
     const ::DRT::Element::DiscretizationType& distype)
 {
@@ -1091,54 +1044,6 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfac
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  Fills a std::vector< std::vector<int> > with all lines for         u.may 08/08|
- |  every node for each discretization type                             |
- *----------------------------------------------------------------------*/
-std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_nodes_lines(
-    const ::DRT::Element::DiscretizationType distype)
-{
-  std::vector<std::vector<int>> map;
-
-  const int nCornerNode = getNumberOfElementCornerNodes(distype);
-
-  if (distype == ::DRT::Element::DiscretizationType::hex8 ||
-      distype == ::DRT::Element::DiscretizationType::hex20 ||
-      distype == ::DRT::Element::DiscretizationType::hex27)
-  {
-    const int nLine = 3;
-    std::vector<int> submap(nLine, 0);
-    for (int i = 0; i < nCornerNode; i++)
-    {
-      map.push_back(submap);
-      for (int j = 0; j < nLine; j++) map[i][j] = eleNodeNumbering_hex27_nodes_lines[i][j];
-    }
-  }
-  else if (distype == ::DRT::Element::DiscretizationType::tet4 ||
-           distype == ::DRT::Element::DiscretizationType::tet10)
-  {
-    const int nLine = 3;
-    std::vector<int> submap(nLine, 0);
-    for (int i = 0; i < nCornerNode; i++)
-    {
-      map.push_back(submap);
-      for (int j = 0; j < nLine; j++) map[i][j] = eleNodeNumbering_tet10_nodes_lines[i][j];
-    }
-  }
-  else
-    dserror(
-        "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
-
-  return map;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Fills a CORE::LINALG::SerialDenseMatrix                                   |
- |  with positions in reference coordinates                             |
- |                                                           u.may 08/07|
- *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
     const ::DRT::Element::DiscretizationType distype)
 {
@@ -1210,8 +1115,6 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 template <int probdim>
 CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
     const int nodeId, const ::DRT::Element::DiscretizationType distype)
@@ -1280,11 +1183,6 @@ CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
 }
 
 
-/*----------------------------------------------------------------------*
- |  returns the indices of the element corner nodes           popp 06/10|
- |  lying adjacent to a specified higher order node index               |
- |  for each discretizationtype                                         |
- *----------------------------------------------------------------------*/
 void CORE::DRT::UTILS::getCornerNodeIndices(
     int& index1, int& index2, const int& hoindex, const ::DRT::Element::DiscretizationType distype)
 {
@@ -1355,9 +1253,7 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
   }
 }
 
-/*----------------------------------------------------------------------*
- |  returns the dimension of the element-shape                 bos 01/08|
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType distype)
 {
   int dim = 0;
@@ -1444,9 +1340,6 @@ int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType dist
 }
 
 
-/*----------------------------------------------------------------------*
- |  returns the order of the element-shape                   u.may 06/08|
- *----------------------------------------------------------------------*/
 int CORE::DRT::UTILS::getOrder(const ::DRT::Element::DiscretizationType distype)
 {
   int order = 0;
@@ -1511,9 +1404,7 @@ int CORE::DRT::UTILS::getOrder(const ::DRT::Element::DiscretizationType distype)
   return order;
 }
 
-/*----------------------------------------------------------------------*
- |  returns the degree of the element                     schoeder 06/14|
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype)
 {
   int degree = 0;
@@ -1586,8 +1477,6 @@ int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 ::DRT::Element::DiscretizationType CORE::DRT::UTILS::getShapeOfBoundaryElement(
     const int nen, const ::DRT::Element::DiscretizationType parentshape)
 {
@@ -1696,8 +1585,7 @@ int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype
   return ::DRT::Element::DiscretizationType::dis_none;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
     const ::DRT::Element::DiscretizationType parent_distype, const int faceId, const int faceNodeId)
 {
@@ -1732,8 +1620,7 @@ int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
   return -1;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 bool CORE::DRT::UTILS::IsNurbsDisType(const ::DRT::Element::DiscretizationType dis_type)
 {
   switch (dis_type)
@@ -1749,6 +1636,7 @@ bool CORE::DRT::UTILS::IsNurbsDisType(const ::DRT::Element::DiscretizationType d
       return false;
   }
 }
+
 
 template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::GetNodeCoordinates<3>(
     const int nodeId, const ::DRT::Element::DiscretizationType distype);
