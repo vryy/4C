@@ -17,8 +17,8 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_global_legacy_module.H"
 #include "baci_io_control.H"  //for writing to the error file
+#include "baci_io_inputreader.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
 

@@ -11,12 +11,12 @@
 #include "baci_lib_meshreader.H"
 
 #include "baci_inpar_rebalance.H"
+#include "baci_io_inputreader.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_domainreader.H"
 #include "baci_lib_elementreader.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 

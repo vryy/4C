@@ -12,7 +12,7 @@
 #ifndef BACI_PARTICLE_ENGINE_PARTICLEREADER_H
 #define BACI_PARTICLE_ENGINE_PARTICLEREADER_H
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 #include "baci_particle_engine_typedefs.H"
 
 namespace DRT::INPUT

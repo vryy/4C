@@ -12,9 +12,9 @@
 #define BACI_LIB_MESHREADER_H
 
 #include "baci_inpar.H"
+#include "baci_io_inputreader.H"
 #include "baci_lib_domainreader.H"
 #include "baci_lib_elementreader.H"
-#include "baci_lib_inputreader.H"
 #include "baci_lib_nodereader.H"
 
 #include <Epetra_CrsGraph.h>

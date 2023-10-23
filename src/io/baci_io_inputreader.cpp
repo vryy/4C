@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 #include "baci_comm_utils.H"
 #include "baci_io_control.H"

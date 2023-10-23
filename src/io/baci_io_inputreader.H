@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_LIB_INPUTREADER_H
-#define BACI_LIB_INPUTREADER_H
+#ifndef BACI_IO_INPUTREADER_H
+#define BACI_IO_INPUTREADER_H
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

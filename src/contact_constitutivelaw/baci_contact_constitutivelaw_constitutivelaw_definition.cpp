@@ -17,7 +17,7 @@
 
 #include "baci_contact_constitutivelaw_bundle.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
-#include "baci_lib_inputreader.H"
+#include "baci_io_inputreader.H"
 
 #include <utility>
 
