@@ -295,10 +295,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
 
       // halve the time step size
       SetDeltaTime(GetDeltaTime() * 0.5);
-      // update the number of max time steps
-      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
-      if (endstep > std::numeric_limits<int>::max())
+      // update the number of max time steps if it does not exceed the largest possible value for
+      // the type int
+      if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
         dserror(" Your updated step number exceeds largest possible value for type int");
+      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
       SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
@@ -323,10 +324,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
 
       // halve the time step size
       SetDeltaTime(GetDeltaTime() * 0.5);
-      // update the number of max time steps
-      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
-      if (endstep > std::numeric_limits<int>::max())
+      // update the number of max time steps if it does not exceed the largest possible value for
+      // the type int
+      if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
         dserror(" Your updated step number exceeds largest possible value for type int");
+      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
       SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
