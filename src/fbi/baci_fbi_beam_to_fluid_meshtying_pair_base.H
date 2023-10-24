@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * This base class creates output of (if selected in the input file) the segmentation, the
      * integration points - and if implemented in the derived classes - the forces at the

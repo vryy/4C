@@ -13,7 +13,7 @@
 #define BACI_FLUID_TIMINT_H
 
 #include "baci_adapter_fld_fluid.H"
-#include "baci_fluid_discretization_runtime_vtu_output_params.H"
+#include "baci_fluid_discretization_runtime_output_params.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Map.h>
@@ -721,7 +721,7 @@ namespace FLD
     Teuchos::RCP<DiscretizationRuntimeVtuWriter> runtime_output_writer_;
 
     /// runtime output parameter
-    DRT::ELEMENTS::FluidRuntimeVtuOutputParams runtime_output_params_;
+    DRT::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;
 
     //! @name Time loop stuff
     //@{

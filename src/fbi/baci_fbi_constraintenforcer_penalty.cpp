@@ -13,8 +13,8 @@ fluid-beam interaction)
 #include "baci_adapter_fld_fbi_movingboundary.H"
 #include "baci_adapter_str_fbiwrapper.H"
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "baci_fbi_constraintenforcer.H"
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
@@ -34,7 +34,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   ADAPTER::FBIConstraintenforcer::Setup(structure, fluid);
   std::ofstream log;
   if ((GetDiscretizations()[1]->Comm().MyPID() == 0) &&
-      (Bridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag()))
+      (Bridge()->GetParams()->GetVisualizationOuputParamsPtr()->GetConstraintViolationOutputFlag()))
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
@@ -104,7 +104,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Output(double time, int step)
 
 void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step)
 {
-  if (Bridge()->GetParams()->GetVtkOuputParamsPtr()->GetConstraintViolationOutputFlag())
+  if (Bridge()->GetParams()->GetVisualizationOuputParamsPtr()->GetConstraintViolationOutputFlag())
   {
     double penalty_parameter = Bridge()->GetParams()->GetPenaltyParameter();
 

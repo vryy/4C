@@ -16,8 +16,8 @@
 #include "baci_adapter_str_fbiwrapper.H"
 #include "baci_binstrategy.H"
 #include "baci_fbi_adapter_constraintbridge.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_writer.H"
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_writer.H"
 #include "baci_fbi_constraintenforcer.H"
 #include "baci_fbi_constraintenforcer_factory.H"
 #include "baci_inpar_fbi.H"
@@ -199,7 +199,7 @@ void FSI::DirichletNeumannVel::Timeloop(
   vtk_output_writer_->Init();
   vtk_output_writer_->Setup(
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
-      constraint_manager_->GetBridge()->GetParams()->GetVtkOuputParamsPtr(), Time());
+      constraint_manager_->GetBridge()->GetParams()->GetVisualizationOuputParamsPtr(), Time());
   constraint_manager_->Evaluate();
   if (GetKinematicCoupling()) StructToFluid(Teuchos::null);
 
