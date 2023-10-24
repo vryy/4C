@@ -211,32 +211,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                           |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
-{
-  std::vector<Teuchos::RCP<Element>> volumes(1);
-  volumes[0] = Teuchos::rcp(this, false);
-  return volumes;
-}
-
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
-      DRT::UTILS::buildSurfaces, this);
+      DRT::UTILS::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -244,14 +226,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfac
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-
-  // so we have to allocate new line elements:
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
-      DRT::UTILS::buildLines, this);
+      DRT::UTILS::buildLines, *this);
 }

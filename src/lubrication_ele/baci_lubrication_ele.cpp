@@ -237,23 +237,7 @@ void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  if (NumLine() > 1)  // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary, Lubrication>(
-        DRT::UTILS::buildLines, this);
-  else
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
+  return DRT::UTILS::GetElementLines<LubricationBoundary, Lubrication>(*this);
 }
 
 
@@ -262,41 +246,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
-  if (NumSurface() > 1)  // 3D
-    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary, Lubrication>(
-        DRT::UTILS::buildSurfaces, this);
-  else if (NumSurface() == 1)
-  {
-    // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
-  }
-  else
-  {
-    // 1D
-    dserror("Surfaces() for 1D-Lubrication element not implemented");
-    return DRT::Element::Surfaces();
-  }
+  return DRT::UTILS::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
 }
-
-
-/*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)               wirtz 10/15 |
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Volumes()
-{
-  dserror("Volumes() for 1D-/2D-Lubrication element not implemented");
-  return DRT::Element::Volumes();
-}
-
 
 /*----------------------------------------------------------------------*
  | read element input                                       wirtz 10/15 |
@@ -417,16 +368,7 @@ int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   dserror("Lines of LubricationBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
-  return lines;
 }
 
 /*----------------------------------------------------------------------*
@@ -434,14 +376,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Line
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
   dserror("Surfaces of LubricationBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
-  return surfaces;
 }

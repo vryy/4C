@@ -410,6 +410,8 @@ namespace DRT
          In this case, the element itself must be able to evaluate the
          Neumann boundary conditions on a line itself.
 
+    \note Do not store line elements inside parent elements since the nodes
+might become invalid after a redistribution of the discretization.
     */
     virtual std::vector<Teuchos::RCP<DRT::Element>> Lines()
     {
@@ -433,28 +435,10 @@ namespace DRT
          In this case, the element itself must be able to evaluate the
          Neumann boundary conditions on a surface itself.
 
+    \note Do not store surface elements inside parent elements since the nodes
+might become invalid after a redistribution of the discretization.
     */
     virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces()
-    {
-      return std::vector<Teuchos::RCP<DRT::Element>>(0);
-    }
-
-    /*!
-    \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-    This is a base class dummy routine that always returns nullptr.
-    The derived element class is expected to allocate and store
-    a vector of elements that represent the volume of this element.
-    Length of this vector would usually be just one.
-    This volume element is then used to create and evaluate boundary conditions.
-
-    \note A 3D type of element (e.g. a solid, fluid3, etc) may return
-         a vector of length one pointing to itself. It then does not need
-         to be able to spin of an explicit separate volume element.
-         In this case, the element itself must be able to evaluate the
-         Neumann boundary conditions on a volume itself.
-    */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes()
     {
       return std::vector<Teuchos::RCP<DRT::Element>>(0);
     }

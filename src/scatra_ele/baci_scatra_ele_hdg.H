@@ -225,9 +225,6 @@ namespace DRT
       //! Get vector of Teuchos::RCPs to the surfaces of this element
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      //! Get vector of Teuchos::RCPs to the volume of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
       //! Get Teuchos::RCP to the internal face adjacent to this element as master element and the
       //! parent_slave element
       Teuchos::RCP<DRT::Element> CreateFaceElement(

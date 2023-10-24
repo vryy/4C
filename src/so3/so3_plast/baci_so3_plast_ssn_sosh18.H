@@ -75,7 +75,6 @@ namespace DRT
       int NumLine() const override { return So_sh18::NumLine(); }
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return So_sh18::Lines(); }
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return So_sh18::Surfaces(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override { return So_sh18::Volumes(); }
       int NumDofPerNode(const DRT::Node& node) const override
       {
         return So_sh18::NumDofPerNode(node);

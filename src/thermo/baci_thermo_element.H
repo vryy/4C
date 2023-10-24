@@ -184,9 +184,6 @@ namespace DRT
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      //! \brief Get vector of Teuchos::RCPs to the volume of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
       //! \brief Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the

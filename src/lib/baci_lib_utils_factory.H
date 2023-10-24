@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_discret.H"
 
+#include <Teuchos_RCPDecl.hpp>
+
 namespace DRT
 {
   namespace UTILS
@@ -83,25 +85,25 @@ namespace DRT
     std::vector<Teuchos::RCP<DRT::Element>> ElementBoundaryFactory(
         const BoundaryBuildType
             buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
-        ParentEle* ele  ///< pointer on the parent element
+        ParentEle& ele  ///< pointer on the parent element
     )
     {
       // do we have to build volume, surface or line elements?
       // get node connectivity for specific distype of parent element
       unsigned int nele = 0;
-      const DRT::Element::DiscretizationType distype = ele->Shape();
+      const DRT::Element::DiscretizationType distype = ele.Shape();
       std::vector<std::vector<int>> connectivity;
       switch (buildtype)
       {
         case buildSurfaces:
         {
-          nele = ele->NumSurface();
+          nele = ele.NumSurface();
           connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
           break;
         }
         case buildLines:
         {
-          nele = ele->NumLine();
+          nele = ele.NumLine();
           connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);
           break;
         }
@@ -126,13 +128,13 @@ namespace DRT
         // get connectivity infos
         for (unsigned int inode = 0; inode < nnode; inode++)
         {
-          nodeids[inode] = ele->PointIds()[connectivity[iele][inode]];
-          nodes[inode] = ele->Points()[connectivity[iele][inode]];
+          nodeids[inode] = ele.PointIds()[connectivity[iele][inode]];
+          nodes[inode] = ele.Points()[connectivity[iele][inode]];
         }
 
         // allocate a new boundary element
         boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(
-            iele, ele->Owner(), nodeids.size(), nodeids.data(), nodes.data(), ele, iele));
+            iele, ele.Owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele));
       }
 
       return boundaryeles;
@@ -175,6 +177,42 @@ namespace DRT
           lsurface_master, lsurface_slave, localtrafomap));
     }
 
+    template <class BoundaryEle, class ParentEle>
+    std::vector<Teuchos::RCP<DRT::Element>> GetElementLines(ParentEle& ele)
+    {
+      // 1D boundary element and 2D/3D parent element
+      if (CORE::DRT::UTILS::getDimension(ele.Shape()) > 1)
+      {
+        return DRT::UTILS::ElementBoundaryFactory<BoundaryEle, ParentEle>(
+            DRT::UTILS::buildLines, ele);
+      }
+      else if (CORE::DRT::UTILS::getDimension(ele.Shape()) == 1)
+      {
+        // 1D boundary element and 1D parent element
+        //  -> we return the element itself
+        return {Teuchos::rcpFromRef(ele)};
+      }
+      dserror("Lines  does not exist for points.");
+    }
+
+    template <class BoundaryEle, class ParentEle>
+    std::vector<Teuchos::RCP<DRT::Element>> GetElementSurfaces(ParentEle& ele)
+    {
+      if (CORE::DRT::UTILS::getDimension(ele.Shape()) > 2)
+      {
+        // 2D boundary element and 3D parent element
+        return DRT::UTILS::ElementBoundaryFactory<BoundaryEle, ParentEle>(
+            DRT::UTILS::buildSurfaces, ele);
+      }
+      else if (CORE::DRT::UTILS::getDimension(ele.Shape()) == 2)
+      {
+        // 2D boundary element and 2D parent element
+        // -> we return the element itself
+        return {Teuchos::rcpFromRef(ele)};
+      }
+
+      dserror("Surfaces do not exist for 1D-elements.");
+    }
 
   }  // namespace UTILS
 }  // namespace DRT
