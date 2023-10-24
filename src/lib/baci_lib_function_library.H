@@ -21,11 +21,12 @@ namespace DRT::UTILS
   class FunctionManager;
 }
 
+namespace CORE::UTILS
+{
+  class CubicSplineInterpolation;
+}
 namespace DRT::UTILS
 {
-  // forward declaration
-  class CubicSplineInterpolation;
-
   /// add valid function lines
   void AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_manager);
 
@@ -103,7 +104,7 @@ namespace DRT::UTILS
     [[nodiscard]] double EvaluateDerivative(double scalar, int deriv_order) const override;
 
    private:
-    std::unique_ptr<CubicSplineInterpolation> cubic_spline_;
+    std::unique_ptr<CORE::UTILS::CubicSplineInterpolation> cubic_spline_;
   };
 }  // namespace DRT::UTILS
 

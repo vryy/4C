@@ -15,10 +15,10 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "baci_io_control.H"
 #include "baci_io_csv_reader.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_cubic_spline_interpolation.H"
 #include "baci_lib_function.H"
 #include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_cubic_spline_interpolation.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -108,8 +108,8 @@ DRT::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
   auto vector_of_csv_columns = IO::ReadCsv(2, csv_file);
 
-  cubic_spline_ = std::make_unique<CubicSplineInterpolation>(
-      CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));
+  cubic_spline_ = std::make_unique<CORE::UTILS::CubicSplineInterpolation>(
+      CORE::UTILS::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));
 }
 
 

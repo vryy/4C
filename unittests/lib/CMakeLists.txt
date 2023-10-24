@@ -2,7 +2,6 @@ set(TESTNAME unittests_lib)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    baci_cubic_spline_interpolation_test.cpp
     baci_demangle_test.cpp
     baci_discretization_nodal_coordinates_test.cpp
     baci_domainreader_test.cpp
@@ -12,9 +11,7 @@ set(SOURCE_LIST
     baci_inputreader_test.cpp
     baci_linedefinition_test.cpp
     baci_symbolic_expression_test.cpp
-    baci_tensor_transformation_test.cpp
     baci_utils_reference_configuration_test.cpp
-    baci_voigt_notation_test.cpp
     )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
