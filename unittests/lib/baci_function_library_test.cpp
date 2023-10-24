@@ -9,9 +9,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_cubic_spline_interpolation.H"
 #include "baci_lib_function.H"
 #include "baci_lib_function_library.H"
+#include "baci_utils_cubic_spline_interpolation.H"
 
 #include <fstream>
 

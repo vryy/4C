@@ -2,7 +2,6 @@ set(TESTNAME unittests_lib)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    baci_cubic_spline_interpolation_test.cpp
     baci_demangle_test.cpp
     baci_discretization_nodal_coordinates_test.cpp
     baci_domainreader_test.cpp

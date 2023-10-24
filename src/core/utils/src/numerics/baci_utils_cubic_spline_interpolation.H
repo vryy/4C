@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_CUBIC_SPLINE_INTERPOLATION_H
-#define BACI_LIB_CUBIC_SPLINE_INTERPOLATION_H
+#ifndef BACI_UTILS_CUBIC_SPLINE_INTERPOLATION_H
+#define BACI_UTILS_CUBIC_SPLINE_INTERPOLATION_H
 
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -18,7 +18,7 @@
 
 /*----------------------------------------------------------------------*/
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /**
    * @brief Cubic spline interpolation based on two input vectors \f$ \vec{x}, \vec{y} \f$
@@ -142,6 +142,6 @@ namespace DRT::UTILS
     //! sampling points for cubic spline interpolation
     std::vector<double> x_;
   };
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif
