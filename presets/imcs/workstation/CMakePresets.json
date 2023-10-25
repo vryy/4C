@@ -30,6 +30,7 @@
         "CLN_INCLUDE_DIR": "/imcs/public/compsim/lib/TPL/packages/CLN/build/install/include",
         "DOXYGEN_USE_LOCAL_MATHJAX": "ON",
         "DOXYGEN_LOCAL_MATHJAX_BASEPATH": "/imcs/public/compsim/opt/mathjax-2.7.9",
+        "BUILD_DOXYGEN": "ON",
         "BACI_WITH_GOOGLETEST": "ON",
         "BACI_WITH_ARBORX": "ON",
         "BACI_WITH_MIRCO": "ON"
