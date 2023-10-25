@@ -100,8 +100,6 @@ void NOX::NLN::STR::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
     double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
     solverPtr->AdaptTolerance(wanted, worst, adaptiveControlObjective);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

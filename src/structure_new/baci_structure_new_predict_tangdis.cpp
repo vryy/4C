@@ -55,8 +55,6 @@ void STR::PREDICT::TangDis::Setup()
   prepostgroup_map[NOX::NLN::GROUP::prepost_tangdis] = preposttangdis_ptr;
 
   issetup_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -137,8 +135,6 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   ImplInt().ModelEval().Predict(GetType());
 
   ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_vague);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -213,6 +209,4 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
 
   // finally add the linear reaction forces to the current rhs
   ::CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
-
-  return;
 }

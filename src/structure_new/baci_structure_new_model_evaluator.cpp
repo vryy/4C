@@ -299,7 +299,6 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x) const
 {
   // default ResetStates call
   ResetStates(x, true);
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -307,7 +306,6 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x) const
 void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate) const
 {
   ResetStates(x, setstate, *me_vec_ptr_);
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -316,7 +314,6 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate, Vec
 {
   if (setstate) int_ptr_->SetState(x);
   for (auto& me_iter : me_vec) me_iter->Reset(x);
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -520,8 +517,6 @@ void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
   CheckInitSetup();
   for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->Predict(pred_type);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -572,8 +567,6 @@ void STR::ModelEvaluator::RunPostComputeX(const Epetra_Vector& xold, const Epetr
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->RunPostComputeX(xold, dir, xnew);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -587,8 +580,6 @@ void STR::ModelEvaluator::RunPreComputeX(const Epetra_Vector& xold, Epetra_Vecto
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->RunPreComputeX(xold, dir_mutable, curr_grp);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

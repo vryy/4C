@@ -84,7 +84,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! recover condensed Lagrange multipliers
       void RunPostComputeX(

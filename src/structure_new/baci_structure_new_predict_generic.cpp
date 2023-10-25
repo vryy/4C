@@ -51,8 +51,6 @@ void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type,
   noxparams_ptr_ = noxparams_ptr;
 
   isinit_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

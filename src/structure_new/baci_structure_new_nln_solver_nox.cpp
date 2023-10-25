@@ -117,8 +117,6 @@ void STR::NLN::SOLVER::Nox::Setup()
 
   // set flag
   issetup_ = true;
-
-  return;
 }
 
 
@@ -141,8 +139,6 @@ void STR::NLN::SOLVER::Nox::Reset()
   // Create NOX non-linear solver
   // -------------------------------------------------------------------------
   nlnsolver_ = NOX::NLN::Solver::BuildSolver(GroupPtr(), ostatus_, istatus_, nlnglobaldata_);
-
-  return;
 }
 
 
@@ -180,8 +176,6 @@ void STR::NLN::SOLVER::Nox::ResetParams()
     // get current time step and update the parameter list entry
     lsparams.set<int>("Current Time Step", DataGlobalState().GetStepNp());
   }
-
-  return;
 }
 
 

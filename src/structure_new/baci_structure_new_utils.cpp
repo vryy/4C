@@ -110,8 +110,6 @@ void STR::NLN::ConvertModelType2SolType(std::vector<enum NOX::NLN::SolutionType>
     if (mlinsolvers.find(*mt_iter) != mlinsolvers.end())
       slinsolvers[soltype] = mlinsolvers.at(*mt_iter);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -314,8 +312,6 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
         break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

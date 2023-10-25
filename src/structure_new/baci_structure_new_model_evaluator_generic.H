@@ -195,7 +195,7 @@ namespace STR
        * @param[in/out] rhs right-hand side vector
        *
        * \author hiermeier \date 03/18 */
-      virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) { return; }
+      virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) {}
 
       /*! \brief Assemble the force right-hand-side
        *
@@ -330,13 +330,10 @@ namespace STR
       virtual void UpdateStepState(const double& timefac_n) = 0;
 
       // compute the element contributions for element based scaling using PTC
-      virtual void EvaluateJacobianContributionsFromElementLevelForPTC() { return; };
+      virtual void EvaluateJacobianContributionsFromElementLevelForPTC(){};
       // assemble the element contributions
       virtual void AssembleJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
-      {
-        return;
-      };
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n){};
 
       //! Update the element by end of the time step
       virtual void UpdateStepElement() = 0;
@@ -391,10 +388,10 @@ namespace STR
       /**
        * \brief This method is called before the runtime output method is called.
        */
-      virtual void RuntimePreOutputStepState() { return; };
+      virtual void RuntimePreOutputStepState(){};
 
       //! runtime output routine for model evaluator
-      virtual void RuntimeOutputStepState() const { return; };
+      virtual void RuntimeOutputStepState() const {};
 
       //! reset routine for model evlaluator
       virtual void ResetStepState() = 0;

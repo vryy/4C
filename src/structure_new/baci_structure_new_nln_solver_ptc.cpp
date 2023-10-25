@@ -36,8 +36,6 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
   Nox::Setup();
 
   dsassert(IsSetup(), "issetup_ should be \"true\" at this point!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -105,6 +103,4 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
     CreateQuantityTypes(qtypes, DataSDyn());
     SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
-
-  return;
 }

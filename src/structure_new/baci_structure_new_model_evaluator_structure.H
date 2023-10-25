@@ -58,10 +58,10 @@ namespace STR
       bool EvaluateForceStiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void PreEvaluate() override{};
 
       //! derived
-      void PostEvaluate() override { return; };
+      void PostEvaluate() override{};
 
       /*! \brief Initialize viscous and inertial matrices
        *

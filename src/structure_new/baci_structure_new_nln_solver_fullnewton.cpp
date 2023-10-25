@@ -36,8 +36,6 @@ void STR::NLN::SOLVER::FullNewton::Setup()
   Nox::Setup();
 
   dsassert(IsSetup(), "issetup_ should be \"true\" at this point!");
-
-  return;
 }
 
 
@@ -95,6 +93,4 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
     STR::NLN::SOLVER::SetStatusTestParams(
         DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
-
-  return;
 }

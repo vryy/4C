@@ -469,8 +469,6 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
 
   // re-initialize finite elements
   DRT::ParObjectFactory::Instance().InitializeElements(Discret());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -481,7 +479,6 @@ void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
   CheckInitSetup();
 
   Strategy().RunPostComputeX(xold, dir, xnew);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -491,7 +488,6 @@ void STR::MODELEVALUATOR::Meshtying::RemoveCondensedContributionsFromRhs(Epetra_
   CheckInitSetup();
 
   Strategy().RemoveCondensedContributionsFromRhs(rhs);
-  return;
 }
 
 /*----------------------------------------------------------------------*

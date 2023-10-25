@@ -86,8 +86,6 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
 
     qtypes.insert(qt_vec.begin(), qt_vec.end());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -346,8 +344,6 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   Teuchos::ParameterList& pmaxiters = postatus.sublist("Test 1");
   pmaxiters.set("Test Type", "MaxIters");
   pmaxiters.set<int>("Maximum Iterations", datasdyn.GetIterMax());
-
-  return;
 }
 
 
@@ -407,8 +403,6 @@ void STR::NLN::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
   // if there are neither AND nor OR combinations
   if (count_or == 0 and count_and == 0)
     SetQuantityTestParams(ptest, datasdyn, NOX::NLN::StatusTest::quantity_structure, testname);
-
-  return;
 }
 
 
@@ -422,8 +416,6 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
   test_string << "Test " << count;
   Teuchos::ParameterList& ptest = p.sublist(test_string.str());
   SetQuantityTestParams(ptest, datasdyn, qtype, testname);
-
-  return;
 }
 
 
@@ -443,8 +435,6 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
     SetActiveSetParams(p, qtype);
   else
     dserror("Unknown/Unsupported status test name: %s", testname.c_str());
-
-  return;
 }
 
 
@@ -483,8 +473,6 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
         break;
     }  // switch case
   }    // loop over the model type vector
-
-  return;
 }
 
 
@@ -495,7 +483,6 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
     const double& tol, const enum INPAR::STR::VectorNorm& normtype)
 {
   SetNormUpdateParams(qlist, qtype, 1.0, 0.5, toltype, tol, normtype, false);
-  return;
 }
 
 
@@ -585,8 +572,6 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
 
   // set scaling by the vector length
   if (isscaled) qlist.set("Scale Type", "Scaled");
-
-  return;
 }
 
 
@@ -597,7 +582,6 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
     const double& tol, const enum INPAR::STR::VectorNorm& normtype)
 {
   SetNormFParams(qlist, qtype, toltype, tol, normtype, false);
-  return;
 }
 
 
@@ -680,8 +664,6 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
 
   // set scaling by the vector length
   if (isscaled) qlist.set("Scale Type", "Scaled");
-
-  return;
 }
 
 
@@ -694,6 +676,4 @@ void STR::NLN::SOLVER::SetActiveSetParams(
   // set the quantity type
   qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
   qlist.set<int>("Max Cycle Size", 3);
-
-  return;
 }

@@ -114,10 +114,10 @@ namespace STR
       bool EvaluateForceStiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void PreEvaluate() override{};
 
       //! derived
-      void PostEvaluate() override { return; };
+      void PostEvaluate() override{};
 
       //! derived
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -128,57 +128,48 @@ namespace STR
 
       //! [derived]
       void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
-      {
-        return;
-      };
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override{};
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
-      {
-        return;
-      };
+          const NOX::NLN::Group& curr_grp) override{};
 
       //! recover condensed Lagrange multipliers
-      void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
-      {
-        return;
-      };
+      void RunPostComputeX(const Epetra_Vector& xold, const Epetra_Vector& dir,
+          const Epetra_Vector& xnew) override{};
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      void UpdateStepElement() override { return; };
+      void UpdateStepElement() override{};
 
       //! [derived]
-      void DetermineStressStrain() override { return; };
+      void DetermineStressStrain() override{};
 
       //! [derived]
-      void DetermineEnergy() override { return; };
+      void DetermineEnergy() override{};
 
       //! [derived]
-      void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override{};
 
       //! [derived]
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override{};
 
       //! derived
-      void ResetStepState() override { return; };
+      void ResetStepState() override{};
 
       //! [derived]
-      void PostOutput() override { return; };
+      void PostOutput() override{};
 
       //! @name Accessors to model specific things
       //! @{
