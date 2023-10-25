@@ -85,7 +85,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! [derived]
       void RunPostComputeX(
@@ -93,13 +93,10 @@ namespace STR
 
       //! [derived]
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
-      {
-        return;
-      };
+          const NOX::NLN::Group& curr_grp) override{};
 
       //! [derived]
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
 
       //! [derived]
       void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
@@ -110,25 +107,25 @@ namespace STR
           const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      void UpdateStepState(const double& timefac_n) override { return; };
+      void UpdateStepState(const double& timefac_n) override{};
 
       //! [derived]
-      void UpdateStepElement() override { return; };
+      void UpdateStepElement() override{};
 
       //! [derived]
-      void DetermineStressStrain() override { return; };
+      void DetermineStressStrain() override{};
 
       //! [derived]
-      void DetermineEnergy() override { return; };
+      void DetermineEnergy() override{};
 
       //! [derived]
-      void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override{};
 
       //! [derived]
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override{};
 
       //! [derived]
-      void ResetStepState() override { return; };
+      void ResetStepState() override{};
 
       //! [derived]
       Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
@@ -140,7 +137,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
       //! [derived]
-      void PostOutput() override { return; };
+      void PostOutput() override{};
 
       /*! \brief Reset model specific variables (without jacobian) [derived]
        *
@@ -148,13 +145,13 @@ namespace STR
        *
        * \param[in] x Current full state vector
        */
-      void Reset(const Epetra_Vector& x) override { return; };
+      void Reset(const Epetra_Vector& x) override{};
 
       //! \brief Perform actions just before the Evaluate() call [derived]
-      void PreEvaluate() override { return; };
+      void PreEvaluate() override{};
 
       //! \brief Perform actions right after the Evaluate() call [derived]
-      void PostEvaluate() override { return; };
+      void PostEvaluate() override{};
 
       //! @}
 

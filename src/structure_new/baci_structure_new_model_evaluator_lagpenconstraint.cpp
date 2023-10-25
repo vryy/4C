@@ -87,8 +87,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
 
   fstrconstr_np_ptr_->PutScalar(0.0);
   stiff_constr_ptr_->Zero();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -220,8 +218,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
 {
   iowriter.WriteVector("lagrmultiplier", constrman_->GetLagrMultVector());
   iowriter.WriteVector("refconval", constrman_->GetRefBaseValues());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -230,8 +226,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(IO::DiscretizationReader
 {
   double time_n = GState().GetTimeN();
   constrman_->ReadRestart(ioreader, time_n);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -247,8 +241,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::RunPostComputeX(
   CORE::LINALG::Export(dir, *lagmult_incr);
 
   constrman_->UpdateLagrMult(lagmult_incr);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -279,7 +271,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepElement()
 void STR::MODELEVALUATOR::LagPenConstraint::DetermineStressStrain()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -287,7 +278,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::DetermineStressStrain()
 void STR::MODELEVALUATOR::LagPenConstraint::DetermineEnergy()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -295,7 +285,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::DetermineEnergy()
 void STR::MODELEVALUATOR::LagPenConstraint::DetermineOptionalQuantity()
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -304,7 +293,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -314,8 +302,6 @@ void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
   CheckInitSetup();
 
   dserror("Not yet implemented");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -379,6 +365,4 @@ void STR::MODELEVALUATOR::LagPenConstraint::PostOutput()
 {
   CheckInitSetup();
   // empty
-
-  return;
 }  // PostOutput()

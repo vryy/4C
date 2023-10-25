@@ -121,8 +121,6 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
   }
 
   issetup_ = true;
-
-  return;
 }
 
 
@@ -138,8 +136,6 @@ void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<::STR::MODELEVALUATOR::Generic>>(
       name, me);
-
-  return;
 }
 
 
@@ -297,9 +293,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Create wrapper for the time integration strategy
   // ---------------------------------------------------------------------------
   SetStructureWrapper(*ioflags, *sdyn_, *xparams, *taflags, ti_strategy);
-
-  // see you
-  return;
 }
 
 
@@ -538,10 +531,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // TODO: insert the conditions related to INPAR::STR::model_constraints:
   // embedded mesh method and periodic boundary conditions for rves
-
-
-  // hopefully we haven't forgotten anything
-  return;
 }
 
 
@@ -631,8 +620,6 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
   if (isrotvec_global > 0) eletechs.insert(INPAR::STR::EleTech::rotvec);
-
-  return;
 }
 
 
@@ -759,8 +746,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       break;
     }
   }
-
-  return;
 }
 
 
@@ -808,8 +793,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
   if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
 
   if (str_wrapper_.is_null()) dserror("No proper time integration found!");
-
-  return;
 }
 
 
@@ -937,6 +920,4 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       str_wrapper_ = (Teuchos::rcp(new StructureTimeLoop(ti_strategy)));
       break;
   }
-
-  return;
 }

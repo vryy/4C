@@ -296,8 +296,6 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
   }
 
   isinit_ = true;
-
-  return;
 }
 
 
@@ -331,9 +329,6 @@ void STR::TIMINT::BaseDataSDyn::Setup()
   }
 
   issetup_ = true;
-
-  // Good bye
-  return;
 }
 
 

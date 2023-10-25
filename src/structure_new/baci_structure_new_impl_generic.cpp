@@ -60,8 +60,6 @@ void STR::IMPLICIT::Generic::Setup()
 
   // No issetup_ = true, since the Setup() functions of the derived classes
   // have to be called and finished first!
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

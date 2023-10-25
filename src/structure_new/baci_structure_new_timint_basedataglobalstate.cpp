@@ -145,8 +145,6 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
 
   // end of initialization
   isinit_ = true;
-
-  return;
 }
 
 
@@ -224,9 +222,6 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   SetInitialFields();
 
   issetup_ = true;
-
-  // Good bye
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -471,8 +466,6 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
 
     if (not check.second) dserror("Insert failed!");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -802,8 +795,6 @@ void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
         continue;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -827,8 +818,6 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
       exit(EXIT_FAILURE);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -862,8 +851,6 @@ void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSyste
         break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1257,6 +1244,4 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   /* tell the NOX::NLN::Group that the x vector has already been updated in
    * this preComputeX operator call */
   curr_grp_mutable.setSkipUpdateX(true);
-
-  return;
 }

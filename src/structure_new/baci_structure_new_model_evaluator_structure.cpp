@@ -469,8 +469,6 @@ void STR::MODELEVALUATOR::Structure::MaterialDampingContributions(
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
   // set damping matrix
   eval_mat[1] = GState().GetDampMatrix();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -497,8 +495,6 @@ void STR::MODELEVALUATOR::Structure::InertialContributions(
   eval_mat[1] = GState().GetMassMatrix();
   // set inertial vector if necessary
   eval_vec[1] = GetInertialForce();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -517,8 +513,6 @@ void STR::MODELEVALUATOR::Structure::InertialContributions(Teuchos::RCP<Epetra_V
 
   // set inertial vector if necessary
   eval_vec[1] = GetInertialForce();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1667,7 +1661,6 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& i
       iowriter.WriteVector("velocity", GState().GetVelNp());
       iowriter.WriteVector("acceleration", GState().GetAccNp());
     }
-    return;
   }
   else
   {
@@ -1734,8 +1727,6 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 
   DiscretPtr()->ClearState();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1768,8 +1759,6 @@ void STR::MODELEVALUATOR::Structure::PostOutput()
 {
   CheckInitSetup();
   // empty
-
-  return;
 }  // PostOutput()
 
 /*----------------------------------------------------------------------------*

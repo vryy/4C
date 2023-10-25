@@ -79,8 +79,6 @@ namespace
           length, receivedsize[0], tag, frompid * 10);
 
     exporter.Wait(datarequest);
-
-    return;
   }
 
   template <typename T>
@@ -336,7 +334,6 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
 
   // do it only once!
   isntmaps_filled_ = true;
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -473,7 +470,6 @@ void STR::MODELEVALUATOR::Data::SumIntoMyNorm(const int& numentries, const doubl
       break;
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------------*

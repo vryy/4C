@@ -375,8 +375,6 @@ void STR::MODELEVALUATOR::Contact::WriteRestart(
   // since the global OutputStepState() routine is not called, if the
   // restart is written, we have to do it here manually.
   OutputStepState(iowriter);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -446,7 +444,6 @@ void STR::MODELEVALUATOR::Contact::RunPostComputeX(
   EvalContact().SetActionType(MORTAR::eval_run_post_compute_x);
 
   Strategy().Evaluate(EvalData().Contact(), &eval_vec);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -469,17 +466,15 @@ void STR::MODELEVALUATOR::Contact::DetermineStressStrain()
     Strategy().ContactWear()->PutScalar(0.0);
     Strategy().OutputWear();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::DetermineEnergy() { return; }
+void STR::MODELEVALUATOR::Contact::DetermineEnergy() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::DetermineOptionalQuantity() { return; }
+void STR::MODELEVALUATOR::Contact::DetermineOptionalQuantity() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -711,8 +706,6 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
 
   /// general way to write the output corresponding to the active strategy
   Strategy().WriteOutput(iowriter);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -722,8 +715,6 @@ void STR::MODELEVALUATOR::Contact::ResetStepState()
   CheckInitSetup();
 
   dserror("Not yet implemented");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -859,8 +850,6 @@ void STR::MODELEVALUATOR::Contact::PostOutput()
 {
   CheckInitSetup();
   // empty
-
-  return;
 }  // PostOutput()
 
 /*----------------------------------------------------------------------------*
@@ -911,8 +900,6 @@ void STR::MODELEVALUATOR::Contact::RunPreApplyJacobianInverse(const Epetra_Vecto
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
   const_cast<CONTACT::CoAbstractStrategy&>(Strategy())
       .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

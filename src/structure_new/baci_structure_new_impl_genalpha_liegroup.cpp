@@ -254,8 +254,6 @@ void STR::IMPLICIT::GenAlphaLieGroup::PredictConstDisConsistVelAcc(
   accnp.Update(
       alpham_ / (1.0 - alphaf_) - (1.0 - alpham_) * (0.5 - beta_) / (beta_ * (1.0 - alphaf_)),
       *accn_mod_, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

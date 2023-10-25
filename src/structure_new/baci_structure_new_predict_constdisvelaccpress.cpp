@@ -41,8 +41,6 @@ void STR::PREDICT::ConstDisVelAccPress::Setup()
   tangdis_ptr_->Setup();
 
   issetup_ = true;
-
-  return;
 }
 
 
@@ -94,6 +92,4 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
   // If the const predictors failed e.g. due to too little history information,
   // we use the tangdis predictor as fallback predictor.
   if (not ok) tangdis_ptr_->Compute(grp);
-
-  return;
 }

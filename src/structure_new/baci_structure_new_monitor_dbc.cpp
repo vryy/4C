@@ -84,8 +84,6 @@ void STR::MonitorDbc::GetTaggedCondition(std::vector<const DRT::Condition*>& tag
 
     if (*cptr == tag_name) tagged_conds.push_back(cond_ptr.get());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

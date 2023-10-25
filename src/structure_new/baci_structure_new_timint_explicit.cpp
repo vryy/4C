@@ -76,8 +76,6 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
 
   // ToDo prepare contact for new time step
   // PrepareStepContact();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -159,7 +157,6 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
 void STR::TIMINT::Explicit::PreparePartitionStep()
 {
   // do nothing for explicit time integrators
-  return;
 }
 
 /*----------------------------------------------------------------------------*

@@ -51,8 +51,6 @@ void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlo
   timint_ptr_ = timint;
 
   isinit_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

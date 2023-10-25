@@ -371,9 +371,6 @@ void STR::IMPLICIT::OneStepTheta::PredictConstDisConsistVelAcc(
    * update part and have to consider only the old state at t_{n}.
    *           disnp-disn = 0.0                                 */
   accnp.Update(-1.0 / (theta_ * theta_ * dt), *veln, -(1.0 - theta_) / theta_, *accn, 0.0);
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
