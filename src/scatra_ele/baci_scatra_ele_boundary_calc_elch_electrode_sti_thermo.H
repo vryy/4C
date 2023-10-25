@@ -20,7 +20,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
@@ -72,7 +72,7 @@ namespace DRT
        *
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,

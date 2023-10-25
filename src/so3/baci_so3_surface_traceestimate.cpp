@@ -30,24 +30,24 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 {
   switch (ParentElement()->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      if (Shape() == DRT::Element::DiscretizationType::quad4)
-        return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::quad4>(parent_disp);
+    case CORE::FE::CellType::hex8:
+      if (Shape() == CORE::FE::CellType::quad4)
+        return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex8,
+            CORE::FE::CellType::quad4>(parent_disp);
       else
         dserror("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::hex27,
-          DRT::Element::DiscretizationType::quad9>(parent_disp);
+    case CORE::FE::CellType::hex27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex27,
+          CORE::FE::CellType::quad9>(parent_disp);
       break;
-    case DRT::Element::DiscretizationType::tet4:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::tet4,
-          DRT::Element::DiscretizationType::tri3>(parent_disp);
+    case CORE::FE::CellType::tet4:
+      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::tet4,
+          CORE::FE::CellType::tri3>(parent_disp);
       break;
-    case DRT::Element::DiscretizationType::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::nurbs27,
-          DRT::Element::DiscretizationType::nurbs9>(parent_disp);
+    case CORE::FE::CellType::nurbs27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::nurbs27,
+          CORE::FE::CellType::nurbs9>(parent_disp);
       break;
     default:
       dserror("parent shape not implemented");
@@ -57,7 +57,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 }
 
 
-template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombined(
     std::vector<double>& parent_disp)
 {
@@ -104,7 +104,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
-template <DRT::Element::DiscretizationType dt_vol>
+template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xrefe,
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
 }
 
 
-template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xrefe,
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
 
     double normalfac = 1.;
-    if (Shape() == DRT::Element::DiscretizationType::nurbs9)
+    if (Shape() == CORE::FE::CellType::nurbs9)
     {
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> boundaryknots(dim - 1);
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
   return;
 }
 
-template <DRT::Element::DiscretizationType dt_vol>
+template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::Strains(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xrefe,
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   CORE::LINALG::Matrix<dim, num_node> deriv;
 
-  if (dt_vol == DRT::Element::DiscretizationType::nurbs27)
+  if (dt_vol == CORE::FE::CellType::nurbs27)
   {
     std::vector<CORE::LINALG::SerialDenseVector> knots;
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
@@ -335,7 +335,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
 }
 
 
-template <DRT::Element::DiscretizationType dt_vol>
+template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xcurr,
@@ -433,22 +433,22 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
 {
   switch (ParentElement()->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      if (Shape() == DRT::Element::DiscretizationType::quad4)
-        return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::quad4>(parent_disp);
+    case CORE::FE::CellType::hex8:
+      if (Shape() == CORE::FE::CellType::quad4)
+        return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex8,
+            CORE::FE::CellType::quad4>(parent_disp);
       else
         dserror("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::hex27,
-          DRT::Element::DiscretizationType::quad9>(parent_disp);
-    case DRT::Element::DiscretizationType::tet4:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::tet4,
-          DRT::Element::DiscretizationType::tri3>(parent_disp);
-    case DRT::Element::DiscretizationType::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::nurbs27,
-          DRT::Element::DiscretizationType::nurbs9>(parent_disp);
+    case CORE::FE::CellType::hex27:
+      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex27,
+          CORE::FE::CellType::quad9>(parent_disp);
+    case CORE::FE::CellType::tet4:
+      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::tet4,
+          CORE::FE::CellType::tri3>(parent_disp);
+    case CORE::FE::CellType::nurbs27:
+      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::nurbs27,
+          CORE::FE::CellType::nurbs9>(parent_disp);
     default:
       dserror("parent shape not implemented");
   }
@@ -456,7 +456,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   return 0;
 }
 
-template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
     std::vector<double>& parent_disp)
 {
@@ -500,7 +500,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
-template <DRT::Element::DiscretizationType dt_vol>
+template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xrefe,
@@ -546,7 +546,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
 }
 
 
-template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         3>& xrefe,
@@ -624,7 +624,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
 
 
 
-template <DRT::Element::DiscretizationType dt_vol>
+template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement - 1>& proj)

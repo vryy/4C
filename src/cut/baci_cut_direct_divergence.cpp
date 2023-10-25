@@ -536,29 +536,28 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->Shape())
     {
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex8>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex8>(
             TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::tet4>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet4>(
             TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::wedge6>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::wedge6>(
             TotalInteg, "LocalToGlobal");
         break;
       }
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::pyramid5>(
-                TotalInteg, "LocalToGlobal");
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::pyramid5>(
+            TotalInteg, "LocalToGlobal");
         break;
       }
       default:
@@ -570,21 +569,21 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->getQuadShape())
     {
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex20>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex20>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex27>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex27>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::tet10>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet10>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }

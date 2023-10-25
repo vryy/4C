@@ -26,14 +26,14 @@
 namespace DRT::ELEMENTS
 {
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   constexpr auto GetGaussRuleStiffnessMatrixPoro()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
 
   //! extract element data from global vector
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ExtractValuesFromGlobalVector(const DRT::Discretization& discretization, const int& dofset,
       const std::vector<int>& lm,
       CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_nodes<distype>>* matrixtofill,
@@ -113,7 +113,7 @@ namespace DRT::ELEMENTS
    * @param kinematictype (in): kinematic type of element
    * @return volchange: volume change
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   double ComputeVolumeChange(const SpatialMaterialMapping<distype>& spatial_material_mapping,
       const JacobianMapping<distype>& jacobian_mapping, const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -159,8 +159,7 @@ namespace DRT::ELEMENTS
    * @return dDetDefGrad_dDisp: derivative of determinant of deformation gradient w.r.t.
    * the displacements
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<distype>> ComputeLinearizationOfDetDefGradWrtDisp(
       const SpatialMaterialMapping<distype> spatial_material_mapping,
       const JacobianMapping<distype> jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
@@ -221,8 +220,7 @@ namespace DRT::ELEMENTS
    * @param kinematictype (in): kinematic type of element
    * @return dVolchange_dDisp: derivative of volume change w.r.t. the displacements
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<1, DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>
   ComputeLinearizationOfVolchangeWrtDisp(
       const CORE::LINALG::Matrix<1, DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>
@@ -261,7 +259,7 @@ namespace DRT::ELEMENTS
    * displacements
    * @param dPorosity_dDisp (in/out): derivative of porosity w.r.t. the displacements
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ComputePorosityAndLinearization(MAT::StructPoro& porostructmat,
       Teuchos::ParameterList& params, const double solidpressure, const int gp,
       const double volchange, double& porosity,
@@ -293,7 +291,7 @@ namespace DRT::ELEMENTS
    * @param gp (in): Gauss point
    * @return porosity (volfrac of multiphase porspace + volfracs of additional porous networks)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   double ComputePorosity(MAT::StructPoro& porostructmat, Teuchos::ParameterList& params,
       const double solidpressure, const double volchange, const int gp)
   {
@@ -321,7 +319,7 @@ namespace DRT::ELEMENTS
    * @param dPorosity_dDisp (in): derivative of porosity w.r.t. the displacements
    * @param dSolidpressure_dDisp (in/out): derivative of solidpressure w.r.t. the displacements
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void RecalculateLinearizationOfSolPressWrtDisp(const double fluidpress, const double porosity,
       const int nummultifluiddofpernode, const int numfluidphases, const int numvolfrac,
       const std::vector<double>& fluidmultiphase_phiAtGP,
@@ -406,7 +404,7 @@ namespace DRT::ELEMENTS
    * * @param BopCinv (in) : B^T . C^-1
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void UpdateInternalForceVectorMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
       const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<distype>, 1>& BopCinv,
@@ -435,7 +433,7 @@ namespace DRT::ELEMENTS
    * w.r.t. the displacements
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void UpdateElasticStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
       const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<distype>, 1>& BopCinv,
@@ -474,7 +472,7 @@ namespace DRT::ELEMENTS
    * @param n_xyz (in) : derivatives of the shape functions w.r.t. XYZ
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void UpdateGeometricStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& C_inv_vec,
@@ -525,7 +523,7 @@ namespace DRT::ELEMENTS
    * @param nummultifluiddofpernode (in) : number of fluid multiphase dofs per node
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void UpdateStiffnessMatrixCouplingMultiPhasePressureBased(const double detJ_w,
       const std::vector<double>& solidpressurederiv,
       const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<distype>, 1>& BopCinv,
@@ -565,7 +563,7 @@ namespace DRT::ELEMENTS
    * @param: shape_functions (in): Shape functions
    * @returns: fluidmultiphase_phiAtGP: fluid multiphase primary variables at GP
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   std::vector<double> ComputeFluidMultiPhasePrimaryVariablesAtGP(
       const std::vector<double>& fluidmultiphase_ephi, const int nummultifluiddofpernode,
       const ShapeFunctionsAndDerivatives<distype>& shape_functions)
@@ -595,7 +593,7 @@ namespace DRT::ELEMENTS
    * @returns solidpressurederiv: derivative of solidpressure w.r.t. fluid multiphase
    * primary variables
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   std::vector<double> ComputeSolidPressureDeriv(MAT::FluidPoroMultiPhase& porofluidmat,
       const std::vector<double>& fluidmultiphase_phiAtGP, const int numfluidphases)
   {
@@ -664,7 +662,7 @@ namespace DRT::ELEMENTS
    * @param: porofluidmat (in): material of multiphase fluid
    * @return solidpressure
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   double ComputeSolPressureAtGP(const int nummultifluiddofpernode, const int numfluidphases,
       const std::vector<double>& fluidmultiphase_phiAtGP, MAT::FluidPoroMultiPhase& porofluidmat)
   {
@@ -734,7 +732,7 @@ namespace DRT::ELEMENTS
     }
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct CauchyGreenAndInverse
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> right_cauchy_green_;
@@ -752,8 +750,7 @@ namespace DRT::ELEMENTS
    * @return CauchyGreenAndInverse<distype> : An object holding the right Cauchy-Green deformation
    * tensor and its inverse
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CauchyGreenAndInverse<distype> EvaluateCauchyGreenAndInverse(
       const SpatialMaterialMapping<distype>& spatial_material_mapping)
   {
@@ -780,8 +777,7 @@ namespace DRT::ELEMENTS
    * @return dInverseCauchyGreen_dDisp : derivative of the inverse right Cauchy-Green deformation
    * tensor w.r.t. the displacements
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_str<distype>,
       DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>
   EvaluateInverseCauchyGreenLinearization(CauchyGreenAndInverse<distype> cauchygreen,

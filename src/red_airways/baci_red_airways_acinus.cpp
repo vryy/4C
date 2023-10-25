@@ -125,14 +125,14 @@ DRT::Element* DRT::ELEMENTS::RedAcinus::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedAcinus::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DRT::Element::DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

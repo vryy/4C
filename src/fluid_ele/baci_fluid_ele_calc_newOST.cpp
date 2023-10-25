@@ -25,7 +25,7 @@
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
@@ -787,7 +787,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln)
 {
@@ -1021,7 +1021,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityOSTNew(
     const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
@@ -1288,7 +1288,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
@@ -1402,7 +1402,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InertiaConvectionReactionGalPart(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce,
@@ -1553,7 +1553,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InertiaConvectionReactionGal
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, CORE::LINALG::Matrix<nsd_, nsd_>& viscstress,
@@ -1636,7 +1636,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
@@ -1735,7 +1735,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -1790,7 +1790,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
 
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -1845,7 +1845,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& rhsfac, const double rhsfacn)
 {
@@ -1879,7 +1879,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
     CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -2030,7 +2030,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
@@ -2306,7 +2306,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements and grid velocity for element     schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALEOSTNew(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp, CORE::LINALG::Matrix<nsd_, nen_>& egridvnp,
@@ -2335,7 +2335,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALEOSTNew(
 /*---------------------------------------------------------------------------*
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const bool isale)
 {
   // get convective velocity at integration point
@@ -2378,37 +2378,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const b
 }
 
 // template classes
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex20, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex27, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet10, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge15, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::pyramid5,
     DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
-    DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
-    DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex20,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex27,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet10,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge6,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge15,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::pyramid5,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs9,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs27,
-    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri3, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs27, DRT::ELEMENTS::Fluid::none>;

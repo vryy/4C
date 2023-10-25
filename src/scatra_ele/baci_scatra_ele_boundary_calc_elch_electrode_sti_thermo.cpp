@@ -22,7 +22,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::In
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     probdim>::ScaTraEleBoundaryCalcElchElectrodeSTIThermo(const int numdofpernode,
     const int numscal, const std::string& disname)
@@ -52,7 +52,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     probdim>::EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -139,8 +139,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType distype_master>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     probdim>::EvaluateS2ICouplingODAtIntegrationPoint(const Teuchos::RCP<const MAT::Electrode>&
                                                           matelectrode,
@@ -402,7 +402,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
@@ -434,7 +434,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     probdim>::ExtractNodeValues(const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -448,7 +448,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::GetFRT() const
 {
   // evaluate local temperature value
@@ -466,121 +466,99 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probd
 
 
 // template classes
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad4,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad8,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad9,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::tri3,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::tri6,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::line2,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::line2,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<CORE::FE::CellType::line3,
+    2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::quad4, 3>;
+    CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::nurbs9, 3>;
+    CORE::FE::CellType::nurbs9, 3>;
 
 // explicit instantiation of template methods
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::quad4>::
-    EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::DiscretizationType::quad4>(
-        const Teuchos::RCP<const MAT::Electrode>&,
-        const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const std::vector<
-            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                     DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-                1>>&,
-        const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
-        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
-        const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
-        CORE::LINALG::SerialDenseMatrix&);
+    CORE::FE::CellType::quad4>::EvaluateS2ICouplingODAtIntegrationPoint<CORE::FE::CellType::
+        quad4>(const Teuchos::RCP<const MAT::Electrode>&,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+        1>>&,
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
+    const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
+    CORE::LINALG::SerialDenseMatrix&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-    DRT::Element::DiscretizationType::quad4>::
-    EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::DiscretizationType::tri3>(
-        const Teuchos::RCP<const MAT::Electrode>&,
-        const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const std::vector<
-            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                     DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-                1>>&,
-        const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
-        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
-        const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
-        CORE::LINALG::SerialDenseMatrix&);
-template void
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::Element::DiscretizationType::tri3>::
-    EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::DiscretizationType::quad4>(
-        const Teuchos::RCP<const MAT::Electrode>&,
-        const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const std::vector<
-            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                     DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-                1>>&,
-        const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
-        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
-        const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
-        CORE::LINALG::SerialDenseMatrix&);
-template void
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<DRT::Element::DiscretizationType::tri3>::
-    EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::DiscretizationType::tri3>(
-        const Teuchos::RCP<const MAT::Electrode>&,
-        const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const std::vector<
-            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                     DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-                1>>&,
-        const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-            1>&,
-        const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
-        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
-        const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
-        CORE::LINALG::SerialDenseMatrix&);
+    CORE::FE::CellType::quad4>::EvaluateS2ICouplingODAtIntegrationPoint<CORE::FE::CellType::
+        tri3>(const Teuchos::RCP<const MAT::Electrode>&,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>>&,
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
+    const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
+    CORE::LINALG::SerialDenseMatrix&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
+    CORE::FE::CellType::tri3>::EvaluateS2ICouplingODAtIntegrationPoint<CORE::FE::CellType::
+        quad4>(const Teuchos::RCP<const MAT::Electrode>&,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+        1>>&,
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
+    const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
+    CORE::LINALG::SerialDenseMatrix&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
+    CORE::FE::CellType::tri3>::EvaluateS2ICouplingODAtIntegrationPoint<CORE::FE::CellType::
+        tri3>(const Teuchos::RCP<const MAT::Electrode>&,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>>&,
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>&,
+    const CORE::LINALG::Matrix<nsd_, nen_>&, const CORE::LINALG::Matrix<nsd_, nen_>&,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const SCATRA::DifferentiationType,
+    const double, const double, const double, const int, CORE::LINALG::SerialDenseMatrix&,
+    CORE::LINALG::SerialDenseMatrix&);

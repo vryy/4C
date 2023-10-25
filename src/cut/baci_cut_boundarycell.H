@@ -46,7 +46,7 @@ namespace CORE::GEO
       \brief Returns the shape of the boundarycell
        */
 
-      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
+      virtual CORE::FE::CellType Shape() const = 0;
 
       /*! \brief Returns the cubature degree to generate quadrature rule for the cell
        *
@@ -98,7 +98,7 @@ namespace CORE::GEO
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
        */
-      template <::DRT::Element::DiscretizationType celldistype>
+      template <CORE::FE::CellType celldistype>
       void AssignOffset(int idx, double offset)
       {
         CORE::LINALG::Matrix<3,
@@ -165,7 +165,7 @@ namespace CORE::GEO
       Gauss point location (eta) corresponding to the shape of the boundarycell. Also computes the
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
-      template <::DRT::Element::DiscretizationType celldistype>
+      template <CORE::FE::CellType celldistype>
       void Transform(const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
           CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
@@ -180,7 +180,7 @@ namespace CORE::GEO
 
         CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
-        if (celldistype != ::DRT::Element::DiscretizationType::tri3)
+        if (celldistype != CORE::FE::CellType::tri3)
         {
           CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
           CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
@@ -223,7 +223,7 @@ namespace CORE::GEO
       system setting shadow = true means the mapping is done w.r. to the parent quad element from
       which elem1 is derived
        */
-      template <::DRT::Element::DiscretizationType celldistype>
+      template <CORE::FE::CellType celldistype>
       void TransformLocalCoords(Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta,
           CORE::LINALG::Matrix<3, 1>& x_gp_lin, CORE::LINALG::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
@@ -231,7 +231,7 @@ namespace CORE::GEO
      protected:
       virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
 
-      template <::DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       double MyArea()
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -261,7 +261,7 @@ namespace CORE::GEO
        *
        *  \author shahmiri
        *  \date 07/12 */
-      template <::DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void MyElementCenter(CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -292,10 +292,7 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::point1;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::point1; }
 
       int CubatureDegree() const override { return 0; }
 
@@ -333,10 +330,7 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::line2;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::line2; }
 
       int CubatureDegree() const override { return 4; }
 
@@ -373,10 +367,7 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::tri3;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tri3; }
 
       int CubatureDegree() const override { return 20; }
 
@@ -417,17 +408,14 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::quad4;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::quad4; }
 
       int CubatureDegree() const override { return 20; }
 
       void DumpGmshNormal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      double Area() override { return MyArea<::DRT::Element::DiscretizationType::quad4>(); }
+      double Area() override { return MyArea<CORE::FE::CellType::quad4>(); }
 
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
@@ -460,10 +448,7 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::dis_none;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; }
 
       int CubatureDegree() const override { return 0; }
 

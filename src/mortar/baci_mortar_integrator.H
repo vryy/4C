@@ -85,7 +85,7 @@ namespace MORTAR
          (which is equivalent to a 3D coupling problem)
 
   */
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarIntegratorCalc : public MortarIntegrator
   {
    public:

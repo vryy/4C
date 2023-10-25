@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneScatra<distype>::MembraneScatra(int id, int owner)
     : Membrane<distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
@@ -25,7 +25,7 @@ DRT::ELEMENTS::MembraneScatra<distype>::MembraneScatra(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-constructor (public)                              sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
     const DRT::ELEMENTS::MembraneScatra<distype>& old)
     : Membrane<distype>(old), impltype_(old.impltype_)
@@ -37,7 +37,7 @@ DRT::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
  |  Deep copy this instance of MembraneScatra              sfuchs 05/18 |
  |  and return pointer to it (public)                                   |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::MembraneScatra<distype>::Clone() const
 {
   DRT::ELEMENTS::MembraneScatra<distype>* newelement =
@@ -49,7 +49,7 @@ DRT::Element* DRT::ELEMENTS::MembraneScatra<distype>::Clone() const
  |  Pack data                                                  (public) |
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneScatra<distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -72,7 +72,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& dat
 /*----------------------------------------------------------------------*
  |  print this element (public)                            sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneScatra<distype>::Print(std::ostream& os) const
 {
   os << "MembraneScatra ";
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -147,7 +147,7 @@ bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
 /*----------------------------------------------------------------------*
  |  Get vector of ptrs to nodes (private)                  sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline DRT::Node** DRT::ELEMENTS::MembraneScatra<distype>::Nodes()
 {
   return Membrane<distype>::Nodes();
@@ -156,13 +156,13 @@ inline DRT::Node** DRT::ELEMENTS::MembraneScatra<distype>::Nodes()
 /*----------------------------------------------------------------------*
  |  Get shape type of element (private)                    sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::Element::DiscretizationType DRT::ELEMENTS::MembraneScatra<distype>::Shape() const
+template <CORE::FE::CellType distype>
+CORE::FE::CellType DRT::ELEMENTS::MembraneScatra<distype>::Shape() const
 {
   return Membrane<distype>::Shape();
 }
 
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>;

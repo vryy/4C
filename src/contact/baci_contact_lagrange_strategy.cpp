@@ -1538,7 +1538,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (selement->Shape() == DRT::Element::DiscretizationType::quad4)
+        if (selement->Shape() == CORE::FE::CellType::quad4)
         {
           if (k == 0)
           {
@@ -1575,7 +1575,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
           else
             dserror("loop counter and edge number do not match!");
         }
-        else if (selement->Shape() == DRT::Element::DiscretizationType::tri3)
+        else if (selement->Shape() == CORE::FE::CellType::tri3)
         {
           if (k == 0)
           {
@@ -1630,7 +1630,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, selement->Owner(), DRT::Element::DiscretizationType::line2, 2, nodeIds, false));
+              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT::Node*, 2> nodes = {

@@ -37,57 +37,57 @@ namespace DRT
   namespace ELEMENTS
   {
     // where should that be put?
-    template <DRT::Element::DiscretizationType dtype>
+    template <CORE::FE::CellType dtype>
     struct DisTypeToNumCornerNodes
     {
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::tet4>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet4>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::tet10>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet10>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex8>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex20>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex20>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex27>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex27>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::pyramid5>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::pyramid5>
     {
       static const int numCornerNodes = 5;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::wedge6>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge6>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::wedge15>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge15>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::nurbs8>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::nurbs27>
+    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs27>
     {
       static const int numCornerNodes = 8;
     };
@@ -97,10 +97,10 @@ namespace DRT
     /*----------------------------------------------------------------------------*/
     class Ale3Surface;
     class Ale3_Impl_Interface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3_Impl;
     class Ale3Surface_Impl_Interface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3Surface_Impl;
 
 
@@ -175,7 +175,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -422,7 +422,7 @@ namespace DRT
           Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3_Impl : public Ale3_Impl_Interface
     {
      public:
@@ -615,7 +615,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -762,7 +762,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Ale3Surface_Impl : public Ale3Surface_Impl_Interface
     {
       Ale3Surface_Impl() {}

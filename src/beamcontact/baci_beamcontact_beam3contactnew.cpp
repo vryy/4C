@@ -2747,8 +2747,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
     const TYPE& eta2)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype1 = element1_->Shape();
-  const DRT::Element::DiscretizationType distype2 = element2_->Shape();
+  const CORE::FE::CellType distype1 = element1_->Shape();
+  const CORE::FE::CellType distype2 = element2_->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);

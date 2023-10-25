@@ -246,9 +246,8 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET4av; gp++)
   {
-    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::tet4>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::tet4>(
-        xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
     jac.Multiply(deriv, xrefe);
 
     // material/reference co-ordinates of Gauss point
@@ -319,8 +318,7 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
     const double* gpcoord = (intpoints.IP().qxg)[gp];
     for (int idim = 0; idim < 3; idim++) xsi_[gp](idim) = gpcoord[idim];
 
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::tet4>(
-        xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
 
@@ -382,9 +380,8 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
   for (int gp = 0; gp < numgpt_; gp++)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::tet4>(xsi_[gp], shapefct);
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::tet4>(
-        xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
+    CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
 
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -568,7 +565,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
     for (int gp = 0; gp < intpoints.IP().nquad; gp++)
     {
       for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.IP().qxg)[gp][i];
-      CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::tet4>(xsi_[gp], shapefct);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
       const double factor = detJ_[0] * density * (intpoints.IP().qwgt)[gp];
       for (int inod = 0; inod < 4; ++inod)
       {

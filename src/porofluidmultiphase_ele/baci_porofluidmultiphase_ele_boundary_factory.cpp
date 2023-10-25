@@ -25,33 +25,33 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
 {
   switch (ele->Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::quad4>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::quad8>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::quad9>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::tri3>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::tri6>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::line2>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::line2>(numdofpernode, disname);
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::line3>(numdofpernode, disname);
+      return DefineProblemType<CORE::FE::CellType::line3>(numdofpernode, disname);
     }
     default:
     {
@@ -68,7 +68,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
     const int numdofpernode, const std::string& disname)

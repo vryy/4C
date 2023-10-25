@@ -195,15 +195,15 @@ int DRT::ELEMENTS::RedAirBloodScatra::EvaluateDirichlet(Teuchos::ParameterList& 
 
 // get optimal gaussrule for discretization type
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirBloodScatra::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -214,16 +214,15 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirBloodScatra::getOptimalGaussr
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::RedAirBloodScatra::isHigherOrderElement(
-    const DRT::Element::DiscretizationType distype) const
+bool DRT::ELEMENTS::RedAirBloodScatra::isHigherOrderElement(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       hoel = true;
       break;
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       hoel = false;
       break;
     default:

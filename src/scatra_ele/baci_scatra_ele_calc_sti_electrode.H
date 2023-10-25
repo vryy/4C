@@ -24,11 +24,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchElectrode;
     class ScaTraEleDiffManagerSTIElchElectrode;
     class ScaTraEleDiffManagerSTIThermo;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchElectrode;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcSTIElectrode : public ScaTraEleCalc<distype>,
                                       public ScaTraEleSTIElch<distype>
     {

@@ -59,7 +59,7 @@ namespace CONTACT
      \param isslave (in): flag indicating whether element is slave or master side
      \param isnurbs (in): flag indicating whether element is nurbs element or not
      */
-    CoElement(int id, int owner, const DRT::Element::DiscretizationType& shape, const int numnode,
+    CoElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
         const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!

@@ -19,7 +19,7 @@ CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
 DRT::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
 {
   CONTACT::CoElement* ele =
-      new CONTACT::CoElement(0, 0, DRT::Element::DiscretizationType::dis_none, 0, nullptr, false);
+      new CONTACT::CoElement(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
@@ -46,8 +46,8 @@ CORE::LINALG::SerialDenseMatrix CONTACT::CoElementType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoElement::CoElement(int id, int owner, const DRT::Element::DiscretizationType& shape,
-    const int numnode, const int* nodeids, const bool isslave, bool isnurbs)
+CONTACT::CoElement::CoElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+    const int* nodeids, const bool isslave, bool isnurbs)
     : MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
   // empty constructor
@@ -294,18 +294,18 @@ void CONTACT::CoElement::DJacDXi(
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
   djacdxi[1] = 0.0;
-  DRT::Element::DiscretizationType dt = Shape();
+  CORE::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
   // 3D linear case (3noded triangular element)
-  if (dt == DiscretizationType::line2 || dt == DiscretizationType::tri3)
+  if (dt == CORE::FE::CellType::line2 || dt == CORE::FE::CellType::tri3)
   {
     // do nothing
   }
 
   // 2D quadratic case (3noded line element)
-  else if (dt == DiscretizationType::line3 || dt == DiscretizationType::nurbs2 ||
-           dt == DiscretizationType::nurbs3)
+  else if (dt == CORE::FE::CellType::line3 || dt == CORE::FE::CellType::nurbs2 ||
+           dt == CORE::FE::CellType::nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
     CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
@@ -331,10 +331,10 @@ void CONTACT::CoElement::DJacDXi(
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == DiscretizationType::quad4 || dt == DiscretizationType::tri6 ||
-           dt == DiscretizationType::quad8 || dt == DiscretizationType::quad9 ||
-           dt == DiscretizationType::nurbs4 || dt == DiscretizationType::nurbs8 ||
-           dt == DiscretizationType::nurbs9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::tri6 ||
+           dt == CORE::FE::CellType::quad8 || dt == CORE::FE::CellType::quad9 ||
+           dt == CORE::FE::CellType::nurbs4 || dt == CORE::FE::CellType::nurbs8 ||
+           dt == CORE::FE::CellType::nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
     CORE::LINALG::SerialDenseMatrix coord(3, NumNode());

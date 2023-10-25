@@ -155,10 +155,7 @@ DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_weg6::Shape() const
-{
-  return DRT::Element::DiscretizationType::wedge6;
-}
+CORE::FE::CellType DRT::ELEMENTS::So_weg6::Shape() const { return CORE::FE::CellType::wedge6; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -275,7 +272,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);

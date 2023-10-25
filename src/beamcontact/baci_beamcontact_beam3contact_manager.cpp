@@ -2733,19 +2733,19 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         switch (element2->Shape())
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             shape2 = "tri3";
             break;
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::tri6:
             shape2 = "tri6";
             break;
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
             shape2 = "quad4";
             break;
-          case DRT::Element::DiscretizationType::quad8:
+          case CORE::FE::CellType::quad8:
             shape2 = "quad8";
             break;
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
             shape2 = "quad9";
             break;
           default:
@@ -4716,7 +4716,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
   switch (element->Shape())
   {
     // 8-noded hexahedron
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       const int n_surfNodes = 4;
       GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);
@@ -4739,7 +4739,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
       break;
     }
     // 20-noded hexahedron
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
       const int n_surfNodes = 8;
       GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);

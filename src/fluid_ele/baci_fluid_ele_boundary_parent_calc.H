@@ -84,7 +84,7 @@ namespace DRT
       provides a clean and fast element implementation.
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidBoundaryParent : public FluidBoundaryParentInterface
     {
       friend class FluidEleParameter;
@@ -129,43 +129,37 @@ namespace DRT
 
 
      private:
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void SlipSuppBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void NavierSlipBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void EvaluateWeakDBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void MixHybDirichlet(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,

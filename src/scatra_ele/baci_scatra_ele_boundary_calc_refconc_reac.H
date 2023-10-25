@@ -16,7 +16,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype, probdim>
     {
@@ -43,8 +43,8 @@ namespace DRT
       ScaTraEleBoundaryCalcRefConcReac(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      template <DRT::Element::DiscretizationType bdistype,
-          DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType bdistype,
+          CORE::FE::CellType pdistype>
       double CalcJatIntPoint(const int iquad,  ///< current boundary integration point
           const DRT::FaceElement* bele,        ///< current boundary element
           const DRT::Element* pele,            ///< current parent element

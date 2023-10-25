@@ -20,7 +20,7 @@
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     probdim>::ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -56,7 +56,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele,                            //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
@@ -123,7 +123,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateNeumann(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Condition& condition, DRT::Element::LocationArray& la,
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
 /*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     probdim>::EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                           ///< element matrix
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 /*-------------------------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 12/14 |
  *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateS2ICouplingOD(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
 /*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 12/14 |
  *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetValence(
     const Teuchos::RCP<const MAT::Material>& material,  // element material
     const int k                                         // species number
@@ -369,23 +369,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
-    DRT::Element::DiscretizationType::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::nurbs9, 3>;

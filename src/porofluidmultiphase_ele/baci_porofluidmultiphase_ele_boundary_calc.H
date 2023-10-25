@@ -32,7 +32,7 @@ namespace DRT
 
     \author vuong
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class PoroFluidMultiPhaseEleBoundaryCalc : public PoroFluidMultiPhaseEleInterface
     {
      public:

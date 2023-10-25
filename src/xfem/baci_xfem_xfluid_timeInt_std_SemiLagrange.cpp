@@ -1175,20 +1175,18 @@ void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointe
 {
   switch (ele->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-          DRT::Element::DiscretizationType::hex8>::numNodePerElement;
-      backTracking<numnode, DRT::Element::DiscretizationType::hex8>(
-          ele, data, xi, backTrackingType);
+      const int numnode =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement;
+      backTracking<numnode, CORE::FE::CellType::hex8>(ele, data, xi, backTrackingType);
     }
     break;
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-          DRT::Element::DiscretizationType::hex20>::numNodePerElement;
-      backTracking<numnode, DRT::Element::DiscretizationType::hex20>(
-          ele, data, xi, backTrackingType);
+      const int numnode =
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement;
+      backTracking<numnode, CORE::FE::CellType::hex20>(ele, data, xi, backTrackingType);
     }
     break;
     default:
@@ -1201,7 +1199,7 @@ void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointe
 /*------------------------------------------------------------------------------------------------*
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
+template <const int numnode, CORE::FE::CellType DISTYPE>
 void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// pointer to element
     TimeIntData* data,                                                   /// data
     CORE::LINALG::Matrix<3, 1>& xi,                                      /// local coordinates

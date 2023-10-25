@@ -271,7 +271,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner)
     : DRT::Element(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
+      distype_(CORE::FE::CellType::dis_none),
       data_(),
       numdofpernode_(-1),
       impltype_(INPAR::SCATRA::impltype_undefined)
@@ -576,7 +576,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
  |  Return the shape of a Transport element                      (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Transport::Shape() const { return distype_; }
+CORE::FE::CellType DRT::ELEMENTS::Transport::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -626,7 +626,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, tmp);
   data_.Unpack(tmp);
   ExtractfromPack(position, data, numdofpernode_);
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())
@@ -854,7 +854,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                    (public)  gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }

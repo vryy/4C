@@ -21,7 +21,7 @@ namespace DRT
   {
     class FluidImmersedBase;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcImmersed : public FluidEleCalc<distype>
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;

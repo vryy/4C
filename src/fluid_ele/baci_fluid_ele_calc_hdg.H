@@ -29,7 +29,7 @@ namespace DRT
       \author kronbichler
       \date 05/13
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcHDG : public FluidEleInterface
     {
      public:

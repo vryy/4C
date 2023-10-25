@@ -19,20 +19,20 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::quad4>(ele, discretization,
-          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::DiscretizationType::quad8:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::quad8>(ele, discretization,
-          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::DiscretizationType::quad9:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::quad9>(ele, discretization,
-          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::DiscretizationType::tri3:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::tri3>(ele, discretization, condition,
+    case CORE::FE::CellType::quad4:
+      return EvaluateNeumann<CORE::FE::CellType::quad4>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::DiscretizationType::tri6:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::tri6>(ele, discretization, condition,
+    case CORE::FE::CellType::quad8:
+      return EvaluateNeumann<CORE::FE::CellType::quad8>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::quad9:
+      return EvaluateNeumann<CORE::FE::CellType::quad9>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::tri3:
+      return EvaluateNeumann<CORE::FE::CellType::tri3>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case CORE::FE::CellType::tri6:
+      return EvaluateNeumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
       dserror(
@@ -41,7 +41,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,

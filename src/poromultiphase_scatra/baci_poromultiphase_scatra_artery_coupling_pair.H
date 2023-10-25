@@ -148,8 +148,7 @@ namespace POROMULTIPHASESCATRA
   };
 
   //! the coupling pair
-  template <DRT::Element::DiscretizationType distypeArt,
-      DRT::Element::DiscretizationType distypeCont, int dim>
+  template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
   class PoroMultiPhaseScatraArteryCouplingPair : public PoroMultiPhaseScatraArteryCouplingPairBase
   {
    public:

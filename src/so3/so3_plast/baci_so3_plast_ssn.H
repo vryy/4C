@@ -60,7 +60,7 @@ namespace DRT
 
     //! A C++ version of a 3 dimensional solid element with modifications von Mises
     //! plasticity using a semi-smooth Newton method
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class So3_Plast : public virtual So_base
     {
       //! @name Friends
@@ -144,7 +144,7 @@ namespace DRT
       DRT::ElementType& ElementType() const override;
 
       //! return element shape
-      DiscretizationType Shape() const override { return distype; };
+      CORE::FE::CellType Shape() const override { return distype; };
 
       /*!
       \brief Return number of volumes of this element
@@ -1066,7 +1066,7 @@ namespace DRT
         // element coordinate derivatives at centroid
         static CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
         CORE::DRT::UTILS::shape_function_3D_deriv1(
-            N_rst_0, 0.0, 0.0, 0.0, DRT::Element::DiscretizationType::hex8);
+            N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
         // inverse jacobian matrix at centroid
         SetJac_0().Multiply(N_rst_0, Xrefe());
@@ -1118,7 +1118,7 @@ namespace DRT
 
       inline void EvaluateShape(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::DiscretizationType::nurbs27)
+        if (distype == CORE::FE::CellType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
@@ -1127,7 +1127,7 @@ namespace DRT
 
       inline void EvaluateShapeDeriv(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::DiscretizationType::nurbs27)
+        if (distype == CORE::FE::CellType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else

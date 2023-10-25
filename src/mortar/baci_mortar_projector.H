@@ -73,7 +73,7 @@ namespace MORTAR
   \brief A class to perform projections of nodes onto opposing elements
 
   */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class MortarProjectorCalc : public MortarProjector
   {
    public:
@@ -278,7 +278,7 @@ namespace MORTAR
   \brief A class to perform element based projections of nodes onto opposing elements
 
   */
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarProjectorCalc_EleBased : public MortarProjector
   {
    public:

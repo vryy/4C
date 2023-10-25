@@ -95,7 +95,7 @@ namespace SCATRA
         const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const override;
   };
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcElch : public MortarCellCalc<distypeS, distypeM>
   {
    public:
@@ -178,7 +178,7 @@ namespace SCATRA
   };  // class MortarCellCalcElch
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcElchSTIThermo : public MortarCellCalcElch<distypeS, distypeM>
   {
    public:
@@ -255,7 +255,7 @@ namespace SCATRA
   };  // class MortarCellCalcElchSTIThermo
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalcSTIElch : public MortarCellCalc<distypeS, distypeM>
   {
    public:

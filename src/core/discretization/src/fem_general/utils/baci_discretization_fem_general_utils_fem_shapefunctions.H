@@ -29,7 +29,7 @@ namespace CORE::DRT::UTILS
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
       const NumberType& t,                   ///< t coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -41,12 +41,12 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -66,7 +66,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex16:
+      case CORE::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -97,7 +97,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex18:
+      case CORE::FE::CellType::hex18:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -131,7 +131,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
         /* shape functions associated to vertex nodes k=1,...,8
          * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
@@ -183,7 +183,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -224,7 +224,7 @@ namespace CORE::DRT::UTILS
         funct(26) = r00 * s00 * t00;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         const NumberType t1 = 1.0 - r - s - t;
         const NumberType t2 = r;
@@ -237,7 +237,7 @@ namespace CORE::DRT::UTILS
         funct(3) = t4;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
       {
         const NumberType u = 1.0 - r - s - t;
 
@@ -253,7 +253,7 @@ namespace CORE::DRT::UTILS
         funct(9) = 4.0 * s * t;
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
         const NumberType t3 = 1.0 - r - s;
 
@@ -265,7 +265,7 @@ namespace CORE::DRT::UTILS
         funct(5) = Q12 * t3 * (1.0 + t);
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge15:
+      case CORE::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -305,7 +305,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
         // NOTE: the shape functions for pyramids are a bit unintuitive
         // but since the more natural choice of
@@ -348,11 +348,11 @@ namespace CORE::DRT::UTILS
    */
   template <class MatrixType, typename NumberType>
   void shape_function_3D_deriv1(
-      MatrixType& deriv1,   ///< to be filled with shape function derivative values
-      const NumberType& r,  ///< r coordinate
-      const NumberType& s,  ///< s coordinate
-      const NumberType& t,  ///< t coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      MatrixType& deriv1,                ///< to be filled with shape function derivative values
+      const NumberType& r,               ///< r coordinate
+      const NumberType& s,               ///< s coordinate
+      const NumberType& t,               ///< t coordinate
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -368,14 +368,14 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         deriv1(ds, 0) = 0.0;
         deriv1(dt, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -417,7 +417,7 @@ namespace CORE::DRT::UTILS
         deriv1(2, 7) = Q18 * rm * sp;
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex16:
+      case CORE::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -497,7 +497,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex18:
+      case CORE::FE::CellType::hex18:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -573,7 +573,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
         // form basic values
         const NumberType rp = 1.0 + r;
@@ -672,7 +672,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -779,7 +779,7 @@ namespace CORE::DRT::UTILS
         deriv1(2, 26) = r00 * s00 * dt00;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         deriv1(0, 0) = -1.0;
         deriv1(0, 1) = 1.0;
@@ -797,7 +797,7 @@ namespace CORE::DRT::UTILS
         deriv1(2, 3) = 1.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
       {
         const NumberType u = 1.0 - r - s - t;
 
@@ -843,7 +843,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
         const NumberType p1 = Q12 * (1.0 - t);
         const NumberType p2 = Q12 * (1.0 + t);
@@ -872,7 +872,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge15:
+      case CORE::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -942,7 +942,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
         NumberType rationdr;
         NumberType rationds;
@@ -1001,7 +1001,7 @@ namespace CORE::DRT::UTILS
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
       const NumberType& t,  ///< t coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -1019,7 +1019,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -1029,7 +1029,7 @@ namespace CORE::DRT::UTILS
         deriv2(dsdt, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1096,7 +1096,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex16:
+      case CORE::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1235,7 +1235,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex18:
+      case CORE::FE::CellType::hex18:
       {
         deriv2(drdr, 0) = .25 * s * (s - 1.) * (1. - t);
         deriv2(dsds, 0) = .25 * r * (r - 1.) * (1. - t);
@@ -1379,7 +1379,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1534,7 +1534,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -1725,12 +1725,12 @@ namespace CORE::DRT::UTILS
         deriv2(dsdt, 26) = 4.0 * s * t * r00;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         deriv2.Clear();
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
       {
         deriv2(drdr, 0) = 4.0;
         deriv2(dsds, 0) = 4.0;
@@ -1804,7 +1804,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -1850,7 +1850,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge15:
+      case CORE::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -1971,7 +1971,7 @@ namespace CORE::DRT::UTILS
   void shape_function_2D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -1979,12 +1979,12 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1997,7 +1997,7 @@ namespace CORE::DRT::UTILS
         funct(3) = 0.25 * rm * sp;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad6:
+      case CORE::FE::CellType::quad6:
       {
         funct(0) = 0.25 * r * (r - 1.) * (1. - s);
         funct(1) = 0.25 * r * (r + 1.) * (1. - s);
@@ -2008,7 +2008,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2046,7 +2046,7 @@ namespace CORE::DRT::UTILS
         funct(7) = 0.5 * s2 * rm;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2069,7 +2069,7 @@ namespace CORE::DRT::UTILS
         funct(8) = r2 * s2;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
       {
         const NumberType t1 = 1.0 - r - s;
         const NumberType t2 = r;
@@ -2079,7 +2079,7 @@ namespace CORE::DRT::UTILS
         funct(2) = t3;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
       {
         const NumberType t1 = 1.0 - r - s;
         const NumberType t2 = r;
@@ -2106,10 +2106,10 @@ namespace CORE::DRT::UTILS
    */
   template <class MatrixType, typename NumberType>
   void shape_function_2D_deriv1(
-      MatrixType& deriv1,   ///< to be filled with shape function derivative values
-      const NumberType& r,  ///< r coordinate
-      const NumberType& s,  ///< s coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      MatrixType& deriv1,                ///< to be filled with shape function derivative values
+      const NumberType& r,               ///< r coordinate
+      const NumberType& s,               ///< s coordinate
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2120,13 +2120,13 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         deriv1(ds, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2146,7 +2146,7 @@ namespace CORE::DRT::UTILS
         deriv1(ds, 3) = 0.25 * rm;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad6:
+      case CORE::FE::CellType::quad6:
       {
         deriv1(0, 0) = 0.25 * (2. * r - 1.) * (1. - s);
         deriv1(0, 1) = 0.25 * (2. * r + 1.) * (1. - s);
@@ -2163,7 +2163,7 @@ namespace CORE::DRT::UTILS
         deriv1(1, 5) = -0.5 * (r - 1.) * (r + 1.);
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2211,7 +2211,7 @@ namespace CORE::DRT::UTILS
         deriv1(1, 7) = -rm * s;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2254,7 +2254,7 @@ namespace CORE::DRT::UTILS
         deriv1(1, 8) = -2.0 * s * r2;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
       {
         deriv1(0, 0) = -1.0;
         deriv1(1, 0) = -1.0;
@@ -2266,7 +2266,7 @@ namespace CORE::DRT::UTILS
         deriv1(1, 2) = 1.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
       {
         deriv1(0, 0) = -3.0 + 4.0 * (r + s);
         deriv1(1, 0) = -3.0 + 4.0 * (r + s);
@@ -2303,7 +2303,7 @@ namespace CORE::DRT::UTILS
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2315,14 +2315,14 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
         deriv2(drds, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -2341,7 +2341,7 @@ namespace CORE::DRT::UTILS
         deriv2(drds, 3) = -0.25;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad6:
+      case CORE::FE::CellType::quad6:
       {
         deriv2(drdr, 0) = .5 * (1. - s);
         deriv2(dsds, 0) = 0.;
@@ -2369,7 +2369,7 @@ namespace CORE::DRT::UTILS
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2433,7 +2433,7 @@ namespace CORE::DRT::UTILS
         deriv2(drds, 7) = s;
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2485,7 +2485,7 @@ namespace CORE::DRT::UTILS
         deriv2(drds, 8) = 2.0 * s * 2.0 * r;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -2500,7 +2500,7 @@ namespace CORE::DRT::UTILS
         deriv2(drds, 2) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
       {
         deriv2(drdr, 0) = 4.0;
         deriv2(dsds, 0) = 4.0;
@@ -2541,7 +2541,7 @@ namespace CORE::DRT::UTILS
   template <class VectorType, typename NumberType>
   void shape_function_1D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2549,25 +2549,25 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         funct(0) = 0.5 * (1.0 - r);
         funct(1) = 0.5 * (1.0 + r);
         break;
       }
-      case ::DRT::Element::DiscretizationType::line3:
+      case CORE::FE::CellType::line3:
       {
         funct(0) = -0.5 * r * (1.0 - r);
         funct(1) = 0.5 * r * (1.0 + r);
         funct(2) = 1.0 - r * r;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line4:
+      case CORE::FE::CellType::line4:
       {
         funct(0) = -(9.0 / 16.0) * (1.0 - r) * ((1.0 / 9.0) - r * r);
         funct(1) = -(9.0 / 16.0) * (1.0 + r) * ((1.0 / 9.0) - r * r);
@@ -2580,7 +2580,7 @@ namespace CORE::DRT::UTILS
          *nodenumbering   1   3   4   2
          */
       }
-      case ::DRT::Element::DiscretizationType::line5:
+      case CORE::FE::CellType::line5:
       {
         funct(0) = (2.0 / 3.0) * r * (1.0 - r) * (0.25 - r * r);
         funct(1) = -(2.0 / 3.0) * r * (1.0 + r) * (0.25 - r * r);
@@ -2594,7 +2594,7 @@ namespace CORE::DRT::UTILS
          *nodenumbering   1   3   4   5   2
          */
       }
-      case ::DRT::Element::DiscretizationType::line6:
+      case CORE::FE::CellType::line6:
       {
         funct(0) = -625.0 / 768.0 *
                    (pow(r, 5) - pow(r, 4) - 2.0 / 5.0 * pow(r, 3) + 2.0 / 5.0 * r * r +
@@ -2634,9 +2634,9 @@ namespace CORE::DRT::UTILS
    */
   template <class MatrixType, typename NumberType>
   void shape_function_1D_deriv1(
-      MatrixType& deriv1,   ///< to be filled with shape function derivative values
-      const NumberType& r,  ///< r coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      MatrixType& deriv1,                ///< to be filled with shape function derivative values
+      const NumberType& r,               ///< r coordinate
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2645,25 +2645,25 @@ namespace CORE::DRT::UTILS
     const int dr = 0;
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         deriv1(dr, 0) = -0.5;
         deriv1(dr, 1) = 0.5;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line3:
+      case CORE::FE::CellType::line3:
       {
         deriv1(dr, 0) = r - 0.5;
         deriv1(dr, 1) = r + 0.5;
         deriv1(dr, 2) = -2.0 * r;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line4:
+      case CORE::FE::CellType::line4:
       {
         deriv1(dr, 0) = (1.0 / 16.0) + (9.0 / 8.0) * r - (27.0 / 16.0) * r * r;
         deriv1(dr, 1) = (-1.0 / 16.0) + (9.0 / 8.0) * r + (27.0 / 16.0) * r * r;
@@ -2676,7 +2676,7 @@ namespace CORE::DRT::UTILS
          *nodenumbering   1   3   4   2
          */
       }
-      case ::DRT::Element::DiscretizationType::line5:
+      case CORE::FE::CellType::line5:
       {
         deriv1(dr, 0) = (1.0 / 6.0) - (1.0 / 3.0) * r - 2.0 * r * r + (8.0 / 3.0) * pow(r, 3);
         deriv1(dr, 1) = -(1.0 / 6.0) - (1.0 / 3.0) * r + 2.0 * r * r + (8.0 / 3.0) * pow(r, 3);
@@ -2690,7 +2690,7 @@ namespace CORE::DRT::UTILS
          *nodenumbering   1   3   4   5   2
          */
       }
-      case ::DRT::Element::DiscretizationType::line6:
+      case CORE::FE::CellType::line6:
       {
         deriv1(dr, 0) =
             -625.0 / 768.0 *
@@ -2732,7 +2732,7 @@ namespace CORE::DRT::UTILS
   void shape_function_1D_deriv2(
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2741,25 +2741,25 @@ namespace CORE::DRT::UTILS
     const int drdr = 0;
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(drdr, 1) = 0.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line3:
+      case CORE::FE::CellType::line3:
       {
         deriv2(drdr, 0) = 1.0;
         deriv2(drdr, 1) = 1.0;
         deriv2(drdr, 2) = -2.0;
         break;
       }
-      case ::DRT::Element::DiscretizationType::line4:
+      case CORE::FE::CellType::line4:
       {
         deriv2(drdr, 0) = +(9.0 / 8.0) - (27.0 / 16.0) * 2 * r;
         deriv2(drdr, 1) = +(9.0 / 8.0) + (27.0 / 16.0) * 2 * r;
@@ -2782,7 +2782,7 @@ namespace CORE::DRT::UTILS
   void shape_function_hermite_1D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType1& r,                          ///< r coordinate
       const NumberType2& l,                          ///< length of element
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype              ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2790,7 +2790,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         funct(0) = 0.25 * (2.0 - 3.0 * r + r_p3);
@@ -2815,7 +2815,7 @@ namespace CORE::DRT::UTILS
       MatrixType& deriv1,    ///< to be filled with hermite shape function first derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2823,7 +2823,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         deriv1(0, 0) = 0.25 * (-3.0 + 3.0 * r * r);
         deriv1(0, 1) = l / 8.0 * (-1.0 - 2.0 * r + 3.0 * r * r);
@@ -2847,7 +2847,7 @@ namespace CORE::DRT::UTILS
       MatrixType& deriv2,    ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2855,7 +2855,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         deriv2(0, 0) = 1.5 * r;
         deriv2(0, 1) = l / 8.0 * (-2.0 + 6.0 * r);
@@ -2879,7 +2879,7 @@ namespace CORE::DRT::UTILS
       VectorType deriv3,     ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
+      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2887,7 +2887,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         deriv3(0) = 1.5;
         deriv3(1) = l / 8.0 * 6.0;
@@ -2911,8 +2911,7 @@ namespace CORE::DRT::UTILS
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType&
-          distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2920,7 +2919,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         const NumberType1 r_p4 = r_p3 * r;
@@ -2949,8 +2948,7 @@ namespace CORE::DRT::UTILS
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType&
-          distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2958,7 +2956,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         const NumberType1 r_p4 = r_p3 * r;
@@ -2986,8 +2984,7 @@ namespace CORE::DRT::UTILS
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType&
-          distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2995,7 +2992,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         funct(0) = 0.0625 * (60 * r - 60 * r_p3);
@@ -3022,8 +3019,7 @@ namespace CORE::DRT::UTILS
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const ::DRT::Element::DiscretizationType&
-          distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -3031,7 +3027,7 @@ namespace CORE::DRT::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
       {
         funct(0) = 0.0625 * (60 - 180 * r * r);
         funct(1) = 0.03125 * l * (60 + 24 * r - 180 * r * r);
@@ -3053,7 +3049,7 @@ namespace CORE::DRT::UTILS
    */
   template <class VectorType1, class VectorType2, unsigned dim>
   constexpr void shape_function_dim(
-      const VectorType1& xsi, VectorType2& f, ::DRT::Element::DiscretizationType distype)
+      const VectorType1& xsi, VectorType2& f, CORE::FE::CellType distype)
   {
     switch (dim)
     {
@@ -3082,7 +3078,7 @@ namespace CORE::DRT::UTILS
   /*!
   \brief Fill vector with the shape function values evaluated at given point
   */
-  template <::DRT::Element::DiscretizationType distype, class VectorType1, class VectorType2>
+  template <CORE::FE::CellType distype, class VectorType1, class VectorType2>
   constexpr void shape_function(const VectorType1& xsi, VectorType2& f)
   {
     shape_function_dim<VectorType1, VectorType2, ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>(
@@ -3092,7 +3088,7 @@ namespace CORE::DRT::UTILS
   /*!
    \brief Fill a matrix with first shape function derivatives evaluated at given point
    */
-  template <::DRT::Element::DiscretizationType distype, class VectorType, class MatrixType>
+  template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv1(const VectorType& xsi, MatrixType& d)
   {
     switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
@@ -3122,7 +3118,7 @@ namespace CORE::DRT::UTILS
   /*!
    \brief Fill a matrix with second shape function derivatives evaluated at given point
    */
-  template <::DRT::Element::DiscretizationType distype, class VectorType, class MatrixType>
+  template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv2(const VectorType& xsi, MatrixType& d2)
   {
     switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
@@ -3163,7 +3159,7 @@ namespace CORE::DRT::UTILS
    * @param[in] xyze        spatial positions of the element nodes
    * @param[in] normal      normal vector
    */
-  template <::DRT::Element::DiscretizationType distype, int probdim>
+  template <CORE::FE::CellType distype, int probdim>
   void EvaluateShapeFunctionSpatialDerivativeInProbDim(
       CORE::LINALG::Matrix<probdim,
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv_xyz,

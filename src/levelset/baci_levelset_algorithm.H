@@ -265,7 +265,7 @@ namespace SCATRA
     };
 
     /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     bool ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha);

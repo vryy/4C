@@ -34,12 +34,12 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
-      static RedAirBloodScatraLine3Impl<DRT::Element::DiscretizationType::line3>* acinus;
+      static RedAirBloodScatraLine3Impl<CORE::FE::CellType::line3>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new RedAirBloodScatraLine3Impl<DRT::Element::DiscretizationType::line3>;
+        acinus = new RedAirBloodScatraLine3Impl<CORE::FE::CellType::line3>;
       }
       return acinus;
     }
@@ -54,7 +54,7 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
 /*----------------------------------------------------------------------*
   | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::RedAirBloodScatraLine3Impl()
 {
 }
@@ -62,7 +62,7 @@ DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::RedAirBloodScatraLine3Impl()
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScatraLine3* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -78,7 +78,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScat
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScatraLine3* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
     RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)

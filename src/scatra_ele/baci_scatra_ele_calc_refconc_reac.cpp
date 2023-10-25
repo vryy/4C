@@ -15,7 +15,7 @@ concentrations and with advanced reaction terms
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -30,7 +30,7 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>*
 DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -50,7 +50,7 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
 /*----------------------------------------------------------------------------*
  |  Set reac. body force, reaction coefficient and derivatives     thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
     const int k,                                            //!< index of current scalar
     const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
 /*------------------------------------------------------------------------------------------*
  |  calculation of convective element matrix: add conservative contributions     thon 02/16 |
  *------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
 /*------------------------------------------------------------------------------*
  | set internal variables                                           thon 02/16  |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMatAndRHS()
 {
   // do the usual and...
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
 /*------------------------------------------------------------------- *
  |  calculation of diffusive element matrix                thon 02/16 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
@@ -203,7 +203,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
@@ -263,24 +263,24 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs9>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::nurbs27>;
+// DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs27>;

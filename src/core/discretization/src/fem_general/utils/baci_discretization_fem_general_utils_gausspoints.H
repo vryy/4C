@@ -181,12 +181,11 @@ namespace CORE::DRT::UTILS
    public:
     static GaussPointCache& Instance();
 
-    Teuchos::RCP<GaussPoints> Create(::DRT::Element::DiscretizationType distype, int degree);
+    Teuchos::RCP<GaussPoints> Create(CORE::FE::CellType distype, int degree);
 
    private:
     /// cache of already created gauss rules
-    std::map<std::pair<::DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints>>
-        gp_cache_;
+    std::map<std::pair<CORE::FE::CellType, int>, Teuchos::RCP<GaussPoints>> gp_cache_;
   };
 
   /// gauss integration interface
@@ -239,10 +238,10 @@ namespace CORE::DRT::UTILS
     typedef GaussPointIterator const_iterator;
 
     /// construct the optimal (normal) rule for a given element shape
-    GaussIntegration(::DRT::Element::DiscretizationType distype);
+    GaussIntegration(CORE::FE::CellType distype);
 
     /// construct rule for a given element shape
-    GaussIntegration(::DRT::Element::DiscretizationType distype, int degree);
+    GaussIntegration(CORE::FE::CellType distype, int degree);
 
     /// construct with a known set of gauss points
     explicit GaussIntegration(Teuchos::RCP<GaussPoints> gp) : gp_(gp) {}
@@ -277,7 +276,7 @@ namespace CORE::DRT::UTILS
     void SetPoints(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
 
     /// Create Gauss integration rule of given degree
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> CreateProjected(
         const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
@@ -296,7 +295,7 @@ namespace CORE::DRT::UTILS
 
     /// Project the given Gauss points in local coordinate system of the element to its global
     /// coordinate system
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static void ProjectGaussPointsLocalToGlobal(
         const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
@@ -335,7 +334,7 @@ namespace CORE::DRT::UTILS
 
     /// Project the given Gauss points in global coordinate system of the element to its local
     /// coordinate system
-    template <::DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
         const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,

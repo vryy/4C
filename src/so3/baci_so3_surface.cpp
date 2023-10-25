@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create(
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::Element* parent, const int lsurface)
     : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
+      distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined)
 {
@@ -69,7 +69,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
     : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
+      distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined)
 {
@@ -102,10 +102,7 @@ DRT::Element* DRT::ELEMENTS::StructuralSurface::Clone() const
  |                                                             (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralSurface::Shape() const
-{
-  return distype_;
-}
+CORE::FE::CellType DRT::ELEMENTS::StructuralSurface::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -147,7 +144,7 @@ void DRT::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
   DRT::FaceElement::Unpack(basedata);
 
   // distype_
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // numdofpernode_
   numdofpernode_ = ExtractInt(position, data);
   // gaussrule_
@@ -189,39 +186,39 @@ int DRT::ELEMENTS::StructuralSurface::NumLine() const
 void DRT::ELEMENTS::StructuralSurface::SetDistype()
 {
   // if NURBS elements:
-  if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::nurbs8)
-    distype_ = DRT::Element::DiscretizationType::nurbs4;
-  else if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::nurbs27)
-    distype_ = DRT::Element::DiscretizationType::nurbs9;
+  if (ParentMasterElement()->Shape() == CORE::FE::CellType::nurbs8)
+    distype_ = CORE::FE::CellType::nurbs4;
+  else if (ParentMasterElement()->Shape() == CORE::FE::CellType::nurbs27)
+    distype_ = CORE::FE::CellType::nurbs9;
   // Lagrange elements:
   else
   {
     switch (NumNode())
     {
       case 3:
-        distype_ = DRT::Element::DiscretizationType::tri3;
+        distype_ = CORE::FE::CellType::tri3;
         break;
       case 6:
       {
-        if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tet10)
-          distype_ = DRT::Element::DiscretizationType::tri6;
-        else if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::hex18)
-          distype_ = DRT::Element::DiscretizationType::quad6;
+        if (ParentMasterElement()->Shape() == CORE::FE::CellType::tet10)
+          distype_ = CORE::FE::CellType::tri6;
+        else if (ParentMasterElement()->Shape() == CORE::FE::CellType::hex18)
+          distype_ = CORE::FE::CellType::quad6;
         else
         {
           dserror("what other surface element has 6 nodes???");
-          distype_ = DRT::Element::DiscretizationType::dis_none;
+          distype_ = CORE::FE::CellType::dis_none;
         }
         break;
       }
       case 4:
-        distype_ = DRT::Element::DiscretizationType::quad4;
+        distype_ = CORE::FE::CellType::quad4;
         break;
       case 8:
-        distype_ = DRT::Element::DiscretizationType::quad8;
+        distype_ = CORE::FE::CellType::quad8;
         break;
       case 9:
-        distype_ = DRT::Element::DiscretizationType::quad9;
+        distype_ = CORE::FE::CellType::quad9;
         break;
       default:
         dserror("Unknown shape of surface element (unknown number of nodes)");
@@ -238,25 +235,25 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
   // type of gaussian integration
   switch (Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::DiscretizationType::quad6:
+    case CORE::FE::CellType::quad6:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_6point;
       break;
     default:

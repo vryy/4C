@@ -52,11 +52,11 @@ namespace CONTACT
     void Deriv1st_NonUnitSlaveNormal(
         const double* xi, MORTAR::MortarElement& sele, Deriv1stVecMap& d_non_unit_normal);
 
-    template <DRT::Element::DiscretizationType slavetype>
+    template <CORE::FE::CellType slavetype>
     void Deriv1st_NonUnitSlaveNormal(
         MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal);
 
-    void Deriv1st_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+    void Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset);
 
@@ -67,11 +67,11 @@ namespace CONTACT
     void Deriv2nd_NonUnitSlaveNormal(
         const double* xi, MORTAR::MortarElement& sele, Deriv2ndVecMap& dd_non_unit_normal);
 
-    template <DRT::Element::DiscretizationType slavetype>
+    template <CORE::FE::CellType slavetype>
     void Deriv2nd_NonUnitSlaveNormal(
         MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal);
 
-    void Deriv2nd_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+    void Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slavetype,
         const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
         const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal);
@@ -129,8 +129,7 @@ namespace CONTACT
      *  \param tol  (in) : optional (positive) tolerance for the check
      *
      *  \author hiermeier \date 07/17 */
-    bool WithinBounds(
-        const double* mxi, const DRT::Element::DiscretizationType type, const double tol = 0.0);
+    bool WithinBounds(const double* mxi, const CORE::FE::CellType type, const double tol = 0.0);
 
     /*--------------------------------------------------------------------------*/
     /** Container class for the unique projection information

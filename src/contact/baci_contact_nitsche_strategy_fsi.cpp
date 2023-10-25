@@ -63,9 +63,8 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     gap = 1.e12;
     return true;
   }
-  if (!(cele->Shape() == DRT::Element::DiscretizationType::quad4 ||
-          cele->Shape() == DRT::Element::DiscretizationType::quad8 ||
-          cele->Shape() == DRT::Element::DiscretizationType::quad9))
+  if (!(cele->Shape() == CORE::FE::CellType::quad4 || cele->Shape() == CORE::FE::CellType::quad8 ||
+          cele->Shape() == CORE::FE::CellType::quad9))
     dserror("This element shape is not yet implemented!");
 
   // find the corresponding master element
@@ -87,9 +86,9 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     bool is_inside = false;
     switch (test_ele->Shape())
     {
-      case DRT::Element::DiscretizationType::quad4:
-      case DRT::Element::DiscretizationType::quad8:
-      case DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad4:
+      case CORE::FE::CellType::quad8:
+      case CORE::FE::CellType::quad9:
         if (abs(mxi[0]) < 1. + tol && abs(mxi[1]) < 1. + tol) is_inside = true;
         break;
       default:

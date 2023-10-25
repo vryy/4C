@@ -187,7 +187,7 @@ namespace BEAMINTERACTION
    * @return Pointer to the created pair.
    */
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
-      const DRT::Element::DiscretizationType surface_shape,
+      const CORE::FE::CellType surface_shape,
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
       const bool rotational_coupling,
       const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);

@@ -38,8 +38,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheTsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm)
+    CoIntegratorNitscheTsi(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
         : CoIntegratorNitsche(params, eletype, comm),
           theta_thermo_(params.get<double>("NITSCHE_THETA_TSI")),
           nit_thr_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheThermoMethod>(
@@ -143,7 +143,7 @@ namespace CONTACT
 
 
 
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    template <CORE::FE::CellType parentdistype, int dim>
     void inline SoEleGP(MORTAR::MortarElement& sele, const double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 

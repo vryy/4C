@@ -64,7 +64,7 @@ namespace DRT
       Lubrication object.
     */
 
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class LubricationEleCalc : public LubricationEleInterface
     {

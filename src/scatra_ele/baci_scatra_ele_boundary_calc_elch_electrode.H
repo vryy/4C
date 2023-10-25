@@ -30,7 +30,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
@@ -84,7 +84,7 @@ namespace DRT
        *
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
@@ -139,7 +139,7 @@ namespace DRT
        *
        * @tparam distype_master This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephidtnp,
           const std::vector<CORE::LINALG::Matrix<
@@ -199,7 +199,7 @@ namespace DRT
        *
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void CalculateRHSandGlobalSystem(const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
@@ -241,7 +241,7 @@ namespace DRT
        *
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <DRT::Element::DiscretizationType distype_master>
+      template <CORE::FE::CellType distype_master>
       static void CalculateRHSandGlobalSystemCapacitiveFlux(
           const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,

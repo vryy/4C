@@ -26,7 +26,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Poro_P1 : public So3_Poro<so3_ele, distype>
     {
       //! @name Friends

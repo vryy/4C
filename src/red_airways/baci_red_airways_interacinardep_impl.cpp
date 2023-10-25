@@ -38,12 +38,12 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      static InterAcinarDepImpl<DRT::Element::DiscretizationType::line2>* acinus;
+      static InterAcinarDepImpl<CORE::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new InterAcinarDepImpl<DRT::Element::DiscretizationType::line2>;
+        acinus = new InterAcinarDepImpl<CORE::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -58,7 +58,7 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 /*----------------------------------------------------------------------*
  | Constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 {
 }
@@ -67,7 +67,7 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 /*----------------------------------------------------------------------*
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
  | matically evaluated during the assembly process later.               |
  |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
  | per node). The right hand side is zero.                              |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs)
 {
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial
  |  Evaluate the values of the degrees of freedom           ismail 04/13|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)

@@ -32,7 +32,7 @@ namespace DRT
        * \param shapefcts list of shape functions evaluated at the gauss points
        * \param gpFiberHolder output of the projected fibers and angles
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
           const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
@@ -49,7 +49,7 @@ namespace DRT
        * @param shapefcts Shape functions
        * @param quantityProjected Output quantity projected with the shape functions
        */
-      template <DRT::Element::DiscretizationType distype, std::size_t dim>
+      template <CORE::FE::CellType distype, std::size_t dim>
       void ProjectQuantityWithShapeFunctions(
           const std::array<std::array<double, dim>,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
@@ -67,7 +67,7 @@ namespace DRT
        * @param shapefcts Shape functions
        * @param quantityProjected Output quantity projected with the shape functions
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ProjectQuantityWithShapeFunctions(
           const std::array<double,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
@@ -97,7 +97,7 @@ namespace DRT
        * \return true All nodes have fibers
        * \return false At least one one does not have a fiber
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       bool HaveNodalFibers(const DRT::Node* const* nodes);
     }  // namespace UTILS
   }    // namespace FIBER

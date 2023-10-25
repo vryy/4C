@@ -123,12 +123,12 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
+      virtual void SetDisType(CORE::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -393,7 +393,7 @@ namespace DRT
       virtual int Initialize();
 
       //! the element discretization type (shape)
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
 
      private:
@@ -493,7 +493,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of boundary element

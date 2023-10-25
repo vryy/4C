@@ -39,7 +39,7 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 struct GP_RULE_SOH8
 {
   static const enum CORE::DRT::UTILS::GaussRule3D rule =
-      DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::DiscretizationType::hex8>::rule;
+      DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element
 const unsigned NUMGPT_SOH8 =
@@ -143,7 +143,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element

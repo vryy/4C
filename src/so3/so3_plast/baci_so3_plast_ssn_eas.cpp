@@ -20,7 +20,7 @@
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                           seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
 {
   switch (eastype_)
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
 /*----------------------------------------------------------------------*
  |  setup EAS data (private)                                seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasSetup()
 {
   /* evaluation of EAS variables (which are constant for the following):
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasSetup()
 /*----------------------------------------------------------------------*
  |  Defgrd consistent with enhanced GL strain (private)     seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd()
 {
   static CORE::LINALG::Matrix<numstr_, 1> glstrain_mod(false);
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd()
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
 {
   std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
@@ -361,7 +361,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasEnhanceStrains()
 {
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -406,8 +406,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasEnhanceStrains()
   CalcConsistentDefgrd();
 }
 
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>;

@@ -94,7 +94,7 @@ bool MORTAR::Coupling2d::Project()
     auto* snode = dynamic_cast<MORTAR::MortarNode*>(mysnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
-    if (SlaveElement().Shape() == DRT::Element::DiscretizationType::nurbs3)
+    if (SlaveElement().Shape() == CORE::FE::CellType::nurbs3)
     {
       std::array<double, 2> xinode = {0., 0.};
       if (i == 0)
@@ -140,7 +140,7 @@ bool MORTAR::Coupling2d::Project()
     auto* mnode = dynamic_cast<MORTAR::MortarNode*>(mymnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
 
-    if (MasterElement().Shape() == DRT::Element::DiscretizationType::nurbs3)
+    if (MasterElement().Shape() == CORE::FE::CellType::nurbs3)
     {
       std::array<double, 2> xinode = {0., 0.};
       if (i == 0)
@@ -1098,7 +1098,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
         "ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   // not implemented for nurbs yet
-  if (SlaveElement().Shape() == DRT::Element::DiscretizationType::nurbs3)
+  if (SlaveElement().Shape() == CORE::FE::CellType::nurbs3)
     dserror("Consistent dual shape functions not yet implmented for nurbs");
 
   // do nothing if there are no coupling pairs

@@ -96,14 +96,14 @@ void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
 {
   switch (NumNode())
   {
     case 8:
-      return DiscretizationType::nurbs8;
+      return CORE::FE::CellType::nurbs8;
     case 27:
-      return DiscretizationType::nurbs27;
+      return CORE::FE::CellType::nurbs27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

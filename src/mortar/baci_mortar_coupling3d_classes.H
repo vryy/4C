@@ -50,7 +50,7 @@ namespace MORTAR
     \param isslave (in):  flag indicating whether element is slave or master side
     */
     IntElement(int lid, int id, int owner, MORTAR::MortarElement* parele,
-        const DRT::Element::DiscretizationType& shape, const int numnode, const int* nodeids,
+        const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
         std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind);
 
 
@@ -64,7 +64,7 @@ namespace MORTAR
     \brief Get shape type of parent element
 
     */
-    virtual DiscretizationType ParShape() const { return parele_->Shape(); }
+    virtual CORE::FE::CellType ParShape() const { return parele_->Shape(); }
 
     /*!
     \brief Get shape type of parent element
@@ -87,7 +87,7 @@ namespace MORTAR
 
     DRT::Node** Nodes() override
     {
-      if (parele_->Shape() != DRT::Element::DiscretizationType::nurbs9)
+      if (parele_->Shape() != CORE::FE::CellType::nurbs9)
         return DRT::Element::Nodes();
       else
         return nodes_ptr_.data();
@@ -157,8 +157,7 @@ namespace MORTAR
 
     */
     IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-        const DRT::Element::DiscretizationType& shape,
-        std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
+        const CORE::FE::CellType& shape, std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
         std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
         std::vector<CORE::GEN::pairedvector<int, double>>& linv3,
         std::vector<CORE::GEN::pairedvector<int, double>>& linauxn);
@@ -245,7 +244,7 @@ namespace MORTAR
     \brief Get shape type of element
 
     */
-    virtual DRT::Element::DiscretizationType Shape() const { return shape_; }
+    virtual CORE::FE::CellType Shape() const { return shape_; }
 
     /*!
     \brief Return one of the three 'DerivVertex' maps (vectors) of this node
@@ -259,7 +258,7 @@ namespace MORTAR
     */
     virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivVertex(int i)
     {
-      if (shape_ == DRT::Element::DiscretizationType::line2)
+      if (shape_ == CORE::FE::CellType::line2)
       {
         if (i < 0 || i > 1) dserror("IntLine has 2 vertex linearizations only!");
         return linvertex_[i];
@@ -334,8 +333,8 @@ namespace MORTAR
     CORE::LINALG::Matrix<3, 3> coords_;  // coords of cell vertices
     double auxn_[3];                     // normal of auxiliary plane (3D)
 
-    bool auxplane_;                           // flag indicating coupling strategy (true = auxplane)
-    DRT::Element::DiscretizationType shape_;  // shape of this element (always tri3)
+    bool auxplane_;             // flag indicating coupling strategy (true = auxplane)
+    CORE::FE::CellType shape_;  // shape of this element (always tri3)
     std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>
         linvertex_;  // derivatives of the 3 vertices
     std::vector<CORE::GEN::pairedvector<int, double>>

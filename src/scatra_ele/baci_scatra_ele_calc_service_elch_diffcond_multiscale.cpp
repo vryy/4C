@@ -21,7 +21,7 @@ multi-scale framework
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::CalculateElectrodeSOCAndCRate(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -79,7 +79,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalculateScalars(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars, const bool inverting,
     const bool calc_grad_phi)
@@ -169,7 +169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Calcu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::EvaluateAction(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -305,39 +305,23 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::hex8, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::tet10, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<
-    DRT::Element::DiscretizationType::pyramid5, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::pyramid5, 3>;

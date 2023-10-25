@@ -23,8 +23,7 @@ namespace DRT
   {
     class FluidXWall;
 
-    template <DRT::Element::DiscretizationType distype,
-        DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+    template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
     class FluidEleCalcXWall : public FluidEleCalc<distype, enrtype>
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype, enrtype> my;

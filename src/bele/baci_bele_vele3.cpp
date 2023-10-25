@@ -102,26 +102,26 @@ DRT::Element* DRT::ELEMENTS::Vele3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return DiscretizationType::tet4;
+      return CORE::FE::CellType::tet4;
     case 5:
-      return DiscretizationType::pyramid5;
+      return CORE::FE::CellType::pyramid5;
     case 6:
-      return DiscretizationType::wedge6;
+      return CORE::FE::CellType::wedge6;
     case 8:
-      return DiscretizationType::hex8;
+      return CORE::FE::CellType::hex8;
     case 10:
-      return DiscretizationType::tet10;
+      return CORE::FE::CellType::tet10;
     case 15:
-      return DiscretizationType::wedge15;
+      return CORE::FE::CellType::wedge15;
     case 20:
-      return DiscretizationType::hex20;
+      return CORE::FE::CellType::hex20;
     case 27:
-      return DiscretizationType::hex27;
+      return CORE::FE::CellType::hex27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
@@ -197,22 +197,22 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
-    const DRT::Element::DiscretizationType& distype) const
+    const CORE::FE::CellType& distype) const
 {
   CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
-    case DRT::Element::DiscretizationType::hex20:
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
     default:

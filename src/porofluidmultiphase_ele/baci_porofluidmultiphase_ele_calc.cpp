@@ -25,7 +25,7 @@
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
     const int numdofpernode, const std::string& disname)
     : ele_(nullptr),
@@ -52,7 +52,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
@@ -72,7 +72,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
 /*----------------------------------------------------------------------*
  | evaluate  routine                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* e
 /*----------------------------------------------------------------------*
  | evaluate action                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const POROFLUIDMULTIPHASE::Action& action, DRT::Element::LocationArray& la,
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Ele
 /*----------------------------------------------------------------------*
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
 /*----------------------------------------------------------------------*
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 06/17 |
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop(DRT::Element* ele)
 {
   return;
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop(D
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
@@ -288,7 +288,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 /*----------------------------------------------------------------------*
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
@@ -326,7 +326,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
 /*----------------------------------------------------------------------*
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
@@ -365,7 +365,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
 /*-----------------------------------------------------------------------------*
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(DRT::Element* 
 /*-----------------------------------------------------------------------------*
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateOnlyElement(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateOnlyElement(DRT
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* ele,
     DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
@@ -500,7 +500,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeValues(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -513,7 +513,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeVa
 /*------------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     vuong 08/16 |
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad                                                ///< id of current Gauss point
@@ -563,7 +563,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
 /*--------------------------------------------------------------------------*
  | evaluate shape functions and derivatives in parameter space   vuong 08/16 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDerivsInParameterSpace()
 {
   double det = 0.0;
@@ -604,7 +604,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
 /*--------------------------------------------------------------------------*
  | Compute Jacobian at node 'inode'                        kremheller 04/17 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(const int inode)
 {
   // get parameter space coordinates of current node
@@ -637,36 +637,35 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(c
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line2>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line2,2>; template
-// class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line2,3>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line3>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line2,2>; template
+// class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line2,3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line3>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line3,2>; template
-// class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::line3,3>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line3,2>; template
+// class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::line3,3>;
 
 // 2D elements
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::tri3>;
-// template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::tri3>;
+// template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::quad4>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::quad9>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::quad9>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::quad9,3>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::nurbs9>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::quad9,3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::hex8>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::tet10>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::tet10>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<
-    DRT::Element::DiscretizationType::pyramid5>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::pyramid5>;
 // template class
-// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<DRT::Element::DiscretizationType::nurbs27>;
+// DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::nurbs27>;

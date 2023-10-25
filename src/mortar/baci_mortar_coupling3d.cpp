@@ -119,17 +119,15 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
   const double near = 2.0 * std::max(sme, mme);
 
   double loccs[2] = {0.0, 0.0};
-  DRT::Element::DiscretizationType dts = SlaveIntElement().Shape();
-  if (dts == DRT::Element::DiscretizationType::tri3 ||
-      dts == DRT::Element::DiscretizationType::tri6)
+  CORE::FE::CellType dts = SlaveIntElement().Shape();
+  if (dts == CORE::FE::CellType::tri3 || dts == CORE::FE::CellType::tri6)
   {
     loccs[0] = 1.0 / 3.0;
     loccs[1] = 1.0 / 3.0;
   }
   double loccm[2] = {0.0, 0.0};
-  DRT::Element::DiscretizationType dtm = MasterIntElement().Shape();
-  if (dtm == DRT::Element::DiscretizationType::tri3 ||
-      dtm == DRT::Element::DiscretizationType::tri6)
+  CORE::FE::CellType dtm = MasterIntElement().Shape();
+  if (dtm == CORE::FE::CellType::tri3 || dtm == CORE::FE::CellType::tri6)
   {
     loccm[0] = 1.0 / 3.0;
     loccm[1] = 1.0 / 3.0;
@@ -198,15 +196,14 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  DRT::Element::DiscretizationType dt = MasterIntElement().Shape();
-  if (dt == DRT::Element::DiscretizationType::tri3 || dt == DRT::Element::DiscretizationType::tri6)
+  CORE::FE::CellType dt = MasterIntElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3;
     loccenter[1] = 1.0 / 3;
   }
-  else if (dt == DRT::Element::DiscretizationType::quad4 ||
-           dt == DRT::Element::DiscretizationType::quad8 ||
-           dt == DRT::Element::DiscretizationType::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -237,15 +234,14 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-  if (dt == DRT::Element::DiscretizationType::tri3 || dt == DRT::Element::DiscretizationType::tri6)
+  CORE::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == DRT::Element::DiscretizationType::quad4 ||
-           dt == DRT::Element::DiscretizationType::quad8 ||
-           dt == DRT::Element::DiscretizationType::quad9)
+  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+           dt == CORE::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -1717,7 +1713,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
         // plot elements
         // 3D linear case (3noded triangular elements)
-        if (SlaveIntElement().Shape() == DRT::Element::DiscretizationType::tri3)
+        if (SlaveIntElement().Shape() == CORE::FE::CellType::tri3)
         {
           gmshfilecontent << "ST(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
                           << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
@@ -1726,7 +1722,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor
                           << "};" << std::endl;
         }
-        else if (SlaveIntElement().Shape() == DRT::Element::DiscretizationType::quad4)
+        else if (SlaveIntElement().Shape() == CORE::FE::CellType::quad4)
         {
           gmshfilecontent << "SQ(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
                           << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
@@ -1737,7 +1733,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
                           << "," << scolor << "};" << std::endl;
         }
 
-        if (MasterIntElement().Shape() == DRT::Element::DiscretizationType::tri3)
+        if (MasterIntElement().Shape() == CORE::FE::CellType::tri3)
         {
           gmshfilecontent << "ST(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
                           << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
@@ -1746,7 +1742,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor
                           << "};" << std::endl;
         }
-        else if (MasterIntElement().Shape() == DRT::Element::DiscretizationType::quad4)
+        else if (MasterIntElement().Shape() == CORE::FE::CellType::quad4)
         {
           gmshfilecontent << "SQ(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
                           << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
@@ -2762,9 +2758,8 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), DRT::Element::DiscretizationType::tri3,
-            linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3204,9 +3199,8 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
     }
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(new IntCell(t, 3, coords, Auxn(), DRT::Element::DiscretizationType::tri3,
-            linvertex[idx0], linvertex[idx1], linvertex[idx2], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+        linvertex[idx0], linvertex[idx1], linvertex[idx2], GetDerivAuxn())));
   }
 
   // double check number of triangles
@@ -3251,9 +3245,8 @@ bool MORTAR::Coupling3d::CenterTriangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), DRT::Element::DiscretizationType::tri3,
-            linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3343,9 +3336,8 @@ bool MORTAR::Coupling3d::CenterTriangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = Clip()[num + 1].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(new IntCell(num, 3, coords, Auxn(), DRT::Element::DiscretizationType::tri3,
-            lincenter, linvertex[num], linvertex[numplus1], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+        lincenter, linvertex[num], linvertex[numplus1], GetDerivAuxn())));
   }
 
   // triangulation successful
@@ -3552,11 +3544,11 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   // *********************************************************************
   // do splitting for given element
   // *********************************************************** quad9 ***
-  if (ele.Shape() == DRT::Element::DiscretizationType::quad9)
+  if (ele.Shape() == CORE::FE::CellType::quad9)
   {
     // split into for quad4 elements
     int numnode = 4;
-    DRT::Element::DiscretizationType dt = DRT::Element::DiscretizationType::quad4;
+    CORE::FE::CellType dt = CORE::FE::CellType::quad4;
 
     // first integration element
     // containing parent nodes 0,4,8,7
@@ -3622,13 +3614,13 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   }
 
   // *********************************************************** quad8 ***
-  else if (ele.Shape() == DRT::Element::DiscretizationType::quad8)
+  else if (ele.Shape() == CORE::FE::CellType::quad8)
   {
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
     int numnodequad = 4;
-    DRT::Element::DiscretizationType dttri = DRT::Element::DiscretizationType::tri3;
-    DRT::Element::DiscretizationType dtquad = DRT::Element::DiscretizationType::quad4;
+    CORE::FE::CellType dttri = CORE::FE::CellType::tri3;
+    CORE::FE::CellType dtquad = CORE::FE::CellType::quad4;
 
     // first integration element
     // containing parent nodes 0,4,7
@@ -3703,11 +3695,11 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   }
 
   // ************************************************************ tri6 ***
-  else if (ele.Shape() == DRT::Element::DiscretizationType::tri6)
+  else if (ele.Shape() == CORE::FE::CellType::tri6)
   {
     // split into four tri3 elements
     int numnode = 3;
-    DRT::Element::DiscretizationType dt = DRT::Element::DiscretizationType::tri3;
+    CORE::FE::CellType dt = CORE::FE::CellType::tri3;
 
     // first integration element
     // containing parent nodes 0,3,5
@@ -3765,7 +3757,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   }
 
   // *********************************************************** quad4 ***
-  else if (ele.Shape() == DRT::Element::DiscretizationType::quad4)
+  else if (ele.Shape() == CORE::FE::CellType::quad4)
   {
     // 1:1 conversion to IntElement
     std::vector<DRT::Node*> nodes(4);
@@ -3779,7 +3771,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   }
 
   // ************************************************************ tri3 ***
-  else if (ele.Shape() == DRT::Element::DiscretizationType::tri3)
+  else if (ele.Shape() == CORE::FE::CellType::tri3)
   {
     // 1:1 conversion to IntElement
     std::vector<DRT::Node*> nodes(3);
@@ -3792,7 +3784,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
   }
 
   // ************************************************************ nurbs9 ***
-  else if (ele.Shape() == DRT::Element::DiscretizationType::nurbs9)
+  else if (ele.Shape() == CORE::FE::CellType::nurbs9)
   {
     // create one IntElement from one nurbs9 element
     // new nodes are created as the images of the corners of the parameter
@@ -3865,9 +3857,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
 
-    auxele.push_back(Teuchos::rcp(
-        new IntElement(0, ele.Id(), ele.Owner(), &ele, DRT::Element::DiscretizationType::quad4, 4,
-            &(id[0]), pseudo_nodes_ptr, ele.IsSlave(), rewind)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele,
+        CORE::FE::CellType::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.IsSlave(), rewind)));
   }
 
   // ********************************************************* invalid ***
@@ -4245,7 +4236,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       bool projectable_gp = false;
 
       // discretization type of master element
-      DRT::Element::DiscretizationType dt = Coupling()[0]->MasterElement().Shape();
+      CORE::FE::CellType dt = Coupling()[0]->MasterElement().Shape();
 
       //*******************************************************************
       // loop over meles
@@ -4261,9 +4252,8 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
         // check GP projection
         double tol = 0.00;
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol ||
               mxi[1] > 1.0 + tol)
@@ -4382,7 +4372,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
     // declare and initialize to zero inverse of Matrix M_e
     CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
-    if (SlaveElement().Shape() == DRT::Element::DiscretizationType::tri6)
+    if (SlaveElement().Shape() == CORE::FE::CellType::tri6)
     {
       // reduce me to non-zero nodes before inverting
       CORE::LINALG::Matrix<3, 3> melin;
@@ -4396,8 +4386,8 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) meinv(j, k) = melin(j, k);
     }
-    else if (SlaveElement().Shape() == DRT::Element::DiscretizationType::quad8 ||
-             SlaveElement().Shape() == DRT::Element::DiscretizationType::quad9)
+    else if (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
+             SlaveElement().Shape() == CORE::FE::CellType::quad9)
     {
       // reduce me to non-zero nodes before inverting
       CORE::LINALG::Matrix<4, 4> melin;

@@ -26,56 +26,56 @@ namespace IO
 {
   namespace GMSH
   {
-    //! for each DRT::Element::DiscretizationType find the appropriate Gmsh file type
+    //! for each CORE::FE::CellType find the appropriate Gmsh file type
     inline std::string distypeToGmshElementHeader(
-        const DRT::Element::DiscretizationType distype  ///< element shape
+        const CORE::FE::CellType distype  ///< element shape
     )
     {
       switch (distype)
       {
-        case DRT::Element::DiscretizationType::hex8:
+        case CORE::FE::CellType::hex8:
           return "H";
           break;
-        case DRT::Element::DiscretizationType::hex20:
+        case CORE::FE::CellType::hex20:
           return "H";
           break;
-        case DRT::Element::DiscretizationType::hex27:
+        case CORE::FE::CellType::hex27:
           return "H";
           break;
-        case DRT::Element::DiscretizationType::tet4:
+        case CORE::FE::CellType::tet4:
           return "S";
           break;
-        case DRT::Element::DiscretizationType::tet10:
+        case CORE::FE::CellType::tet10:
           return "S";
           break;
-        case DRT::Element::DiscretizationType::point1:
+        case CORE::FE::CellType::point1:
           return "P";
           break;
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return "Q";
           break;
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return "Q";
           break;
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return "Q";
           break;
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           return "T";
           break;
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           return "T";
           break;
-        case DRT::Element::DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
           return "L";
           break;
-        case DRT::Element::DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
           return "L2";
           break;
-        case DRT::Element::DiscretizationType::wedge6:
+        case CORE::FE::CellType::wedge6:
           return "I";
           break;
-        case DRT::Element::DiscretizationType::wedge15:
+        case CORE::FE::CellType::wedge15:
           return "I";
           break;
         default:
@@ -84,57 +84,56 @@ namespace IO
       return "xxx";
     }
 
-    //! for each DRT::Element::DiscretizationType find the appropriate number of element nodes for
+    //! for each CORE::FE::CellType find the appropriate number of element nodes for
     //! Gmsh output
-    inline int distypeToGmshNumNode(
-        const DRT::Element::DiscretizationType distype  ///< element shape
+    inline int distypeToGmshNumNode(const CORE::FE::CellType distype  ///< element shape
     )
     {
       switch (distype)
       {
-        case DRT::Element::DiscretizationType::hex8:
+        case CORE::FE::CellType::hex8:
           return 8;
           break;
-        case DRT::Element::DiscretizationType::hex20:
+        case CORE::FE::CellType::hex20:
           return 8;
           break;
-        case DRT::Element::DiscretizationType::hex27:
+        case CORE::FE::CellType::hex27:
           return 8;
           break;
-        case DRT::Element::DiscretizationType::tet4:
+        case CORE::FE::CellType::tet4:
           return 4;
           break;
-        case DRT::Element::DiscretizationType::tet10:
+        case CORE::FE::CellType::tet10:
           return 4;
           break;
-        case DRT::Element::DiscretizationType::point1:
+        case CORE::FE::CellType::point1:
           return 1;
           break;
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return 4;
           break;
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return 4;
           break;
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return 4;
           break;
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           return 3;
           break;
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           return 3;
           break;
-        case DRT::Element::DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
           return 2;
           break;
-        case DRT::Element::DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
           return 3;
           break;
-        case DRT::Element::DiscretizationType::wedge6:
+        case CORE::FE::CellType::wedge6:
           return 6;
           break;
-        case DRT::Element::DiscretizationType::wedge15:
+        case CORE::FE::CellType::wedge15:
           return 6;
           break;
         default:
@@ -217,9 +216,9 @@ namespace IO
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template <class M>
-    inline void CoordinatesToStream(const M& coord,      ///< position array (3, numnode)
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        std::ostream& s                                  ///< output stream
+    inline void CoordinatesToStream(const M& coord,  ///< position array (3, numnode)
+        const CORE::FE::CellType distype,            ///< element shape
+        std::ostream& s                              ///< output stream
     )
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -246,8 +245,8 @@ namespace IO
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template <class M>
-    inline void CoordinatesToStream2D(const M& coord,    ///< position array (3, numnode)
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+    inline void CoordinatesToStream2D(const M& coord,  ///< position array (3, numnode)
+        const CORE::FE::CellType distype,              ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -275,8 +274,8 @@ namespace IO
     //! take a double value and translate it to the value section of an Gmsh element entry
     //! -> gives a constant value over the element; used to plot the mesh without any physical field
     inline void ScalarToStream(
-        const double scalar,  ///< constant (arbitrary) value assigned to elements
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+        const double scalar,               ///< constant (arbitrary) value assigned to elements
+        const CORE::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -313,7 +312,7 @@ namespace IO
     //! entry
     template <class V>
     inline void ScalarFieldToStream(const V& scalarfield,
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+        const CORE::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -338,7 +337,7 @@ namespace IO
     //! entry
     template <class M>
     inline void VectorFieldToStream(const M& vectorfield,  ///< vector value array (3, numnode)
-        const DRT::Element::DiscretizationType distype,    ///< element shape
+        const CORE::FE::CellType distype,                  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -369,7 +368,7 @@ namespace IO
     //! entry
     template <class M>
     inline void VectorFieldToStream2D(const M& vectorfield,  ///< vector value array (3, numnode)
-        const DRT::Element::DiscretizationType distype,      ///< element shape
+        const CORE::FE::CellType distype,                    ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -397,7 +396,7 @@ namespace IO
     //! entry
     template <class M>
     inline void TensorFieldToStream(const M& tensorfield,
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+        const CORE::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -449,7 +448,7 @@ namespace IO
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
     //! entry
     template <class M>
-    void cellWithScalarToStream(const DRT::Element::DiscretizationType distype,  ///< element shape
+    void cellWithScalarToStream(const CORE::FE::CellType distype,  ///< element shape
         const double scalar,  ///< scalar value for the entire element
         const M& xyze,        ///< position array (3, numnode)
         std::ostream& s)
@@ -464,10 +463,9 @@ namespace IO
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
     //! entry
     template <class M>
-    std::string cellWithScalarToString(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        const double scalar,                             ///< scalar value for the entire element
-        const M& xyze                                    ///< position array (3, numnode)
+    std::string cellWithScalarToString(const CORE::FE::CellType distype,  ///< element shape
+        const double scalar,  ///< scalar value for the entire element
+        const M& xyze         ///< position array (3, numnode)
     )
     {
       std::ostringstream s;
@@ -478,10 +476,9 @@ namespace IO
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class V, class M>
-    inline void cellWithScalarFieldToStream(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        const V& scalarfield,                            ///< scalar field in the element
-        const M& xyze,                                   ///< position array (3, numnode)
+    inline void cellWithScalarFieldToStream(const CORE::FE::CellType distype,  ///< element shape
+        const V& scalarfield,  ///< scalar field in the element
+        const M& xyze,         ///< position array (3, numnode)
         std::ostream& s)
     {
       s << "S";  // scalar field indicator
@@ -495,9 +492,9 @@ namespace IO
     //! element section of a Gmsh postprocessing file
     template <class V, class M>
     inline std::string cellWithScalarFieldToString(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        const V& scalarfield,                            ///< scalar field in the element
-        const M& xyze                                    ///< position array (3, numnode)
+        const CORE::FE::CellType distype,  ///< element shape
+        const V& scalarfield,              ///< scalar field in the element
+        const M& xyze                      ///< position array (3, numnode)
     )
     {
       std::ostringstream s;
@@ -508,8 +505,7 @@ namespace IO
     //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
-    inline void cellWithVectorFieldToStream(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+    inline void cellWithVectorFieldToStream(const CORE::FE::CellType distype,  ///< element shape
         const M1& vectorfield,  ///< vector field in the element (3, numnode)
         const M2& xyze,         ///< position array (3, numnode)
         std::ostream& s)
@@ -525,9 +521,9 @@ namespace IO
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
     inline std::string cellWithVectorFieldToString(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        const M1& vectorfield,  ///< vector field in the element (3, numnode)
-        const M2& xyze          ///< position array (3, numnode)
+        const CORE::FE::CellType distype,  ///< element shape
+        const M1& vectorfield,             ///< vector field in the element (3, numnode)
+        const M2& xyze                     ///< position array (3, numnode)
     )
     {
       std::ostringstream s;
@@ -538,8 +534,7 @@ namespace IO
     //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
-    inline void cellWithTensorFieldToStream(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
+    inline void cellWithTensorFieldToStream(const CORE::FE::CellType distype,  ///< element shape
         const M1& tensorfield,  ///< tensor field in the element (9,numnode)
         const M2& xyze,         ///< position array (3, numnode)
         std::ostream& s)
@@ -555,9 +550,9 @@ namespace IO
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
     inline std::string cellWithTensorFieldToString(
-        const DRT::Element::DiscretizationType distype,  ///< element shape
-        const M1& tensorfield,  ///< tensor field in the element (9,numnode)
-        const M2& xyze          ///< position array (3, numnode)
+        const CORE::FE::CellType distype,  ///< element shape
+        const M1& tensorfield,             ///< tensor field in the element (9,numnode)
+        const M2& xyze                     ///< position array (3, numnode)
     )
     {
       std::ostringstream s;

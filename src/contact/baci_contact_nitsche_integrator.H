@@ -40,8 +40,8 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param [in] comm    contact interface communicator
      */
-    CoIntegratorNitsche(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm)
+    CoIntegratorNitsche(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
         : CoIntegrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
@@ -212,7 +212,7 @@ namespace CONTACT
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtravo_slave);
 
     //! templated version of MapGPtoParent
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    template <CORE::FE::CellType parentdistype, int dim>
     void inline SoEleGP(MORTAR::MortarElement& sele, double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 

@@ -37,8 +37,8 @@ namespace DRT
       //! this can be an arbitrary 2D/3D element and can be associated with a structure (monolithic
       //! XFSI), fluid (XFF, XFFSI, partitioned XFSI, XWDBC) or a xfluid-element with another active
       //! dofset (two-phase flow)
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class SlaveElementRepresentation : virtual public SlaveElementInterface<distype>
       {
        public:
@@ -261,9 +261,8 @@ namespace DRT
        * level-set field (we then don't couple with a concrete slave element!)
        */
       //!
-      template <DRT::Element::DiscretizationType distype, unsigned int slave_numdof>
-      class SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::dis_none,
-          slave_numdof>
+      template <CORE::FE::CellType distype, unsigned int slave_numdof>
+      class SlaveElementRepresentation<distype, CORE::FE::CellType::dis_none, slave_numdof>
       {
        public:
         /// number of nodes per master (xfem-fluid) element
@@ -300,8 +299,8 @@ namespace DRT
       };
 
       //! concrete evaluation class for interface coupling using Nitsche's method
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class NitscheCoupling
           : public NitscheInterface<distype>,
             public SlaveElementRepresentation<distype, slave_distype, slave_numdof>
@@ -885,8 +884,8 @@ namespace DRT
 
       /// concrete class for interface coupling using mixed/hybrid stress-based Lagrange multipliers
       /// method
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       class HybridLMCoupling
           : public HybridLMInterface<distype>,
             public SlaveElementRepresentation<distype, slave_distype, slave_numdof>

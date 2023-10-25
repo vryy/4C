@@ -24,7 +24,7 @@ const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH20, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);

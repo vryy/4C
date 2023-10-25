@@ -37,7 +37,7 @@ namespace DRT
 
      private:
       //! return instance of element evaluation class depending on implementation type
-      template <DRT::Element::DiscretizationType distype, int probdim>
+      template <CORE::FE::CellType distype, int probdim>
       static ScaTraBoundaryInterface* DefineProblemType(const enum INPAR::SCATRA::ImplType impltype,
           const int numdofpernode, const int numscal, const std::string& disname);
     };  // class ScaTraBoundaryFactory

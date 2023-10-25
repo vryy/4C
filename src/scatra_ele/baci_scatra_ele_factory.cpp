@@ -45,8 +45,8 @@
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, INPAR::SCATRA::ImplType problem,
-    const int numdofpernode, const int numscal, const std::string& disname)
+    CORE::FE::CellType distype, INPAR::SCATRA::ImplType problem, const int numdofpernode,
+    const int numscal, const std::string& disname)
 {
   // number of space dimensions
   const int ndim = disname != "scatra_micro"
@@ -57,69 +57,69 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::hex8, 3>(
+        return DefineProblemType<CORE::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for HEX8 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::hex27, 3>(
+        return DefineProblemType<CORE::FE::CellType::hex27, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for HEX27 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::tet4, 3>(
+        return DefineProblemType<CORE::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for TET4 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::tet10, 3>(
+        return DefineProblemType<CORE::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for TET10 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       if (ndim == 3)
       {
-        return DefineProblemType<DRT::Element::DiscretizationType::pyramid5, 3>(
+        return DefineProblemType<CORE::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::quad4, 2>(
+        return DefineProblemType<CORE::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::quad4, 3>(
+        return DefineProblemType<CORE::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for quad4 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::quad9, 2>(
+        return DefineProblemType<CORE::FE::CellType::quad9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -129,10 +129,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::nurbs9, 2>(
+        return DefineProblemType<CORE::FE::CellType::nurbs9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -143,22 +143,22 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::tri3, 2>(
+        return DefineProblemType<CORE::FE::CellType::tri3, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::tri3, 3>(
+        return DefineProblemType<CORE::FE::CellType::tri3, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for tri3 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::tri6, 2>(
+        return DefineProblemType<CORE::FE::CellType::tri6, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -168,22 +168,22 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       if (ndim == 1)
-        return DefineProblemType<DRT::Element::DiscretizationType::line2, 1>(
+        return DefineProblemType<CORE::FE::CellType::line2, 1>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::line2, 2>(
+        return DefineProblemType<CORE::FE::CellType::line2, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::line2, 3>(
+        return DefineProblemType<CORE::FE::CellType::line2, 3>(
             problem, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension for LINE2 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       if (ndim != 1)
       {
@@ -192,7 +192,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             ndim);
       }
       else
-        return DefineProblemType<DRT::Element::DiscretizationType::line3, 1>(
+        return DefineProblemType<CORE::FE::CellType::line3, 1>(
             problem, numdofpernode, numscal, disname);
       break;
     }
@@ -206,8 +206,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
-    DRT::Element::DiscretizationType distype, INPAR::SCATRA::ImplType problem,
-    const int numdofpernode, const int numscal, const std::string& disname)
+    CORE::FE::CellType distype, INPAR::SCATRA::ImplType problem, const int numdofpernode,
+    const int numscal, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -215,69 +215,69 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::hex8, 3>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for HEX8 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::tet4, 3>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for TET4 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::tet10, 3>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for TET10 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::pyramid5, 3>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       if (ndim == 2)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::quad4, 2>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       }
       else if (ndim == 3)
       {
-        return DefineProblemTypeHDG<DRT::Element::DiscretizationType::quad4, 3>(
+        return DefineProblemTypeHDG<CORE::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         dserror("invalid problem dimension for quad4 transport element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemTypeHDG<DRT::Element::DiscretizationType::tri3, 2>(
+      return DefineProblemTypeHDG<CORE::FE::CellType::tri3, 2>(
           problem, numdofpernode, numscal, disname);
     }
     default:
@@ -289,7 +289,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemType(
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -442,7 +442,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTypeHDG(
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)

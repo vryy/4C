@@ -150,20 +150,16 @@ CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::DRT::UTILS::CalculateParentGPFromF
   -----------------------------------------------------------------*/
 template <class V, class W, typename IntegrationPoints>
 void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int lineid)
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int lineid)
 {
   // resize output array
   // pqxg.Shape(pqxg.numRows(),2);
   // derivtrafo.Shape(2,2);
 
 
-  if ((distype == ::DRT::Element::DiscretizationType::line2 &&
-          pdistype == ::DRT::Element::DiscretizationType::quad4) or
-      (distype == ::DRT::Element::DiscretizationType::line3 &&
-          pdistype == ::DRT::Element::DiscretizationType::quad8) or
-      (distype == ::DRT::Element::DiscretizationType::line3 &&
-          pdistype == ::DRT::Element::DiscretizationType::quad9))
+  if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::quad4) or
+      (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad8) or
+      (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad9))
   {
     switch (lineid)
     {
@@ -336,8 +332,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
         break;
     }
   }
-  else if (distype == ::DRT::Element::DiscretizationType::nurbs3 &&
-           pdistype == ::DRT::Element::DiscretizationType::nurbs9)
+  else if (distype == CORE::FE::CellType::nurbs3 && pdistype == CORE::FE::CellType::nurbs9)
   {
     switch (lineid)
     {
@@ -437,10 +432,8 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
         break;
     }
   }
-  else if ((distype == ::DRT::Element::DiscretizationType::line2 &&
-               pdistype == ::DRT::Element::DiscretizationType::tri3) or
-           (distype == ::DRT::Element::DiscretizationType::line3 &&
-               pdistype == ::DRT::Element::DiscretizationType::tri6))
+  else if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::tri3) or
+           (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::tri6))
   {
     switch (lineid)
     {
@@ -512,9 +505,8 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 3);
@@ -528,9 +520,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 2);
@@ -544,9 +535,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<3, 3>& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 3);
@@ -560,9 +550,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<2, 2>& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.IP().nquad, 2);
@@ -577,8 +566,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 3);
@@ -592,8 +580,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 2);
@@ -607,8 +594,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 3);
@@ -622,8 +608,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
-    const ::DRT::Element::DiscretizationType pdistype,
-    const ::DRT::Element::DiscretizationType distype, const int surfaceid)
+    const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
   pqxg.shape(intpoints.NumPoints(), 2);

@@ -54,7 +54,7 @@ namespace DRT
       \date 03/18
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ArteryEleCalc : public ArteryEleInterface
     {
      protected:

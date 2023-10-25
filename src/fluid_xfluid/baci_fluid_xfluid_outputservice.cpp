@@ -678,29 +678,29 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
 
   switch (actele->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-    case DRT::Element::DiscretizationType::hex20:
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
       numnode = 8;
       vel_f << "VH(";
       press_f << "SH(";
       if (acc_output) acc_f << "VH(";
       break;
-    case DRT::Element::DiscretizationType::wedge6:
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
       numnode = 6;
       vel_f << "VI(";
       press_f << "SI(";
       if (acc_output) acc_f << "VI(";
       break;
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       numnode = 5;
       vel_f << "VY(";
       press_f << "SY(";
       if (acc_output) acc_f << "VY(";
       break;
-    case DRT::Element::DiscretizationType::tet4:
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       numnode = 4;
       vel_f << "VS(";
       press_f << "SS(";
@@ -886,13 +886,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 
           switch (actele->Shape())
           {
-            case DRT::Element::DiscretizationType::hex8:
+            case CORE::FE::CellType::hex8:
             {
               const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                  DRT::Element::DiscretizationType::hex8>::numNodePerElement;
+                  CORE::FE::CellType::hex8>::numNodePerElement;
               CORE::LINALG::Matrix<numnodes, 1> funct;
               CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex8);
+                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -902,14 +902,14 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
               if (acc_output) a.Multiply(1, acceleration, funct, 1);
               break;
             }
-            case DRT::Element::DiscretizationType::hex20:
+            case CORE::FE::CellType::hex20:
             {
               // TODO: check the output for hex20
               const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                  DRT::Element::DiscretizationType::hex20>::numNodePerElement;
+                  CORE::FE::CellType::hex20>::numNodePerElement;
               CORE::LINALG::Matrix<numnodes, 1> funct;
               CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex20);
+                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -919,14 +919,14 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
               if (acc_output) a.Multiply(1, acceleration, funct, 1);
               break;
             }
-            case DRT::Element::DiscretizationType::hex27:
+            case CORE::FE::CellType::hex27:
             {
               // TODO: check the output for hex27
               const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                  DRT::Element::DiscretizationType::hex27>::numNodePerElement;
+                  CORE::FE::CellType::hex27>::numNodePerElement;
               CORE::LINALG::Matrix<numnodes, 1> funct;
               CORE::DRT::UTILS::shape_function_3D(
-                  funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex27);
+                  funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
               CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
               CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
               CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -974,12 +974,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 
       switch (ic->Shape())
       {
-        case DRT::Element::DiscretizationType::hex8:
+        case CORE::FE::CellType::hex8:
           vel_f << "VH(";
           press_f << "SH(";
           if (acc_output) acc_f << "VH(";
           break;
-        case DRT::Element::DiscretizationType::tet4:
+        case CORE::FE::CellType::tet4:
           vel_f << "VS(";
           press_f << "SS(";
           if (acc_output) acc_f << "VS(";
@@ -1019,13 +1019,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 
         switch (actele->Shape())
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::hex8>::numNodePerElement;
+                CORE::FE::CellType::hex8>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex8);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1035,14 +1035,14 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
           {
             // TODO: check the output for hex20
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::hex20>::numNodePerElement;
+                CORE::FE::CellType::hex20>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex20);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1052,14 +1052,14 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
           {
             // TODO: check the output for hex27
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::hex27>::numNodePerElement;
+                CORE::FE::CellType::hex27>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::hex27);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1069,13 +1069,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::wedge6:
+          case CORE::FE::CellType::wedge6:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::wedge6>::numNodePerElement;
+                CORE::FE::CellType::wedge6>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::wedge6);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge6);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1085,13 +1085,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::wedge15:
+          case CORE::FE::CellType::wedge15:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::wedge15>::numNodePerElement;
+                CORE::FE::CellType::wedge15>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::wedge15);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge15);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1101,13 +1101,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::tet4>::numNodePerElement;
+                CORE::FE::CellType::tet4>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::tet4);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet4);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1117,13 +1117,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::tet10>::numNodePerElement;
+                CORE::FE::CellType::tet10>::numNodePerElement;
             CORE::LINALG::Matrix<numnodes, 1> funct;
             CORE::DRT::UTILS::shape_function_3D(
-                funct, rst(0), rst(1), rst(2), DRT::Element::DiscretizationType::tet10);
+                funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet10);
             CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
             CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
             CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
@@ -1206,10 +1206,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
 
       switch (bc->Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           bound_f << "VQ(";
           break;
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           bound_f << "VT(";
           break;
         default:
@@ -1241,52 +1241,52 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
 
         switch (side->Shape())
         {
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::quad4>::numNodePerElement;
+                CORE::FE::CellType::quad4>::numNodePerElement;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
             CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), DRT::Element::DiscretizationType::quad4);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<
-                DRT::Element::DiscretizationType::quad4>(xyze, deriv, metrictensor, drs, &normal);
+                deriv, eta(0), eta(1), CORE::FE::CellType::quad4);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+                xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::tri3>::numNodePerElement;
+                CORE::FE::CellType::tri3>::numNodePerElement;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
             CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), DRT::Element::DiscretizationType::tri3);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<
-                DRT::Element::DiscretizationType::tri3>(xyze, deriv, metrictensor, drs, &normal);
+                deriv, eta(0), eta(1), CORE::FE::CellType::tri3);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::tri3>(
+                xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case DRT::Element::DiscretizationType::quad8:
+          case CORE::FE::CellType::quad8:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::quad8>::numNodePerElement;
+                CORE::FE::CellType::quad8>::numNodePerElement;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
             CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), DRT::Element::DiscretizationType::quad8);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<
-                DRT::Element::DiscretizationType::quad8>(xyze, deriv, metrictensor, drs, &normal);
+                deriv, eta(0), eta(1), CORE::FE::CellType::quad8);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad8>(
+                xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                DRT::Element::DiscretizationType::quad9>::numNodePerElement;
+                CORE::FE::CellType::quad9>::numNodePerElement;
             CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
             CORE::LINALG::Matrix<2, numnodes> deriv;
             CORE::DRT::UTILS::shape_function_2D_deriv1(
-                deriv, eta(0), eta(1), DRT::Element::DiscretizationType::quad9);
-            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<
-                DRT::Element::DiscretizationType::quad9>(xyze, deriv, metrictensor, drs, &normal);
+                deriv, eta(0), eta(1), CORE::FE::CellType::quad9);
+            CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad9>(
+                xyze, deriv, metrictensor, drs, &normal);
             break;
           }
           default:

@@ -24,7 +24,7 @@ DRT::ELEMENTS::WallQuad4PoroType& DRT::ELEMENTS::WallQuad4PoroType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -34,8 +34,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
 {
   if (eletype == "WALLQ4PORO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,8 +43,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -73,8 +73,7 @@ int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>*>(
-            dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
@@ -90,7 +89,7 @@ DRT::ELEMENTS::WallQuad9PoroType& DRT::ELEMENTS::WallQuad9PoroType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -100,8 +99,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
 {
   if (eletype == "WALLQ9PORO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -109,8 +108,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
@@ -137,8 +136,7 @@ int DRT::ELEMENTS::WallQuad9PoroType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>*>(
-            dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
@@ -158,7 +156,7 @@ DRT::ELEMENTS::WallNurbs4PoroType& DRT::ELEMENTS::WallNurbs4PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -168,8 +166,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
 {
   if (eletype == "WALLN4PORO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -177,8 +175,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>(id, owner));
   return ele;
 }
 
@@ -205,8 +203,7 @@ int DRT::ELEMENTS::WallNurbs4PoroType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>*>(
-            dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
@@ -226,7 +223,7 @@ DRT::ELEMENTS::WallNurbs9PoroType& DRT::ELEMENTS::WallNurbs9PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -236,8 +233,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
 {
   if (eletype == "WALLN9PORO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -245,8 +242,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>(id, owner));
   return ele;
 }
 
@@ -273,8 +270,7 @@ int DRT::ELEMENTS::WallNurbs9PoroType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>*>(
-            dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
@@ -291,7 +287,7 @@ DRT::ELEMENTS::WallTri3PoroType& DRT::ELEMENTS::WallTri3PoroType::Instance() { r
 
 DRT::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -301,8 +297,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
 {
   if (eletype == "WALLT3PORO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -310,8 +306,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
@@ -339,8 +335,8 @@ int DRT::ELEMENTS::WallTri3PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>*>(
-        dis.lColElement(i));
+    auto* actele =
+        dynamic_cast<DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_Poro* failed");
     actele->InitElement();
   }

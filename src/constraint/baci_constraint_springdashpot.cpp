@@ -791,7 +791,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
     eparams.set("area", 0.0);
     element->Evaluate(eparams, *(actdisc_), lm, dummat, dummat, dumvec, dumvec, dumvec);
 
-    DRT::Element::DiscretizationType shape = element->Shape();
+    CORE::FE::CellType shape = element->Shape();
 
     double a = eparams.get("area", -1.0);
 
@@ -806,10 +806,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
 
       switch (shape)
       {
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 0.;
@@ -827,10 +827,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = -1. / 3.;
@@ -848,7 +848,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 1. / 9.;
@@ -871,7 +871,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           dserror(
               "Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per "
               "node!");

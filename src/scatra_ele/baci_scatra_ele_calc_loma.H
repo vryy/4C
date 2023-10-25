@@ -31,7 +31,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcLoma : public ScaTraEleCalc<distype>
     {
      private:

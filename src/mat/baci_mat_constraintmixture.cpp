@@ -3142,26 +3142,26 @@ void MAT::ConstraintMixtureOutputToGmsh(
       xcurr(i, 1) = actele->Nodes()[i]->X()[1] + mydisp[i * numdof + 1];
       xcurr(i, 2) = actele->Nodes()[i]->X()[2] + mydisp[i * numdof + 2];
     }
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     CORE::LINALG::SerialDenseVector funct(numnode);
 
     // define gauss rule
     CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
     switch (distype)
     {
-      case DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::hex_8point;
         if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
         if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);

@@ -53,7 +53,7 @@ namespace XFEM
     and polynomial order of the element
      */
     double NIT_getTraceEstimateConstant(
-        const DRT::Element::DiscretizationType ele_distype, const bool is_pseudo_2D);
+        const CORE::FE::CellType ele_distype, const bool is_pseudo_2D);
 
 
     //! @name NIT_Compute_ViscPenalty_Stabfac
@@ -61,9 +61,8 @@ namespace XFEM
     \brief compute viscous part of Nitsche's penalty term scaling for Nitsche's method
      */
     void NIT_Compute_ViscPenalty_Stabfac(
-        const DRT::Element::DiscretizationType
-            ele_distype,  ///< the discretization type of the element w.r.t which the stabilization
-                          ///< factor is computed
+        const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
+                                               ///< which the stabilization factor is computed
         const double&
             penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
         const double& NIT_stabscaling,  ///< basic nit penalty stab scaling
@@ -119,7 +118,7 @@ namespace XFEM
     }
 
     //! evaluate element volume
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     double EvalElementVolume(
         CORE::LINALG::Matrix<3,
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
@@ -129,7 +128,7 @@ namespace XFEM
         std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = nullptr);
 
     //! compute characteristic element length h_k
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     double ComputeCharEleLength(DRT::Element* ele,                 ///< fluid element
         CORE::LINALG::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager

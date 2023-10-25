@@ -91,7 +91,7 @@ namespace DRT
       // do we have to build volume, surface or line elements?
       // get node connectivity for specific distype of parent element
       unsigned int nele = 0;
-      const DRT::Element::DiscretizationType distype = ele.Shape();
+      const CORE::FE::CellType distype = ele.Shape();
       std::vector<std::vector<int>> connectivity;
       switch (buildtype)
       {

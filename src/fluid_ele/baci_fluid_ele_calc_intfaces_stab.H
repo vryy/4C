@@ -116,8 +116,7 @@ namespace DRT
     //-----------------------------------------------------------------
     ///
     //-----------------------------------------------------------------
-    template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
-        DRT::Element::DiscretizationType ndistype>
+    template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
     class FluidInternalSurfaceStab : public FluidIntFaceStab
     {
      public:
@@ -189,7 +188,7 @@ namespace DRT
           ) override;
 
      private:
-      int Degree(const DRT::Element::DiscretizationType parent_ele_distype);
+      int Degree(const CORE::FE::CellType parent_ele_distype);
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void ReassembleMATBlock(const int row_block,     ///< row block
@@ -366,8 +365,7 @@ namespace DRT
         \brief provide parameter r_alpha depending on polynomial degree and shape of element
         for each parent distype required for certain stabilization parameter definitions
        */
-      inline void r_pow_alpha(
-          DRT::Element::DiscretizationType parent_distype, double& r_visc, double& r_conv)
+      inline void r_pow_alpha(CORE::FE::CellType parent_distype, double& r_visc, double& r_conv)
       {
         // the scaling factor for face/edge-oriented stabilizations is r^alpha with
         // *    r_triangle      = highest polynomial degree on triangle/tet
@@ -380,26 +378,26 @@ namespace DRT
 
         switch (parent_distype)
         {
-          case DRT::Element::DiscretizationType::hex8:
-          case DRT::Element::DiscretizationType::tet4:
-          case DRT::Element::DiscretizationType::pyramid5:
-          case DRT::Element::DiscretizationType::wedge6:
-          case DRT::Element::DiscretizationType::quad4:
-          case DRT::Element::DiscretizationType::tri3:
-          case DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::pyramid5:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::line2:
           {
             r_visc = 1.0;  ///< 1.0^4
             r_conv = 1.0;  ///< 1.0^(7/2)
             break;
           }
-          case DRT::Element::DiscretizationType::hex20:
-          case DRT::Element::DiscretizationType::hex27:
-          case DRT::Element::DiscretizationType::tet10:
-          case DRT::Element::DiscretizationType::wedge15:
-          case DRT::Element::DiscretizationType::quad8:
-          case DRT::Element::DiscretizationType::quad9:
-          case DRT::Element::DiscretizationType::tri6:
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::tri6:
+          case CORE::FE::CellType::line3:
           {
             r_visc = 16.0;                   ///< 2.0^4
             r_conv = 11.313708498984761164;  ///< 2.0^(7/2)
@@ -763,12 +761,10 @@ namespace DRT
 
       //! find the surface at the opposite side, return the local side id of opposite side
       //! return -1 if not unique!
-      int FindOppositeSurface(
-          DRT::Element::DiscretizationType ele_distype, const int surfacelocalid)
+      int FindOppositeSurface(CORE::FE::CellType ele_distype, const int surfacelocalid)
       {
-        if (ele_distype == DRT::Element::DiscretizationType::hex8 or
-            ele_distype == DRT::Element::DiscretizationType::hex20 or
-            ele_distype == DRT::Element::DiscretizationType::hex27)
+        if (ele_distype == CORE::FE::CellType::hex8 or ele_distype == CORE::FE::CellType::hex20 or
+            ele_distype == CORE::FE::CellType::hex27)
         {
           switch (surfacelocalid)
           {
@@ -795,9 +791,9 @@ namespace DRT
               break;
           }
         }
-        else if (ele_distype == DRT::Element::DiscretizationType::quad4 or
-                 ele_distype == DRT::Element::DiscretizationType::quad8 or
-                 ele_distype == DRT::Element::DiscretizationType::quad9)
+        else if (ele_distype == CORE::FE::CellType::quad4 or
+                 ele_distype == CORE::FE::CellType::quad8 or
+                 ele_distype == CORE::FE::CellType::quad9)
         {
           switch (surfacelocalid)
           {
@@ -818,11 +814,9 @@ namespace DRT
               break;
           }
         }
-        if (ele_distype == DRT::Element::DiscretizationType::tet4 or
-            ele_distype == DRT::Element::DiscretizationType::tet10 or
-            ele_distype == DRT::Element::DiscretizationType::tri3 or
-            ele_distype == DRT::Element::DiscretizationType::tri6 or
-            ele_distype == DRT::Element::DiscretizationType::pyramid5)
+        if (ele_distype == CORE::FE::CellType::tet4 or ele_distype == CORE::FE::CellType::tet10 or
+            ele_distype == CORE::FE::CellType::tri3 or ele_distype == CORE::FE::CellType::tri6 or
+            ele_distype == CORE::FE::CellType::pyramid5)
         {
           // no unique opposite side
           return -1;

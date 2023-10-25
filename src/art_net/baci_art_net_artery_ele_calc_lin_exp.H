@@ -35,7 +35,7 @@ namespace DRT
       \date 01/09
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ArteryEleCalcLinExp : public ArteryEleCalc<distype>
     {
      private:

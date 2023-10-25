@@ -115,7 +115,7 @@ namespace DRT::ELEMENTS
 
     void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
 
-    [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+    [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
     [[nodiscard]] DRT::ElementType& ElementType() const override
     {
@@ -193,7 +193,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
 
     //! kinematic type
     INPAR::STR::KinemType kintype_;

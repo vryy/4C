@@ -1016,7 +1016,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
               // getting element center for this element
               CORE::LINALG::Matrix<3, 1> element_center;
               Element *elmnt = *el;
-              if (elmnt->Shape() != ::DRT::Element::DiscretizationType::hex8)
+              if (elmnt->Shape() != CORE::FE::CellType::hex8)
               {
                 std::cout << "==| WARNING: Element Type != hex8 not supported by check "
                              "Graph::HasTouchingEdge! |==\n"

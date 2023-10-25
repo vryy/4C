@@ -20,8 +20,7 @@
 
 
 CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
-    const ::DRT::Element::DiscretizationType& distype,
-    const CORE::LINALG::SerialDenseMatrix& xyze) const
+    const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
   const CORE::LINALG::Matrix<3, 1> localcenterpos(
@@ -35,7 +34,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
 
 ////////////// Integration cell ////////////////////////////////////////
 
-CORE::GEO::IntCell::IntCell(const ::DRT::Element::DiscretizationType& distype)
+CORE::GEO::IntCell::IntCell(const CORE::FE::CellType& distype)
     : distype_(distype), indomainplus_(false)
 {
 }
@@ -54,7 +53,7 @@ CORE::GEO::IntCell& CORE::GEO::IntCell::operator=(const IntCell& intcell)
 
 ////////////// Boundary integration cell ////////////////////////////////
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(const ::DRT::Element::DiscretizationType& distype,
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
     const int surface_ele_gid, const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const CORE::LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
     const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates)
@@ -68,7 +67,7 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const ::DRT::Element::Discretization
   indomainplus_ = true;
 }
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(const ::DRT::Element::DiscretizationType& distype,
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
     const int surface_ele_gid, const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
     const CORE::LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
     const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates, const bool indomainplus)
@@ -104,8 +103,7 @@ CORE::GEO::BoundaryIntCell& CORE::GEO::BoundaryIntCell::operator=(
   return *this;
 }
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(
-    ::DRT::Element::DiscretizationType distype, const int& surface_ele_gid)
+CORE::GEO::BoundaryIntCell::BoundaryIntCell(CORE::FE::CellType distype, const int& surface_ele_gid)
     : IntCell(distype), surface_ele_gid_(surface_ele_gid), phys_center_(true)
 {
   /* intentionally left blank */

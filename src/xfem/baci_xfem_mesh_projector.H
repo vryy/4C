@@ -68,7 +68,7 @@ namespace XFEM
 
    private:
     /// determine the search radius for the search tree
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FindSearchRadius();
 
     //! build a search tree for elements of source discretization
@@ -81,7 +81,7 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool CheckPositionAndProject(const DRT::Element* src_ele,
         const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 

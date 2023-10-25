@@ -43,8 +43,8 @@ namespace XFEM
     Return prescribed velocities and traction vectors for a GNBC boundary condition.
     Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
     */
-    template <DRT::Element::DiscretizationType DISTYPE, class V1, class V2, class X1, class T1,
-        class M1, class M2, class M3>
+    template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+        class M2, class M3>
     void EvaluateCouplingConditions(V1& ivel,  ///< prescribed velocity at interface
         V2& itraction,                         ///< prescribed traction at interface
         X1& x,                                 ///< coordinates of gauss point
@@ -142,7 +142,7 @@ namespace XFEM
     };
 
 
-    // template <DRT::Element::DiscretizationType DISTYPE>//,class M1, class M2>
+    // template <CORE::FE::CellType DISTYPE>//,class M1, class M2>
     //! Updates configurationmap for specific Gausspoint
     void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
         double& visc_m,                              //< master sided dynamic viscosity
@@ -165,27 +165,27 @@ namespace XFEM
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      if (ele->Shape() == DRT::Element::DiscretizationType::hex8)
+      if (ele->Shape() == CORE::FE::CellType::hex8)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex8;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex8;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::DiscretizationType::hex27)
+      else if (ele->Shape() == CORE::FE::CellType::hex27)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex27;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex27;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::DiscretizationType::hex20)
+      else if (ele->Shape() == CORE::FE::CellType::hex20)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex20;
+        const CORE::FE::CellType shape = CORE::FE::CellType::hex20;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;

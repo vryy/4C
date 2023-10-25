@@ -22,7 +22,7 @@
 namespace CORE::GEO
 {
   //! template of extended aligned bounding boxes
-  template <int ndim, ::DRT::Element::DiscretizationType distype, class M>
+  template <int ndim, CORE::FE::CellType distype, class M>
   static inline CORE::LINALG::Matrix<3, 2> computeFastXAABBT(
       const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
   {
@@ -55,39 +55,39 @@ namespace CORE::GEO
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   template <class M>
-  CORE::LINALG::Matrix<3, 2> computeFastXAABB(::DRT::Element::DiscretizationType distype,
-      const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
+  CORE::LINALG::Matrix<3, 2> computeFastXAABB(
+      CORE::FE::CellType distype, const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::hex8:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex8>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::quad4:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad4>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::hex20:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex20>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::hex27:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex27>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::tet4:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tet4>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::tet10:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tet10>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::line2:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::line2>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::line3:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::line3>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::tri3:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tri3>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::tri6:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tri6>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::quad8:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad8>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::quad9:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad9>(xyze, eleGeoType);
-      case ::DRT::Element::DiscretizationType::pyramid5:
-        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::pyramid5>(xyze, eleGeoType);
+      case CORE::FE::CellType::hex8:
+        return computeFastXAABBT<3, CORE::FE::CellType::hex8>(xyze, eleGeoType);
+      case CORE::FE::CellType::quad4:
+        return computeFastXAABBT<3, CORE::FE::CellType::quad4>(xyze, eleGeoType);
+      case CORE::FE::CellType::hex20:
+        return computeFastXAABBT<3, CORE::FE::CellType::hex20>(xyze, eleGeoType);
+      case CORE::FE::CellType::hex27:
+        return computeFastXAABBT<3, CORE::FE::CellType::hex27>(xyze, eleGeoType);
+      case CORE::FE::CellType::tet4:
+        return computeFastXAABBT<3, CORE::FE::CellType::tet4>(xyze, eleGeoType);
+      case CORE::FE::CellType::tet10:
+        return computeFastXAABBT<3, CORE::FE::CellType::tet10>(xyze, eleGeoType);
+      case CORE::FE::CellType::line2:
+        return computeFastXAABBT<3, CORE::FE::CellType::line2>(xyze, eleGeoType);
+      case CORE::FE::CellType::line3:
+        return computeFastXAABBT<3, CORE::FE::CellType::line3>(xyze, eleGeoType);
+      case CORE::FE::CellType::tri3:
+        return computeFastXAABBT<3, CORE::FE::CellType::tri3>(xyze, eleGeoType);
+      case CORE::FE::CellType::tri6:
+        return computeFastXAABBT<3, CORE::FE::CellType::tri6>(xyze, eleGeoType);
+      case CORE::FE::CellType::quad8:
+        return computeFastXAABBT<3, CORE::FE::CellType::quad8>(xyze, eleGeoType);
+      case CORE::FE::CellType::quad9:
+        return computeFastXAABBT<3, CORE::FE::CellType::quad9>(xyze, eleGeoType);
+      case CORE::FE::CellType::pyramid5:
+        return computeFastXAABBT<3, CORE::FE::CellType::pyramid5>(xyze, eleGeoType);
       default:
-        std::cout << DistypeToString(distype) << std::endl;
+        std::cout << ::DRT::DistypeToString(distype) << std::endl;
         dserror("add your distype to this switch!");
     }
     return CORE::LINALG::Matrix<3, 2>(true);

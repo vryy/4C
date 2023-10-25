@@ -19,7 +19,7 @@
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, const int numdofpernode, const std::string& disname)
+    CORE::FE::CellType distype, const int numdofpernode, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -27,92 +27,92 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
 
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::quad4>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::quad4>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for quad4 porofluidmultiphase element!");
       break;
     }
-      //  case DRT::Element::DiscretizationType::quad8:
+      //  case CORE::FE::CellType::quad8:
       //  {
       //    if(ndim==2)
       //      return
-      //      DefineProblemType<DRT::Element::DiscretizationType::quad8>(numdofpernode,disname);
+      //      DefineProblemType<CORE::FE::CellType::quad8>(numdofpernode,disname);
       //    else
       //      dserror("invalid problem dimension for quad8 porofluidmultiphase element!");
       //    break;
       //  }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::quad9>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::quad9>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for quad9 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::DiscretizationType::tri3>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::tri3>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for tri3 porofluidmultiphase element!");
       break;
     }
-      //  case DRT::Element::DiscretizationType::tri6:
+      //  case CORE::FE::CellType::tri6:
       //  {
       //    if(ndim==2)
       //      return
-      //      DefineProblemType<DRT::Element::DiscretizationType::tri6>(numdofpernode,disname);
+      //      DefineProblemType<CORE::FE::CellType::tri6>(numdofpernode,disname);
       //    else
       //      dserror("invalid problem dimension for tri6 porofluidmultiphase element!");
       //    break;
       //  }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       if (ndim == 1)
-        return DefineProblemType<DRT::Element::DiscretizationType::line2>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::line2>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for line2 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       if (ndim == 1)
-        return DefineProblemType<DRT::Element::DiscretizationType::line3>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::line3>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for line3 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::hex8>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::hex8>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for hex8 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::hex27>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::hex27>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for hex27 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::tet4>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::tet4>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for tet4 porofluidmultiphase element!");
       break;
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::DiscretizationType::tet10>(numdofpernode, disname);
+        return DefineProblemType<CORE::FE::CellType::tet10>(numdofpernode, disname);
       else
         dserror("invalid problem dimension for tet10 porofluidmultiphase element!");
       break;
@@ -127,7 +127,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 DRT::ELEMENTS::PoroFluidMultiPhaseFactory::DefineProblemType(
     const int numdofpernode, const std::string& disname)

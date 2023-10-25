@@ -16,7 +16,7 @@ void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(
     CORE::LINALG::Matrix<1, NUMDIM_SOH8>& centercoord,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe) const
 {
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   centercoord.MultiplyTN(funct, xrefe);

@@ -21,7 +21,7 @@ growth, e.g., lithium plating
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Insta
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::ScaTraEleBoundaryCalcElchElectrodeGrowth(const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -51,7 +51,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateMinMaxOverpotential(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -307,7 +307,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
@@ -359,7 +359,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::E
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -499,7 +499,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -618,7 +618,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -741,7 +741,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::ExtractNodeValues(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -753,23 +753,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 }
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
-    DRT::Element::DiscretizationType::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::quad4,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::quad8,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::quad9,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::line2,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::line2,
+    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::line3,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::nurbs3,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::nurbs9,
+    3>;

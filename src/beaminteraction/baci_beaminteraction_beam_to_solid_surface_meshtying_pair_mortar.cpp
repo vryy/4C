@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
-    const DRT::Element::DiscretizationType surface_shape,
+    const CORE::FE::CellType surface_shape,
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {
   using namespace GEOMETRYPAIR;
@@ -221,22 +221,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
         default:
@@ -248,22 +248,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
         default:
@@ -275,22 +275,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
         default:

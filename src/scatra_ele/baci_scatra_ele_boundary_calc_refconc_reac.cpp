@@ -19,7 +19,7 @@ concentrations and with advanced reaction terms
 /*----------------------------------------------------------------------*
  |  Singleton access method                                  thon 02/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  |  Private constructor                                      thon 02/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoundaryCalcRefConcReac(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoun
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacForRefConc(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
@@ -65,25 +65,25 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
 
   double J = 1.0;
   // only 3D cases:
-  if (bele->Shape() == DRT::Element::DiscretizationType::tri3)
+  if (bele->Shape() == CORE::FE::CellType::tri3)
   {
-    if (pele->Shape() == DRT::Element::DiscretizationType::tet4)
-      J = CalcJatIntPoint<DRT::Element::DiscretizationType::tri3,
-          DRT::Element::DiscretizationType::tet4>(iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == DRT::Element::DiscretizationType::pyramid5)
-      J = CalcJatIntPoint<DRT::Element::DiscretizationType::tri3,
-          DRT::Element::DiscretizationType::pyramid5>(iquad, bele, pele, params, discretization);
+    if (pele->Shape() == CORE::FE::CellType::tet4)
+      J = CalcJatIntPoint<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+          iquad, bele, pele, params, discretization);
+    else if (pele->Shape() == CORE::FE::CellType::pyramid5)
+      J = CalcJatIntPoint<CORE::FE::CellType::tri3, CORE::FE::CellType::pyramid5>(
+          iquad, bele, pele, params, discretization);
     else
       dserror("Parent element not supported here!");
   }
-  else if (bele->Shape() == DRT::Element::DiscretizationType::quad4)
+  else if (bele->Shape() == CORE::FE::CellType::quad4)
   {
-    if (pele->Shape() == DRT::Element::DiscretizationType::hex8)
-      J = CalcJatIntPoint<DRT::Element::DiscretizationType::quad4,
-          DRT::Element::DiscretizationType::hex8>(iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == DRT::Element::DiscretizationType::pyramid5)
-      J = CalcJatIntPoint<DRT::Element::DiscretizationType::quad4,
-          DRT::Element::DiscretizationType::pyramid5>(iquad, bele, pele, params, discretization);
+    if (pele->Shape() == CORE::FE::CellType::hex8)
+      J = CalcJatIntPoint<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+          iquad, bele, pele, params, discretization);
+    else if (pele->Shape() == CORE::FE::CellType::pyramid5)
+      J = CalcJatIntPoint<CORE::FE::CellType::quad4, CORE::FE::CellType::pyramid5>(
+          iquad, bele, pele, params, discretization);
     else
       dserror("Parent element not supported here!");
   }
@@ -97,8 +97,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
+template <CORE::FE::CellType distype, int probdim>
+template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJatIntPoint(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
@@ -223,23 +223,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<
-    DRT::Element::DiscretizationType::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::nurbs9, 3>;

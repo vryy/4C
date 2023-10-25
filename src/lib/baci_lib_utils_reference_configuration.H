@@ -30,7 +30,7 @@ namespace DRT
      * space position xi
      *
      *  \author cschmidt \date 11/18 */
-    template <int probdim, DRT::Element::DiscretizationType distype>
+    template <int probdim, CORE::FE::CellType distype>
     static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
         const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
         CORE::LINALG::Matrix<probdim, 1>& coord)
@@ -79,7 +79,7 @@ namespace DRT
      * position xi
      *
      *  \author cschmidt \date 11/18 */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
         const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
         CORE::LINALG::Matrix<3, 1>& normal)

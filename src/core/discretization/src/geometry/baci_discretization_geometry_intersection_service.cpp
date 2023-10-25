@@ -27,7 +27,7 @@ void CORE::GEO::checkGeoType(const ::DRT::Element* element,
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
-  const ::DRT::Element::DiscretizationType distype = element->Shape();
+  const CORE::FE::CellType distype = element->Shape();
   const int eleDim = CORE::DRT::UTILS::getDimension(distype);
 
   if (CORE::DRT::UTILS::getOrder(distype) == 1)

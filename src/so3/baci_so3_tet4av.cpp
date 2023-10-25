@@ -127,10 +127,7 @@ DRT::Element* DRT::ELEMENTS::So_tet4av::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4av::Shape() const
-{
-  return DRT::Element::DiscretizationType::tet4;
-}
+CORE::FE::CellType DRT::ELEMENTS::So_tet4av::Shape() const { return CORE::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |

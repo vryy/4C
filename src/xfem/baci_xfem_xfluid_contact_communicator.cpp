@@ -351,13 +351,12 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
   // 3 // get quantities in gp
   {
     CORE::LINALG::Matrix<3, 1> fluidele_xsi(true);
-    if (fluidele->Shape() == DRT::Element::DiscretizationType::hex8)
+    if (fluidele->Shape() == CORE::FE::CellType::hex8)
     {
       CORE::LINALG::Matrix<3, 8> xyze(ele_xyze.values(), true);
       // find element local position of gauss point
       Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-          CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::DiscretizationType::hex8>(
-              xyze, x);
+          CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::hex8>(xyze, x);
       if (!pos->Compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
       {
         pos->LocalCoordinates(fluidele_xsi);
@@ -382,11 +381,10 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       static CORE::LINALG::Matrix<3, 8> derxy;
 
       // evaluate shape functions
-      CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex8>(fluidele_xsi, funct);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(fluidele_xsi, funct);
 
       // evaluate the derivatives of shape functions
-      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex8>(
-          fluidele_xsi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(fluidele_xsi, deriv);
       xjm.MultiplyNT(deriv, xyze);
       // double det = xji.Invert(xjm); //if we need this at some point
       xji.Invert(xjm);
@@ -413,7 +411,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
   }
 
   // 4 // evaluate slave velocity at guasspoint
-  if (sele->Shape() == DRT::Element::DiscretizationType::quad4)
+  if (sele->Shape() == CORE::FE::CellType::quad4)
   {
     static CORE::LINALG::Matrix<3, 4> vels;
     static CORE::LINALG::Matrix<3, 4> velpfs;
@@ -426,11 +424,10 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       }
     }
 
-    const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        DRT::Element::DiscretizationType::quad4>::numNodePerElement;
+    const int numnodes =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
     static CORE::LINALG::Matrix<numnodes, 1> funct(false);
-    CORE::DRT::UTILS::shape_function_2D(
-        funct, selexsi(0), selexsi(1), DRT::Element::DiscretizationType::quad4);
+    CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
     vel_s.Multiply(vels, funct);
     if (isporo_) velpf_s.Multiply(velpfs, funct);
   }
@@ -514,10 +511,9 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
       penalty_fac = 0.0;
       return;
     }
-    if (fluidele->Shape() != DRT::Element::DiscretizationType::hex8)
-      dserror("Add hex8 shapes here!");
+    if (fluidele->Shape() != CORE::FE::CellType::hex8) dserror("Add hex8 shapes here!");
 
-    h_k = XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::hex8>(
+    h_k = XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(
         fluidele, ele_xyze, condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
 
     inv_h_k = 1.0 / h_k;
@@ -669,18 +665,17 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   FSI_integrated = true;
   // 1 // Compute global coord x
   volumecell = nullptr;
-  if (sele->Shape() == DRT::Element::DiscretizationType::quad4)
+  if (sele->Shape() == CORE::FE::CellType::quad4)
   {
-    const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        DRT::Element::DiscretizationType::quad4>::numNodePerElement;
+    const int numnodes =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
 
     CORE::LINALG::SerialDenseMatrix xyze_m;
     CORE::LINALG::Matrix<numnodes, 1> funct(false);
 
     sidehandle->Coordinates(xyze_m);
     CORE::LINALG::Matrix<3, numnodes> xyze(xyze_m.values(), true);
-    CORE::DRT::UTILS::shape_function_2D(
-        funct, xsi(0), xsi(1), DRT::Element::DiscretizationType::quad4);
+    CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), CORE::FE::CellType::quad4);
     x.Multiply(xyze, funct);
   }
   else
@@ -827,8 +822,8 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
             triangulation[tri][2]->Coordinates(xyzf.A() + 6);
 
             Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                CORE::GEO::CUT::PositionFactory::BuildPosition<3,
-                    DRT::Element::DiscretizationType::tri3>(xyzf, x);
+                CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::tri3>(
+                    xyzf, x);
             bool success = pos->Compute(1e-6, true);
             if (success)
             {
@@ -986,12 +981,11 @@ CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINA
 
   CORE::LINALG::SerialDenseMatrix xyzs;
   sidehandle->Coordinates(xyzs);
-  if (sidehandle->Shape() == DRT::Element::DiscretizationType::quad4)
+  if (sidehandle->Shape() == CORE::FE::CellType::quad4)
   {
     CORE::LINALG::Matrix<3, 4> xyze(xyzs.values(), true);
     Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-        CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::DiscretizationType::quad4>(
-            xyze, newx);
+        CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::quad4>(xyze, newx);
     pos->Compute(1e-15, true);
     pos->LocalCoordinates(newxsi);
   }
@@ -1011,8 +1005,7 @@ double XFEM::XFluid_Contact_Comm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
     CORE::LINALG::Matrix<3, 2> xyzl;
     e->Coordinates(xyzl);
     Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-        CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::DiscretizationType::line2>(
-            xyzl, x);
+        CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::line2>(xyzl, x);
     pos->Compute(true);
     CORE::LINALG::Matrix<1, 1> rst;
     pos->LocalCoordinates(rst);
@@ -1020,7 +1013,7 @@ double XFEM::XFluid_Contact_Comm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
     {
       static CORE::LINALG::Matrix<2, 1> funct;
       // evaluate shape functions
-      CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::line2>(rst, funct);
+      CORE::DRT::UTILS::shape_function<CORE::FE::CellType::line2>(rst, funct);
       static CORE::LINALG::Matrix<3, 1> posx;
       posx.Multiply(xyzl, funct);
       posx.Update(-1, x, 1);
@@ -1208,9 +1201,9 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
 {
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
   if (!sh) dserror("Couldn't get SideHandle!");
-  if (sh->Shape() != DRT::Element::DiscretizationType::quad4) dserror("Not a quad4!");
-  const int numnodes_sh = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      DRT::Element::DiscretizationType::quad4>::numNodePerElement;
+  if (sh->Shape() != CORE::FE::CellType::quad4) dserror("Not a quad4!");
+  const int numnodes_sh =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
   CORE::LINALG::SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
   CORE::LINALG::Matrix<2, numnodes_sh> deriv(false);
@@ -1368,17 +1361,17 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         // find element local position of gauss point
         const CORE::LINALG::Matrix<3, numnodes_sh> xquad_m(xquad.values(), true);
         Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-            CORE::GEO::CUT::PositionFactory::BuildPosition<3,
-                DRT::Element::DiscretizationType::quad4>(xquad_m, x_gp_lin);
+            CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::quad4>(
+                xquad_m, x_gp_lin);
         pos->Compute(true);
         pos->LocalCoordinates(rst);
         coords(idx, 0) = rst(0);
         coords(idx, 1) = rst(1);
 
         CORE::DRT::UTILS::shape_function_2D_deriv1(
-            deriv, coords(idx, 0), coords(idx, 1), DRT::Element::DiscretizationType::quad4);
-        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<
-            DRT::Element::DiscretizationType::quad4>(xquad_m, deriv, metrictensor, drs_sh, nullptr);
+            deriv, coords(idx, 0), coords(idx, 1), CORE::FE::CellType::quad4);
+        CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+            xquad_m, deriv, metrictensor, drs_sh, nullptr);
         weights.push_back(iquad.Weight() * drs / drs_sh);  // small tri3 to quad4 weight
         ++idx;
       }

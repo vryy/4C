@@ -89,7 +89,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] DRT::ElementType& ElementType() const override { return SolidType::Instance(); }
 
-    [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+    [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
     //! Get kinematic type of element
     [[nodiscard]] INPAR::STR::KinemType KinematicType() const { return kintype_; }
@@ -157,7 +157,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    DRT::Element::DiscretizationType distype_ = DRT::Element::DiscretizationType::dis_none;
+    CORE::FE::CellType distype_ = CORE::FE::CellType::dis_none;
 
     //! kinematic type
     INPAR::STR::KinemType kintype_ = INPAR::STR::kinem_vague;

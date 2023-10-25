@@ -18,11 +18,11 @@ namespace DRT
   {
     // forward declarations
     class ScaTraEleParameterElch;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype, probdim>
     {

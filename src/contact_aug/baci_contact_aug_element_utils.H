@@ -24,7 +24,7 @@ namespace CONTACT
     /// @{
 
     /// a trait to identify Lagrange discretization types
-    template <DRT::Element::DiscretizationType type>
+    template <CORE::FE::CellType type>
     struct is_lagrange_ele_type
     {
       static const bool value_ = false;
@@ -32,17 +32,17 @@ namespace CONTACT
 
     /// supported standard types
     template <>
-    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::line2>
+    struct is_lagrange_ele_type<CORE::FE::CellType::line2>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::tri3>
+    struct is_lagrange_ele_type<CORE::FE::CellType::tri3>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::quad4>
+    struct is_lagrange_ele_type<CORE::FE::CellType::quad4>
     {
       static const bool value_ = true;
     };
@@ -52,7 +52,7 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
@@ -66,7 +66,7 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
@@ -80,7 +80,7 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename U, typename V>
+    template <CORE::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
     {
@@ -95,7 +95,7 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
@@ -109,7 +109,7 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename U, typename V, typename W>
+    template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
@@ -127,7 +127,7 @@ namespace CONTACT
     /// @{
 
     /// a trait to identify NURBS discretization types
-    template <DRT::Element::DiscretizationType type>
+    template <CORE::FE::CellType type>
     struct is_nurbs_ele_type
     {
       static const bool value_ = false;
@@ -135,22 +135,22 @@ namespace CONTACT
 
     /// supported nurbs types
     template <>
-    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs2>
+    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs2>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs3>
+    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs3>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs4>
+    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs4>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs9>
+    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs9>
     {
       static const bool value_ = true;
     };
@@ -173,7 +173,7 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
@@ -192,7 +192,7 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
@@ -213,7 +213,7 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename U, typename V>
+    template <CORE::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
     {
@@ -233,7 +233,7 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename V>
+    template <CORE::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
@@ -256,7 +256,7 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <DRT::Element::DiscretizationType type, typename T, typename U, typename V, typename W>
+    template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)

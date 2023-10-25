@@ -18,27 +18,26 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
 {
   switch (ele.Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex8>(porotype);
+    case CORE::FE::CellType::hex8:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex8>(porotype);
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex27>(porotype);
+    case CORE::FE::CellType::hex27:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex27>(porotype);
       break;
-    case DRT::Element::DiscretizationType::hex20:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex20>(porotype);
+    case CORE::FE::CellType::hex20:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex20>(porotype);
       break;
-    case DRT::Element::DiscretizationType::hex18:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex18>(porotype);
+    case CORE::FE::CellType::hex18:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex18>(porotype);
       break;
-    case DRT::Element::DiscretizationType::pyramid5:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::pyramid5>(
-          porotype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::pyramid5>(porotype);
       break;
-    case DRT::Element::DiscretizationType::tet4:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::tet4>(porotype);
+    case CORE::FE::CellType::tet4:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet4>(porotype);
       break;
-    case DRT::Element::DiscretizationType::tet10:
-      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::tet10>(porotype);
+    case CORE::FE::CellType::tet10:
+      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet10>(porotype);
       break;
     default:
       dserror("unknown distype provided");
@@ -47,7 +46,7 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
   return {};
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
     INPAR::PORO::PoroType porotype)
 {

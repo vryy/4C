@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ElemagDiffType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagDiff::ElemagDiff(int id, int owner) : Elemag(id, owner)
 {
-  distype_ = DRT::Element::DiscretizationType::dis_none;
+  distype_ = CORE::FE::CellType::dis_none;
 }
 
 /*----------------------------------------------------------------------*
@@ -305,7 +305,7 @@ void DRT::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

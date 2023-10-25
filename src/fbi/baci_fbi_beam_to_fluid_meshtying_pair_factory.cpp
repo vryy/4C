@@ -25,7 +25,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
 {
   // Cast the fluid element.
   DRT::ELEMENTS::Fluid const* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid const*>(ele_ptrs[1]);
-  DRT::Element::DiscretizationType shape = fluidele->Shape();
+  CORE::FE::CellType shape = fluidele->Shape();
 
   // Get the meshtying discretization method.
   INPAR::FBI::BeamToFluidDiscretization meshtying_discretization =
@@ -36,23 +36,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
   {
     switch (shape)
     {
-      case DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex8>());
-      case DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex20>());
-      case DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex27>());
-      case DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet4>());
-      case DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
@@ -71,23 +71,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
@@ -100,23 +100,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
@@ -129,23 +129,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());

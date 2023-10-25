@@ -27,7 +27,7 @@
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -47,7 +47,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  |  Private constructor                                   hemmler 07/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCalcPoro(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
@@ -62,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCal
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
@@ -181,7 +181,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
  | calculate integral of convective flux across boundary    vuong 07/15 |
  | (overwrites method in ScaTraEleBoundaryCalc)                         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::CalcConvectiveFlux(
     const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs)
@@ -232,7 +232,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
 /*----------------------------------------------------------------------*
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ComputePorosity(
     const DRT::FaceElement* ele  //!< the element we are dealing with
 )
@@ -253,15 +253,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ComputePorosi
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::nurbs3,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::DiscretizationType::nurbs9,
-    3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::nurbs9, 3>;

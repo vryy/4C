@@ -54,8 +54,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegrator(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm);
+    CoIntegrator(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
     /*!
      \brief Destructor
@@ -287,7 +287,7 @@ namespace CONTACT
      \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
 
      */
-    void InitializeGP(DRT::Element::DiscretizationType eletype);
+    void InitializeGP(CORE::FE::CellType eletype);
 
     /*!
      * @brief Perform integration at Gauss point for 3D problems.
@@ -808,7 +808,7 @@ namespace CONTACT
     \brief Templated Calculate Determinate of the Deformation Gradient at GP
 
     */
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    template <CORE::FE::CellType parentdistype, int dim>
     double TDetDeformationGradient(
         MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin);
 

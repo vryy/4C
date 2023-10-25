@@ -290,8 +290,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
       deg = 4 * degree_old_;
     else
       deg = 3 * degree_old_;
-    if (this->Shape() == DRT::Element::DiscretizationType::tet4 or
-        this->Shape() == DRT::Element::DiscretizationType::tet10)
+    if (this->Shape() == CORE::FE::CellType::tet4 or this->Shape() == CORE::FE::CellType::tet10)
     {
       switch (deg)
       {
@@ -567,7 +566,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  |                                                             (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
@@ -612,7 +611,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -781,7 +780,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
  |                                                             (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());

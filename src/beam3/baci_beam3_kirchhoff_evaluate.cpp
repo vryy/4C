@@ -681,7 +681,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
 
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, DiscretizationType::line2);
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     // Determine storage position for the node node
     ind = CORE::LARGEROTATIONS::NumberingTrafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::Beam3k::CalculateStiffmatContributionsAnalyticWK(
 
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, DiscretizationType::line2);
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1259,7 +1259,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     // get value of interpolating function of theta (lagrange polynomials) at xi
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi, length_, DiscretizationType::line2);
+        N_i_xi, xi, length_, CORE::FE::CellType::line2);
 
     // Determine storage position for the node node
     ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -1360,10 +1360,10 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     // The assemble routine is identical for L and L_s
     AssembleShapefunctionsL(L_i_s, L_s);
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi, length_, DiscretizationType::line2);
+        N_i_xi, xi, length_, CORE::FE::CellType::line2);
     AssembleShapefunctionsNs(N_i_xi, jacobi_[numgp], N_s);
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
-        N_i_xixi, xi, length_, DiscretizationType::line2);
+        N_i_xixi, xi, length_, CORE::FE::CellType::line2);
     AssembleShapefunctionsNss(N_i_xi, N_i_xixi, jacobi_[numgp], jacobi2_[numgp], N_ss);
 
     // Calculate collocation piont interpolations
@@ -1707,7 +1707,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     // get shape function values and assemble them
     N_i.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
 
     N.Clear();
     AssembleShapefunctionsN(N_i, N);
@@ -1997,7 +1997,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
 
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, DiscretizationType::line2);
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -2413,7 +2413,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateStiffMatrixAnalyticFromPointNeumannMoment(
 
   N_i_xi.Clear();
   CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-      N_i_xi, xi_node, length_, DiscretizationType::line2);
+      N_i_xi, xi_node, length_, CORE::FE::CellType::line2);
 
   N_s.Clear();
   AssembleShapefunctionsNs(N_i_xi, jacobi_node, N_s);
@@ -2571,7 +2571,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
     // Clear matrix for shape functions
     N_i.Clear();
     N.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, CORE::FE::CellType::line2);
     AssembleShapefunctionsN(N_i, N);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
@@ -3194,7 +3194,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, DiscretizationType::line2);
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -3387,7 +3387,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateAnalyticStiffmatContributionsFromRotationalD
 
     N_i_xi.Clear();
     CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-        N_i_xi, xi_cp, length_, DiscretizationType::line2);
+        N_i_xi, xi_cp, length_, CORE::FE::CellType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);

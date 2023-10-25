@@ -18,10 +18,10 @@
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
 CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
-    const ::DRT::Element::DiscretizationType& shape)
+    const CORE::FE::CellType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {
-  if (shape_ == ::DRT::Element::DiscretizationType::tet4)
+  if (shape_ == CORE::FE::CellType::tet4)
   {
     /* get the matrix of the coordinates of edges needed to compute the volume,
     ** which is used here as detJ in the quadrature rule.
@@ -45,7 +45,7 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDen
     vol_ = 0.0;
 
   // std::cout << "SHAPE=     "<< shape_ << std::endl;
-  if (shape_ != ::DRT::Element::DiscretizationType::tet4) dserror("wrong shape");
+  if (shape_ != CORE::FE::CellType::tet4) dserror("wrong shape");
 
   return;
 }
@@ -62,8 +62,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
   const double s = xi[1];
   const double t = xi[2];
 
-  CORE::DRT::UTILS::shape_function_3D_deriv1(
-      derivs, r, s, t, ::DRT::Element::DiscretizationType::hex8);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, CORE::FE::CellType::hex8);
 
 
   CORE::LINALG::Matrix<8, 3> xrefe;
@@ -88,7 +87,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
  *---------------------------------------------------------------------*/
 void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 {
-  if (shape_ == ::DRT::Element::DiscretizationType::tet4)
+  if (shape_ == CORE::FE::CellType::tet4)
   {
     // check input
     if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");
@@ -111,7 +110,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
       }
     }
   }
-  else if (shape_ == ::DRT::Element::DiscretizationType::hex8)
+  else if (shape_ == CORE::FE::CellType::hex8)
   {
     // check input
     if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");

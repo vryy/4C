@@ -46,23 +46,23 @@ CORE::GEO::CUT::Mesh::Mesh(
  * creates a new element, dependent on distype
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
-    int eid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype)
+    int eid, const std::vector<int>& nids, CORE::FE::CellType distype)
 {
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       return CreateLine2(eid, nids);
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       return CreateTri3(eid, nids);
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       return CreateQuad4(eid, nids);
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       return CreateHex8(eid, nids);
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return CreateTet4(eid, nids);
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return CreatePyramid5(eid, nids);
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
       return CreateWedge6(eid, nids);
     default:
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
@@ -76,13 +76,13 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
  * creates a new side, dependent on distype
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateSide(
-    int sid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype)
+    int sid, const std::vector<int>& nids, CORE::FE::CellType distype)
 {
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       return CreateQuad4Side(sid, nids);
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       return CreateTri3Side(sid, nids);
     default:
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
@@ -425,8 +425,8 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Mesh::NewVolumeCell(const plain_face
 CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::point1>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::point1>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, 1);
@@ -443,8 +443,8 @@ CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
 CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::line2>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -547,8 +547,8 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
 CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::line2>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -567,8 +567,8 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
 CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::tri3>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -587,8 +587,8 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::quad4>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -1665,8 +1665,8 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(bool fatal, INPAR::CUT::VCellGaussP
  * Find the difference between the volume of background element and the sum of volume
  * of all integration cells. There should be no difference between these two
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::TestElementVolume(::DRT::Element::DiscretizationType shape, Element& e,
-    bool fatal, INPAR::CUT::VCellGaussPts VCellGP)
+void CORE::GEO::CUT::Mesh::TestElementVolume(
+    CORE::FE::CellType shape, Element& e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP)
 {
   if (e.IsCut())
   {
@@ -1746,11 +1746,10 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(::DRT::Element::DiscretizationType 
       for (unsigned j = 0; j < vc->IntegrationCells().size(); j++)
       {
         IntegrationCell* icc = vc->IntegrationCells()[j];
-        if (icc->Shape() == ::DRT::Element::DiscretizationType::hex8) hex[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::DiscretizationType::tet4) tet[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::DiscretizationType::pyramid5)
-          pyramid[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::DiscretizationType::wedge6) wedge[i - cells.begin()]++;
+        if (icc->Shape() == CORE::FE::CellType::hex8) hex[i - cells.begin()]++;
+        if (icc->Shape() == CORE::FE::CellType::tet4) tet[i - cells.begin()]++;
+        if (icc->Shape() == CORE::FE::CellType::pyramid5) pyramid[i - cells.begin()]++;
+        if (icc->Shape() == CORE::FE::CellType::wedge6) wedge[i - cells.begin()]++;
       }
 
       numgpeach[i - cells.begin()] = vc->NumGaussPoints(shape);
@@ -1875,7 +1874,7 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
   const int vectorlength = 21;
   unsigned cut = 0;
   std::vector<int> numvc(vectorlength, 0);
-  std::map<::DRT::Element::DiscretizationType, std::vector<int>> numcells;
+  std::map<CORE::FE::CellType, std::vector<int>> numcells;
 
   // loop over elements
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
@@ -1892,7 +1891,7 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
            ++i)
       {
         VolumeCell* vc = *i;
-        std::map<::DRT::Element::DiscretizationType, int> cell_count;
+        std::map<CORE::FE::CellType, int> cell_count;
         const plain_integrationcell_set& cells = vc->IntegrationCells();
         for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
         {
@@ -1905,13 +1904,12 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
           BoundaryCell* bcell = *i;
           cell_count[bcell->Shape()] += 1;
         }
-        for (std::map<::DRT::Element::DiscretizationType, int>::iterator i = cell_count.begin();
+        for (std::map<CORE::FE::CellType, int>::iterator i = cell_count.begin();
              i != cell_count.end(); ++i)
         {
-          ::DRT::Element::DiscretizationType shape = i->first;
+          CORE::FE::CellType shape = i->first;
           int count = i->second;
-          std::map<::DRT::Element::DiscretizationType, std::vector<int>>::iterator j =
-              numcells.find(shape);
+          std::map<CORE::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
           if (j == numcells.end())
           {
             numcells[shape] = std::vector<int>(vectorlength, 0);
@@ -1937,7 +1935,7 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
            ++i)
       {
         VolumeCell* vc = *i;
-        std::map<::DRT::Element::DiscretizationType, int> cell_count;
+        std::map<CORE::FE::CellType, int> cell_count;
         const plain_integrationcell_set& cells = vc->IntegrationCells();
         for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
         {
@@ -1950,13 +1948,12 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
           BoundaryCell* bcell = *i;
           cell_count[bcell->Shape()] += 1;
         }
-        for (std::map<::DRT::Element::DiscretizationType, int>::iterator i = cell_count.begin();
+        for (std::map<CORE::FE::CellType, int>::iterator i = cell_count.begin();
              i != cell_count.end(); ++i)
         {
-          ::DRT::Element::DiscretizationType shape = i->first;
+          CORE::FE::CellType shape = i->first;
           int count = i->second;
-          std::map<::DRT::Element::DiscretizationType, std::vector<int>>::iterator j =
-              numcells.find(shape);
+          std::map<CORE::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
           if (j == numcells.end())
           {
             numcells[shape] = std::vector<int>(vectorlength, 0);
@@ -1994,11 +1991,10 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
   }
   std::cout << "   *\n";
 
-  for (std::map<::DRT::Element::DiscretizationType, std::vector<int>>::iterator i =
-           numcells.begin();
+  for (std::map<CORE::FE::CellType, std::vector<int>>::iterator i = numcells.begin();
        i != numcells.end(); ++i)
   {
-    ::DRT::Element::DiscretizationType shape = i->first;
+    CORE::FE::CellType shape = i->first;
     std::vector<int>& nc = i->second;
     std::cout << ::DRT::DistypeToString(shape) << "\tcells: ";
     // std::copy( nc.begin(), nc.end(), std::ostream_iterator<int>( std::cout, " " ) );

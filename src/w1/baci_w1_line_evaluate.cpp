@@ -83,7 +83,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // set number of nodes
   const int numnod = NumNode();
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -155,14 +155,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     const double e1 = intpoints.qxg[gpid][0];
 
     // get shape functions and derivatives in the line
-    if (distype == DRT::Element::DiscretizationType::line2 ||
-        distype == DRT::Element::DiscretizationType::line3)
+    if (distype == CORE::FE::CellType::line2 || distype == CORE::FE::CellType::line3)
     {
       CORE::DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
       CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
     }
-    else if (distype == DRT::Element::DiscretizationType::nurbs2 ||
-             distype == DRT::Element::DiscretizationType::nurbs3)
+    else if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -419,21 +417,21 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -493,7 +491,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
     CORE::LINALG::SerialDenseVector& elevector3)
 {
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // set number of dofs per node
   const int noddof = NumDofPerNode(*Nodes()[0]);
@@ -521,7 +519,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     // just compute the enclosed volume (e.g. for initialization)
     case calc_struct_constrarea:
     {
-      if (distype != DRT::Element::DiscretizationType::line2)
+      if (distype != CORE::FE::CellType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }
@@ -577,7 +575,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
         // integration of the displacements over the surface
         const int dim = Wall1::numdim_;
-        const DiscretizationType distype = Shape();
+        const CORE::FE::CellType distype = Shape();
 
         // gaussian points
         const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -621,7 +619,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_areaconstrstiff:
     {
-      if (distype != DRT::Element::DiscretizationType::line2)
+      if (distype != CORE::FE::CellType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
@@ -675,7 +673,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         elematrix1, elematrix2, elevector1, elevector2, elevector3);
   }
 
-  const DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
 
   // start with "none"
   DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;

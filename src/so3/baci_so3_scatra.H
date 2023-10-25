@@ -31,7 +31,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Scatra : public so3_ele
     {
       //! @name Friends
@@ -104,13 +104,13 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             return So_tet4ScatraType::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
             return So_tet10ScatraType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
@@ -121,9 +121,9 @@ namespace DRT
             else
               return So_hex8ScatraType::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
             return So_hex27ScatraType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::wedge6:
+          case CORE::FE::CellType::wedge6:
             return So_weg6ScatraType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type!");
@@ -163,15 +163,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
             if (ele != nullptr) return So_tet4ScatraType::Instance();
             break;
           }
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
             return So_tet10ScatraType::Instance();
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
@@ -182,9 +182,9 @@ namespace DRT
             else
               return So_hex8ScatraType::Instance();
           }
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
             return So_hex27ScatraType::Instance();
-          case DRT::Element::DiscretizationType::wedge6:
+          case CORE::FE::CellType::wedge6:
             return So_weg6ScatraType::Instance();
           default:
             dserror("unknown element type!");

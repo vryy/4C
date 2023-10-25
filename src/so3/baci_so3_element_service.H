@@ -48,7 +48,7 @@ namespace DRT
      * @param nodal_quantity  nodal vector of the quantity to be projected
      * @return quantities projected to position xi
      */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     std::vector<double> ProjectNodalQuantityToXi(
         const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS

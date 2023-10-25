@@ -37,7 +37,7 @@ namespace DRT
     p1 (mixed) approach including scatra functionality
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_PoroP1Scatra : public Wall1_PoroP1<distype>
     {
       typedef DRT::ELEMENTS::Wall1_PoroP1<distype> my;

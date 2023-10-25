@@ -194,7 +194,7 @@ namespace LARGEROTATIONS
     void SetNodeIandJ();
 
     //! get the interpolation scheme from the given number of nodes
-    ::DRT::Element::DiscretizationType GetDisType() const;
+    CORE::FE::CellType GetDisType() const;
 
     //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic
     //! 1999
@@ -267,7 +267,7 @@ namespace LARGEROTATIONS
     unsigned int nodeJ_;
 
     //! this determines the kind of shape functions which are to be applied
-    ::DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
 
     //! nodal triads stored as quaternions
     std::vector<CORE::LINALG::Matrix<4, 1, T>> Qnode_;

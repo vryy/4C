@@ -537,7 +537,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcElch<distypeS, distypeM>*
 SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -565,7 +565,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&
@@ -579,7 +579,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
@@ -645,7 +645,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
     const MORTAR::MortarNode& slavenode, const double& lumpedarea,
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
@@ -702,7 +702,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalcElch<distypeS, distypeM>::GetFRT() const
 {
   // fetch factor F/RT from electrochemistry parameter list
@@ -713,7 +713,7 @@ double SCATRA::MortarCellCalcElch<distypeS, distypeM>::GetFRT() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>*
 SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -741,7 +741,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTIThermo(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&
@@ -762,7 +762,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
     const DRT::Discretization& idiscret,           //!< interface discretization
     MORTAR::IntCell& cell,                         //!< mortar integration cell
@@ -806,7 +806,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionOD(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
@@ -884,7 +884,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::ExtractNodeValues(
     const DRT::Discretization& idiscret,    //!< interface discretization
     DRT::Element::LocationArray& la_slave,  //!< slave-side location array
@@ -902,7 +902,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::ExtractNodeValues(
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::GetFRT() const
 {
   // evaluate local temperature value
@@ -923,7 +923,7 @@ double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::GetFRT() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>*
 SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -951,7 +951,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
     const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const INPAR::S2I::InterfaceSides&
@@ -973,7 +973,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     const DRT::Discretization& idiscret,           //!< interface discretization
     MORTAR::IntCell& cell,                         //!< mortar integration cell
@@ -1026,7 +1026,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble interface linearizations and residuals   fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
@@ -1102,7 +1102,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
@@ -1177,7 +1177,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::ExtractNodeValues(
     const DRT::Discretization& idiscret,    //!< interface discretization
     DRT::Element::LocationArray& la_slave,  //!< slave-side location array
@@ -1262,27 +1262,19 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<CORE::LINALG:
 
 
 // forward declarations
-template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::tri3,
+    CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::tri3,
+    CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::quad4,
+    CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::quad4,
+    CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;

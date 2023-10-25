@@ -19,20 +19,20 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
-      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad4>(
+    case CORE::FE::CellType::quad4:
+      return PreEvaluateScatra<CORE::FE::CellType::quad4>(
           ele, params, discretization, dof_index_array);
-    case DRT::Element::DiscretizationType::quad8:
-      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad8>(
+    case CORE::FE::CellType::quad8:
+      return PreEvaluateScatra<CORE::FE::CellType::quad8>(
           ele, params, discretization, dof_index_array);
-    case DRT::Element::DiscretizationType::quad9:
-      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad9>(
+    case CORE::FE::CellType::quad9:
+      return PreEvaluateScatra<CORE::FE::CellType::quad9>(
           ele, params, discretization, dof_index_array);
-    case DRT::Element::DiscretizationType::tri3:
-      return PreEvaluateScatra<DRT::Element::DiscretizationType::tri3>(
+    case CORE::FE::CellType::tri3:
+      return PreEvaluateScatra<CORE::FE::CellType::tri3>(
           ele, params, discretization, dof_index_array);
-    case DRT::Element::DiscretizationType::tri6:
-      return PreEvaluateScatra<DRT::Element::DiscretizationType::tri6>(
+    case CORE::FE::CellType::tri6:
+      return PreEvaluateScatra<CORE::FE::CellType::tri6>(
           ele, params, discretization, dof_index_array);
     default:
       dserror(
@@ -41,7 +41,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array)
 {

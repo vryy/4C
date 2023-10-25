@@ -17,17 +17,17 @@
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_nodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dof_per_ele = num_nodes<distype>* num_dim<distype>;
 
   /*!
@@ -58,8 +58,7 @@ namespace
    * determinant_deformation_gradient) evaluated at the element centroid
    * @return CORE::LINALG::Matrix<num_dof_per_ele, 1> : H-Operator
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<num_dim<distype> == 3, int> = 0>
   const CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1> EvaluateFbarHOperator(
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping_centroid,
@@ -103,7 +102,7 @@ namespace
    * @param stress_bar (in) : Deviatoric part of stress measures
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddFbarStiffnessMatrix(
       const CORE::LINALG::Matrix<num_str<distype>, num_dof_per_ele<distype>>& Bop,
       const CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1>& Hop, const double f_bar_factor,
@@ -134,7 +133,7 @@ namespace
     }
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_str<distype>, 1> EvaluateStrainsBar(
       const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping, double detF_centroid)
@@ -157,7 +156,7 @@ namespace
   }
 }  // namespace
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidEleCalcFbar<distype>::SolidEleCalcFbar()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
@@ -165,7 +164,7 @@ DRT::ELEMENTS::SolidEleCalcFbar<distype>::SolidEleCalcFbar()
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -284,14 +283,14 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -329,7 +328,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -385,7 +384,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -414,14 +413,14 @@ double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const D
   return intenergy;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Setup(
     MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::MaterialPostSetup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -435,7 +434,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::MaterialPostSetup(
   solid_material.PostSetup(params, ele.Id());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::InitializeGaussPointDataOutput(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -447,7 +446,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::InitializeGaussPointDataOutput(
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(const DRT::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -459,7 +458,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::ResetToLastConverged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -467,5 +466,5 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalcFbar<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalcFbar<CORE::FE::CellType::pyramid5>;

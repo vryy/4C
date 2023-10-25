@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 02/15|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS>
+template <CORE::FE::CellType distypeS>
 CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(
     Teuchos::ParameterList& params)
 {
@@ -43,11 +43,11 @@ CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBa
 /*----------------------------------------------------------------------*
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS>
+template <CORE::FE::CellType distypeS>
 void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 {
   // init shape of integration domain
-  ::DRT::Element::DiscretizationType intshape = distypeS;
+  CORE::FE::CellType intshape = distypeS;
 
   //*******************************
   // choose Gauss rule accordingly
@@ -57,7 +57,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     //               2D
     //*******************************
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_7point;
 
@@ -73,7 +73,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_12point;
 
@@ -89,7 +89,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
@@ -105,7 +105,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
@@ -121,7 +121,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
@@ -140,7 +140,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     //               3D
     //*******************************
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
@@ -157,7 +157,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
@@ -174,7 +174,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_27point;
 
@@ -191,7 +191,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
@@ -208,7 +208,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
@@ -225,7 +225,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
 
@@ -258,7 +258,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 /*----------------------------------------------------------------------*
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS>
+template <CORE::FE::CellType distypeS>
 void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
     ::DRT::Element& sele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& D,
     CORE::LINALG::SparseMatrix& M, Teuchos::RCP<const ::DRT::Discretization> Adis,
@@ -300,7 +300,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
     {
       // get master element
       ::DRT::Element* Bele = Bdis->gElement(foundeles[found]);
-      ::DRT::Element::DiscretizationType shape = Bele->Shape();
+      CORE::FE::CellType shape = Bele->Shape();
 
       bool proj = false;
 
@@ -309,93 +309,93 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         //************************************************
         //                    2D
         //************************************************
-        case ::DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::tri3>(sele, Bele,
-              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::tri3>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::tri6>(sele, Bele,
-              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::tri6>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::quad4>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::quad4>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::quad8>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::quad8>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::quad9>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::quad9>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
           break;
         }
         //************************************************
         //                    3D
         //************************************************
-        case ::DRT::Element::DiscretizationType::hex8:
+        case CORE::FE::CellType::hex8:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::hex8>(sele, Bele,
-              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::hex8>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::hex20:
+        case CORE::FE::CellType::hex20:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::hex20>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::hex20>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::hex27:
+        case CORE::FE::CellType::hex27:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::hex27>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::hex27>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::tet4:
+        case CORE::FE::CellType::tet4:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::tet4>(sele, Bele,
-              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::tet4>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::tet10:
+        case CORE::FE::CellType::tet10:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::tet10>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::tet10>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
-        case ::DRT::Element::DiscretizationType::pyramid5:
+        case CORE::FE::CellType::pyramid5:
         {
-          proj = VolMortarEleBasedGP<distypeS, ::DRT::Element::DiscretizationType::pyramid5>(sele,
-              Bele, foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_,
-              D, M, Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = VolMortarEleBasedGP<distypeS, CORE::FE::CellType::pyramid5>(sele, Bele, foundeles,
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -420,38 +420,27 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
 /*----------------------------------------------------------------------*
  |  possible elements for ele-based integration              farah 02/15|
  *----------------------------------------------------------------------*/
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::quad8>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::quad9>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::quad8>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::quad9>;
 
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::tri3>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::tri6>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::tri6>;
 
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::hex27>;
 
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::tet10>;
 
-template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5>;
 
 
 /*----------------------------------------------------------------------*
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarEleBasedGP(::DRT::Element& sele, ::DRT::Element* mele,
     std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
     double* Axi, double* AuxXi, double* globgp, INPAR::VOLMORTAR::DualQuad& dq,
@@ -615,81 +604,81 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(::DRT::Element& sele, ::DRT::Element* 
  *----------------------------------------------------------------------*/
 ////slave quad4
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::quad4,::DRT::Element::DiscretizationType::quad4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::quad4,CORE::FE::CellType::quad4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::quad4,::DRT::Element::DiscretizationType::tri3>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::quad4,CORE::FE::CellType::tri3>;
 //
 ////slave tri3
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tri3,::DRT::Element::DiscretizationType::quad4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tri3,CORE::FE::CellType::quad4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tri3,::DRT::Element::DiscretizationType::tri3>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tri3,CORE::FE::CellType::tri3>;
 //
 ////slave hex8
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex8,::DRT::Element::DiscretizationType::tet4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex8,CORE::FE::CellType::tet4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex8,::DRT::Element::DiscretizationType::tet10>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex8,CORE::FE::CellType::tet10>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex8,::DRT::Element::DiscretizationType::hex8>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex8,CORE::FE::CellType::hex8>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex8,::DRT::Element::DiscretizationType::hex27>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex8,CORE::FE::CellType::hex27>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex8,::DRT::Element::DiscretizationType::hex20>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex8,CORE::FE::CellType::hex20>;
 //
 ////slave hex20
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex20,::DRT::Element::DiscretizationType::tet4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex20,CORE::FE::CellType::tet4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex20,::DRT::Element::DiscretizationType::tet10>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex20,CORE::FE::CellType::tet10>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex20,::DRT::Element::DiscretizationType::hex8>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex20,CORE::FE::CellType::hex8>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex20,::DRT::Element::DiscretizationType::hex27>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex20,CORE::FE::CellType::hex27>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex20,::DRT::Element::DiscretizationType::hex20>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex20,CORE::FE::CellType::hex20>;
 //
 ////slave hex27
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex27,::DRT::Element::DiscretizationType::tet4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex27,CORE::FE::CellType::tet4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex27,::DRT::Element::DiscretizationType::tet10>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex27,CORE::FE::CellType::tet10>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex27,::DRT::Element::DiscretizationType::hex8>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex27,CORE::FE::CellType::hex8>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex27,::DRT::Element::DiscretizationType::hex27>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex27,CORE::FE::CellType::hex27>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::hex27,::DRT::Element::DiscretizationType::hex20>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::hex27,CORE::FE::CellType::hex20>;
 //
 ////slave tet4
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet4,::DRT::Element::DiscretizationType::tet4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet4,CORE::FE::CellType::tet4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet4,::DRT::Element::DiscretizationType::tet10>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet4,CORE::FE::CellType::tet10>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet4,::DRT::Element::DiscretizationType::hex8>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet4,CORE::FE::CellType::hex8>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet4,::DRT::Element::DiscretizationType::hex27>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet4,CORE::FE::CellType::hex27>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet4,::DRT::Element::DiscretizationType::hex20>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet4,CORE::FE::CellType::hex20>;
 //
 ////slave tet10
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet10,::DRT::Element::DiscretizationType::tet4>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet10,CORE::FE::CellType::tet4>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet10,::DRT::Element::DiscretizationType::tet10>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet10,CORE::FE::CellType::tet10>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet10,::DRT::Element::DiscretizationType::hex8>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet10,CORE::FE::CellType::hex8>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet10,::DRT::Element::DiscretizationType::hex27>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet10,CORE::FE::CellType::hex27>;
 // template class
-// CORE::VOLMORTAR::VolMortarEleBasedGP<::DRT::Element::DiscretizationType::tet10,::DRT::Element::DiscretizationType::hex20>;
+// CORE::VOLMORTAR::VolMortarEleBasedGP<CORE::FE::CellType::tet10,CORE::FE::CellType::hex20>;
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
@@ -707,12 +696,12 @@ CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
-    bool integrateele, int domain, ::DRT::Element::DiscretizationType shape)
+    bool integrateele, int domain, CORE::FE::CellType shape)
 {
   // init shape of integration domain
-  ::DRT::Element::DiscretizationType intshape = ::DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType intshape = CORE::FE::CellType::dis_none;
 
   if (integrateele)
   {
@@ -726,7 +715,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
   else
   {
     if (ndim_ == 2)
-      intshape = ::DRT::Element::DiscretizationType::tri3;
+      intshape = CORE::FE::CellType::tri3;
     else if (ndim_ == 3)
       intshape = shape;
     else
@@ -738,7 +727,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
   //*******************************
   switch (intshape)
   {
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_7point;
 
@@ -754,7 +743,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
@@ -771,7 +760,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
@@ -788,7 +777,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_27point;
 
@@ -805,7 +794,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
@@ -822,7 +811,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
@@ -839,7 +828,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
 
@@ -870,7 +859,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     ::DRT::Element& sele, ::DRT::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell,
     CORE::LINALG::SparseMatrix& dmatrix, CORE::LINALG::SparseMatrix& mmatrix,
@@ -1032,7 +1021,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     ::DRT::Element& Aele, ::DRT::Element& Bele, Teuchos::RCP<CORE::VOLMORTAR::Cell> cell,
     CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
@@ -1069,9 +1058,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
-    if (cell->Shape() == ::DRT::Element::DiscretizationType::tet4)
+    if (cell->Shape() == CORE::FE::CellType::tet4)
       jac = cell->Vol();
-    else if (cell->Shape() == ::DRT::Element::DiscretizationType::hex8)
+    else if (cell->Shape() == CORE::FE::CellType::hex8)
       jac = cell->CalcJac(eta);
     else
       dserror("used shape not supported in volmortar integrator!");
@@ -1170,7 +1159,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_DirectDiveregence(
     ::DRT::Element& Aele, ::DRT::Element& Bele, CORE::GEO::CUT::VolumeCell& vc,
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints, bool switched_conf,
@@ -1318,7 +1307,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADis(
     ::DRT::Element& Aele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_A,
     CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const ::DRT::Discretization> Adis,
@@ -1443,7 +1432,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_BDis(
     ::DRT::Element& Bele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_B,
     CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const ::DRT::Discretization> Adis,
@@ -1569,7 +1558,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
  |  This function is for element-wise integration when an               |
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int domain,
     ::DRT::Element& Aele, ::DRT::Element& Bele, CORE::LINALG::SparseMatrix& dmatrix_A,
     CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
@@ -1715,15 +1704,14 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
     ::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   const double tol = 1e-10;
-  if (distypeS == ::DRT::Element::DiscretizationType::quad4 ||
-      distypeS == ::DRT::Element::DiscretizationType::quad8 ||
-      distypeS == ::DRT::Element::DiscretizationType::quad9)
+  if (distypeS == CORE::FE::CellType::quad4 || distypeS == CORE::FE::CellType::quad8 ||
+      distypeS == CORE::FE::CellType::quad9)
   {
     if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
     {
@@ -1733,8 +1721,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
       return false;
     }
   }
-  else if (distypeS == ::DRT::Element::DiscretizationType::tri3 ||
-           distypeS == ::DRT::Element::DiscretizationType::tri6)
+  else if (distypeS == CORE::FE::CellType::tri3 || distypeS == CORE::FE::CellType::tri6)
   {
     if (sxi[0] < -tol || sxi[1] < -tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol ||
         sxi[0] + sxi[1] > 1.0 + 2 * tol)
@@ -1749,9 +1736,8 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
     dserror("Wrong element type!");
 
   // check GP projection (MASTER)
-  if (distypeM == ::DRT::Element::DiscretizationType::quad4 ||
-      distypeM == ::DRT::Element::DiscretizationType::quad8 ||
-      distypeM == ::DRT::Element::DiscretizationType::quad9)
+  if (distypeM == CORE::FE::CellType::quad4 || distypeM == CORE::FE::CellType::quad8 ||
+      distypeM == CORE::FE::CellType::quad9)
   {
     if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
     {
@@ -1761,8 +1747,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
       return false;
     }
   }
-  else if (distypeS == ::DRT::Element::DiscretizationType::tri3 ||
-           distypeS == ::DRT::Element::DiscretizationType::tri6)
+  else if (distypeS == CORE::FE::CellType::tri3 || distypeS == CORE::FE::CellType::tri6)
   {
     if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol ||
         mxi[0] + mxi[1] > 1.0 + 2 * tol)
@@ -1783,15 +1768,14 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distypeS, ::DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
     ::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   double tol = 1e-5;
-  if (distypeS == ::DRT::Element::DiscretizationType::hex8 ||
-      distypeS == ::DRT::Element::DiscretizationType::hex20 ||
-      distypeS == ::DRT::Element::DiscretizationType::hex27)
+  if (distypeS == CORE::FE::CellType::hex8 || distypeS == CORE::FE::CellType::hex20 ||
+      distypeS == CORE::FE::CellType::hex27)
   {
     if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[2] < -1.0 - tol || sxi[0] > 1.0 + tol ||
         sxi[1] > 1.0 + tol || sxi[2] > 1.0 + tol)
@@ -1816,8 +1800,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       return false;
     }
   }
-  else if (distypeS == ::DRT::Element::DiscretizationType::tet4 ||
-           distypeS == ::DRT::Element::DiscretizationType::tet10)
+  else if (distypeS == CORE::FE::CellType::tet4 || distypeS == CORE::FE::CellType::tet10)
   {
     if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || sxi[2] < 0.0 - tol ||
         (sxi[0] + sxi[1] + sxi[2]) > 1.0 + tol)
@@ -1839,7 +1822,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       return false;
     }
   }
-  else if (distypeS == ::DRT::Element::DiscretizationType::pyramid5)
+  else if (distypeS == CORE::FE::CellType::pyramid5)
   {
     if (sxi[2] < 0.0 - tol || -sxi[0] + sxi[2] > 1.0 + tol || sxi[0] + sxi[2] > 1.0 + tol ||
         -sxi[1] + sxi[2] > 1.0 + tol || sxi[1] + sxi[2] > 1.0 + tol)
@@ -1865,9 +1848,8 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
     dserror("Wrong element type!");
 
   // check GP projection (MASTER)
-  if (distypeM == ::DRT::Element::DiscretizationType::hex8 ||
-      distypeM == ::DRT::Element::DiscretizationType::hex20 ||
-      distypeM == ::DRT::Element::DiscretizationType::hex27)
+  if (distypeM == CORE::FE::CellType::hex8 || distypeM == CORE::FE::CellType::hex20 ||
+      distypeM == CORE::FE::CellType::hex27)
   {
     if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[2] < -1.0 - tol || mxi[0] > 1.0 + tol ||
         mxi[1] > 1.0 + tol || mxi[2] > 1.0 + tol)
@@ -1889,8 +1871,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       return false;
     }
   }
-  else if (distypeM == ::DRT::Element::DiscretizationType::tet4 ||
-           distypeM == ::DRT::Element::DiscretizationType::tet10)
+  else if (distypeM == CORE::FE::CellType::tet4 || distypeM == CORE::FE::CellType::tet10)
   {
     if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || mxi[2] < 0.0 - tol ||
         (mxi[0] + mxi[1] + mxi[2]) > 1.0 + tol)
@@ -1912,7 +1893,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       return false;
     }
   }
-  else if (distypeM == ::DRT::Element::DiscretizationType::pyramid5)
+  else if (distypeM == CORE::FE::CellType::pyramid5)
   {
     if (mxi[2] < 0.0 - tol || -mxi[0] + mxi[2] > 1.0 + tol || mxi[0] + mxi[2] > 1.0 + tol ||
         -mxi[1] + mxi[2] > 1.0 + tol || mxi[1] + mxi[2] > 1.0 + tol)
@@ -1945,100 +1926,100 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
  |  possible slave/master element pairs                       farah 01/14|
  *----------------------------------------------------------------------*/
 // slave quad4
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::quad4,
-    ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::quad4,
-    ::DRT::Element::DiscretizationType::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::quad4,
+    CORE::FE::CellType::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::quad4,
+    CORE::FE::CellType::tri3>;
 
 // slave tri3
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tri3,
-    ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tri3,
-    ::DRT::Element::DiscretizationType::tri3>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tri3,
+    CORE::FE::CellType::quad4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tri3,
+    CORE::FE::CellType::tri3>;
 
 // slave hex8
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex8,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::pyramid5>;
 
 // slave hex20
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex20,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::pyramid5>;
 
 // slave hex27
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::hex27,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::pyramid5>;
 
 // slave tet4
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet4,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::pyramid5>;
 
 // slave tet10
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::tet10,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::pyramid5>;
 
 // slave pyramid 5
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::VOLMORTAR::VolMortarIntegrator<::DRT::Element::DiscretizationType::pyramid5,
-    ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::tet4>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::tet10>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::hex8>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::hex27>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::hex20>;
+template class CORE::VOLMORTAR::VolMortarIntegrator<CORE::FE::CellType::pyramid5,
+    CORE::FE::CellType::pyramid5>;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
@@ -2078,83 +2059,83 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(::DRT::Node* node,
     switch (ele->Shape())
     {
       // 2D --------------------------------------------
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::tri3>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::tri3>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::tri6>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::tri6>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::quad4>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::quad4>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::quad8>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::quad8>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::quad9>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::quad9>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
 
       // 3D --------------------------------------------
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::hex8>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::hex8>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::hex20>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::hex20>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::hex27>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::hex27>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::tet4>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::tet4>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::tet10>(node, ele, pmatrix,
-            nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::tet10>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case CORE::FE::CellType::pyramid5:
       {
-        proj = ConsInterpolatorEval<::DRT::Element::DiscretizationType::pyramid5>(node, ele,
-            pmatrix, nodediscret, elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            P_dofrowmap, P_dofcolmap);
+        proj = ConsInterpolatorEval<CORE::FE::CellType::pyramid5>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       default:
@@ -2179,7 +2160,7 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(::DRT::Node* node,
 /*----------------------------------------------------------------------*
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool CORE::VOLMORTAR::ConsInterpolatorEval(::DRT::Node* node, ::DRT::Element* ele,
     CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const ::DRT::Discretization> nodediscret,
     Teuchos::RCP<const ::DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
@@ -2258,16 +2239,16 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(::DRT::Node* node, ::DRT::Element* el
 /*----------------------------------------------------------------------*
  |  possible elements for interpolation                      farah 06/14|
  *----------------------------------------------------------------------*/
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::quad4>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::quad8>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::quad9>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::quad4>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::quad8>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::quad9>;
 //
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::tri3>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::tri6>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tri3>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tri6>;
 //
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::hex8>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::hex20>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::hex27>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::hex8>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::hex20>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::hex27>;
 //
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::tet4>;
-// template class CORE::VOLMORTAR::ConsInterpolator<::DRT::Element::DiscretizationType::tet10>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tet4>;
+// template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tet10>;

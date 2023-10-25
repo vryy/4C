@@ -20,12 +20,12 @@ namespace DRT
 
     namespace UTILS
     {
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void CalcR(const DRT::Element* ele, const std::vector<double>& disp,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& R);
 
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void GetTemperatureForStructuralMaterial(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>& shapefctsGP,
@@ -41,7 +41,7 @@ namespace DRT
        * @param[in] xsi      position of the gauss point in parameter space
        * @param[in] xdisp    nodal displacements of the element
        */
-      template <DRT::Element::DiscretizationType distype,
+      template <CORE::FE::CellType distype,
           int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
@@ -59,7 +59,7 @@ namespace DRT
        * @param[in] xsi           position of the gauss point in parameter space
        * @param[in] displacement  displacement vector of the element
        */
-      template <DRT::Element::DiscretizationType distype,
+      template <CORE::FE::CellType distype,
           int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
@@ -80,7 +80,7 @@ namespace DRT
        * \param mulfHistory [in] : Internal MULF history variables
        * \param gp [in] : Gauss point
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ComputeDeformationGradient(
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
@@ -110,7 +110,7 @@ namespace DRT
        * \param mulfHistory [in] : Internal MULF history variables
        * \param gp [in] : Gauss point
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void ComputeDeformationGradientMulf(
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
@@ -131,7 +131,7 @@ namespace DRT
        * \param derivs : Derivatives of the shape functions with respect to the reference
        * \param inverseJacobian [in] : Inverse jacobian at the point of evaluation
        */
-      template <DRT::Element::DiscretizationType distype,
+      template <CORE::FE::CellType distype,
           int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       void ComputeDeformationGradientStandard(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           const CORE::LINALG::Matrix<
@@ -148,7 +148,7 @@ namespace DRT
        * \param nodes [in] : List of nodes of the element
        * \param xrefe [out] : reference coordinates of the element
        */
-      template <DRT::Element::DiscretizationType distype, int probdim = 3>
+      template <CORE::FE::CellType distype, int probdim = 3>
       void EvaluateNodalCoordinates(DRT::Node** nodes,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               probdim>& xrefe);
@@ -161,7 +161,7 @@ namespace DRT
        * \param disp [in] : Local displacement vector
        * \param xdisp [out] : Nodal displacements
        */
-      template <DRT::Element::DiscretizationType distype, int probdim = 3>
+      template <CORE::FE::CellType distype, int probdim = 3>
       void EvaluateNodalDisplacements(const std::vector<double>& disp,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               probdim>& xdisp);
@@ -175,7 +175,7 @@ namespace DRT
        * \param xdisp [in] : Nodal displacements of the element
        * \param xcurr [out] : Current coordinates of the element
        */
-      template <DRT::Element::DiscretizationType distype, int probdim = 3>
+      template <CORE::FE::CellType distype, int probdim = 3>
       void EvaluateCurrentNodalCoordinates(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xrefe,
@@ -192,7 +192,7 @@ namespace DRT
        * \param derivs [in] : Derivatives of the shape functions w.r.t. the reference coordinates
        * \param inverseJacobian [out] : inverse jacobian
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void EvaluateInverseJacobian(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,

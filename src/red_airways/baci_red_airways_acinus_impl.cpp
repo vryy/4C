@@ -41,12 +41,12 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      static AcinusImpl<DRT::Element::DiscretizationType::line2>* acinus;
+      static AcinusImpl<CORE::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new AcinusImpl<DRT::Element::DiscretizationType::line2>;
+        acinus = new AcinusImpl<CORE::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -61,7 +61,7 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
 /*----------------------------------------------------------------------*
   | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
 {
 }
@@ -85,7 +85,7 @@ DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp,
     CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
@@ -121,7 +121,7 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -230,7 +230,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
@@ -748,7 +748,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
  |  Calculate flowrate at current iteration step and the    ismail 01/10|
  |  correponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -855,7 +855,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
  |  Calculate element volume                                ismail 07/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -881,7 +881,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -1011,7 +1011,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
  |  calculate the amount of fluid mixing inside a           ismail 02/13|
  |  junction                                                            |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
@@ -1046,7 +1046,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
  |  calculate the scalar transport                          ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
@@ -1229,7 +1229,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
  |  calculate the scalar transport                          ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& scatranp, CORE::LINALG::SerialDenseVector& volumeMix_np,
@@ -1291,7 +1291,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
  |  calculate the scalar transport                          ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -1326,7 +1326,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
 }  // UpdateScatra
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -1373,7 +1373,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
  |  calculate PO2 from concentration                        ismail 06/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
@@ -1471,7 +1471,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
  |  calculate essential nodal values                        ismail 06/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,

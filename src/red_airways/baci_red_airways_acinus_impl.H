@@ -114,7 +114,7 @@ namespace DRT
       \date 01/13
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class AcinusImpl : public RedAcinusImplInterface
     {
      public:

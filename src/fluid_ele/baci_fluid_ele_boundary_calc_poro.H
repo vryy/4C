@@ -50,7 +50,7 @@ namespace DRT
      \author vuong 10/14
      */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleBoundaryCalcPoro : public FluidBoundaryImpl<distype>
     {
       using Base = DRT::ELEMENTS::FluidBoundaryImpl<distype>;
@@ -101,7 +101,7 @@ namespace DRT
       \brief apply boundary integral (mass flux over boundary in continuity equation) for porous
       media problems (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void PoroBoundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
@@ -145,7 +145,7 @@ namespace DRT
       \brief apply boundary coupling terms for FPSI problems
              (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void FPSICoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
@@ -224,7 +224,7 @@ namespace DRT
              (templated by discretization type of parent element)
 
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
@@ -250,7 +250,7 @@ namespace DRT
       \brief apply no penetration boundary condition
              (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void NoPenetrationMatAndRHS(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs);
@@ -275,7 +275,7 @@ namespace DRT
       \brief apply no penetration boundary condition (Off Diagonal terms)
              (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda);
@@ -299,7 +299,7 @@ namespace DRT
       \brief apply no penetration boundary condition (Off Diagonal terms)
              (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void NoPenetrationMatODPoroPres(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_pres);
@@ -323,7 +323,7 @@ namespace DRT
       \brief apply no penetration boundary condition (Off Diagonal terms)
              (templated by discretization type of parent element)
       */
-      template <DRT::Element::DiscretizationType pdistype>
+      template <CORE::FE::CellType pdistype>
       void NoPenetrationMatODPoroDisp(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_disp);
@@ -376,7 +376,7 @@ namespace DRT
 
      \author vuong 10/14
      */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
     {
       using Base = DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>;

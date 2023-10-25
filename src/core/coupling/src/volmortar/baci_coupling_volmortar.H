@@ -265,7 +265,7 @@ namespace CORE::VOLMORTAR
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
 
      */
-    std::vector<int> GetAdjacentNodes(::DRT::Element::DiscretizationType shape, int& lid);
+    std::vector<int> GetAdjacentNodes(CORE::FE::CellType shape, int& lid);
 
     /*!
      \brief Initialize / reset volmortar coupling

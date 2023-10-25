@@ -33,7 +33,7 @@ namespace DRT
   {
     // forward declarations
     class RedAirwayImplInterface;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class AirwayImpl;
 
     class RedAirwayType : public DRT::ElementType
@@ -80,7 +80,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -112,7 +112,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -416,14 +416,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -474,7 +473,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -506,7 +505,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -813,14 +812,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -875,7 +873,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -907,7 +905,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -1189,14 +1187,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -1247,7 +1244,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
+      friend class AirwayImpl<CORE::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1279,7 +1276,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -1562,14 +1559,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatra
@@ -1624,7 +1620,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::DiscretizationType::line3>;
+      friend class AirwayImpl<CORE::FE::CellType::line3>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1656,7 +1652,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -1941,14 +1937,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatraLine3

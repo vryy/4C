@@ -23,7 +23,7 @@
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
 MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement* parele,
-    const DRT::Element::DiscretizationType& shape, const int numnode, const int* nodeids,
+    const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
     std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind)
     : MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave),
       lid_(lid),
@@ -35,7 +35,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
   // check for consistency of nodeids and nodes
   // for nurbs, the nodes are not actual nodes in the
   // discretization, so just skip that part.
-  if (ParShape() != DRT::Element::DiscretizationType::nurbs9)
+  if (ParShape() != CORE::FE::CellType::nurbs9)
     for (int i = 0; i < numnode; ++i)
       if (nodes[i]->Id() != nodeids[i]) dserror("IntElement: Inconsistency Nodes and NodeIds!");
 
@@ -71,7 +71,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
   // *********************************************************************
   // do mapping for given IntElement and Element
   // *********************************************************** quad9 ***
-  if (ParShape() == DRT::Element::DiscretizationType::quad9)
+  if (ParShape() == CORE::FE::CellType::quad9)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -108,7 +108,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // *********************************************************** quad8 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::quad8)
+  else if (ParShape() == CORE::FE::CellType::quad8)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -151,7 +151,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ tri6 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::tri6)
+  else if (ParShape() == CORE::FE::CellType::tri6)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -188,7 +188,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // *********************************************************** quad4 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::quad4)
+  else if (ParShape() == CORE::FE::CellType::quad4)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -207,7 +207,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ tri3 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::tri3)
+  else if (ParShape() == CORE::FE::CellType::tri3)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -226,7 +226,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ nurbs9 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::nurbs9)
+  else if (ParShape() == CORE::FE::CellType::nurbs9)
   {
     if (Lid() != 0) dserror("nurbs9 should only have one integration element");
     // TODO: There is not necessarily a constant mapping from the IntEle
@@ -274,7 +274,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
   // *********************************************************************
   // do mapping for given IntElement and Element
   // *********************************************************** quad9 ***
-  if (ParShape() == DRT::Element::DiscretizationType::quad9)
+  if (ParShape() == CORE::FE::CellType::quad9)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -319,7 +319,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
     }
   }
   // *********************************************************** quad8 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::quad8)
+  else if (ParShape() == CORE::FE::CellType::quad8)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -370,7 +370,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
     }
   }
   // ************************************************************ tri6 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::tri6)
+  else if (ParShape() == CORE::FE::CellType::tri6)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -415,7 +415,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
     }
   }
   // *********************************************************** quad4 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::quad4)
+  else if (ParShape() == CORE::FE::CellType::quad4)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -434,7 +434,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
     }
   }
   // ************************************************************ tri3 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::tri3)
+  else if (ParShape() == CORE::FE::CellType::tri3)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -453,7 +453,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
     }
   }
   // ************************************************************ nurbs9 ***
-  else if (ParShape() == DRT::Element::DiscretizationType::nurbs9)
+  else if (ParShape() == CORE::FE::CellType::nurbs9)
   {
     if (Lid() != 0) dserror("nurbs9 should only have one integration element");
     if (!rewind_)
@@ -484,11 +484,11 @@ void MORTAR::IntElement::NodeLinearization(
   {
     // for all Lagrange Finite elements we can associate them directly with
     // the interpolatory nodes of the parent element
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
-    case DRT::Element::DiscretizationType::tri3:
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       // resize the linearizations
       nodelin.resize(NumNode(), std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
@@ -501,7 +501,7 @@ void MORTAR::IntElement::NodeLinearization(
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       // resize the linearizations
       nodelin.resize(NumNode(),
@@ -568,8 +568,7 @@ void MORTAR::IntElement::NodeLinearization(
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-    const DRT::Element::DiscretizationType& shape,
-    std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
+    const CORE::FE::CellType& shape, std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
     std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
     std::vector<CORE::GEN::pairedvector<int, double>>& linv3,
     std::vector<CORE::GEN::pairedvector<int, double>>& linauxn)
@@ -578,7 +577,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
   // store auxiliary plane normal
   for (int k = 0; k < 3; ++k) Auxn()[k] = auxn[k];
 
-  if (shape == DRT::Element::DiscretizationType::tri3)
+  if (shape == CORE::FE::CellType::tri3)
   {
     // compute area of IntCell
     std::array<double, 3> t1 = {0.0, 0.0, 0.0};
@@ -595,7 +594,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
     t1xt2[2] = t1[0] * t2[1] - t1[1] * t2[0];
     area_ = 0.5 * sqrt(t1xt2[0] * t1xt2[0] + t1xt2[1] * t1xt2[1] + t1xt2[2] * t1xt2[2]);
   }
-  else if (shape == DRT::Element::DiscretizationType::line2)
+  else if (shape == CORE::FE::CellType::line2)
   {
     // compute length of IntLine
     std::array<double, 3> v = {0.0, 0.0, 0.0};
@@ -634,8 +633,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
   if (!xi) dserror("LocalToGlobal called with xi=nullptr");
   if (!globcoord) dserror("LocalToGlobal called with globcoord=nullptr");
 
-  if (Shape() == DRT::Element::DiscretizationType::tri3 or
-      Shape() == DRT::Element::DiscretizationType::line2)
+  if (Shape() == CORE::FE::CellType::tri3 or Shape() == CORE::FE::CellType::line2)
   {
     // collect fundamental data
     CORE::LINALG::Matrix<3, 1> val;
@@ -663,7 +661,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
       }
       else if (inttype == 2)
       {
-        if (Shape() == DRT::Element::DiscretizationType::line2)
+        if (Shape() == CORE::FE::CellType::line2)
           dserror("for line2 elements only 1 parameter space coordinate");
 
         // use shape function derivatives eta for interpolation
@@ -707,7 +705,7 @@ bool MORTAR::IntCell::EvaluateShape(
   if (!xi) dserror("EvaluateShape (IntCell) called with xi=nullptr");
 
   // 3noded triangular element
-  if (Shape() == DRT::Element::DiscretizationType::tri3)
+  if (Shape() == CORE::FE::CellType::tri3)
   {
     val(0) = 1.0 - xi[0] - xi[1];
     val(1) = xi[0];
@@ -719,7 +717,7 @@ bool MORTAR::IntCell::EvaluateShape(
     deriv(2, 0) = 0.0;
     deriv(2, 1) = 1.0;
   }
-  else if (Shape() == DRT::Element::DiscretizationType::line2)
+  else if (Shape() == CORE::FE::CellType::line2)
   {
     val(0) = 0.5 * (1 - xi[0]);
     val(1) = 0.5 * (1 + xi[0]);
@@ -742,9 +740,9 @@ double MORTAR::IntCell::Jacobian()
   double jac = 0.0;
 
   // 2D linear case (2noded line element)
-  if (Shape() == DRT::Element::DiscretizationType::tri3)
+  if (Shape() == CORE::FE::CellType::tri3)
     jac = Area() * 2.0;
-  else if (Shape() == DRT::Element::DiscretizationType::line2)
+  else if (Shape() == CORE::FE::CellType::line2)
     jac = Area() * 0.5;
   // unknown case
   else
@@ -762,7 +760,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivj
   typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
   // 1d line element
-  if (Shape() == DRT::Element::DiscretizationType::line2)
+  if (Shape() == CORE::FE::CellType::line2)
   {
     // compute length of IntLine
     std::array<double, 3> v = {0.0, 0.0, 0.0};
@@ -812,7 +810,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivj
     for (CI p = vv.begin(); p != vv.end(); ++p) derivjac[p->first] += fac * (p->second);
   }
   // 2D linear case (2noded line element)
-  else if (Shape() == DRT::Element::DiscretizationType::tri3)
+  else if (Shape() == CORE::FE::CellType::tri3)
   {
     // metrics routine gives local basis vectors
     static std::vector<double> gxi(3);

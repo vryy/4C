@@ -232,15 +232,15 @@ namespace XFEM
     );
 
     /// check if the node is within the space time side
-    template <DRT::Element::DiscretizationType side_distype,
-        DRT::Element::DiscretizationType space_time_distype>
+    template <CORE::FE::CellType side_distype,
+        CORE::FE::CellType space_time_distype>
     bool WithinSpaceTimeSide(bool& within_space_time_side,  /// within the space time side
         DRT::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
     /// check the volume of the space time side, distorted space-time side ?
-    template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
+    template <CORE::FE::CellType space_time_distype, const int numnode_space_time>
     bool CheckSTSideVolume(const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st);
 
     /// export data about reconstruction method to neighbor proc and receive data from previous proc

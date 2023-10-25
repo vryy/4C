@@ -140,14 +140,14 @@ void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          gammi 02/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return DRT::Element::DiscretizationType::nurbs4;
+      return CORE::FE::CellType::nurbs4;
     case 9:
-      return DRT::Element::DiscretizationType::nurbs9;
+      return CORE::FE::CellType::nurbs9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }

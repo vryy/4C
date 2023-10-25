@@ -59,24 +59,24 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // it includes only strings for cell types known in ensight
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
-  distype2ensightstring_[DRT::Element::DiscretizationType::point1] = "point";
-  distype2ensightstring_[DRT::Element::DiscretizationType::line2] = "bar2";
-  distype2ensightstring_[DRT::Element::DiscretizationType::line3] = "bar2";  //"bar3";
-  distype2ensightstring_[DRT::Element::DiscretizationType::hex8] = "hexa8";
-  distype2ensightstring_[DRT::Element::DiscretizationType::hex20] = "hexa20";
-  distype2ensightstring_[DRT::Element::DiscretizationType::tet4] = "tetra4";
-  distype2ensightstring_[DRT::Element::DiscretizationType::tet10] = "tetra10";
-  distype2ensightstring_[DRT::Element::DiscretizationType::nurbs8] = "hexa8";
-  distype2ensightstring_[DRT::Element::DiscretizationType::nurbs27] = "hexa8";
-  distype2ensightstring_[DRT::Element::DiscretizationType::nurbs4] = "quad4";
-  distype2ensightstring_[DRT::Element::DiscretizationType::nurbs9] = "quad4";
-  distype2ensightstring_[DRT::Element::DiscretizationType::quad4] = "quad4";
-  distype2ensightstring_[DRT::Element::DiscretizationType::quad8] = "quad8";
-  distype2ensightstring_[DRT::Element::DiscretizationType::tri3] = "tria3";
-  distype2ensightstring_[DRT::Element::DiscretizationType::tri6] = "tria6";
-  distype2ensightstring_[DRT::Element::DiscretizationType::wedge6] = "penta6";
-  distype2ensightstring_[DRT::Element::DiscretizationType::wedge15] = "penta15";
-  distype2ensightstring_[DRT::Element::DiscretizationType::pyramid5] = "pyramid5";
+  distype2ensightstring_[CORE::FE::CellType::point1] = "point";
+  distype2ensightstring_[CORE::FE::CellType::line2] = "bar2";
+  distype2ensightstring_[CORE::FE::CellType::line3] = "bar2";  //"bar3";
+  distype2ensightstring_[CORE::FE::CellType::hex8] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::hex20] = "hexa20";
+  distype2ensightstring_[CORE::FE::CellType::tet4] = "tetra4";
+  distype2ensightstring_[CORE::FE::CellType::tet10] = "tetra10";
+  distype2ensightstring_[CORE::FE::CellType::nurbs8] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::nurbs27] = "hexa8";
+  distype2ensightstring_[CORE::FE::CellType::nurbs4] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::nurbs9] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::quad4] = "quad4";
+  distype2ensightstring_[CORE::FE::CellType::quad8] = "quad8";
+  distype2ensightstring_[CORE::FE::CellType::tri3] = "tria3";
+  distype2ensightstring_[CORE::FE::CellType::tri6] = "tria6";
+  distype2ensightstring_[CORE::FE::CellType::wedge6] = "penta6";
+  distype2ensightstring_[CORE::FE::CellType::wedge15] = "penta15";
+  distype2ensightstring_[CORE::FE::CellType::pyramid5] = "pyramid5";
 }
 
 
@@ -560,7 +560,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
   {
-    const DRT::Element::DiscretizationType distypeiter = iter->first;
+    const CORE::FE::CellType distypeiter = iter->first;
     const int ne = GetNumEleOutput(distypeiter, iter->second);
     const std::string ensightCellType = GetEnsightString(distypeiter);
 
@@ -584,20 +584,20 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
         DRT::Node** const nodes = actele->Nodes();
         switch (actele->Shape())
         {
-          case DRT::Element::DiscretizationType::point1:
-          case DRT::Element::DiscretizationType::line2:
-            // case DRT::Element::DiscretizationType::line3: // Ensight format supports line3,
+          case CORE::FE::CellType::point1:
+          case CORE::FE::CellType::line2:
+            // case CORE::FE::CellType::line3: // Ensight format supports line3,
             // Paraview does not.
-          case DRT::Element::DiscretizationType::hex8:
-          case DRT::Element::DiscretizationType::quad4:
-          case DRT::Element::DiscretizationType::quad8:
-          case DRT::Element::DiscretizationType::tet4:
-          case DRT::Element::DiscretizationType::tet10:
-          case DRT::Element::DiscretizationType::tri3:
-          case DRT::Element::DiscretizationType::tri6:
-          case DRT::Element::DiscretizationType::wedge6:
-          case DRT::Element::DiscretizationType::wedge15:
-          case DRT::Element::DiscretizationType::pyramid5:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::tri6:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::pyramid5:
           {
             // standard case with direct support
             const int numnp = actele->NumNode();
@@ -610,7 +610,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
           {
             // standard case with direct support
             const int numnp = actele->NumNode();
@@ -623,11 +623,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::DiscretizationType::hex16:
+          case CORE::FE::CellType::hex16:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::hex16);
-                 ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
@@ -635,11 +634,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::DiscretizationType::hex18:
+          case CORE::FE::CellType::hex18:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::hex18);
-                 ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
@@ -647,11 +645,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::hex27);
-                 ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -659,11 +656,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::quad9);
-                 ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -671,11 +667,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::line3:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::line3);
-                 ++isubele)
+            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   Write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
@@ -683,7 +678,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
                   nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
             break;
           }
-          case DRT::Element::DiscretizationType::nurbs4:
+          case CORE::FE::CellType::nurbs4:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
@@ -701,15 +696,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::DiscretizationType::nurbs9:
+          case CORE::FE::CellType::nurbs9:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::quad9);
-                   ++isubele)
+              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -718,15 +712,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             }
             break;
           }
-          case DRT::Element::DiscretizationType::nurbs27:
+          case CORE::FE::CellType::nurbs27:
           {
             if (!writecp_)
               WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(DRT::Element::DiscretizationType::hex27);
-                   ++isubele)
+              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -855,7 +848,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     DRT::Element* actele = dis->gElement(elementmap->GID(iele));
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     numElePerDisType[distype]++;
   }
@@ -863,14 +856,14 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
   // in parallel case we have to sum up the local element distype numbers
 
   // determine maximum number of possible element discretization types
-  auto numeledistypes = static_cast<int>(DRT::Element::DiscretizationType::max_distype);
+  auto numeledistypes = static_cast<int>(CORE::FE::CellType::max_distype);
 
   // write the final local numbers into a vector
   std::vector<int> myNumElePerDisType(numeledistypes);
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
   {
-    const DRT::Element::DiscretizationType distypeiter = iter->first;
+    const CORE::FE::CellType distypeiter = iter->first;
     const int ne = iter->second;
     myNumElePerDisType[static_cast<int>(distypeiter)] += ne;
   }
@@ -887,7 +880,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
   for (int i = 0; i < numeledistypes; ++i)
   {
     if (globalnumeleperdistype[i] > 0)  // no entry when we have no element of this type
-      globalNumElePerDisType[DRT::Element::DiscretizationType(i)] = globalnumeleperdistype[i];
+      globalNumElePerDisType[CORE::FE::CellType(i)] = globalnumeleperdistype[i];
   }
 
   return globalNumElePerDisType;
@@ -896,8 +889,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumEleOutput(
-    const DRT::Element::DiscretizationType distype, const int numele) const
+int EnsightWriter::GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const
 {
   return GetNumSubEle(distype) * numele;
 }
@@ -905,26 +897,26 @@ int EnsightWriter::GetNumEleOutput(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumSubEle(const DRT::Element::DiscretizationType distype) const
+int EnsightWriter::GetNumSubEle(const CORE::FE::CellType distype) const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex18:
+    case CORE::FE::CellType::hex18:
       return 4;
       break;
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
       return 8;
       break;
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return 8;
       break;
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
       return 4;
       break;
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return 4;
       break;
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       return 2;
       break;
     default:
@@ -953,7 +945,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
   {
     const int gid = elementmap->GID(iele);
     DRT::Element* actele = dis->gElement(gid);
-    const DRT::Element::DiscretizationType distype = actele->Shape();
+    const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
   }
@@ -1042,29 +1034,28 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetEnsightString(const DRT::Element::DiscretizationType distype) const
+std::string EnsightWriter::GetEnsightString(const CORE::FE::CellType distype) const
 {
-  std::map<DRT::Element::DiscretizationType, std::string>::const_iterator entry;
+  std::map<CORE::FE::CellType, std::string>::const_iterator entry;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex18:
-      entry = distype2ensightstring_.find(DRT::Element::DiscretizationType::hex8);
-    case DRT::Element::DiscretizationType::hex27:
-      entry = distype2ensightstring_.find(DRT::Element::DiscretizationType::hex8);
+    case CORE::FE::CellType::hex18:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
+    case CORE::FE::CellType::hex27:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
       break;
-    case DRT::Element::DiscretizationType::quad9:
-      entry = distype2ensightstring_.find(DRT::Element::DiscretizationType::quad4);
+    case CORE::FE::CellType::quad9:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::quad4);
       break;
-    case DRT::Element::DiscretizationType::tet10:
-      entry = distype2ensightstring_.find(DRT::Element::DiscretizationType::tet10);
+    case CORE::FE::CellType::tet10:
+      entry = distype2ensightstring_.find(CORE::FE::CellType::tet10);
       break;
     default:
       entry = distype2ensightstring_.find(distype);
       break;
   }
   if (entry == distype2ensightstring_.end())
-    dserror("No entry in distype2ensightstring_ found for DRT::Element::DiscretizationType = '%d'.",
-        distype);
+    dserror("No entry in distype2ensightstring_ found for CORE::FE::CellType = '%d'.", distype);
   return entry->second;
 }
 

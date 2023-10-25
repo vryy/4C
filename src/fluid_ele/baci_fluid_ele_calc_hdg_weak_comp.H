@@ -27,7 +27,7 @@ namespace DRT
       \author laspina
       \date 08/19
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcHDGWeakComp : public FluidEleInterface
     {
      public:

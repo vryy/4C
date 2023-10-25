@@ -97,7 +97,7 @@ namespace XFEM
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
-    template <DRT::Element::DiscretizationType DISTYPE, class T1, class M3>
+    template <CORE::FE::CellType DISTYPE, class T1, class M3>
     void EvaluateCouplingConditions(T1& projection_matrix,  ///< Projection matrix
         M3& normal                                          ///< surface normal of cut element
     )

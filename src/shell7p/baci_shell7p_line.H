@@ -98,7 +98,7 @@ namespace DRT::ELEMENTS
 
     //! @name Access methods
     //! @{
-    [[nodiscard]] DiscretizationType Shape() const override;
+    [[nodiscard]] CORE::FE::CellType Shape() const override;
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return node_dof_; }
 

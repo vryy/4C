@@ -18,72 +18,72 @@
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex8>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex8>(problem);
     }
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex20>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex20>(problem);
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex27>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex27>(problem);
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tet4>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet4>(problem);
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tet10>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet10>(problem);
     }
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::wedge6>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge6>(problem);
     }
     /* wedge15 cannot be used since no mesh generator exists
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::wedge15>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge15>(problem);
     }
     */
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::pyramid5>(problem);
+      return DefineProblemType<CORE::FE::CellType::pyramid5>(problem);
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
     }
     // Nurbs support
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs27>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs27>(problem);
     }
     // no 1D elements
     default:
@@ -96,7 +96,7 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemType(
     std::string problem)
 {

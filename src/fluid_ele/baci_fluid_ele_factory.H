@@ -38,20 +38,18 @@ namespace DRT
       //! dtor
       virtual ~FluidFactory() = default;
       //! ProvideImpl
-      static FluidEleInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, std::string problem);
+      static FluidEleInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
 
       //! special ProvideImpl for XFEM problems to reduce created template combinations
-      static FluidEleInterface* ProvideImplXFEM(
-          DRT::Element::DiscretizationType distype, std::string problem);
+      static FluidEleInterface* ProvideImplXFEM(CORE::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static FluidEleInterface* DefineProblemType(std::string problem);
 
       //! special DefineProblemTypeXFEM for XFEM problems
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static FluidEleInterface* DefineProblemTypeXFEM(std::string problem);
 
     };  // end class FluidFactory

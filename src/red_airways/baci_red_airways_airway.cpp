@@ -125,14 +125,14 @@ DRT::Element* DRT::ELEMENTS::RedAirway::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirway::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::RedAirway::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DRT::Element::DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

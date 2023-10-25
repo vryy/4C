@@ -27,7 +27,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
     class ScaTraEleBoundaryCalcElchElectrodeGrowth
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>

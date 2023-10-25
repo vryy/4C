@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
     const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree)
     : degree_(degree),
@@ -74,7 +74,7 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
 /*----------------------------------------------------------------------*
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     const ::DRT::Element& ele, const std::vector<double>& aleDis)
 {
@@ -142,7 +142,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 schoeder 06/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
     : params_(params), degree_(params.degree_)
 {
@@ -192,12 +192,11 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
 /*----------------------------------------------------------------------*
  |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     const ::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
-  const ::DRT::Element::DiscretizationType facedis =
-      CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
+  const CORE::FE::CellType facedis = CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
   dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
@@ -263,7 +262,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
 /*----------------------------------------------------------------------*
  |  Reorder evaluated face shape functions (private)  kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
     const ::DRT::Element& ele, const unsigned int face)
 {
@@ -313,11 +312,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
         }
         break;
       case 3:
-        if (distype == ::DRT::Element::DiscretizationType::hex8 ||
-            distype == ::DRT::Element::DiscretizationType::hex20 ||
-            distype == ::DRT::Element::DiscretizationType::hex27 ||
-            distype == ::DRT::Element::DiscretizationType::nurbs8 ||
-            distype == ::DRT::Element::DiscretizationType::nurbs27)
+        if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex20 ||
+            distype == CORE::FE::CellType::hex27 || distype == CORE::FE::CellType::nurbs8 ||
+            distype == CORE::FE::CellType::nurbs27)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 3 &&
               trafomap[3] == 2)  // x-direction mirrored
@@ -386,8 +383,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
             dserror("Unknown HEX face orientation in 3D");
           }
         }
-        else if (distype == ::DRT::Element::DiscretizationType::tet4 ||
-                 distype == ::DRT::Element::DiscretizationType::tet10)
+        else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 2)
           {
@@ -481,7 +477,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
 /*----------------------------------------------------------------------*
  |  Compute the face reference system       (private)  berardocco 09/18 |
  *----------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
     const ::DRT::Element& ele, const unsigned int face)
 {
@@ -537,7 +533,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 }
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>&
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
 {
@@ -549,7 +545,7 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
   return *owner.Instance(CORE::UTILS::SingletonAction::create);
 }
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>>
 CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
@@ -571,7 +567,7 @@ CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams pa
 
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>&
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
@@ -587,7 +583,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 }
 
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesInteriorOnFace>
 CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
@@ -635,50 +631,50 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
 
 
 // explicit instantiation of template classes
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::hex8>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::hex20>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::hex27>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::tet4>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::tet10>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::quad4>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::quad8>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::quad9>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::tri3>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::tri6>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValues<::DRT::Element::DiscretizationType::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValues<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFace<::DRT::Element::DiscretizationType::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValuesFace<CORE::FE::CellType::nurbs27>;
 
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::hex8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::hex20>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::hex27>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::tet4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::tet10>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::wedge6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::wedge15>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::pyramid5>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::quad4>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::quad8>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::quad9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::tri3>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::tri6>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::nurbs9>;
-template class CORE::DRT::UTILS::ShapeValuesFaceCache<::DRT::Element::DiscretizationType::nurbs27>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex8>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex20>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::hex27>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet4>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tet10>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge6>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::wedge15>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::pyramid5>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad4>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad8>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::quad9>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
+template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;

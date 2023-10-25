@@ -44,7 +44,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(const El
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
     const CORE::LINALG::Matrix<rdim, cdim>& xyze, const CORE::LINALG::Matrix<rdim_2, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
@@ -81,7 +81,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
     const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
@@ -119,7 +119,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
     const std::vector<Node*> nodes, const CORE::LINALG::Matrix<rdim, 1>& xyz,
-    ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype)
+    CORE::FE::CellType distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -132,8 +132,8 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    INPAR::CUT::CUT_Floattype floattype>
 void CORE::GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
     floattype>::ConstructBoundingBox()
 {
@@ -148,8 +148,8 @@ void CORE::GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    INPAR::CUT::CUT_Floattype floattype>
 bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
     const double& Tol)
 {
@@ -175,8 +175,8 @@ bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, flo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    INPAR::CUT::CUT_Floattype floattype>
 bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
     floattype>::IsGivenPointWithinElement()
 {
@@ -203,8 +203,8 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, ::DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    INPAR::CUT::CUT_Floattype floattype>
 bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
     floattype>::Compute(const double& Tol, const bool& allow_dist)
 {
@@ -278,43 +278,32 @@ CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(::DRT::Problem::In
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
     const Element& element, const Point& point, INPAR::CUT::CUT_Floattype floattype) const
 {
-  ::DRT::Element::DiscretizationType distype = element.Shape();
+  CORE::FE::CellType distype = element.Shape();
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::line2>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::tri3:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri3>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::tri6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri6>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::quad4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad4>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::quad8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad8>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::quad9:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad9>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::hex8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex8>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::hex20:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex20>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::tet4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tet4>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::pyramid5>(
-          element, point, floattype);
-    case ::DRT::Element::DiscretizationType::wedge6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::wedge6>(
-          element, point, floattype);
+    case CORE::FE::CellType::line2:
+      return CreateConcretePosition<CORE::FE::CellType::line2>(element, point, floattype);
+    case CORE::FE::CellType::tri3:
+      return CreateConcretePosition<CORE::FE::CellType::tri3>(element, point, floattype);
+    case CORE::FE::CellType::tri6:
+      return CreateConcretePosition<CORE::FE::CellType::tri6>(element, point, floattype);
+    case CORE::FE::CellType::quad4:
+      return CreateConcretePosition<CORE::FE::CellType::quad4>(element, point, floattype);
+    case CORE::FE::CellType::quad8:
+      return CreateConcretePosition<CORE::FE::CellType::quad8>(element, point, floattype);
+    case CORE::FE::CellType::quad9:
+      return CreateConcretePosition<CORE::FE::CellType::quad9>(element, point, floattype);
+    case CORE::FE::CellType::hex8:
+      return CreateConcretePosition<CORE::FE::CellType::hex8>(element, point, floattype);
+    case CORE::FE::CellType::hex20:
+      return CreateConcretePosition<CORE::FE::CellType::hex20>(element, point, floattype);
+    case CORE::FE::CellType::tet4:
+      return CreateConcretePosition<CORE::FE::CellType::tet4>(element, point, floattype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(element, point, floattype);
+    case CORE::FE::CellType::wedge6:
+      return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, point, floattype);
     default:
       dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -328,43 +317,32 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
     const Element& element, const double* xyz, INPAR::CUT::CUT_Floattype floattype) const
 {
-  ::DRT::Element::DiscretizationType distype = element.Shape();
+  CORE::FE::CellType distype = element.Shape();
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::line2>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri3:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri3>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri6>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad4>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad8>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad9:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad9>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex8>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex20:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex20>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tet4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tet4>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::pyramid5>(
-          element, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::wedge6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::wedge6>(
-          element, xyz, floattype);
+    case CORE::FE::CellType::line2:
+      return CreateConcretePosition<CORE::FE::CellType::line2>(element, xyz, floattype);
+    case CORE::FE::CellType::tri3:
+      return CreateConcretePosition<CORE::FE::CellType::tri3>(element, xyz, floattype);
+    case CORE::FE::CellType::tri6:
+      return CreateConcretePosition<CORE::FE::CellType::tri6>(element, xyz, floattype);
+    case CORE::FE::CellType::quad4:
+      return CreateConcretePosition<CORE::FE::CellType::quad4>(element, xyz, floattype);
+    case CORE::FE::CellType::quad8:
+      return CreateConcretePosition<CORE::FE::CellType::quad8>(element, xyz, floattype);
+    case CORE::FE::CellType::quad9:
+      return CreateConcretePosition<CORE::FE::CellType::quad9>(element, xyz, floattype);
+    case CORE::FE::CellType::hex8:
+      return CreateConcretePosition<CORE::FE::CellType::hex8>(element, xyz, floattype);
+    case CORE::FE::CellType::hex20:
+      return CreateConcretePosition<CORE::FE::CellType::hex20>(element, xyz, floattype);
+    case CORE::FE::CellType::tet4:
+      return CreateConcretePosition<CORE::FE::CellType::tet4>(element, xyz, floattype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(element, xyz, floattype);
+    case CORE::FE::CellType::wedge6:
+      return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -376,40 +354,33 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const double* xyze, const double* xyz, const ::DRT::Element::DiscretizationType& distype,
+    const double* xyze, const double* xyz, const CORE::FE::CellType& distype,
     INPAR::CUT::CUT_Floattype floattype) const
 {
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::line2>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri3:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri3>(xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri6>(xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad4>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad8>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad9:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad9>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex8>(xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex20:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex20>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tet4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tet4>(xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::pyramid5>(
-          xyze, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::wedge6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::wedge6>(
-          xyze, xyz, floattype);
+    case CORE::FE::CellType::line2:
+      return CreateConcretePosition<CORE::FE::CellType::line2>(xyze, xyz, floattype);
+    case CORE::FE::CellType::tri3:
+      return CreateConcretePosition<CORE::FE::CellType::tri3>(xyze, xyz, floattype);
+    case CORE::FE::CellType::tri6:
+      return CreateConcretePosition<CORE::FE::CellType::tri6>(xyze, xyz, floattype);
+    case CORE::FE::CellType::quad4:
+      return CreateConcretePosition<CORE::FE::CellType::quad4>(xyze, xyz, floattype);
+    case CORE::FE::CellType::quad8:
+      return CreateConcretePosition<CORE::FE::CellType::quad8>(xyze, xyz, floattype);
+    case CORE::FE::CellType::quad9:
+      return CreateConcretePosition<CORE::FE::CellType::quad9>(xyze, xyz, floattype);
+    case CORE::FE::CellType::hex8:
+      return CreateConcretePosition<CORE::FE::CellType::hex8>(xyze, xyz, floattype);
+    case CORE::FE::CellType::hex20:
+      return CreateConcretePosition<CORE::FE::CellType::hex20>(xyze, xyz, floattype);
+    case CORE::FE::CellType::tet4:
+      return CreateConcretePosition<CORE::FE::CellType::tet4>(xyze, xyz, floattype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(xyze, xyz, floattype);
+    case CORE::FE::CellType::wedge6:
+      return CreateConcretePosition<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -421,10 +392,10 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const std::vector<CORE::GEO::CUT::Node*> nodes, const double* xyz,
-    ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype) const
+    const std::vector<CORE::GEO::CUT::Node*> nodes, const double* xyz, CORE::FE::CellType distype,
+    INPAR::CUT::CUT_Floattype floattype) const
 {
-  if (distype == ::DRT::Element::DiscretizationType::dis_none)
+  if (distype == CORE::FE::CellType::dis_none)
   {
     plain_element_set elements;
     FindCommonElements(nodes, elements);
@@ -436,39 +407,28 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::line2>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri3:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri3>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tri6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tri6>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad4>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad8>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::quad9:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::quad9>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex8:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex8>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::hex20:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::hex20>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::tet4:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::tet4>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::pyramid5>(
-          nodes, xyz, floattype);
-    case ::DRT::Element::DiscretizationType::wedge6:
-      return CreateConcretePosition<::DRT::Element::DiscretizationType::wedge6>(
-          nodes, xyz, floattype);
+    case CORE::FE::CellType::line2:
+      return CreateConcretePosition<CORE::FE::CellType::line2>(nodes, xyz, floattype);
+    case CORE::FE::CellType::tri3:
+      return CreateConcretePosition<CORE::FE::CellType::tri3>(nodes, xyz, floattype);
+    case CORE::FE::CellType::tri6:
+      return CreateConcretePosition<CORE::FE::CellType::tri6>(nodes, xyz, floattype);
+    case CORE::FE::CellType::quad4:
+      return CreateConcretePosition<CORE::FE::CellType::quad4>(nodes, xyz, floattype);
+    case CORE::FE::CellType::quad8:
+      return CreateConcretePosition<CORE::FE::CellType::quad8>(nodes, xyz, floattype);
+    case CORE::FE::CellType::quad9:
+      return CreateConcretePosition<CORE::FE::CellType::quad9>(nodes, xyz, floattype);
+    case CORE::FE::CellType::hex8:
+      return CreateConcretePosition<CORE::FE::CellType::hex8>(nodes, xyz, floattype);
+    case CORE::FE::CellType::hex20:
+      return CreateConcretePosition<CORE::FE::CellType::hex20>(nodes, xyz, floattype);
+    case CORE::FE::CellType::tet4:
+      return CreateConcretePosition<CORE::FE::CellType::tet4>(nodes, xyz, floattype);
+    case CORE::FE::CellType::pyramid5:
+      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(nodes, xyz, floattype);
+    case CORE::FE::CellType::wedge6:
+      return CreateConcretePosition<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -513,358 +473,261 @@ template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 3, 3>(
     const CORE::LINALG::Matrix<3, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 6, 3>(
     const CORE::LINALG::Matrix<3, 6>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 4, 3>(
     const CORE::LINALG::Matrix<3, 4>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 8, 3>(
     const CORE::LINALG::Matrix<3, 8>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 9, 3>(
     const CORE::LINALG::Matrix<3, 9>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 2, 3>(
     const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2, 2, 2>(
     const CORE::LINALG::Matrix<2, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
     const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
     const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
-    const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
+    const CORE::FE::CellType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
     const std::vector<Node*> nodes, const CORE::LINALG::Matrix<3, 1>& xyz,
-    ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
+    CORE::FE::CellType distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
     const std::vector<Node*> nodes, const CORE::LINALG::Matrix<2, 1>& xyz,
-    ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
+    CORE::FE::CellType distype, INPAR::CUT::CUT_Floattype floattype);
 
 /* --- ComputeEmbeddedPosition --- */
 // embedded element types
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::tri3>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::tri6>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,
-    ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,
-    ::DRT::Element::DiscretizationType::quad8>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,
-    ::DRT::Element::DiscretizationType::quad9>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<2,
-    ::DRT::Element::DiscretizationType::line2>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,
-    ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri6>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad8>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad9>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::line2>;
 
 // non-embedded element types for the embedded case (only necessary due to compiler problems)
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::DiscretizationType::hex16>; template
-// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::DiscretizationType::hex18>;
+// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex16>; template
+// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex18>;
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::DiscretizationType::hex27>; template
-// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::DiscretizationType::tet10>;
+// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex27>; template
+// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::tet10>;
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::DiscretizationType::wedge15>;
+// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::wedge15>;
 
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::tri3,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::tri6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::quad4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::quad8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::quad9,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad9>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad9>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri3,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad9,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
 /* --- ComputePosition --- */
 // non-embedded cases (only)
-template class CORE::GEO::CUT::ComputePosition<1, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2>;
 
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::tri3>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::tri6>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad8>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad9>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri6>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad8>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad9>;
 
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex16>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex18>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::pyramid5>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::wedge6>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::wedge15>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet4>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet10>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex8>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex16>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex18>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex20>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex27>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::pyramid5>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15>;
 
-template class CORE::GEO::CUT::ComputePosition<1, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
 
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::tri3,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::tri6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, ::DRT::Element::DiscretizationType::quad9,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad9>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad9>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri3,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad9,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
 
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::tet4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tet4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::tet10,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tet10>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet10>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex16,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex16>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex16>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex18,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex18>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex18>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex20,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex20>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex20>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::hex27,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex27>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex27>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::pyramid5,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::pyramid5>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::pyramid5>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::wedge6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::wedge6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, ::DRT::Element::DiscretizationType::wedge15,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::wedge15>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge15>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet10,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex16,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex16>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex18,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex18>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex20,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex27,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::pyramid5,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::pyramid5>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge15>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim, INPAR::CUT::floattype_cln>;
 
 /* --- PositionGeneric --- */
 // embedded cases
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tri3>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tri6>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad8>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad9>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::line2>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri6>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad8>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad9>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::line2>;
 
 // non-embedded cases
-template class CORE::GEO::CUT::PositionGeneric<1, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::PositionGeneric<1, CORE::FE::CellType::line2>;
 
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::tri3>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::tri6>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad4>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad8>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad9>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri3>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri6>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad4>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad8>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad9>;
 
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tet4>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tet10>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex8>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex16>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex18>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex20>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex27>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::pyramid5>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::wedge6>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::wedge15>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet4>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet10>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex8>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex16>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex18>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex20>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex27>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::pyramid5>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15>;
 
 // unused / impossible cases (only necessary due to compiler problems)
-// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::DiscretizationType::hex8>;
-// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::DiscretizationType::tet4>;
-// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::DiscretizationType::pyramid5>;
-// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::DiscretizationType::wedge6>;
+// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::hex8>;
+// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::tet4>;
+// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::pyramid5>;
+// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::wedge6>;
 
 // embedded cases
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tri3,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tri6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::quad9,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad9>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad9>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri3,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad9,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
 
 // non-embedded cases
-template class CORE::GEO::CUT::PositionGeneric<1, ::DRT::Element::DiscretizationType::line2,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::line2>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<1, CORE::FE::CellType::line2,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
 
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::tri3,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri3>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::tri6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tri6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, ::DRT::Element::DiscretizationType::quad9,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::quad9>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad9>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri3,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad9,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
 
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tet4,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tet4>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet4>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::tet10,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::tet10>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet10>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex8,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex8>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex8>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex16,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex16>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex16>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex18,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex18>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex18>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex20,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex20>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex20>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::hex27,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::hex27>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex27>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::pyramid5,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::pyramid5>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::pyramid5>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::wedge6,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::wedge6>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge6>::dim,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::DiscretizationType::wedge15,
-    CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-        ::DRT::Element::DiscretizationType::wedge15>::numNodePerElement,
-    CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge15>::dim,
-    INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet4,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet10,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex8,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex16,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex16>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex18,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex18>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex20,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex27,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::pyramid5,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::pyramid5>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim, INPAR::CUT::floattype_cln>;
+template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15,
+    CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge15>::numNodePerElement,
+    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim, INPAR::CUT::floattype_cln>;

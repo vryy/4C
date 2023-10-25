@@ -37,7 +37,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
     double& detJ0,                                 // det of Jacobian at origin
     const CORE::LINALG::SerialDenseMatrix& xrefe,  // material element coords
     const CORE::LINALG::SerialDenseMatrix& xcure,  // current element coords
-    const DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 
 {
   // derivatives at origin

@@ -64,16 +64,16 @@ namespace DRT
 
 
     //! determine whether a given element is a NURBS element or not
-    inline bool IsNurbs(DRT::Element::DiscretizationType distype)
+    inline bool IsNurbs(CORE::FE::CellType distype)
     {
       switch (distype)
       {
-        case DRT::Element::DiscretizationType::nurbs8:
-        case DRT::Element::DiscretizationType::nurbs27:
-        case DRT::Element::DiscretizationType::nurbs4:
-        case DRT::Element::DiscretizationType::nurbs9:
-        case DRT::Element::DiscretizationType::nurbs2:
-        case DRT::Element::DiscretizationType::nurbs3:
+        case CORE::FE::CellType::nurbs8:
+        case CORE::FE::CellType::nurbs27:
+        case CORE::FE::CellType::nurbs4:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::nurbs3:
         {
           return true;
           break;

@@ -28,130 +28,130 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
+CORE::FE::CellType DRT::StringToDistype(const std::string& name)
 {
-  static std::map<std::string, DRT::Element::DiscretizationType> gid2distype;
+  static std::map<std::string, CORE::FE::CellType> gid2distype;
   if (gid2distype.empty())
   {
-    gid2distype["HEX8"] = DRT::Element::DiscretizationType::hex8;
-    gid2distype["HEX18"] = DRT::Element::DiscretizationType::hex18;
-    gid2distype["HEX20"] = DRT::Element::DiscretizationType::hex20;
-    gid2distype["HEX27"] = DRT::Element::DiscretizationType::hex27;
-    gid2distype["TET4"] = DRT::Element::DiscretizationType::tet4;
-    gid2distype["TET10"] = DRT::Element::DiscretizationType::tet10;
-    gid2distype["WEDGE6"] = DRT::Element::DiscretizationType::wedge6;
-    gid2distype["WEDGE15"] = DRT::Element::DiscretizationType::wedge15;
-    gid2distype["PYRAMID5"] = DRT::Element::DiscretizationType::pyramid5;
-    gid2distype["QUAD4"] = DRT::Element::DiscretizationType::quad4;
-    gid2distype["QUAD8"] = DRT::Element::DiscretizationType::quad8;
-    gid2distype["QUAD9"] = DRT::Element::DiscretizationType::quad9;
-    gid2distype["TRI3"] = DRT::Element::DiscretizationType::tri3;
-    gid2distype["TRI6"] = DRT::Element::DiscretizationType::tri6;
-    gid2distype["NURBS2"] = DRT::Element::DiscretizationType::nurbs2;
-    gid2distype["NURBS3"] = DRT::Element::DiscretizationType::nurbs3;
-    gid2distype["NURBS4"] = DRT::Element::DiscretizationType::nurbs4;
-    gid2distype["NURBS8"] = DRT::Element::DiscretizationType::nurbs8;
-    gid2distype["NURBS9"] = DRT::Element::DiscretizationType::nurbs9;
-    gid2distype["NURBS27"] = DRT::Element::DiscretizationType::nurbs27;
-    gid2distype["LINE2"] = DRT::Element::DiscretizationType::line2;
-    gid2distype["LINE3"] = DRT::Element::DiscretizationType::line3;
-    gid2distype["POINT1"] = DRT::Element::DiscretizationType::point1;
-    gid2distype["DIS_NONE"] = DRT::Element::DiscretizationType::dis_none;
-    gid2distype["MAX_DISTYPE"] = DRT::Element::DiscretizationType::max_distype;
+    gid2distype["HEX8"] = CORE::FE::CellType::hex8;
+    gid2distype["HEX18"] = CORE::FE::CellType::hex18;
+    gid2distype["HEX20"] = CORE::FE::CellType::hex20;
+    gid2distype["HEX27"] = CORE::FE::CellType::hex27;
+    gid2distype["TET4"] = CORE::FE::CellType::tet4;
+    gid2distype["TET10"] = CORE::FE::CellType::tet10;
+    gid2distype["WEDGE6"] = CORE::FE::CellType::wedge6;
+    gid2distype["WEDGE15"] = CORE::FE::CellType::wedge15;
+    gid2distype["PYRAMID5"] = CORE::FE::CellType::pyramid5;
+    gid2distype["QUAD4"] = CORE::FE::CellType::quad4;
+    gid2distype["QUAD8"] = CORE::FE::CellType::quad8;
+    gid2distype["QUAD9"] = CORE::FE::CellType::quad9;
+    gid2distype["TRI3"] = CORE::FE::CellType::tri3;
+    gid2distype["TRI6"] = CORE::FE::CellType::tri6;
+    gid2distype["NURBS2"] = CORE::FE::CellType::nurbs2;
+    gid2distype["NURBS3"] = CORE::FE::CellType::nurbs3;
+    gid2distype["NURBS4"] = CORE::FE::CellType::nurbs4;
+    gid2distype["NURBS8"] = CORE::FE::CellType::nurbs8;
+    gid2distype["NURBS9"] = CORE::FE::CellType::nurbs9;
+    gid2distype["NURBS27"] = CORE::FE::CellType::nurbs27;
+    gid2distype["LINE2"] = CORE::FE::CellType::line2;
+    gid2distype["LINE3"] = CORE::FE::CellType::line3;
+    gid2distype["POINT1"] = CORE::FE::CellType::point1;
+    gid2distype["DIS_NONE"] = CORE::FE::CellType::dis_none;
+    gid2distype["MAX_DISTYPE"] = CORE::FE::CellType::max_distype;
   }
 
-  std::map<std::string, DRT::Element::DiscretizationType>::iterator i;
+  std::map<std::string, CORE::FE::CellType>::iterator i;
   i = gid2distype.find(name);
   if (i != gid2distype.end()) return i->second;
   dserror("unsupported distype '%s'", name.c_str());
-  return DRT::Element::DiscretizationType::dis_none;
+  return CORE::FE::CellType::dis_none;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ShardsKeyToDisType(const unsigned& key)
+CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
 {
-  DRT::Element::DiscretizationType distype = DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType distype = CORE::FE::CellType::dis_none;
   switch (key)
   {
     case shards::Particle::key:
     {
-      distype = DRT::Element::DiscretizationType::point1;
+      distype = CORE::FE::CellType::point1;
       break;
     }
     case shards::Line<2>::key:
     {
-      distype = DRT::Element::DiscretizationType::line2;
+      distype = CORE::FE::CellType::line2;
       break;
     }
     case shards::Line<3>::key:
     {
-      distype = DRT::Element::DiscretizationType::line3;
+      distype = CORE::FE::CellType::line3;
       break;
     }
     case shards::Quadrilateral<4>::key:
     {
-      distype = DRT::Element::DiscretizationType::quad4;
+      distype = CORE::FE::CellType::quad4;
       break;
     }
     case shards::Quadrilateral<8>::key:
     {
-      distype = DRT::Element::DiscretizationType::quad8;
+      distype = CORE::FE::CellType::quad8;
       break;
     }
     case shards::Quadrilateral<9>::key:
     {
-      distype = DRT::Element::DiscretizationType::quad9;
+      distype = CORE::FE::CellType::quad9;
       break;
     }
     case shards::Triangle<3>::key:
     {
-      distype = DRT::Element::DiscretizationType::tri3;
+      distype = CORE::FE::CellType::tri3;
       break;
     }
     case shards::Triangle<6>::key:
     {
-      distype = DRT::Element::DiscretizationType::tri6;
+      distype = CORE::FE::CellType::tri6;
       break;
     }
     case shards::Hexahedron<8>::key:
     {
-      distype = DRT::Element::DiscretizationType::hex8;
+      distype = CORE::FE::CellType::hex8;
       break;
     }
     case shards::Hexahedron<20>::key:
     {
-      distype = DRT::Element::DiscretizationType::hex20;
+      distype = CORE::FE::CellType::hex20;
       break;
     }
     case shards::Hexahedron<27>::key:
     {
-      distype = DRT::Element::DiscretizationType::hex27;
+      distype = CORE::FE::CellType::hex27;
       break;
     }
     case shards::Tetrahedron<4>::key:
     {
-      distype = DRT::Element::DiscretizationType::tet4;
+      distype = CORE::FE::CellType::tet4;
       break;
     }
     case shards::Tetrahedron<10>::key:
     {
-      distype = DRT::Element::DiscretizationType::tet10;
+      distype = CORE::FE::CellType::tet10;
       break;
     }
     case shards::Wedge<6>::key:
     {
-      distype = DRT::Element::DiscretizationType::wedge6;
+      distype = CORE::FE::CellType::wedge6;
       break;
     }
     case shards::Wedge<15>::key:
     {
-      distype = DRT::Element::DiscretizationType::wedge15;
+      distype = CORE::FE::CellType::wedge15;
       break;
     }
     case shards::Pyramid<5>::key:
     {
-      distype = DRT::Element::DiscretizationType::pyramid5;
+      distype = CORE::FE::CellType::pyramid5;
       break;
     }
     default:

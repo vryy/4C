@@ -372,8 +372,8 @@ namespace MORTAR
     \param isslave (in): flag indicating whether element is slave or master side
     \param isnurbs (in): flag indicating whether element is nurbs element or not
     */
-    MortarElement(int id, int owner, const DRT::Element::DiscretizationType& shape,
-        const int numnode, const int* nodeids, const bool isslave, bool isnurbs = false);
+    MortarElement(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+        const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
     \brief Copy Constructor
@@ -429,7 +429,7 @@ namespace MORTAR
     \brief Get shape type of element
 
     */
-    DiscretizationType Shape() const override { return shape_; }
+    CORE::FE::CellType Shape() const override { return shape_; }
 
     /*!
     \brief Return number of lines to this element
@@ -522,20 +522,20 @@ namespace MORTAR
       bool isquad = false;
       switch (Shape())
       {
-        case DRT::Element::DiscretizationType::line2:
-        case DRT::Element::DiscretizationType::nurbs2:
-        case DRT::Element::DiscretizationType::tri3:
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
         {
           // do nothing
           break;
         }
-        case DRT::Element::DiscretizationType::line3:
-        case DRT::Element::DiscretizationType::nurbs3:
-        case DRT::Element::DiscretizationType::quad8:
-        case DRT::Element::DiscretizationType::quad9:
-        case DRT::Element::DiscretizationType::nurbs9:
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::line3:
+        case CORE::FE::CellType::nurbs3:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::tri6:
         {
           isquad = true;
           break;
@@ -554,21 +554,21 @@ namespace MORTAR
     {
       switch (Shape())
       {
-        case DRT::Element::DiscretizationType::line2:
-        case DRT::Element::DiscretizationType::nurbs2:
-        case DRT::Element::DiscretizationType::line3:
-        case DRT::Element::DiscretizationType::nurbs3:
+        case CORE::FE::CellType::line2:
+        case CORE::FE::CellType::nurbs2:
+        case CORE::FE::CellType::line3:
+        case CORE::FE::CellType::nurbs3:
         {
           // this is a 2-D problem
           return 2;
           break;
         }
-        case DRT::Element::DiscretizationType::tri3:
-        case DRT::Element::DiscretizationType::quad4:
-        case DRT::Element::DiscretizationType::quad8:
-        case DRT::Element::DiscretizationType::quad9:
-        case DRT::Element::DiscretizationType::nurbs9:
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri3:
+        case CORE::FE::CellType::quad4:
+        case CORE::FE::CellType::quad8:
+        case CORE::FE::CellType::quad9:
+        case CORE::FE::CellType::nurbs9:
+        case CORE::FE::CellType::tri6:
         {
           // this is a 3-D problem
           return 3;
@@ -1030,9 +1030,9 @@ namespace MORTAR
     //@}
 
    protected:
-    DRT::Element::DiscretizationType shape_;  // shape of this element
-    bool isslave_;                            // indicating slave or master side
-    bool attached_;                           // bool whether an element contributes to M
+    CORE::FE::CellType shape_;  // shape of this element
+    bool isslave_;              // indicating slave or master side
+    bool attached_;             // bool whether an element contributes to M
 
     Teuchos::RCP<MORTAR::MortarEleDataContainer> modata_;  // additional information
 
@@ -1076,7 +1076,7 @@ namespace MORTAR
     \brief Standard constructor
 
     */
-    ElementIntegrator(DRT::Element::DiscretizationType eletype);
+    ElementIntegrator(CORE::FE::CellType eletype);
 
     /*!
     \brief Destructor

@@ -1612,8 +1612,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyrami
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(
-        shapefcts[igp], r, s, t, DRT::Element::DiscretizationType::pyramid5);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::pyramid5);
   }
   return shapefcts;
 }
@@ -1636,8 +1635,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(
-        derivs[igp], r, s, t, DRT::Element::DiscretizationType::pyramid5);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::pyramid5);
   }
   return derivs;
 }
@@ -1695,10 +1693,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> deriv;
-      CORE::DRT::UTILS::shape_function_3D(
-          funct, r, s, t, DRT::Element::DiscretizationType::pyramid5);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(
-          deriv, r, s, t, DRT::Element::DiscretizationType::pyramid5);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::pyramid5);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::pyramid5);
       for (int inode = 0; inode < NUMNOD_SOP5; ++inode)
       {
         f(inode, igp) = funct(inode);

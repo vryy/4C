@@ -48,86 +48,86 @@ namespace GEOMETRYPAIR
    * hexahedron (linear, quadratic, ...) this structure "returns" the correct type depending on the
    * DRT discretization type of the element.
    */
-  template <DRT::Element::DiscretizationType discretization>
+  template <CORE::FE::CellType discretization>
   struct ElementDiscretizationToGeometryType
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::none;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::line2>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::line2>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::line;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tri3>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tri3>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tri6>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tri6>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad4>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad4>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad8>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad8>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad9>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad9>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::nurbs9>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::nurbs9>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex8>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex8>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex20>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex20>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex27>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex27>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tet4>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tet4>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tet10>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tet10>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::nurbs27>
+  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::nurbs27>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;

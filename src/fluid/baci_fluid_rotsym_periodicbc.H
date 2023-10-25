@@ -22,7 +22,7 @@
 namespace FLD
 {
   /// numdofpernode = number of dofs per node for fluid problem
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 
   /*!

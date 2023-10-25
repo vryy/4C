@@ -39,8 +39,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorEhl(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm)
+    CoIntegratorEhl(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
         : CoIntegrator(params, eletype, comm)
     {
     }

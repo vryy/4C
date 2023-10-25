@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*
  | singleton access method                                gebauer 06/19 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -37,7 +37,7 @@ DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                     gebauer 06/19 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)

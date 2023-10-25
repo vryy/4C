@@ -780,7 +780,7 @@ namespace SCATRA
   };
 
 
-  template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   class MortarCellCalc : public MortarCellInterface
   {
    public:
@@ -1036,7 +1036,7 @@ namespace SCATRA
    private:
     //! provide instance of mortar cell evaluation class of particular slave-side and master-side
     //! discretization types
-    template <DRT::Element::DiscretizationType distypeS>
+    template <CORE::FE::CellType distypeS>
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
@@ -1049,7 +1049,7 @@ namespace SCATRA
     );
 
     //! provide specific instance of mortar cell evaluation class
-    template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+    template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
     static MortarCellInterface* MortarCellCalc(
         const INPAR::SCATRA::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell

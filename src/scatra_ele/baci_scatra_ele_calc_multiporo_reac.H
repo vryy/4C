@@ -39,7 +39,7 @@ namespace DRT
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerMultiPoro;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcMultiPoroReac : public ScaTraEleCalcPoroReac<distype>
     {
      private:

@@ -244,7 +244,7 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // element technology
   ExtractfromPack(position, data, eletech_);
   // thickness in reference frame

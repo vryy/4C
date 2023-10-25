@@ -30,9 +30,9 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToDim;
   }  // namespace UTILS
 
@@ -54,7 +54,7 @@ namespace DRT
       CORE::LINALG::SerialDenseMatrix alpha_;
     };
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Shell7pEleCalcEas : public Shell7pEleCalcInterface, public SHELL::Serializable
     {
      public:

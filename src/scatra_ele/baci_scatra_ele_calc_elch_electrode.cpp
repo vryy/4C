@@ -19,7 +19,7 @@ within isothermal electrodes
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -38,7 +38,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchElectrode(
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelch::ScaTraEleCalcElch(numdofpernode, numscal, disname)
@@ -58,7 +58,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchEl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
@@ -125,7 +125,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
     const double timefacfac, const double rhsfac)
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double diffcoeff, const double fac, const double rhsfac, const double J,
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoeffLin(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double scalar)
@@ -200,7 +200,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquDiviOhm(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::CalcRhsConservativePartOfConvectiveTerm(CORE::LINALG::SerialDenseVector& erhs,
     const int k, const double rhsfac, const double vdiv)
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquDiviOhm(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquD
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialParams(
     const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
@@ -287,34 +287,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line3,
-    1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad4,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad4,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad9,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::nurbs9,
-    2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::hex8, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::hex27,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tet10,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::pyramid5,
-    3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::pyramid5, 3>;

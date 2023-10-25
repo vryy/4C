@@ -15,7 +15,7 @@ namespace
   TEST(EvaluateParameterCoordinateCentroid, DisTypeHex)
   {
     // only tested for hex8, but equivalent for hex18, hex27, ...
-    const auto distype = DRT::Element::DiscretizationType::hex8;
+    const auto distype = CORE::FE::CellType::hex8;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> xi_centroid_ref(true);
 
@@ -28,7 +28,7 @@ namespace
   TEST(EvaluateParameterCoordinateCentroid, DisTypeTet)
   {
     // only tested for tet4, but equivalent for tet10
-    const auto distype = DRT::Element::DiscretizationType::tet4;
+    const auto distype = CORE::FE::CellType::tet4;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> xi_centroid_ref(true);
     xi_centroid_ref(0) = 0.25;
@@ -43,7 +43,7 @@ namespace
 
   TEST(EvaluateParameterCoordinateCentroid, DisTypePyramid)
   {
-    const auto distype = DRT::Element::DiscretizationType::pyramid5;
+    const auto distype = CORE::FE::CellType::pyramid5;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> xi_centroid_ref(true);
     xi_centroid_ref(2) = 0.25;
@@ -56,7 +56,7 @@ namespace
 
   TEST(EvaluateParameterCoordinateCentroid, DisTypeWedge)
   {
-    const auto distype = DRT::Element::DiscretizationType::wedge6;
+    const auto distype = CORE::FE::CellType::wedge6;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> xi_centroid_ref(true);
     xi_centroid_ref(0) = 1.0 / 3.0;
@@ -70,7 +70,7 @@ namespace
 
   TEST(EvaluateReferenceCoordinateCentroid, DisTypeHex)
   {
-    const auto distype = DRT::Element::DiscretizationType::hex8;
+    const auto distype = CORE::FE::CellType::hex8;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> reference_coords_centroid_ref(
         true);
@@ -124,7 +124,7 @@ namespace
 
   TEST(EvaluateReferenceCoordinateCentroid, DisTypeTet)
   {
-    const auto distype = DRT::Element::DiscretizationType::tet4;
+    const auto distype = CORE::FE::CellType::tet4;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> reference_coords_centroid_ref(
         true);
@@ -162,7 +162,7 @@ namespace
 
   TEST(EvaluateReferenceCoordinateCentroid, DisTypePyramid)
   {
-    const auto distype = DRT::Element::DiscretizationType::pyramid5;
+    const auto distype = CORE::FE::CellType::pyramid5;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> reference_coords_centroid_ref(
         true);
@@ -204,7 +204,7 @@ namespace
 
   TEST(EvaluateReferenceCoordinateCentroid, DisTypeWedge)
   {
-    const auto distype = DRT::Element::DiscretizationType::wedge6;
+    const auto distype = CORE::FE::CellType::wedge6;
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> reference_coords_centroid_ref(
         true);

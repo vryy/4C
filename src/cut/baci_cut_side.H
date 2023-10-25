@@ -52,7 +52,7 @@ namespace CORE::GEO
       static Side* CreateLevelSetSide(const int& sid);
 
       /// Create a concrete side (using dis-type for identification)
-      static Side* Create(const ::DRT::Element::DiscretizationType& sidetype, const int& sid,
+      static Side* Create(const CORE::FE::CellType& sidetype, const int& sid,
           const std::vector<Node*>& nodes, const std::vector<Edge*>& edges);
 
       /// Create a concrete side (using shards-key for identification)
@@ -72,7 +72,7 @@ namespace CORE::GEO
       int Id() const { return sid_; }
 
       /// returns the geometric shape of this side
-      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
+      virtual CORE::FE::CellType Shape() const = 0;
 
       /// element dimension
       virtual unsigned Dim() const = 0;
@@ -653,7 +653,7 @@ namespace CORE::GEO
      *                             the side dimension \c dim
      *
      *  \author hiermeier */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype,
+    template <unsigned probdim, CORE::FE::CellType sidetype,
         unsigned numNodesSide =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim>
@@ -673,7 +673,7 @@ namespace CORE::GEO
       }
 
       /// Returns the geometrical shape of this side
-      ::DRT::Element::DiscretizationType Shape() const override { return sidetype; }
+      CORE::FE::CellType Shape() const override { return sidetype; }
 
       /// element dimension
       unsigned Dim() const override { return dim; }
@@ -688,13 +688,13 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             return shards::getCellTopologyData<shards::Triangle<3>>();
             break;
-          case ::DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
             return shards::getCellTopologyData<shards::Quadrilateral<4>>();
             break;
-          case ::DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::line2:
             return shards::getCellTopologyData<shards::Line<2>>();
             break;
           default:
@@ -728,14 +728,14 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             if (fabs(rs(1)) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) + rs(1) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
             if (fabs(rs(0)) < REFERENCETOL) edges.push_back(Edges()[2]);
             break;
           }
-          case ::DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             if (fabs(rs(1) + 1) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
@@ -743,7 +743,7 @@ namespace CORE::GEO
             if (fabs(rs(0) + 1) < REFERENCETOL) edges.push_back(Edges()[3]);
             break;
           }
-          case ::DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::line2:
           {
             dserror("If we need this, the edges will degenerate to nodes!");
             break;
@@ -794,19 +794,19 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             const double rs[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
             std::copy(rs, rs + 6, rst_corners);
             break;
           }
-          case ::DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             const double rs[8] = {-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0};
             std::copy(rs, rs + 8, rst_corners);
             break;
           }
-          case ::DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::line2:
           {
             const double r[2] = {-1.0, 1.0};
             std::copy(r, r + 2, rst_corners);
@@ -1034,11 +1034,11 @@ namespace CORE::GEO
 
       virtual ~SideFactory() = default;
 
-      Side* CreateSide(::DRT::Element::DiscretizationType sidetype, int sid,
-          const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const;
+      Side* CreateSide(CORE::FE::CellType sidetype, int sid, const std::vector<Node*>& nodes,
+          const std::vector<Edge*>& edges) const;
 
      private:
-      template <::DRT::Element::DiscretizationType sidetype>
+      template <CORE::FE::CellType sidetype>
       CORE::GEO::CUT::Side* CreateConcreteSide(int sid, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges, int probdim) const
       {

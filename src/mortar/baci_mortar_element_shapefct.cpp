@@ -1881,14 +1881,14 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
   switch (Shape())
   {
     // 2D linear case (2noded line element)
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
       ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
       break;
     }
       // 2D quadratic case (3noded line element)
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
@@ -1903,21 +1903,21 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       break;
     }
       // 3D linear case (3noded triangular element)
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
       ShapeFunctions(MortarElement::lin2D, xi, val, deriv);
       break;
     }
       // 3D bilinear case (4noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
       ShapeFunctions(MortarElement::bilin2D, xi, val, deriv);
       break;
     }
       // 3D quadratic case (6noded triangular element)
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       if (valdim != 6) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
@@ -1929,7 +1929,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       break;
     }
       // 3D serendipity case (8noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
       if (valdim != 8) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
@@ -1941,7 +1941,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       break;
     }
       // 3D biquadratic case (9noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
@@ -1958,7 +1958,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
       //==================================================
 
       // 1D -- nurbs2
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
@@ -1968,7 +1968,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 
       CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
-          val, auxderiv, xi[0], Knots()[0], weights, DRT::Element::DiscretizationType::nurbs2);
+          val, auxderiv, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
       for (int i = 0; i < NumNode(); ++i) deriv(i, 0) = auxderiv(0, i);
@@ -1977,7 +1977,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     }
 
       // 1D -- nurbs3
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
@@ -1987,7 +1987,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 
       CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
-          val, auxderiv, xi[0], Knots()[0], weights, DRT::Element::DiscretizationType::nurbs3);
+          val, auxderiv, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
       for (int i = 0; i < NumNode(); ++i) deriv(i, 0) = auxderiv(0, i);
@@ -1997,7 +1997,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 
       // ===========================================================
       // 2D -- nurbs4
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
 
@@ -2011,7 +2011,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 
       CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          val, auxderiv, uv, Knots(), weights, DRT::Element::DiscretizationType::nurbs4);
+          val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 2; ++d)
@@ -2021,7 +2021,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     }
 
       // 2D -- nurbs9
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
 
@@ -2036,7 +2036,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
 
       CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-          val, auxderiv, uv, Knots(), weights, DRT::Element::DiscretizationType::nurbs9);
+          val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
 #ifdef DEBUG
       if (deriv.numCols() != 2 || deriv.numRows() != NumNode())
@@ -2085,7 +2085,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   switch (Shape())
   {
     // 2D linear case (2noded line element)
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
@@ -2097,7 +2097,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
       // 2D quadratic case (3noded line element)
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
@@ -2110,22 +2110,22 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
       // 3D cases
-    case DRT::Element::DiscretizationType::tri3:
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::tri6:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       // dual Lagrange multipliers
       if (dual)
       {
-        if (Shape() == DRT::Element::DiscretizationType::tri3)
+        if (Shape() == CORE::FE::CellType::tri3)
           ShapeFunctions(MortarElement::lindual2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad4)
+        else if (Shape() == CORE::FE::CellType::quad4)
           ShapeFunctions(MortarElement::bilindual2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::tri6)
+        else if (Shape() == CORE::FE::CellType::tri6)
           ShapeFunctions(MortarElement::quaddual2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad8)
+        else if (Shape() == CORE::FE::CellType::quad8)
           ShapeFunctions(MortarElement::serendipitydual2D, xi, val, deriv);
         else
           /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquaddual2D, xi, val, deriv);
@@ -2134,13 +2134,13 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       // standard Lagrange multipliers
       else
       {
-        if (Shape() == DRT::Element::DiscretizationType::tri3)
+        if (Shape() == CORE::FE::CellType::tri3)
           ShapeFunctions(MortarElement::lin2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad4)
+        else if (Shape() == CORE::FE::CellType::quad4)
           ShapeFunctions(MortarElement::bilin2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::tri6)
+        else if (Shape() == CORE::FE::CellType::tri6)
           ShapeFunctions(MortarElement::quad2D, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad8)
+        else if (Shape() == CORE::FE::CellType::quad8)
           ShapeFunctions(MortarElement::serendipity2D, xi, val, deriv);
         else
           /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquad2D, xi, val, deriv);
@@ -2153,7 +2153,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       //==================================================
 
       // 1D -- nurbs2
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
       if (dual)
         dserror("no dual shape functions provided for nurbs!");
@@ -2164,7 +2164,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
       // 1D -- nurbs3
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
       if (dual)
       {
@@ -2234,7 +2234,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
 
       // ===========================================================
       // 2D -- nurbs4
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       if (dual)
         dserror("no dual shape functions provided for nurbs!");
@@ -2245,7 +2245,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
       // 2D -- nurbs8
-    case DRT::Element::DiscretizationType::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
       if (dual)
         dserror("no dual shape functions provided for nurbs!");
@@ -2256,7 +2256,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
       // 2D -- nurbs9
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       if (dual)
       {
@@ -2344,10 +2344,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
 
-    if (Shape() == DRT::Element::DiscretizationType::line2 or
-        Shape() == DRT::Element::DiscretizationType::line3 or
-        Shape() == DRT::Element::DiscretizationType::nurbs2 or
-        Shape() == DRT::Element::DiscretizationType::nurbs3)
+    if (Shape() == CORE::FE::CellType::line2 or Shape() == CORE::FE::CellType::line3 or
+        Shape() == CORE::FE::CellType::nurbs2 or Shape() == CORE::FE::CellType::nurbs3)
     {
       // is on corner or bound?
       if (mymrtrnode->IsOnCornerorBound())
@@ -2375,10 +2373,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   if (MoData().Trafo() == Teuchos::null)
   {
     // 2D case!
-    if (Shape() == DRT::Element::DiscretizationType::line2 or
-        Shape() == DRT::Element::DiscretizationType::line3 or
-        Shape() == DRT::Element::DiscretizationType::nurbs2 or
-        Shape() == DRT::Element::DiscretizationType::nurbs3)
+    if (Shape() == CORE::FE::CellType::line2 or Shape() == CORE::FE::CellType::line3 or
+        Shape() == CORE::FE::CellType::nurbs2 or Shape() == CORE::FE::CellType::nurbs3)
     {
       // get number of bound nodes
       std::vector<int> ids;
@@ -2411,13 +2407,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     }
 
     // 3D case!
-    else if (Shape() == DRT::Element::DiscretizationType::tri6 or
-             Shape() == DRT::Element::DiscretizationType::tri3 or
-             Shape() == DRT::Element::DiscretizationType::quad4 or
-             Shape() == DRT::Element::DiscretizationType::quad8 or
-             Shape() == DRT::Element::DiscretizationType::quad9 or
-             Shape() == DRT::Element::DiscretizationType::quad4 or
-             Shape() == DRT::Element::DiscretizationType::nurbs9)
+    else if (Shape() == CORE::FE::CellType::tri6 or Shape() == CORE::FE::CellType::tri3 or
+             Shape() == CORE::FE::CellType::quad4 or Shape() == CORE::FE::CellType::quad8 or
+             Shape() == CORE::FE::CellType::quad9 or Shape() == CORE::FE::CellType::quad4 or
+             Shape() == CORE::FE::CellType::nurbs9)
     {
       // get number of bound nodes
       std::vector<int> ids;
@@ -2464,20 +2457,15 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   }
 
   int eledim = -1;
-  if (Shape() == DRT::Element::DiscretizationType::tri6 or
-      Shape() == DRT::Element::DiscretizationType::tri3 or
-      Shape() == DRT::Element::DiscretizationType::quad4 or
-      Shape() == DRT::Element::DiscretizationType::quad8 or
-      Shape() == DRT::Element::DiscretizationType::quad9 or
-      Shape() == DRT::Element::DiscretizationType::nurbs4 or
-      Shape() == DRT::Element::DiscretizationType::nurbs9)
+  if (Shape() == CORE::FE::CellType::tri6 or Shape() == CORE::FE::CellType::tri3 or
+      Shape() == CORE::FE::CellType::quad4 or Shape() == CORE::FE::CellType::quad8 or
+      Shape() == CORE::FE::CellType::quad9 or Shape() == CORE::FE::CellType::nurbs4 or
+      Shape() == CORE::FE::CellType::nurbs9)
   {
     eledim = 2;
   }
-  else if (Shape() == DRT::Element::DiscretizationType::line2 or
-           Shape() == DRT::Element::DiscretizationType::line3 or
-           Shape() == DRT::Element::DiscretizationType::nurbs2 or
-           Shape() == DRT::Element::DiscretizationType::nurbs3)
+  else if (Shape() == CORE::FE::CellType::line2 or Shape() == CORE::FE::CellType::line3 or
+           Shape() == CORE::FE::CellType::nurbs2 or Shape() == CORE::FE::CellType::nurbs3)
   {
     eledim = 1;
   }
@@ -2533,10 +2521,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   if (!IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
 
   // check for feasible element types (line3,tri6, quad8 or quad9)
-  if (Shape() != DRT::Element::DiscretizationType::line3 &&
-      Shape() != DRT::Element::DiscretizationType::tri6 &&
-      Shape() != DRT::Element::DiscretizationType::quad8 &&
-      Shape() != DRT::Element::DiscretizationType::quad9)
+  if (Shape() != CORE::FE::CellType::line3 && Shape() != CORE::FE::CellType::tri6 &&
+      Shape() != CORE::FE::CellType::quad8 && Shape() != CORE::FE::CellType::quad9)
     dserror("Linear LM interpolation only for quadratic finite elements");
 
   // dual shape functions or not
@@ -2566,7 +2552,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   switch (Shape())
   {
     // 2D quadratic case (quadratic line)
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       // the middle node is defined as slave boundary (=master)
       // dual Lagrange multipliers
@@ -2579,18 +2565,18 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
     }
 
       // 3D quadratic cases (quadratic triangle, biquadratic and serendipity quad)
-    case DRT::Element::DiscretizationType::tri6:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       // the edge nodes are defined as slave boundary (=master)
       // dual Lagrange multipliers
       if (dual)
       {
         // dserror("Quad->Lin modification of dual LM shape functions not yet implemented");
-        if (Shape() == DRT::Element::DiscretizationType::tri6)
+        if (Shape() == CORE::FE::CellType::tri6)
           ShapeFunctions(MortarElement::quaddual2D_only_lin, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad8)
+        else if (Shape() == CORE::FE::CellType::quad8)
           ShapeFunctions(MortarElement::serendipitydual2D_only_lin, xi, val, deriv);
         else
           /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquaddual2D_only_lin, xi, val, deriv);
@@ -2599,9 +2585,9 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
       // standard Lagrange multipliers
       else
       {
-        if (Shape() == DRT::Element::DiscretizationType::tri6)
+        if (Shape() == CORE::FE::CellType::tri6)
           ShapeFunctions(MortarElement::quad2D_only_lin, xi, val, deriv);
-        else if (Shape() == DRT::Element::DiscretizationType::quad8)
+        else if (Shape() == CORE::FE::CellType::quad8)
           ShapeFunctions(MortarElement::serendipity2D_only_lin, xi, val, deriv);
         else
           /*Shape()==quad9*/ ShapeFunctions(MortarElement::biquad2D_only_lin, xi, val, deriv);
@@ -4368,14 +4354,14 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
   switch (Shape())
   {
     // 2D linear case (2noded line element)
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       secderiv(0, 0) = 0.0;
       secderiv(1, 0) = 0.0;
       break;
     }
       // 2D quadratic case (3noded line element)
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       secderiv(0, 0) = 1.0;
       secderiv(1, 0) = 1.0;
@@ -4383,7 +4369,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       break;
     }
       // 3D linear case (3noded triangular element)
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       secderiv(0, 0) = 0.0;
       secderiv(0, 1) = 0.0;
@@ -4397,7 +4383,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       break;
     }
       // 3D bilinear case (4noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       secderiv(0, 0) = 0.0;
       secderiv(0, 1) = 0.0;
@@ -4414,7 +4400,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       break;
     }
       // 3D quadratic case (6noded triangular element)
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       secderiv(0, 0) = 4.0;
       secderiv(0, 1) = 4.0;
@@ -4437,7 +4423,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       break;
     }
       // 3D serendipity case (8noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -4473,7 +4459,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       break;
     }
       // 3D biquadratic case (9noded quadrilateral element)
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       const double r = xi[0];
       const double s = xi[1];
@@ -4524,7 +4510,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       //                     NURBS
       //==================================================
       // 1D -- nurbs2
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
@@ -4536,8 +4522,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       CORE::LINALG::SerialDenseMatrix auxderiv2(1, NumNode());
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval, auxderiv, auxderiv2, xi[0],
-          Knots()[0], weights, DRT::Element::DiscretizationType::nurbs2);
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
+          auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
       for (int i = 0; i < NumNode(); ++i) secderiv(i, 0) = auxderiv2(0, i);
@@ -4546,7 +4532,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     }
 
       // 1D -- nurbs3
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
@@ -4558,8 +4544,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       CORE::LINALG::SerialDenseMatrix auxderiv(1, 3);
       CORE::LINALG::SerialDenseMatrix auxderiv2(1, 3);
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval, auxderiv, auxderiv2, xi[0],
-          Knots()[0], weights, DRT::Element::DiscretizationType::nurbs3);
+      CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
+          auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
       for (int i = 0; i < NumNode(); ++i) secderiv(i, 0) = auxderiv2(0, i);
@@ -4569,7 +4555,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
 
       // ===========================================================
       // 2D -- nurbs4
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
 
@@ -4585,8 +4571,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval, auxderiv, auxderiv2, uv,
-          Knots(), weights, DRT::Element::DiscretizationType::nurbs4);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+          auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
@@ -4596,7 +4582,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     }
 
       // 2D -- nurbs8
-    case DRT::Element::DiscretizationType::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
       if (valdim != 8) dserror("Inconsistency in EvaluateShape");
 
@@ -4612,8 +4598,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval, auxderiv, auxderiv2, uv,
-          Knots(), weights, DRT::Element::DiscretizationType::nurbs8);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+          auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs8);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
@@ -4623,7 +4609,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     }
 
       // 2D -- nurbs9
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
 
@@ -4639,8 +4625,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval, auxderiv, auxderiv2, uv,
-          Knots(), weights, DRT::Element::DiscretizationType::nurbs9);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
+          auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
@@ -4670,7 +4656,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
   switch (Shape())
   {
     // 2D linear case (2noded line element)
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -4680,7 +4666,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
       break;
     }
       // 3D linear case (3noded triangular element)
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       if (MoData().DerivDualShape() != Teuchos::null)
         derivdual = *(MoData().DerivDualShape());
@@ -4690,7 +4676,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
     }
 
       // 2D quadratic case (3noded line element)
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       // check for middle "bound" node
       MortarNode* mycnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
@@ -4708,16 +4694,16 @@ bool MORTAR::MortarElement::DerivShapeDual(
     }
 
       // all other 3D cases
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::tri6:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
-      if (Shape() == DRT::Element::DiscretizationType::quad4)
+      if (Shape() == CORE::FE::CellType::quad4)
         ShapeFunctionLinearizations(MORTAR::MortarElement::bilindual2D, derivdual);
-      else if (Shape() == DRT::Element::DiscretizationType::tri6)
+      else if (Shape() == CORE::FE::CellType::tri6)
         ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual2D, derivdual);
-      else if (Shape() == DRT::Element::DiscretizationType::quad8)
+      else if (Shape() == CORE::FE::CellType::quad8)
         ShapeFunctionLinearizations(MORTAR::MortarElement::serendipitydual2D, derivdual);
       else
         /*Shape()==quad9*/ ShapeFunctionLinearizations(
@@ -4729,12 +4715,12 @@ bool MORTAR::MortarElement::DerivShapeDual(
     //==================================================
     //                     NURBS
     //==================================================
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
       ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       ShapeFunctionLinearizations(MORTAR::MortarElement::biquaddual2D, derivdual);
       break;
@@ -4767,10 +4753,8 @@ bool MORTAR::MortarElement::DerivShapeDual(
   CORE::LINALG::SerialDenseMatrix trafo(nnodes, nnodes, true);
 
   // 2D case!
-  if (Shape() == DRT::Element::DiscretizationType::line2 or
-      Shape() == DRT::Element::DiscretizationType::line3 or
-      Shape() == DRT::Element::DiscretizationType::nurbs2 or
-      Shape() == DRT::Element::DiscretizationType::nurbs3)
+  if (Shape() == CORE::FE::CellType::line2 or Shape() == CORE::FE::CellType::line3 or
+      Shape() == CORE::FE::CellType::nurbs2 or Shape() == CORE::FE::CellType::nurbs3)
   {
     // get number of bound nodes
     std::vector<int> ids;
@@ -4803,13 +4787,10 @@ bool MORTAR::MortarElement::DerivShapeDual(
   }
 
   // 3D case!
-  else if (Shape() == DRT::Element::DiscretizationType::tri6 or
-           Shape() == DRT::Element::DiscretizationType::tri3 or
-           Shape() == DRT::Element::DiscretizationType::quad4 or
-           Shape() == DRT::Element::DiscretizationType::quad8 or
-           Shape() == DRT::Element::DiscretizationType::quad9 or
-           Shape() == DRT::Element::DiscretizationType::nurbs4 or
-           Shape() == DRT::Element::DiscretizationType::nurbs9)
+  else if (Shape() == CORE::FE::CellType::tri6 or Shape() == CORE::FE::CellType::tri3 or
+           Shape() == CORE::FE::CellType::quad4 or Shape() == CORE::FE::CellType::quad8 or
+           Shape() == CORE::FE::CellType::quad9 or Shape() == CORE::FE::CellType::nurbs4 or
+           Shape() == CORE::FE::CellType::nurbs9)
   {
     // get number of bound nodes
     std::vector<int> ids;

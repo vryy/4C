@@ -356,8 +356,7 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   int InterpolateToImmersedIntPoint(const Teuchos::RCP<DRT::Discretization> sourcedis,
       const Teuchos::RCP<DRT::Discretization> targetdis, DRT::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
@@ -898,8 +897,7 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   int InterpolateToBackgrdPoint(std::map<int, std::set<int>>& curr_subset_of_structdis,
       const Teuchos::RCP<DRT::Discretization> sourcedis,
       const Teuchos::RCP<DRT::Discretization> targetdis, DRT::Element& targetele,
@@ -1218,8 +1216,7 @@ namespace IMMERSED
   \date 07/2015
 
    */
-  template <DRT::Element::DiscretizationType structdistype,
-      DRT::Element::DiscretizationType fluiddistype>
+  template <CORE::FE::CellType structdistype, CORE::FE::CellType fluiddistype>
   int FindClosestStructureSurfacePoint(
       std::map<int, std::set<int>>& curr_subset_of_structdis,  //!< Input
       const Teuchos::RCP<DRT::Discretization> structdis,       //!< Input
@@ -1458,7 +1455,7 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::quad4>(
+                    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::quad4>(
                         struct_xi, shapefcts);
                     CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
@@ -1625,8 +1622,7 @@ namespace IMMERSED
   \date 2015
 
    */
-  template <DRT::Element::DiscretizationType sourcedistype,
-      DRT::Element::DiscretizationType targetdistype>
+  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
   double IntersectLineWithBoundary(Teuchos::RCP<DRT::Discretization> evaldis,
       const Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<3, 1>& searchdirection, CORE::LINALG::Matrix<3, 1>& spacepoint,

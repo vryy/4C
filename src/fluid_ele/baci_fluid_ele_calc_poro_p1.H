@@ -45,7 +45,7 @@ namespace DRT
 
      \author vuong 10/14
      */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
     {
       using Base = FluidEleCalcPoro<distype>;

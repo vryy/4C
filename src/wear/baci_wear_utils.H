@@ -40,7 +40,7 @@ namespace WEAR
   namespace UTILS
   {
     // advection map for elements
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void av(DRT::Element* ele,                          // in
         double* Xtarget,                                // out
         double* Xsource,                                // in
@@ -141,21 +141,16 @@ namespace WEAR
 
       // if material parameters are within the element, evaluate material
       // coordinates
-      if (distype == DRT::Element::DiscretizationType::hex8 or
-          distype == DRT::Element::DiscretizationType::hex20 or
-          distype == DRT::Element::DiscretizationType::hex27 or
-          distype == DRT::Element::DiscretizationType::quad4 or
-          distype == DRT::Element::DiscretizationType::quad8 or
-          distype == DRT::Element::DiscretizationType::quad9)
+      if (distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex20 or
+          distype == CORE::FE::CellType::hex27 or distype == CORE::FE::CellType::quad4 or
+          distype == CORE::FE::CellType::quad8 or distype == CORE::FE::CellType::quad9)
       {
         if (e[0] >= -1.0 - WEARADVMAP and e[0] <= 1.0 + WEARADVMAP and e[1] >= -1.0 - WEARADVMAP and
             e[1] <= 1.0 + WEARADVMAP and e[2] >= -1.0 - WEARADVMAP and e[2] <= 1.0 + WEARADVMAP)
           found = true;
       }
-      else if (distype == DRT::Element::DiscretizationType::tet4 or
-               distype == DRT::Element::DiscretizationType::tet10 or
-               distype == DRT::Element::DiscretizationType::tri3 or
-               distype == DRT::Element::DiscretizationType::tri6)
+      else if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10 or
+               distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6)
       {
         if (e[0] >= 0.0 - WEARADVMAP and e[0] <= 1.0 + WEARADVMAP and e[1] >= 0.0 - WEARADVMAP and
             e[1] <= 1.0 + WEARADVMAP and e[2] >= 0.0 - WEARADVMAP and e[2] <= 1.0 + WEARADVMAP)

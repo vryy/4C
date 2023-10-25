@@ -19,7 +19,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcCardiacMonodomain : public ScaTraEleCalcAniso<distype, probdim>,
                                            public ScaTraEleCalcAdvReac<distype, probdim>
     {

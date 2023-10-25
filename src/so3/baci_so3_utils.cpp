@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
         CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& R)
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
   R.MultiplyNN(Q, VT);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         1>& shapefctsGP,            // shape function of current Gauss-point
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
   }
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
     CORE::LINALG::Matrix<probdim, probdim>& defgrd, DRT::Node** nodes,
     const CORE::LINALG::Matrix<probdim, 1>& xsi,
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
   ComputeDeformationGradientStandard<distype, probdim>(defgrd, xcurr, N_rst, inv_detFJ);
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
     CORE::LINALG::Matrix<probdim, probdim>& defgrd, DRT::Node** nodes,
     const CORE::LINALG::Matrix<probdim, 1>& xsi, const std::vector<double>& displacement)
@@ -125,7 +125,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
   ComputeDeformationGradient<distype, probdim>(defgrd, nodes, xsi, xdisp);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
         CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
@@ -161,7 +161,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
       defgrd, xcurr, derivs, inverseJacobian);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
         CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
@@ -203,7 +203,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
   defgrd.Multiply(Finc, Fhist);
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
     CORE::LINALG::Matrix<probdim, probdim>& defgrd,
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
   defgrd.MultiplyTT(xcurr, N_XYZ);
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(DRT::Node** nodes,
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         probdim>& xrefe)
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(DRT::Node** nodes,
   }
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements(const std::vector<double>& disp,
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         probdim>& xdisp)
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements(const std::vector<double>&
   }
 }
 
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         probdim>& xrefe,
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
   xcurr.Update(1.0, xrefe, 1.0, xdisp);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
     const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
@@ -281,156 +281,130 @@ void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
   }
 }
 
-template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::DiscretizationType::tet10>(
+template void DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(
     const DRT::Element*, const std::vector<double>&, CORE::LINALG::Matrix<3, 3>&);
 
-template void
-DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::tet4>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::tet4>::numNodePerElement,
-        1>& shapefctsGP,
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet4>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement, 1>&
+        shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex27>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement, 1>&
+        shapefctsGP,
+    Teuchos::ParameterList& params);
+
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
 template void
-DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::hex27>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::hex27>::numNodePerElement,
+DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::nurbs27>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs27>::numNodePerElement,
         1>& shapefctsGP,
     Teuchos::ParameterList& params);
 
-template void
-DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::hex8>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::hex8>::numNodePerElement,
-        1>& shapefctsGP,
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet10>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
-template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<
-    DRT::Element::DiscretizationType::nurbs27>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::nurbs27>::numNodePerElement,
-        1>& shapefctsGP,
+template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex20>(
+    const CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement, 1>&
+        shapefctsGP,
     Teuchos::ParameterList& params);
 
-template void
-DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::tet10>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::tet10>::numNodePerElement,
-        1>& shapefctsGP,
-    Teuchos::ParameterList& params);
-
-template void
-DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::hex20>(
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                   DRT::Element::DiscretizationType::hex20>::numNodePerElement,
-        1>& shapefctsGP,
-    Teuchos::ParameterList& params);
-
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::hex8, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
     const CORE::LINALG::Matrix<8, 3>& xdisp);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet4, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
     const CORE::LINALG::Matrix<4, 3>& xdisp);
 
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::hex8, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
     const std::vector<double>& displacement);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet4, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
     const std::vector<double>& displacement);
 
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::hex8>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const INPAR::STR::KinemType kinemType,
     const CORE::LINALG::Matrix<8, 3>& xdisp, const CORE::LINALG::Matrix<8, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 3>& inverseJacobian, const CORE::LINALG::Matrix<3, 8>& derivs,
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet4>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const INPAR::STR::KinemType kinemType,
     const CORE::LINALG::Matrix<4, 3>& xdisp, const CORE::LINALG::Matrix<4, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 3>& inverseJacobian, const CORE::LINALG::Matrix<3, 4>& derivs,
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet10>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet10>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const INPAR::STR::KinemType kinemType,
     const CORE::LINALG::Matrix<10, 3>& xdisp, const CORE::LINALG::Matrix<10, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 3>& inverseJacobian, const CORE::LINALG::Matrix<3, 10>& derivs,
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
 
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<DRT::Element::DiscretizationType::hex8>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<CORE::FE::CellType::hex8>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<8, 3>& xdisp,
     const CORE::LINALG::Matrix<3, 8>& derivs,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<DRT::Element::DiscretizationType::tet4>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<CORE::FE::CellType::tet4>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<4, 3>& xdisp,
     const CORE::LINALG::Matrix<3, 4>& derivs,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<DRT::Element::DiscretizationType::tet10>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf<CORE::FE::CellType::tet10>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<10, 3>& xdisp,
     const CORE::LINALG::Matrix<3, 10>& derivs,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp);
 
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<DRT::Element::DiscretizationType::hex8, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<CORE::FE::CellType::hex8, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<8, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 8>& derivs, const CORE::LINALG::Matrix<3, 3>& inverseJacobian);
-template void
-DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<DRT::Element::DiscretizationType::tet4, 3>(
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<CORE::FE::CellType::tet4, 3>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<4, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 4>& derivs, const CORE::LINALG::Matrix<3, 3>& inverseJacobian);
-template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<
-    DRT::Element::DiscretizationType::tet10, 3>(CORE::LINALG::Matrix<3, 3>& defgrd,
-    const CORE::LINALG::Matrix<10, 3>& xcurr, const CORE::LINALG::Matrix<3, 10>& derivs,
-    const CORE::LINALG::Matrix<3, 3>& inverseJacobian);
+template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<CORE::FE::CellType::tet10,
+    3>(CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<10, 3>& xcurr,
+    const CORE::LINALG::Matrix<3, 10>& derivs, const CORE::LINALG::Matrix<3, 3>& inverseJacobian);
 
-template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<DRT::Element::DiscretizationType::hex8,
-    3>(DRT::Node** nodes, CORE::LINALG::Matrix<8, 3>& xrefe);
-template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<DRT::Element::DiscretizationType::tet4,
-    3>(DRT::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
-template void
-DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<DRT::Element::DiscretizationType::tet10, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<10, 3>& xrefe);
-template void
-DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<DRT::Element::DiscretizationType::quad4, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(
+    DRT::Node** nodes, CORE::LINALG::Matrix<8, 3>& xrefe);
+template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet4, 3>(
     DRT::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
-template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<DRT::Element::DiscretizationType::tri3,
-    3>(DRT::Node** nodes, CORE::LINALG::Matrix<3, 3>& xrefe);
+template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(
+    DRT::Node** nodes, CORE::LINALG::Matrix<10, 3>& xrefe);
+template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::quad4, 3>(
+    DRT::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
+template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tri3, 3>(
+    DRT::Node** nodes, CORE::LINALG::Matrix<3, 3>& xrefe);
 
-template void
-DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<DRT::Element::DiscretizationType::hex8, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(
     const std::vector<double>&, CORE::LINALG::Matrix<8, 3>& xrefe);
-template void
-DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<DRT::Element::DiscretizationType::tet4, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet4, 3>(
     const std::vector<double>&, CORE::LINALG::Matrix<4, 3>& xrefe);
-template void
-DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<DRT::Element::DiscretizationType::tet10, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::tet10, 3>(
     const std::vector<double>&, CORE::LINALG::Matrix<10, 3>& xrefe);
 
-template void
-DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::DiscretizationType::hex8, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::hex8, 3>(
     const CORE::LINALG::Matrix<8, 3>& xrefe, const CORE::LINALG::Matrix<8, 3>& xdisp,
     CORE::LINALG::Matrix<8, 3>& xcurr);
-template void
-DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::DiscretizationType::tet4, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::tet4, 3>(
     const CORE::LINALG::Matrix<4, 3>& xrefe, const CORE::LINALG::Matrix<4, 3>& xdisp,
     CORE::LINALG::Matrix<4, 3>& xcurr);
-template void
-DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::DiscretizationType::tet10, 3>(
+template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::CellType::tet10, 3>(
     const CORE::LINALG::Matrix<10, 3>& xrefe, const CORE::LINALG::Matrix<10, 3>& xdisp,
     CORE::LINALG::Matrix<10, 3>& xcurr);
 
-template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<DRT::Element::DiscretizationType::tet4>(
+template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<CORE::FE::CellType::tet4>(
     const CORE::LINALG::Matrix<4, 3>& xrefe, const CORE::LINALG::Matrix<3, 4>& derivs,
     CORE::LINALG::Matrix<3, 3>& inverseJacobian);

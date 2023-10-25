@@ -104,14 +104,14 @@ DRT::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
  |                                                             (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DRT::Element::DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }

@@ -25,12 +25,12 @@ namespace CORE::DRT::UTILS
   struct PolynomialSpaceParams
   {
     explicit PolynomialSpaceParams(
-        ::DRT::Element::DiscretizationType distype, unsigned int degree, bool completeSpace)
+        CORE::FE::CellType distype, unsigned int degree, bool completeSpace)
         : distype_(distype), degree_(degree), completeSpace_(completeSpace)
     {
     }
 
-    ::DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
     unsigned int degree_;
     bool completeSpace_;
 
@@ -621,8 +621,8 @@ namespace CORE::DRT::UTILS
   class PolynomialSpace
   {
    public:
-    PolynomialSpace(const ::DRT::Element::DiscretizationType distype, const unsigned int degree,
-        const bool completeSpace)
+    PolynomialSpace(
+        const CORE::FE::CellType distype, const unsigned int degree, const bool completeSpace)
         : polyspace_((CORE::DRT::UTILS::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
                          ? static_cast<CORE::DRT::UTILS::PolynomialSpaceBase<nsd_> *>(
                                new DRT::UTILS::LagrangeBasisTet<nsd_>(degree))
@@ -724,7 +724,7 @@ namespace CORE::DRT::UTILS
    Note: This class must always be synchronized with PolynomialSpace above!
    */
   inline int getBasisSize(
-      const ::DRT::Element::DiscretizationType distype, const int degree, const bool completeSpace)
+      const CORE::FE::CellType distype, const int degree, const bool completeSpace)
   {
     const int dim = CORE::DRT::UTILS::getDimension(distype);
     const int nfaces = CORE::DRT::UTILS::getNumberOfElementFaces(distype);

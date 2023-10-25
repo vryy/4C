@@ -13,6 +13,7 @@
 #define BACI_LIB_ELEMENT_H
 
 
+#include "baci_discretization_fem_general_cell_type.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_parobject.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -84,43 +85,6 @@ namespace DRT
 
     template <typename>
     friend class MESHFREE::MeshfreeBin;
-
-    /*!
-     \brief Element shape type
-    */
-    enum class DiscretizationType
-    {
-      dis_none,    ///< unknown dis type
-      quad4,       ///< 4 noded quadrilateral
-      quad6,       ///< 6 noded quadrilateral (linear in one direction, quadratic in the other)
-      quad8,       ///< 8 noded quadrilateral
-      quad9,       ///< 9 noded quadrilateral
-      tri3,        ///< 3 noded triangle
-      tri6,        ///< 6 noded triangle
-      hex8,        ///< 8 noded hexahedra
-      hex16,       ///< 16 noded hexahedra
-      hex18,       ///< 18 noded hexahedra
-      hex20,       ///< 20 noded hexahedra
-      hex27,       ///< 27 noded hexahedra
-      tet4,        ///< 4 noded tetrahedra
-      tet10,       ///< 10 noded tetrahedra
-      wedge6,      ///< 6 noded wedge
-      wedge15,     ///< 15 noded wedge
-      pyramid5,    ///< 5 noded pyramid
-      line2,       ///< 2 noded line
-      line3,       ///< 3 noded line
-      line4,       ///< 4 noded line
-      line5,       ///< 5 noded line
-      line6,       ///< 6 noded line
-      point1,      ///< 1 noded point
-      nurbs2,      ///< 2 control point first order nurbs line element
-      nurbs3,      ///< 3 control point second order nurbs line element
-      nurbs4,      ///< 4 control point first order nurbs surface element
-      nurbs9,      ///< 9 control point second order nurbs surface element
-      nurbs8,      ///< 8 control point first order nurbs volume element
-      nurbs27,     ///< 27 control point second order nurbs volume element
-      max_distype  ///< end marker. must be the last entry
-    };
 
     //@}
 
@@ -274,7 +238,7 @@ namespace DRT
     /*!
     \brief Get shape type of element
     */
-    virtual DiscretizationType Shape() const = 0;
+    virtual CORE::FE::CellType Shape() const = 0;
 
     /*!
     \brief Return number of nodes to this element
@@ -1519,60 +1483,57 @@ might become invalid after a redistribution of the discretization.
 
   //! @name Type traits for element shapes
   /// @{
-  template <DRT::Element::DiscretizationType distype>
-  using is_tet = std::bool_constant<distype == DRT::Element::DiscretizationType::tet4 ||
-                                    distype == DRT::Element::DiscretizationType::tet10>;
+  template <CORE::FE::CellType distype>
+  using is_tet = std::bool_constant<distype == CORE::FE::CellType::tet4 ||
+                                    distype == CORE::FE::CellType::tet10>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_hex = std::bool_constant<distype == DRT::Element::DiscretizationType::hex8 ||
-                                    distype == DRT::Element::DiscretizationType::hex16 ||
-                                    distype == DRT::Element::DiscretizationType::hex18 ||
-                                    distype == DRT::Element::DiscretizationType::hex20 ||
-                                    distype == DRT::Element::DiscretizationType::hex27>;
+  template <CORE::FE::CellType distype>
+  using is_hex = std::bool_constant<
+      distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex16 ||
+      distype == CORE::FE::CellType::hex18 || distype == CORE::FE::CellType::hex20 ||
+      distype == CORE::FE::CellType::hex27>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_wedge = std::bool_constant<distype == DRT::Element::DiscretizationType::wedge6 ||
-                                      distype == DRT::Element::DiscretizationType::wedge15>;
+  template <CORE::FE::CellType distype>
+  using is_wedge = std::bool_constant<distype == CORE::FE::CellType::wedge6 ||
+                                      distype == CORE::FE::CellType::wedge15>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_pyramid = std::bool_constant<distype == DRT::Element::DiscretizationType::pyramid5>;
+  template <CORE::FE::CellType distype>
+  using is_pyramid = std::bool_constant<distype == CORE::FE::CellType::pyramid5>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_quad = std::bool_constant<distype == DRT::Element::DiscretizationType::quad4 ||
-                                     distype == DRT::Element::DiscretizationType::quad6 ||
-                                     distype == DRT::Element::DiscretizationType::quad8 ||
-                                     distype == DRT::Element::DiscretizationType::quad9>;
+  template <CORE::FE::CellType distype>
+  using is_quad = std::bool_constant<
+      distype == CORE::FE::CellType::quad4 || distype == CORE::FE::CellType::quad6 ||
+      distype == CORE::FE::CellType::quad8 || distype == CORE::FE::CellType::quad9>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_tri = std::bool_constant<distype == DRT::Element::DiscretizationType::tri3 ||
-                                    distype == DRT::Element::DiscretizationType::tri6>;
+  template <CORE::FE::CellType distype>
+  using is_tri = std::bool_constant<distype == CORE::FE::CellType::tri3 ||
+                                    distype == CORE::FE::CellType::tri6>;
 
-  template <DRT::Element::DiscretizationType distype>
-  using is_line = std::bool_constant<distype == DRT::Element::DiscretizationType::line2 ||
-                                     distype == DRT::Element::DiscretizationType::line3 ||
-                                     distype == DRT::Element::DiscretizationType::line4 ||
-                                     distype == DRT::Element::DiscretizationType::line5 ||
-                                     distype == DRT::Element::DiscretizationType::line6>;
+  template <CORE::FE::CellType distype>
+  using is_line = std::bool_constant<
+      distype == CORE::FE::CellType::line2 || distype == CORE::FE::CellType::line3 ||
+      distype == CORE::FE::CellType::line4 || distype == CORE::FE::CellType::line5 ||
+      distype == CORE::FE::CellType::line6>;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_tet_v = is_tet<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_hex_v = is_hex<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_wedge_v = is_wedge<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_pyramid_v = is_pyramid<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_quad_v = is_quad<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_tri_v = is_tri<distype>::value;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr bool is_line_v = is_line<distype>::value;
   /// @}
 
@@ -1592,105 +1553,104 @@ might become invalid after a redistribution of the discretization.
 
   //! @name Compile time lists of discretization types
   ///@{
-  template <DRT::Element::DiscretizationType... distypes>
+  template <CORE::FE::CellType... distypes>
   struct DiscretizationTypeList
   {
-    template <template <DRT::Element::DiscretizationType> typename Base>
+    template <template <CORE::FE::CellType> typename Base>
     using Apply = BaseTypeList<Base<distypes>...>;
   };
 
-  template <template <DRT::Element::DiscretizationType> typename Base,
-      typename DiscretizationTypeList>
+  template <template <CORE::FE::CellType> typename Base, typename DiscretizationTypeList>
   using ApplyToBase = typename DiscretizationTypeList::template Apply<Base>;
   ///@}
 
   /*!
    * \brief translate to string for screen output
    */
-  inline std::string DistypeToString(const DRT::Element::DiscretizationType distype)
+  inline std::string DistypeToString(const CORE::FE::CellType distype)
   {
     std::string s = "";
     switch (distype)
     {
-      case DRT::Element::DiscretizationType::dis_none:
+      case CORE::FE::CellType::dis_none:
         s = "DIS_NONE";
         break;
-      case DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
         s = "QUAD4";
         break;
-      case DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
         s = "QUAD8";
         break;
-      case DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
         s = "QUAD9";
         break;
-      case DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
         s = "TRI3";
         break;
-      case DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
         s = "TRI6";
         break;
-      case DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
         s = "HEX8";
         break;
-      case DRT::Element::DiscretizationType::hex16:
+      case CORE::FE::CellType::hex16:
         s = "HEX16";
         break;
-      case DRT::Element::DiscretizationType::hex18:
+      case CORE::FE::CellType::hex18:
         s = "HEX18";
         break;
-      case DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
         s = "HEX20";
         break;
-      case DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
         s = "HEX27";
         break;
-      case DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
         s = "TET4";
         break;
-      case DRT::Element::DiscretizationType::tet10:
+      case CORE::FE::CellType::tet10:
         s = "TET10";
         break;
-      case DRT::Element::DiscretizationType::wedge6:
+      case CORE::FE::CellType::wedge6:
         s = "WEDGE6";
         break;
-      case DRT::Element::DiscretizationType::wedge15:
+      case CORE::FE::CellType::wedge15:
         s = "WEDGE15";
         break;
-      case DRT::Element::DiscretizationType::pyramid5:
+      case CORE::FE::CellType::pyramid5:
         s = "PYRAMID5";
         break;
-      case DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
         s = "LINE2";
         break;
-      case DRT::Element::DiscretizationType::line3:
+      case CORE::FE::CellType::line3:
         s = "LINE3";
         break;
-      case DRT::Element::DiscretizationType::line4:
+      case CORE::FE::CellType::line4:
         s = "LINE4";
         break;
-      case DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
         s = "POINT1";
         break;
-      case DRT::Element::DiscretizationType::nurbs2:
+      case CORE::FE::CellType::nurbs2:
         s = "NURBS2";
         break;
-      case DRT::Element::DiscretizationType::nurbs3:
+      case CORE::FE::CellType::nurbs3:
         s = "NURBS3";
         break;
-      case DRT::Element::DiscretizationType::nurbs4:
+      case CORE::FE::CellType::nurbs4:
         s = "NURBS4";
         break;
-      case DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
         s = "NURBS9";
         break;
-      case DRT::Element::DiscretizationType::nurbs8:
+      case CORE::FE::CellType::nurbs8:
         s = "NURBS8";
         break;
-      case DRT::Element::DiscretizationType::nurbs27:
+      case CORE::FE::CellType::nurbs27:
         s = "NURBS27";
         break;
-      case DRT::Element::DiscretizationType::max_distype:
+      case CORE::FE::CellType::max_distype:
         s = "MAX_DISTYPE";
         break;
       default:
@@ -1701,10 +1661,10 @@ might become invalid after a redistribution of the discretization.
   }
 
   /// translate shards::key to enum
-  DRT::Element::DiscretizationType ShardsKeyToDisType(const unsigned& key);
+  CORE::FE::CellType ShardsKeyToDisType(const unsigned& key);
 
   /// translate distype string to enum
-  DRT::Element::DiscretizationType StringToDistype(const std::string& name);
+  CORE::FE::CellType StringToDistype(const std::string& name);
 
 
 }  // namespace DRT

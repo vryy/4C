@@ -172,7 +172,7 @@ DRT::ELEMENTS::ThermoBoundaryType& DRT::ELEMENTS::ThermoBoundaryType::Instance()
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
-    : DRT::Element(id, owner), distype_(DRT::Element::DiscretizationType::dis_none)
+    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
   kintype_ = INPAR::STR::kinem_linear;
@@ -186,7 +186,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
 DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
     : DRT::Element(old), kintype_(old.kintype_), distype_(old.distype_), data_(old.data_)
 {
-  if (old.Shape() == DRT::Element::DiscretizationType::nurbs27) SetNurbsElement() = true;
+  if (old.Shape() == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
   return;
 }  // copy-ctor
 
@@ -205,10 +205,7 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 /*----------------------------------------------------------------------*
  | return the shape of a Thermo element (public)             dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
-{
-  return distype_;
-}  // Shape()
+CORE::FE::CellType DRT::ELEMENTS::Thermo::Shape() const { return distype_; }  // Shape()
 
 
 /*----------------------------------------------------------------------*
@@ -252,8 +249,8 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   // kintype_
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
-  if (distype_ == DRT::Element::DiscretizationType::nurbs27) SetNurbsElement() = true;
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  if (distype_ == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 
   std::vector<char> tmp(0);
   ExtractfromPack(position, data, tmp);
@@ -381,29 +378,29 @@ DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
 /*----------------------------------------------------------------------*
  | return shape of this element (public)                     dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      if ((ParentElement()->Shape() == DRT::Element::DiscretizationType::quad8) or
-          (ParentElement()->Shape() == DRT::Element::DiscretizationType::quad9))
-        return DRT::Element::DiscretizationType::line3;
+      if ((ParentElement()->Shape() == CORE::FE::CellType::quad8) or
+          (ParentElement()->Shape() == CORE::FE::CellType::quad9))
+        return CORE::FE::CellType::line3;
       else
-        return DRT::Element::DiscretizationType::tri3;
+        return CORE::FE::CellType::tri3;
     case 4:
-      return DRT::Element::DiscretizationType::quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return DRT::Element::DiscretizationType::tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return DRT::Element::DiscretizationType::quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      if (ParentElement()->Shape() == DRT::Element::DiscretizationType::hex27)
-        return DRT::Element::DiscretizationType::quad9;
-      else if (ParentElement()->Shape() == DRT::Element::DiscretizationType::nurbs27)
-        return DRT::Element::DiscretizationType::nurbs9;
+      if (ParentElement()->Shape() == CORE::FE::CellType::hex27)
+        return CORE::FE::CellType::quad9;
+      else if (ParentElement()->Shape() == CORE::FE::CellType::nurbs27)
+        return CORE::FE::CellType::nurbs9;
       else
       {
         dserror(

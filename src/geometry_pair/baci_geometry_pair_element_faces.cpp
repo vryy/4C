@@ -646,27 +646,27 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   {
     switch (face_element->Shape())
     {
-      case DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad4, line_to_surface_scalar_type<t_hermite, t_quad4>>(
                 face_element, false));
-      case DRT::Element::DiscretizationType::quad8:
+      case CORE::FE::CellType::quad8:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad8, line_to_surface_scalar_type<t_hermite, t_quad8>>(
                 face_element, false));
-      case DRT::Element::DiscretizationType::quad9:
+      case CORE::FE::CellType::quad9:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad9, line_to_surface_scalar_type<t_hermite, t_quad9>>(
                 face_element, false));
-      case DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_tri3, line_to_surface_scalar_type<t_hermite, t_tri3>>(
                 face_element, false));
-      case DRT::Element::DiscretizationType::tri6:
+      case CORE::FE::CellType::tri6:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_tri6, line_to_surface_scalar_type<t_hermite, t_tri6>>(
                 face_element, false));
-      case DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
         return Teuchos::rcp(
             new FaceElementTemplate<t_nurbs9, line_to_surface_scalar_type<t_hermite, t_nurbs9>>(
                 face_element));
@@ -684,24 +684,24 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
         {
           switch (face_element->Shape())
           {
-            case DRT::Element::DiscretizationType::quad4:
+            case CORE::FE::CellType::quad4:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
                   line_to_surface_patch_scalar_type_1st_order>(face_element, true));
-            case DRT::Element::DiscretizationType::quad8:
+            case CORE::FE::CellType::quad8:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad8,
                   line_to_surface_patch_scalar_type_1st_order>(face_element, true));
-            case DRT::Element::DiscretizationType::quad9:
+            case CORE::FE::CellType::quad9:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad9,
                   line_to_surface_patch_scalar_type_1st_order>(face_element, true));
-            case DRT::Element::DiscretizationType::tri3:
+            case CORE::FE::CellType::tri3:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type_1st_order>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::tri6:
+            case CORE::FE::CellType::tri6:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type_1st_order>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::nurbs9:
+            case CORE::FE::CellType::nurbs9:
               return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>>(
                   face_element));
@@ -714,27 +714,27 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
         {
           switch (face_element->Shape())
           {
-            case DRT::Element::DiscretizationType::quad4:
+            case CORE::FE::CellType::quad4:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::quad8:
+            case CORE::FE::CellType::quad8:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::quad9:
+            case CORE::FE::CellType::quad9:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::tri3:
+            case CORE::FE::CellType::tri3:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::tri6:
+            case CORE::FE::CellType::tri6:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
                       face_element, true));
-            case DRT::Element::DiscretizationType::nurbs9:
+            case CORE::FE::CellType::nurbs9:
               return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
             default:
@@ -750,15 +750,15 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     {
       switch (face_element->Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>(
               face_element));
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad8,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>(
               face_element));
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad9,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
               face_element));

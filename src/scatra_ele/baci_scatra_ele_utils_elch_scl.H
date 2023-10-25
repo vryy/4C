@@ -24,7 +24,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchScl : public ScaTraEleUtilsElchDiffCond<distype>
     {
       //! abbreviations

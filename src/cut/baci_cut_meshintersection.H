@@ -52,19 +52,18 @@ namespace CORE::GEO
 
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype,
           const double* lsv = nullptr);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
-      SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          ::DRT::Element::DiscretizationType distype, int mi = 0);
+      SideHandle* AddCutSide(
+          int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi = 0);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          int mi = 0);
+          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut
       void BuildSelfCutTree();

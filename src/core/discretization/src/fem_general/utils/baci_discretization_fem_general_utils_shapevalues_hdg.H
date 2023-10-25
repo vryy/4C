@@ -92,7 +92,7 @@ namespace CORE::DRT::UTILS
     \author kronbichler
     \date 05/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValues
   {
    public:
@@ -182,7 +182,7 @@ namespace CORE::DRT::UTILS
     \author schoeder
     \date 06/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesFace
   {
    public:
@@ -292,7 +292,7 @@ namespace CORE::DRT::UTILS
 
    Author: schoeder 08/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesFaceCache
   {
    public:
@@ -314,7 +314,7 @@ namespace CORE::DRT::UTILS
 
    Author: kronbichler 09/14
   */
-  template <::DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class ShapeValuesInteriorOnFaceCache
   {
    public:

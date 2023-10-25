@@ -18,19 +18,19 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcElch;
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcElchDiffCond;
     class ScaTraEleDiffManagerElchDiffCond;
     class ScaTraEleDiffManagerSTIThermo;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchDiffCond;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcSTIDiffCond : public ScaTraEleCalc<distype>, public ScaTraEleSTIElch<distype>
     {
      public:

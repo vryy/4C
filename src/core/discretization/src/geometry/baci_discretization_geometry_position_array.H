@@ -57,7 +57,7 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  template <::DRT::Element::DiscretizationType distype, class M>
+  template <CORE::FE::CellType distype, class M>
   void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
@@ -89,7 +89,7 @@ namespace CORE::GEO
    * \return Array with 1, 2 or 3 dimensional position of all element nodes in the coordinate system
    * of the nodes
    */
-  template <::DRT::Element::DiscretizationType distype, int dim, class M>
+  template <CORE::FE::CellType distype, int dim, class M>
   void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");

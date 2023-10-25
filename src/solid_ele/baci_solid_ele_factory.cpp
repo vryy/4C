@@ -18,7 +18,7 @@
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   DRT::ELEMENTS::SolidCalcVariant CreateFBarSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -27,8 +27,7 @@ namespace
       dserror("FBAR only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
 
-    if constexpr (distype == DRT::Element::DiscretizationType::hex8 ||
-                  distype == DRT::Element::DiscretizationType::pyramid5)
+    if constexpr (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::pyramid5)
     {
       return DRT::ELEMENTS::SolidEleCalcFbar<distype>();
     }
@@ -37,7 +36,7 @@ namespace
     return {};
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   DRT::ELEMENTS::SolidCalcVariant CreateMulfSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -55,36 +54,36 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
 {
   switch (ele.Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex8>(
+    case CORE::FE::CellType::hex8:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex8>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex27>(
+    case CORE::FE::CellType::hex27:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex27>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::hex20:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex20>(
+    case CORE::FE::CellType::hex20:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex20>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::hex18:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex18>(
+    case CORE::FE::CellType::hex18:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::hex18>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::pyramid5:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::pyramid5>(
+    case CORE::FE::CellType::pyramid5:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::pyramid5>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::wedge6:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::wedge6>(
+    case CORE::FE::CellType::wedge6:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::wedge6>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::tet4:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::tet4>(
+    case CORE::FE::CellType::tet4:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::tet4>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::DiscretizationType::tet10:
-      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::tet10>(
+    case CORE::FE::CellType::tet10:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::tet10>(
           ele, eletech, kinem_type, eastype);
       break;
     default:
@@ -94,7 +93,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   return {};
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
     INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
@@ -111,7 +110,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
       switch (*eletech.begin())
       {
         case INPAR::STR::EleTech::eas:
-          if constexpr (distype != DRT::Element::DiscretizationType::hex8)
+          if constexpr (distype != CORE::FE::CellType::hex8)
           {
             dserror("EAS is only implemented for hex8 elements.");
           }

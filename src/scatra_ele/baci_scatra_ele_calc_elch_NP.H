@@ -21,7 +21,7 @@ namespace DRT
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchNP;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcElchNP : public ScaTraEleCalcElch<distype>
     {
      public:

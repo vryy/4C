@@ -26,7 +26,7 @@ namespace DRT
   {
     /// Electromagnetic diffusion element implementation
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagDiffEleCalc : public ElemagEleInterface
     {
      public:

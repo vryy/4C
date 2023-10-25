@@ -111,7 +111,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner)
-    : DRT::Element(id, owner), distype_(DRT::Element::DiscretizationType::dis_none)
+    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
 {
   return;
 }
@@ -139,7 +139,7 @@ DRT::Element* DRT::ELEMENTS::Lubrication::Clone() const
  |  Return the shape of a Lubrication element                     (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Lubrication::Shape() const { return distype_; }
+CORE::FE::CellType DRT::ELEMENTS::Lubrication::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -308,7 +308,7 @@ DRT::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::LubricationBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::LubricationBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }

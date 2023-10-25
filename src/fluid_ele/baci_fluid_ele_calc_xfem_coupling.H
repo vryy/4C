@@ -50,7 +50,7 @@ namespace DRT
        * without assembling any coupling terms (e.g. in two-sided xfluid-fluid coupling
        * for gauss-point projection or error calculation in case of a given analytical solution).
        */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class SlaveElementInterface
       {
        public:
@@ -59,10 +59,10 @@ namespace DRT
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
-            DRT::Element::DiscretizationType slave_distype,  ///< coupling slave discretization type
-            std::string& disp_statename,  ///< name of displacement state at current step
-            std::string& vel_statename,   ///< name of velocity state at current step
-            std::string& veln_statename   ///< name of velocity state at previous step
+            CORE::FE::CellType slave_distype,  ///< coupling slave discretization type
+            std::string& disp_statename,       ///< name of displacement state at current step
+            std::string& vel_statename,        ///< name of velocity state at current step
+            std::string& veln_statename        ///< name of velocity state at previous step
         );
 
         //! create a pure coupling slave element representation
@@ -255,7 +255,7 @@ namespace DRT
       };
 
       //! factory class for coupling with Nitsche's method
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class NitscheInterface : virtual public SlaveElementInterface<distype>
       {
        public:
@@ -400,7 +400,7 @@ namespace DRT
       };
 
       //! factory class for coupling with mixed/hybrid stress-based Lagrange multipliers
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       class HybridLMInterface : virtual public SlaveElementInterface<distype>
       {
        public:

@@ -26,7 +26,7 @@
 /*-----------------------------------------------------------------------------*
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(double& dens_hat,
     double& temp_hat, double& dens_temp_hat, double& phi2_hat, double& phiexpression_hat,
     Teuchos::RCP<std::vector<double>> vel_hat, Teuchos::RCP<std::vector<double>> densvel_hat,
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
 /*-----------------------------------------------------------------------------*
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Element* ele,
     Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, const double tempnp)
 {
@@ -209,7 +209,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
 /*----------------------------------------------------------------------------------*
  | calculate turbulent Prandtl number for dynamic Smagorinsky model  rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk_and_MkMk(
     Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
     Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
 /*----------------------------------------------------------------------------------*
  | calculate vreman constant                                             krank 08/13|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
     Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
     Teuchos::RCP<Epetra_Vector>& col_filtered_phi2,
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
 /*----------------------------------------------------------------------------------*
  | calculate mean turbulent Prandtl number                           rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirection(
     Teuchos::ParameterList& turbmodelparams, int& nlayer)
 {
@@ -625,7 +625,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirec
 /*----------------------------------------------------------------------*
   |  calculate all-scale art. subgrid diffusivity (private)     vg 10/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
     double& visc, const double vol, const int k, const double densnp)
 {
@@ -775,7 +775,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
 /*----------------------------------------------------------------------*
   |  calculate fine-scale art. subgrid diffusivity (private)    vg 10/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(double& sgdiff,
     CORE::LINALG::SerialDenseVector& subgrdiff, DRT::Element* ele, const double vol, const int k,
     const double densnp, const double diffus, const CORE::LINALG::Matrix<nsd_, 1> convelint)
@@ -874,7 +874,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(doub
  | calculation of coefficients B and D for multifractal subgrid-scales  |
  |                                                      rasthofer 12/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgridScales(
     CORE::LINALG::Matrix<nsd_, 1>& B_mfs,  ///< coefficient for fine-scale velocity (will be filled)
     double& D_mfs,                         ///< coefficient for fine-scale scalar (will be filled)
@@ -1167,7 +1167,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
  | calculate reference length for multifractal subgrid-scales           |
  |                                                      rasthofer 09/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     const double vol, const CORE::LINALG::Matrix<nsd_, 1> convelint)
 {
@@ -1326,7 +1326,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
 /*----------------------------------------------------------------------*
  | output of model parameters                           rasthofer 09/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::StoreModelParametersForOutput(
     const DRT::Element* ele, const bool isowned, Teuchos::ParameterList& turbulencelist,
     const int nlayer)
@@ -1399,7 +1399,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::StoreModelParametersForOutp
  | additional output for turbulent channel flow         rasthofer 11/12 |
  | dissipation introduced by stabilization and turbulence models        |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     Teuchos::ParameterList& params,       //!< parameter list
     DRT::Element* ele,                    //!< pointer to element

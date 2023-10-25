@@ -348,33 +348,33 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 
   // get center and normal of leaf1-element
   const DRT::Element* ele1 = Discret().gElement(ele1gid);
-  const DRT::Element::DiscretizationType dtele1 = ele1->Shape();
+  const CORE::FE::CellType dtele1 = ele1->Shape();
   switch (dtele1)
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::tri3>(
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
           ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::tri6>(
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri6>(
           ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       xicele1.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::quad4>(
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
           ele1, xicele1, ele1normal);
     }
     break;
@@ -384,27 +384,27 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
   }
   // get center of master element
   const DRT::Element* ele2 = Discret().gElement(ele2gid);
-  const DRT::Element::DiscretizationType dtele2 = ele2->Shape();
+  const CORE::FE::CellType dtele2 = ele2->Shape();
   switch (dtele2)
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       xicele2.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele2, xicele2, ele2coords);
     }
     break;

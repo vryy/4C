@@ -30,7 +30,7 @@ namespace DRT
      * @tparam distype Element shape type
      * @tparam probdim Number of space dimensions of the problem
      */
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcNoPhysics : public ScaTraEleCalc<distype, probdim>
     {
      public:

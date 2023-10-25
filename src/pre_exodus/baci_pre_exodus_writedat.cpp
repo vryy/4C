@@ -568,7 +568,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << DRT::DistypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

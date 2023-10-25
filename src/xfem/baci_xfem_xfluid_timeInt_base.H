@@ -487,7 +487,7 @@ namespace XFEM
 
 
     //! check if edge between x1 and x2 cuts the side
-    template <DRT::Element::DiscretizationType sidetype>
+    template <CORE::FE::CellType sidetype>
     bool callSideEdgeIntersectionT(CORE::GEO::CUT::SideHandle* sh,  /// side handle
         int sid,                                                    /// side id
         CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
@@ -539,7 +539,7 @@ namespace XFEM
     //! coordinates
     void callXToXiCoords(
         CORE::LINALG::SerialDenseMatrix& nodecoords,  /// node coordinates of element
-        DRT::Element::DiscretizationType DISTYPE,     /// discretization type
+        CORE::FE::CellType DISTYPE,                   /// discretization type
         CORE::LINALG::Matrix<3, 1>& x,                /// global coordinates of element
         CORE::LINALG::Matrix<3, 1>& xi,               /// determined local coordinates w.r.t ele
         bool& pointInDomain                           /// lies point in element ?
@@ -547,7 +547,7 @@ namespace XFEM
 
     //! compute local element coordinates and check whether the according point is inside the
     //! element
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     void XToXiCoords(CORE::LINALG::SerialDenseMatrix& xyz,  /// node coordinates of element
         CORE::LINALG::Matrix<3, 1>& x,                      /// global coordinates of point
         CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
@@ -555,7 +555,7 @@ namespace XFEM
     ) const;
 
     //! data at an arbitrary point lying in an element
-    template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
+    template <const int numnode, CORE::FE::CellType DISTYPE>
     void evalShapeAndDeriv(DRT::Element* element,    /// pointer to element
         CORE::LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
         CORE::LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
@@ -679,7 +679,7 @@ namespace XFEM
     ) const;
 
     //! interpolate velocity and derivatives for a point in an element
-    template <DRT::Element::DiscretizationType DISTYPE>
+    template <CORE::FE::CellType DISTYPE>
     void getGPValuesT(DRT::Element* ele,            ///< pointer to element
         CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
         std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
@@ -819,7 +819,7 @@ namespace XFEM
     );
 
     //! project point from in normal direction onto corresponding side
-    template <DRT::Element::DiscretizationType side_distype, const int numdof>
+    template <CORE::FE::CellType side_distype, const int numdof>
     bool ProjectOnSide(CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
         const std::vector<int>& lm,                                 ///< local map
         const std::string state,                                    ///< state n or np
@@ -831,7 +831,7 @@ namespace XFEM
     );
 
     //! project point in normal direction onto corresponding line
-    template <DRT::Element::DiscretizationType line_distype, const int numdof>
+    template <CORE::FE::CellType line_distype, const int numdof>
     bool ProjectOnLine(CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
         const std::vector<int>& lm,                                 ///< local map
         const std::string state,                                    ///< state n or np
@@ -853,7 +853,7 @@ namespace XFEM
     );
 
     //! check if local coordinates are within limits
-    template <DRT::Element::DiscretizationType elementtype>
+    template <CORE::FE::CellType elementtype>
     bool WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const double TOL);
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
@@ -901,7 +901,7 @@ namespace XFEM
     );
 
     //! compute the normal vector on side at time t^n
-    template <DRT::Element::DiscretizationType side_distype, const int numdof>
+    template <CORE::FE::CellType side_distype, const int numdof>
     void getNormalSide_tn(CORE::LINALG::Matrix<3, 1>& normal,  ///< normal vector w.r.t side
         CORE::LINALG::SerialDenseMatrix& side_xyze,            ///< side's node coordinates
         const std::vector<int>& lm,                            ///< local map
@@ -915,7 +915,7 @@ namespace XFEM
         double& xi_line  ///< local coordinates of projected point w.r.t line
     );
 
-    template <DRT::Element::DiscretizationType line_distype, const int numdof>
+    template <CORE::FE::CellType line_distype, const int numdof>
     void get_projxn_Line(CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
         const std::vector<int>& lm,                                   ///< local map
         CORE::LINALG::Matrix<3, 1>& proj_x_n,                         ///< projected point on line
@@ -923,7 +923,7 @@ namespace XFEM
     );
 
     //! add side's or line's interface displacements and set current node coordinates
-    template <DRT::Element::DiscretizationType distype, const int numdof>
+    template <CORE::FE::CellType distype, const int numdof>
     void addeidisp(CORE::LINALG::SerialDenseMatrix& xyze,  ///< node coordinates of side or line
         const DRT::Discretization& cutdis,                 ///< cut discretization
         const std::string state,                           ///< state

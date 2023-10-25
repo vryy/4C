@@ -32,17 +32,17 @@
 
 namespace DRT::ELEMENTS::DETAIL
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_nodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dof_per_ele = num_nodes<distype>* num_dim<distype>;
 }  // namespace DRT::ELEMENTS::DETAIL
 
@@ -140,26 +140,26 @@ namespace DRT::ELEMENTS
    */
   /// @{
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   constexpr auto GetGaussRuleMassMatrix()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   constexpr auto GetGaussRuleStiffnessMatrix()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
 
   template <>
-  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet10>()
+  constexpr auto GetGaussRuleStiffnessMatrix<CORE::FE::CellType::tet10>()
   {
     return CORE::DRT::UTILS::GaussRule3D::tet_4point;
   }
 
   template <>
-  constexpr auto GetGaussRuleStiffnessMatrix<DRT::Element::DiscretizationType::tet4>()
+  constexpr auto GetGaussRuleStiffnessMatrix<CORE::FE::CellType::tet4>()
   {
     return CORE::DRT::UTILS::GaussRule3D::tet_1point;
   }
@@ -168,7 +168,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Create a Gauss integration interface from a given Gauss rule type
    */
-  template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
+  template <CORE::FE::CellType distype, typename GaussRuleType>
   CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
     constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -195,7 +195,7 @@ namespace DRT::ELEMENTS
    *
    * @tparam distype
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct NodalCoordinates
   {
     /*!
@@ -218,7 +218,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> : Nodal
    * displacements of the element
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> GetNodalDisplacements(
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -249,7 +249,7 @@ namespace DRT::ELEMENTS
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @return NodalCoordinates<distype> : Nodal coordinates from previous iteration
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinatesOld(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -283,7 +283,7 @@ namespace DRT::ELEMENTS
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @return NodalCoordinates<distype> : Nodal coordinates
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -314,7 +314,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<num_dim<distype>, 1> : Coordinates of the Gauss Point in the
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinate(
       const CORE::DRT::UTILS::GaussIntegration& intpoints, const int gp)
   {
@@ -333,8 +333,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
@@ -352,8 +351,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
@@ -371,8 +369,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
@@ -390,8 +387,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
@@ -407,7 +403,7 @@ namespace DRT::ELEMENTS
    *
    * @tparam distype
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct ShapeFunctionsAndDerivatives
   {
     CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, 1> shapefunctions_;
@@ -423,7 +419,7 @@ namespace DRT::ELEMENTS
    * @return ShapeFunctionsAndDerivatives<distype> : An object holding the shape functions and the
    * first derivatives evaluated at the respective point in the parameter space
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   ShapeFunctionsAndDerivatives<distype> EvaluateShapeFunctionsAndDerivs(
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi)
   {
@@ -434,7 +430,7 @@ namespace DRT::ELEMENTS
     return shapefcns;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct JacobianMapping
   {
     /// Determinant of the jacobian
@@ -462,7 +458,7 @@ namespace DRT::ELEMENTS
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ, integration
    * factor)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   JacobianMapping<distype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<distype>& shapefcns,
       const NodalCoordinates<distype>& nodal_coordinates)
@@ -486,7 +482,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return double : Jacobian determinant
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
       const NodalCoordinates<distype>& nodal_coordinates)
   {
@@ -503,8 +499,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return JacobianMapping<distype> : jacobian mapping at the element centroid
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   JacobianMapping<distype> EvaluateJacobianMappingCentroid(
       const NodalCoordinates<distype>& nodal_coordinates)
   {
@@ -531,7 +526,7 @@ namespace DRT::ELEMENTS
    * @param shape_functions_point (in) : Shape functions evaluated at the specific point
    * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> : point's reference coordinates
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinate(
       const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>&
           nodal_coordinates_reference,
@@ -551,7 +546,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> : Element centroid's coordinates in
    * reference configuration
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinateCentroid(
       const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>&
           nodal_coordinates_reference)
@@ -568,7 +563,7 @@ namespace DRT::ELEMENTS
     return centroid_coordinates_reference;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct SpatialMaterialMapping
   {
     double determinant_deformation_gradient_;
@@ -590,7 +585,7 @@ namespace DRT::ELEMENTS
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   SpatialMaterialMapping<distype> EvaluateSpatialMaterialMapping(
       const JacobianMapping<distype>& jacobian_mapping,
       const NodalCoordinates<distype>& nodal_coordinates, const double scale_defgrd = 1.0,
@@ -627,8 +622,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> EvaluateGreenLagrangeStrain(
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& cauchygreen)
   {
@@ -654,8 +648,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> : Right
    * Cauchy-Green deformation tensor
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> EvaluateCauchyGreen(
       const SpatialMaterialMapping<distype>& spatial_material_mapping)
   {
@@ -674,8 +667,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return double : Determinant of the deformation gradient at the centroid
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   double EvaluateDeformationGradientDeterminantCentroid(
       const NodalCoordinates<distype>& nodal_coordinates)
   {
@@ -701,8 +693,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<num_str<distype>, num_dim<distype> * num_nodes<distype>> :
    * B-Operator
    */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_str<distype>,
       DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>
   EvaluateStrainGradient(const JacobianMapping<distype>& jacobian_mapping,
@@ -755,7 +746,7 @@ namespace DRT::ELEMENTS
     return Bop;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct Stress
   {
     /// Second Piola-Kirchhoff stress tensor in stress-like voigt notation
@@ -783,7 +774,7 @@ namespace DRT::ELEMENTS
    * @return Stress<distype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
    * linearization w.r.t. Green-Lagrange strain tensor
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   Stress<distype> EvaluateMaterialStress(MAT::So3Material& material,
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strain,
@@ -812,7 +803,7 @@ namespace DRT::ELEMENTS
    * @return Stress<distype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
    * linearization w.r.t. Green-Lagrange strain tensor
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   Stress<distype> EvaluateMaterialStressGEMM(MAT::So3Material& material,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains_old,
@@ -839,7 +830,7 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddInternalForceVector(const CORE::LINALG::Matrix<DETAIL::num_str<distype>,
                                   DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>& Bop,
       const Stress<distype>& stress, const double integration_fac,
@@ -858,7 +849,7 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddElasticStiffnessMatrix(const CORE::LINALG::Matrix<DETAIL::num_str<distype>,
                                      DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>& Bop,
       const Stress<distype>& stress, const double integration_fac,
@@ -883,7 +874,7 @@ namespace DRT::ELEMENTS
    * detJ_w and the GEMM coefficients alphaf and xi
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddElasticStiffnessMatrixGEMM(
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>,
           DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>& Bop,
@@ -912,7 +903,7 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddGeometricStiffnessMatrix(
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_nodes<distype>>& B_L,
       const Stress<distype>& stress, const double integration_fac,
@@ -954,7 +945,7 @@ namespace DRT::ELEMENTS
    * @param density (in) : density at the Gauss point
    * @param mass (in/out) : mass matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddMassMatrix(const ShapeFunctionsAndDerivatives<distype>& shapefunctions,
       const double integration_factor, const double density,
       CORE::LINALG::Matrix<DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>,
@@ -1000,7 +991,7 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : Matrix the strains are assembled into
    * @param row (in) : Matrix row
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AssembleStrainTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strain,
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
@@ -1044,7 +1035,7 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : Matrix the stresses are assembled into
    * @param row (in) : Matrix row
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AssembleStressTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
       const Stress<distype>& stress, const INPAR::STR::StressType stress_type,
@@ -1103,7 +1094,7 @@ namespace DRT::ELEMENTS
    * jacobian_mapping, double integration_factor, int gp) that will be called for each integration
    * point.
    */
-  template <DRT::Element::DiscretizationType distype, typename GaussPointEvaluator>
+  template <CORE::FE::CellType distype, typename GaussPointEvaluator>
   inline void ForEachGaussPoint(const NodalCoordinates<distype>& nodal_coordinates,
       const CORE::DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
@@ -1133,7 +1124,7 @@ namespace DRT::ELEMENTS
    * @param shape_functions_gp (in) : Shape functions evaluated at the Gauss point
    * @param params (in/out) : ParameterList the quantities are added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateGPCoordinatesAndAddToParameterList(
       const NodalCoordinates<distype>& nodal_coordinates,
       const ShapeFunctionsAndDerivatives<distype>& shape_functions_gp,
@@ -1152,7 +1143,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @param params (in/out) : ParameterList the quantities are added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateCentroidCoordinatesAndAddToParameterList(
       const NodalCoordinates<distype>& nodal_coordinates, Teuchos::ParameterList& params)
   {
@@ -1198,7 +1189,7 @@ namespace DRT::ELEMENTS
    * @param gp_data_output_manager (in/out) : Gauss point data output manager
    *                                          (only for new structure time integration)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline void CollectAndAssembleGaussPointDataOutput(
       const CORE::DRT::UTILS::GaussIntegration& stiffness_matrix_integration,
       const MAT::So3Material& solid_material, const DRT::Element& ele,
@@ -1269,7 +1260,7 @@ namespace DRT::ELEMENTS
    * @param ele (in) : Reference to the element, possibly having nodal fibers
    * @param params (in/out) : ParameterList the interpolated fibers are added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline void InterpolateFibersToGaussPointsAndAddToParameterList(
       const CORE::DRT::UTILS::GaussIntegration& stiffness_matrix_integration,
       const DRT::Element& ele, Teuchos::ParameterList& params)

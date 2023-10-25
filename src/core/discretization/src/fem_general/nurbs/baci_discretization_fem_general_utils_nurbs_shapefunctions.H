@@ -95,19 +95,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class V, class WG>
   bool nurbs_get_1D_funct(V& nurbs_shape_funct, const double& u,
       const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 0;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs2:
+      case CORE::FE::CellType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs3:
+      case CORE::FE::CellType::nurbs3:
       {
         degree = 2;
 
@@ -376,19 +376,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class VD, class WG>
   bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const double& u,
       const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 0;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs2:
+      case CORE::FE::CellType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs3:
+      case CORE::FE::CellType::nurbs3:
       {
         degree = 2;
 
@@ -622,19 +622,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
-      const WG& weights, const ::DRT::Element::DiscretizationType& distype)
+      const WG& weights, const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs2:
+      case CORE::FE::CellType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs3:
+      case CORE::FE::CellType::nurbs3:
       {
         degree = 2;
 
@@ -840,19 +840,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class UV, class WG, typename scalar_type = double>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs4:
+      case CORE::FE::CellType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
       {
         degree = 2;
 
@@ -1166,19 +1166,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class MD, class UV, class WG, typename scalar_type = double>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs4:
+      case CORE::FE::CellType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
       {
         degree = 2;
 
@@ -1581,19 +1581,19 @@ namespace CORE::DRT::NURBS::UTILS
   bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs4:
+      case CORE::FE::CellType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
       {
         degree = 2;
 
@@ -2165,19 +2165,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class V, class UV, class WG>
   bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs8:
+      case CORE::FE::CellType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         degree = 2;
 
@@ -2571,19 +2571,19 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class UV, class MD, class WG>
   bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs8:
+      case CORE::FE::CellType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         degree = 2;
 
@@ -3176,19 +3176,19 @@ namespace CORE::DRT::NURBS::UTILS
   bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     int degree = 1;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::nurbs8:
+      case CORE::FE::CellType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         degree = 2;
 
@@ -3814,7 +3814,7 @@ namespace CORE::DRT::NURBS::UTILS
   bool nurbs_get_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))
     {
@@ -3843,7 +3843,7 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class MD, class UV, class WG>
   bool nurbs_get_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))
     {
@@ -3873,7 +3873,7 @@ namespace CORE::DRT::NURBS::UTILS
   template <class VF, class UV, class WG>
   bool nurbs_get_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const ::DRT::Element::DiscretizationType& distype)
+      const CORE::FE::CellType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))
     {

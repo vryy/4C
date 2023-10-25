@@ -111,7 +111,7 @@ namespace DRT
       \author schott
       \date 04/12
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidIntFaceImpl : public FluidIntFaceImplInterface
     {
      public:

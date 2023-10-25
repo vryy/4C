@@ -18,7 +18,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcRefConcReac : public ScaTraEleCalcAdvReac<distype>
     {
      private:

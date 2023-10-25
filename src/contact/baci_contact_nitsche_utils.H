@@ -66,7 +66,7 @@ namespace MORTAR
     virtual double* Kde(int col) = 0;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataTsi
   {
    public:
@@ -90,7 +90,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dt_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataPoro
   {
    public:
@@ -115,7 +115,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dp_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataSsi
   {
    public:
@@ -139,7 +139,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_ds_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheDataSsiElch
   {
    public:
@@ -163,7 +163,7 @@ namespace MORTAR
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_de_;
   };
 
-  template <DRT::Element::DiscretizationType parent_distype>
+  template <CORE::FE::CellType parent_distype>
   class MortarElementNitscheData : public MortarElementNitscheContainer
   {
    public:

@@ -32,8 +32,8 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegrator::CoIntegrator(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegrator::CoIntegrator(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : imortar_(params),
       Comm_(comm),
       dim_(imortar_.get<int>("DIMENSION")),
@@ -104,8 +104,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
   DRT::Node** mynodes_test = sele.Nodes();
   if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
 
-  if (sele.Shape() == DRT::Element::DiscretizationType::line2 ||
-      sele.Shape() == DRT::Element::DiscretizationType::nurbs2)
+  if (sele.Shape() == CORE::FE::CellType::line2 || sele.Shape() == CORE::FE::CellType::nurbs2)
   {
     for (int s_test = 0; s_test < 2; ++s_test)
     {
@@ -146,8 +145,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
       if (proj_test == false) boundary_ele = true;
     }
   }
-  else if (sele.Shape() == DRT::Element::DiscretizationType::line3 ||
-           sele.Shape() == DRT::Element::DiscretizationType::nurbs3)
+  else if (sele.Shape() == CORE::FE::CellType::line3 || sele.Shape() == CORE::FE::CellType::nurbs3)
   {
     for (int s_test = 0; s_test < 3; ++s_test)
     {
@@ -202,7 +200,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletype)
+void CONTACT::CoIntegrator::InitializeGP(CORE::FE::CellType eletype)
 {
   //**********************************************************************
   // Create integration points according to eletype!
@@ -244,10 +242,10 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
   //**********************************************************************
   switch (eletype)
   {
-    case DRT::Element::DiscretizationType::line2:
-    case DRT::Element::DiscretizationType::line3:
-    case DRT::Element::DiscretizationType::nurbs2:
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::nurbs2:
+    case CORE::FE::CellType::nurbs3:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule1D mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
@@ -351,8 +349,8 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
@@ -465,12 +463,12 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
       }
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
-    case DRT::Element::DiscretizationType::nurbs4:
-    case DRT::Element::DiscretizationType::nurbs8:
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs9:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
@@ -618,7 +616,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
     dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
-  if (sele.Shape() == DRT::Element::DiscretizationType::line3 &&
+  if (sele.Shape() == CORE::FE::CellType::line3 &&
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
@@ -660,8 +658,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
   // this is the case for dual linear Lagrange multipliers on line3 elements
   bool linlm = false;
   bool dualquad = false;
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin &&
-      sele.Shape() == DRT::Element::DiscretizationType::line3)
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
@@ -673,8 +670,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
       2 * nrow, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape() == DRT::Element::DiscretizationType::line3 ||
-          sele.Shape() == DRT::Element::DiscretizationType::nurbs3 ||
+      (sele.Shape() == CORE::FE::CellType::line3 || sele.Shape() == CORE::FE::CellType::nurbs3 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
 
@@ -876,11 +872,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
   DRT::Node** mynodes_test = sele.Nodes();
   if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
 
-  DRT::Element::DiscretizationType dt_s = sele.Shape();
+  CORE::FE::CellType dt_s = sele.Shape();
 
-  if (dt_s ==
-      DRT::Element::DiscretizationType::quad4)  //|| dt_s==DRT::Element::DiscretizationType::quad8
-                                                //|| dt_s==DRT::Element::DiscretizationType::quad9)
+  if (dt_s == CORE::FE::CellType::quad4)  //|| dt_s==CORE::FE::CellType::quad8
+                                          //|| dt_s==CORE::FE::CellType::quad9)
   {
     for (int s_test = 0; s_test < 4; ++s_test)
     {
@@ -911,11 +906,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
         double mxi_test[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
-        DRT::Element::DiscretizationType dt = meles[bs_test]->Shape();
+        CORE::FE::CellType dt = meles[bs_test]->Shape();
 
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0)
@@ -944,8 +938,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             proj_test = true;
           }
         }
-        else if (dt == DRT::Element::DiscretizationType::tri3 ||
-                 dt == DRT::Element::DiscretizationType::tri6)
+        else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
         {
           if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -981,9 +974,8 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
       if (proj_test == false) boundary_ele = true;
     }
   }
-  else if (dt_s == DRT::Element::DiscretizationType::
-                       quad9)  //|| dt_s==DRT::Element::DiscretizationType::quad8 ||
-                               // dt_s==DRT::Element::DiscretizationType::quad9)
+  else if (dt_s == CORE::FE::CellType::quad9)  //|| dt_s==CORE::FE::CellType::quad8 ||
+                                               // dt_s==CORE::FE::CellType::quad9)
   {
     for (int s_test = 0; s_test < 9; ++s_test)
     {
@@ -1039,11 +1031,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
         double mxi_test[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
-        DRT::Element::DiscretizationType dt = meles[bs_test]->Shape();
+        CORE::FE::CellType dt = meles[bs_test]->Shape();
 
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0)
@@ -1072,8 +1063,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             proj_test = true;
           }
         }
-        else if (dt == DRT::Element::DiscretizationType::tri3 ||
-                 dt == DRT::Element::DiscretizationType::tri6)
+        else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
         {
           if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1109,10 +1099,9 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
       if (proj_test == false) boundary_ele = true;
     }
   }
-  else if (dt_s == DRT::Element::DiscretizationType::
-                       quad8)  //||
-                               // dt_s==DRT::Element::DiscretizationType::quad8
-                               //|| dt_s==DRT::Element::DiscretizationType::quad9)
+  else if (dt_s == CORE::FE::CellType::quad8)  //||
+                                               // dt_s==CORE::FE::CellType::quad8
+                                               //|| dt_s==CORE::FE::CellType::quad9)
   {
     for (int s_test = 0; s_test < 8; ++s_test)
     {
@@ -1163,11 +1152,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
         double mxi_test[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
-        DRT::Element::DiscretizationType dt = meles[bs_test]->Shape();
+        CORE::FE::CellType dt = meles[bs_test]->Shape();
 
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0)
@@ -1196,8 +1184,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             proj_test = true;
           }
         }
-        else if (dt == DRT::Element::DiscretizationType::tri3 ||
-                 dt == DRT::Element::DiscretizationType::tri6)
+        else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
         {
           if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1234,7 +1221,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
     }
   }
   // TRI-ELE
-  else if (dt_s == DRT::Element::DiscretizationType::tri3)
+  else if (dt_s == CORE::FE::CellType::tri3)
   {
     for (int s_test = 0; s_test < 3; ++s_test)
     {
@@ -1260,11 +1247,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
         double mxi_test[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
-        DRT::Element::DiscretizationType dt = meles[bs_test]->Shape();
+        CORE::FE::CellType dt = meles[bs_test]->Shape();
 
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0)  // Falls Position auf Element
@@ -1293,8 +1279,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             proj_test = true;
           }
         }
-        else if (dt == DRT::Element::DiscretizationType::tri3 ||
-                 dt == DRT::Element::DiscretizationType::tri6)
+        else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
         {
           if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)  // Falls Position auf Element
@@ -1331,7 +1316,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
       if (proj_test == false) boundary_ele = true;
     }
   }
-  else if (dt_s == DRT::Element::DiscretizationType::tri6)
+  else if (dt_s == CORE::FE::CellType::tri6)
   {
     for (int s_test = 0; s_test < 6; ++s_test)
     {
@@ -1372,11 +1357,10 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
         double mxi_test[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele, *meles[bs_test])
             ->ProjectGaussPoint3D(sele, sxi_test, *meles[bs_test], mxi_test, alpha_test);
-        DRT::Element::DiscretizationType dt = meles[bs_test]->Shape();
+        CORE::FE::CellType dt = meles[bs_test]->Shape();
 
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9)
         {
           if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0)  // Falls Position auf Element
@@ -1405,8 +1389,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             proj_test = true;
           }
         }
-        else if (dt == DRT::Element::DiscretizationType::tri3 ||
-                 dt == DRT::Element::DiscretizationType::tri6)
+        else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
         {
           if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
               mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)  // Falls Position auf Element
@@ -1478,7 +1461,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 
   // Petrov-Galerkin approach for LM not yet implemented
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin &&
-      sele.Shape() != DRT::Element::DiscretizationType::nurbs9)
+      sele.Shape() != CORE::FE::CellType::nurbs9)
     dserror("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   // check for problem dimension
@@ -1511,7 +1494,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
       nrow * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape() != DRT::Element::DiscretizationType::tri3 ||
+      (sele.Shape() != CORE::FE::CellType::tri3 ||
           sele.MoData().DerivDualShape() != Teuchos::null) &&
       LagMultQuad() != INPAR::MORTAR::lagmult_const)
     sele.DerivShapeDual(dualmap);
@@ -1521,8 +1504,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (LagMultQuad() == INPAR::MORTAR::lagmult_lin) &&
-      (sele.Shape() == DRT::Element::DiscretizationType::quad8 ||
-          sele.Shape() == DRT::Element::DiscretizationType::tri6))
+      (sele.Shape() == CORE::FE::CellType::quad8 || sele.Shape() == CORE::FE::CellType::tri6))
     linlm = true;
 
   //********************************************************************
@@ -1536,8 +1518,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   //************************************************************************
   // Boundary Segmentation check -- HasProj()-check
   //************************************************************************
-  if (sele.Shape() != DRT::Element::DiscretizationType::nurbs4 and
-      sele.Shape() != DRT::Element::DiscretizationType::nurbs9)
+  if (sele.Shape() != CORE::FE::CellType::nurbs4 and sele.Shape() != CORE::FE::CellType::nurbs9)
     *boundary_ele = BoundarySegmCheck3D(sele, meles);
 
   int linsize = 0;
@@ -1597,7 +1578,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
       //**********************************************************************
       for (int nummaster = 0; nummaster < msize; ++nummaster)
       {
-        DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
+        CORE::FE::CellType dt = meles[nummaster]->Shape();
 
         int nmnode = meles[nummaster]->NumNode();
         CORE::LINALG::SerialDenseVector mval(nmnode);
@@ -1611,10 +1592,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
         // check GP projection
         const double tol = 0.00;
         is_on_mele = true;
-        if (dt == DRT::Element::DiscretizationType::quad4 ||
-            dt == DRT::Element::DiscretizationType::quad8 ||
-            dt == DRT::Element::DiscretizationType::quad9 ||
-            dt == DRT::Element::DiscretizationType::nurbs9)
+        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+            dt == CORE::FE::CellType::quad9 || dt == CORE::FE::CellType::nurbs9)
         {
           if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol ||
               mxi[1] > 1.0 + tol)
@@ -1745,8 +1724,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
   if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
+  CORE::FE::CellType sdt = sele.Shape();
+  CORE::FE::CellType mdt = mele.Shape();
 
   // check input data
   if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
@@ -1806,15 +1785,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
       (nrow + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape() != DRT::Element::DiscretizationType::tri3 ||
-          sele.MoData().DerivDualShape() != Teuchos::null))
+      (sele.Shape() != CORE::FE::CellType::tri3 || sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (cell->Shape() != DRT::Element::DiscretizationType::tri3)
+  if (cell->Shape() != CORE::FE::CellType::tri3)
     dserror("only tri3 integration cells at the moment. See comment in the code");
 
   double jac = cell->Jacobian();
@@ -1849,9 +1827,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
 
     // check GP projection (SLAVE)
     double tol = 0.01;
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -1874,9 +1851,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -1982,8 +1958,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
   if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
+  CORE::FE::CellType sdt = sele.Shape();
+  CORE::FE::CellType mdt = mele.Shape();
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -2018,7 +1994,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       (nrow + ncolL) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (lele.Shape() != DRT::Element::DiscretizationType::line2 ||
+      (lele.Shape() != CORE::FE::CellType::line2 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
 
@@ -2036,8 +2012,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (cell->Shape() != DRT::Element::DiscretizationType::line2)
-    dserror("only line2 integration cells for LTS");
+  if (cell->Shape() != CORE::FE::CellType::line2) dserror("only line2 integration cells for LTS");
 
   double jac = cell->Jacobian();
 
@@ -2077,9 +2052,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
     // check GP projection (SLAVE)
     double tol = 0.01;
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -2102,9 +2076,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -2732,8 +2705,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
   if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
+  CORE::FE::CellType sdt = sele.Shape();
+  CORE::FE::CellType mdt = mele.Shape();
 
   // check input data
   //  if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -2770,7 +2743,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       (nrowL + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrowL, nrowL));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (lsele.Shape() != DRT::Element::DiscretizationType::line2 ||
+      (lsele.Shape() != CORE::FE::CellType::line2 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
 
@@ -2789,8 +2762,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (cell->Shape() != DRT::Element::DiscretizationType::line2)
-    dserror("only line2 integration cells for LTS");
+  if (cell->Shape() != CORE::FE::CellType::line2) dserror("only line2 integration cells for LTS");
 
   const double jac = cell->Jacobian();
 
@@ -2847,9 +2819,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     const double sminedge = sele.MinEdgeSize();
     const double mminedge = mele.MinEdgeSize();
     const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -2872,9 +2843,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -3765,19 +3735,19 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
   // Petrov-Galerkin approach for LM not yet implemented
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin &&
-      sele.Shape() != DRT::Element::DiscretizationType::nurbs9)
+      sele.Shape() != CORE::FE::CellType::nurbs9)
     dserror("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   // check for problem dimension
   if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of slave and master IntElement
-  DRT::Element::DiscretizationType sdt = sintele.Shape();
-  DRT::Element::DiscretizationType mdt = mintele.Shape();
+  CORE::FE::CellType sdt = sintele.Shape();
+  CORE::FE::CellType mdt = mintele.Shape();
 
   // discretization type of slave and master Element
-  DRT::Element::DiscretizationType psdt = sele.Shape();
-  DRT::Element::DiscretizationType pmdt = mele.Shape();
+  CORE::FE::CellType psdt = sele.Shape();
+  CORE::FE::CellType pmdt = mele.Shape();
 
   // check input data
   if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
@@ -3848,7 +3818,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
       (nrow + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape() != DRT::Element::DiscretizationType::tri3 ||
+      (sele.Shape() != CORE::FE::CellType::tri3 ||
           sele.MoData().DerivDualShape() != Teuchos::null) &&
       LagMultQuad() != INPAR::MORTAR::lagmult_const)
   {
@@ -3874,8 +3844,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin) &&
-      (sele.Shape() == DRT::Element::DiscretizationType::quad8 ||
-          sele.Shape() == DRT::Element::DiscretizationType::tri6))
+      (sele.Shape() == CORE::FE::CellType::quad8 || sele.Shape() == CORE::FE::CellType::tri6))
   {
     if (lmtype == INPAR::MORTAR::lagmult_quad)
       dualquad3d = true;
@@ -3895,7 +3864,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (cell->Shape() != DRT::Element::DiscretizationType::tri3)
+  if (cell->Shape() != CORE::FE::CellType::tri3)
     dserror("only tri3 integration cells at the moment. See comment in the code");
 
   double jac = cell->Jacobian();
@@ -3930,9 +3899,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
     // check GP projection (SLAVE)
     const double tol = 0.01;
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -3957,9 +3925,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -3997,10 +3964,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
     // mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
 
     // check GP projection (SLAVE)
-    if (psdt == DRT::Element::DiscretizationType::quad4 ||
-        psdt == DRT::Element::DiscretizationType::quad8 ||
-        psdt == DRT::Element::DiscretizationType::quad9 ||
-        psdt == DRT::Element::DiscretizationType::nurbs9)
+    if (psdt == CORE::FE::CellType::quad4 || psdt == CORE::FE::CellType::quad8 ||
+        psdt == CORE::FE::CellType::quad9 || psdt == CORE::FE::CellType::nurbs9)
     {
       if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol ||
           psxi[1] > 1.0 + tol)
@@ -4026,10 +3991,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
     }
 
     // check GP projection (MASTER)
-    if (pmdt == DRT::Element::DiscretizationType::quad4 ||
-        pmdt == DRT::Element::DiscretizationType::quad8 ||
-        pmdt == DRT::Element::DiscretizationType::quad9 ||
-        pmdt == DRT::Element::DiscretizationType::nurbs9)
+    if (pmdt == CORE::FE::CellType::quad4 || pmdt == CORE::FE::CellType::quad8 ||
+        pmdt == CORE::FE::CellType::quad9 || pmdt == CORE::FE::CellType::nurbs9)
     {
       if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol ||
           pmxi[1] > 1.0 + tol)
@@ -4255,7 +4218,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
     dserror("IntegrateDerivEle2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
-  if (sele.Shape() == DRT::Element::DiscretizationType::line3 &&
+  if (sele.Shape() == CORE::FE::CellType::line3 &&
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
@@ -4312,9 +4275,9 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
       nrow * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape() == DRT::Element::DiscretizationType::line3 ||
+      (sele.Shape() == CORE::FE::CellType::line3 ||
           sele.MoData().DerivDualShape() != Teuchos::null ||
-          sele.Shape() == DRT::Element::DiscretizationType::nurbs3))
+          sele.Shape() == CORE::FE::CellType::nurbs3))
     sele.DerivShapeDual(dualmap);
 
   // decide whether boundary modification has to be considered or not
@@ -4332,8 +4295,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   // this is the case for dual linear Lagrange multipliers on line3 elements
   bool linlm = false;
   bool dualquad = false;
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin &&
-      sele.Shape() == DRT::Element::DiscretizationType::line3)
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
@@ -4537,8 +4499,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   bool duallin = false;
   CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       nrow * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((sele.Shape() != DRT::Element::DiscretizationType::tri3 and
-          sele.Shape() != DRT::Element::DiscretizationType::line2) ||
+  if ((sele.Shape() != CORE::FE::CellType::tri3 and sele.Shape() != CORE::FE::CellType::line2) ||
       sele.MoData().DerivDualShape() != Teuchos::null)
   {
     duallin = true;
@@ -5993,8 +5954,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 
       // decide whether linear LM are used for quadratic FE here
       bool linlm = false;
-      if (LagMultQuad() == INPAR::MORTAR::lagmult_lin &&
-          sele.Shape() == DRT::Element::DiscretizationType::line3)
+      if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
       {
         bound = false;  // crosspoints and linear LM NOT at the same time!!!!
         linlm = true;
@@ -12896,16 +12856,14 @@ double CONTACT::CoIntegrator::DetDeformationGradient(
     MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin)
 {
   double J;
-  DRT::Element::DiscretizationType distype = sele.ParentElement()->Shape();
+  CORE::FE::CellType distype = sele.ParentElement()->Shape();
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-      J = TDetDeformationGradient<DRT::Element::DiscretizationType::hex8, 3>(
-          sele, wgt, gpcoord, JLin);
+    case CORE::FE::CellType::hex8:
+      J = TDetDeformationGradient<CORE::FE::CellType::hex8, 3>(sele, wgt, gpcoord, JLin);
       break;
-    case DRT::Element::DiscretizationType::quad4:
-      J = TDetDeformationGradient<DRT::Element::DiscretizationType::quad4, 2>(
-          sele, wgt, gpcoord, JLin);
+    case CORE::FE::CellType::quad4:
+      J = TDetDeformationGradient<CORE::FE::CellType::quad4, 2>(sele, wgt, gpcoord, JLin);
       break;
     default:
       dserror("DetDeformationGradient3D: Parent Element Type not templated yet, just add it here!");
@@ -12919,7 +12877,7 @@ double CONTACT::CoIntegrator::DetDeformationGradient(
  |  Templated Calculate Determinant of the Deformation Gradient at GP  ager 10/14|
  |  modified by h.Willmann 2015                                                  |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
+template <CORE::FE::CellType parentdistype, int dim>
 double CONTACT::CoIntegrator::TDetDeformationGradient(
     MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin)
 {

@@ -514,7 +514,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
     CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
-  const DRT::Element::DiscretizationType distype1 = Element1()->Shape();
+  const CORE::FE::CellType distype1 = Element1()->Shape();
 
   if (numnodalvalues == 1)
   {
@@ -529,7 +529,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::DiscretizationType::line2;
+    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
 
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {

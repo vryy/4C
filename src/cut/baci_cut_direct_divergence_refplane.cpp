@@ -20,7 +20,7 @@ coordinate system
  *-----------------------------------------------------------------------------------*/
 std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane()
 {
-  if (elem1_->Shape() != ::DRT::Element::DiscretizationType::hex8)
+  if (elem1_->Shape() != CORE::FE::CellType::hex8)
   {
     dserror("Currently can handle only hexagonal family, not %d\n", elem1_->Shape());
   }

@@ -33,195 +33,170 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
   switch (sele.Shape())
   {
     // 2D surface elements
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-              DRT::Element::DiscretizationType::quad4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+              CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-              DRT::Element::DiscretizationType::quad8>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+              CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-              DRT::Element::DiscretizationType::quad9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+              CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-              DRT::Element::DiscretizationType::tri3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+              CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-              DRT::Element::DiscretizationType::tri6>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad4,
+              CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-              DRT::Element::DiscretizationType::quad4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+              CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-              DRT::Element::DiscretizationType::quad8>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+              CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-              DRT::Element::DiscretizationType::quad9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+              CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-              DRT::Element::DiscretizationType::tri3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+              CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-              DRT::Element::DiscretizationType::tri6>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad8,
+              CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-              DRT::Element::DiscretizationType::quad4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+              CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-              DRT::Element::DiscretizationType::quad8>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+              CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-              DRT::Element::DiscretizationType::quad9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+              CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-              DRT::Element::DiscretizationType::tri3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+              CORE::FE::CellType::tri3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-              DRT::Element::DiscretizationType::tri6>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::quad9,
+              CORE::FE::CellType::tri6>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-              DRT::Element::DiscretizationType::quad4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+              CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-              DRT::Element::DiscretizationType::quad8>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+              CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-              DRT::Element::DiscretizationType::quad9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri3,
+              CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-              DRT::Element::DiscretizationType::tri3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>::Instance(
+              CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-              DRT::Element::DiscretizationType::tri6>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri6>::Instance(
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-              DRT::Element::DiscretizationType::quad4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+              CORE::FE::CellType::quad4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-              DRT::Element::DiscretizationType::quad8>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+              CORE::FE::CellType::quad8>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-              DRT::Element::DiscretizationType::quad9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri6,
+              CORE::FE::CellType::quad9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-              DRT::Element::DiscretizationType::tri3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri3>::Instance(
+              CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-              DRT::Element::DiscretizationType::tri6>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri6>::Instance(
+              CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -229,42 +204,38 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       break;
     }
       // 1D surface elements
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::line2,
-              DRT::Element::DiscretizationType::line2>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::line2,
+              CORE::FE::CellType::line2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::line2,
-              DRT::Element::DiscretizationType::line3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::line2,
+              CORE::FE::CellType::line3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::line3,
-              DRT::Element::DiscretizationType::line2>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::line3,
+              CORE::FE::CellType::line2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::line3,
-              DRT::Element::DiscretizationType::line3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::line3,
+              CORE::FE::CellType::line3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -276,63 +247,57 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       //                     NURBS
       //==================================================
       // 1D surface elements
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::nurbs2:
+        case CORE::FE::CellType::nurbs2:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs2,
-              DRT::Element::DiscretizationType::nurbs2>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs2,
+              CORE::FE::CellType::nurbs2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs2,
-              DRT::Element::DiscretizationType::nurbs3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs2,
+              CORE::FE::CellType::nurbs3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::nurbs2:
+        case CORE::FE::CellType::nurbs2:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs3,
-              DRT::Element::DiscretizationType::nurbs2>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs3,
+              CORE::FE::CellType::nurbs2>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::nurbs3:
+        case CORE::FE::CellType::nurbs3:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs3,
-              DRT::Element::DiscretizationType::nurbs3>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs3,
+              CORE::FE::CellType::nurbs3>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs9,
-              DRT::Element::DiscretizationType::nurbs9>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs9,
+              CORE::FE::CellType::nurbs9>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
-        case DRT::Element::DiscretizationType::nurbs4:
+        case CORE::FE::CellType::nurbs4:
         {
-          return MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs9,
-              DRT::Element::DiscretizationType::nurbs4>::
-              Instance(CORE::UTILS::SingletonAction::create, params);
+          return MortarIntegratorCalc<CORE::FE::CellType::nurbs9,
+              CORE::FE::CellType::nurbs4>::Instance(CORE::UTILS::SingletonAction::create, params);
         }
         default:
           dserror("Element combination not allowed!");
@@ -350,7 +315,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
     const Teuchos::ParameterList& params)
     : imortar_(params),
@@ -360,7 +325,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
   InitializeGP();
 }
 
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>*
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
     CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
@@ -379,7 +344,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 {
   // get numgp (for element-based integration)
@@ -390,13 +355,13 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
 
   // if we use segment-based integration, the shape of the cells has to be considered!
-  DRT::Element::DiscretizationType intshape;
+  CORE::FE::CellType intshape;
   if (integrationtype == INPAR::MORTAR::inttype_segments)
   {
     if (ndim_ == 2)
-      intshape = DRT::Element::DiscretizationType::line2;
+      intshape = CORE::FE::CellType::line2;
     else if (ndim_ == 3)
-      intshape = DRT::Element::DiscretizationType::tri3;
+      intshape = CORE::FE::CellType::tri3;
     else
       dserror("wrong dimension!");
   }
@@ -408,10 +373,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
   //**********************************************************************
   switch (intshape)
   {
-    case DRT::Element::DiscretizationType::line2:
-    case DRT::Element::DiscretizationType::line3:
-    case DRT::Element::DiscretizationType::nurbs2:
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::nurbs2:
+    case CORE::FE::CellType::nurbs3:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule1D mygaussrule = CORE::DRT::UTILS::GaussRule1D::line_5point;
@@ -510,8 +475,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
@@ -622,12 +587,12 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
       }
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
-    case DRT::Element::DiscretizationType::nurbs4:
-    case DRT::Element::DiscretizationType::nurbs8:
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs9:
     {
       // set default value for segment-based version first
       CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_25point;
@@ -742,7 +707,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
  | Integration over the entire Slave-Element: no mapping sxi->eta                       |
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
     const Epetra_Comm& comm)
@@ -777,8 +742,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   // decide whether linear LM are used for quadratic FE here
   bool linlm = false;
   bool dualquad = false;
-  if (lmquadtype_ == INPAR::MORTAR::lagmult_lin &&
-      sele.Shape() == DRT::Element::DiscretizationType::line3)
+  if (lmquadtype_ == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
@@ -868,7 +832,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
     double& mxia, double& mxib, const Epetra_Comm& comm)
@@ -945,8 +909,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // decide whether linear LM are used for quadratic FE here
   bool linlm = false;
   bool dualquad = false;
-  if (lmtype == INPAR::MORTAR::lagmult_lin &&
-      sele.Shape() == DRT::Element::DiscretizationType::line3)
+  if (lmtype == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
@@ -1016,7 +979,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, CORE::LINALG::Matrix<ns_, 1>& lmval,
     CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
@@ -1148,7 +1111,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
@@ -1289,7 +1252,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
  |  element coordinates given by mxia and mxib                          |
  |  Output is an LINALG::SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::MortarElement& sele,
     double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib)
@@ -1417,7 +1380,7 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
 /*----------------------------------------------------------------------*
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
     const Epetra_Comm& comm)
@@ -1430,7 +1393,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   if (ndim_ != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
-  DRT::Element::DiscretizationType dt = meles[0]->Shape();
+  CORE::FE::CellType dt = meles[0]->Shape();
 
   // check input data
   for (int test = 0; test < (int)meles.size(); ++test)
@@ -1496,11 +1459,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
 
       // check GP projection
       double tol = 0.00;
-      if (dt == DRT::Element::DiscretizationType::quad4 ||
-          dt == DRT::Element::DiscretizationType::quad8 ||
-          dt == DRT::Element::DiscretizationType::quad9 ||
-          dt == DRT::Element::DiscretizationType::nurbs8 ||
-          dt == DRT::Element::DiscretizationType::nurbs9)
+      if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
+          dt == CORE::FE::CellType::quad9 || dt == CORE::FE::CellType::nurbs8 ||
+          dt == CORE::FE::CellType::nurbs9)
       {
         if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
         {
@@ -1547,7 +1508,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
  |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
     double* auxn, const Epetra_Comm& comm)
@@ -1560,8 +1521,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   if (ndim_ != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
+  CORE::FE::CellType sdt = sele.Shape();
+  CORE::FE::CellType mdt = mele.Shape();
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -1641,9 +1602,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
 
     // check GP projection (SLAVE)
     double tol = 0.01;
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -1666,9 +1626,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -1725,7 +1684,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
  |  and stores it in mseg and dseg respectively.                        |
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQuad(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
     MORTAR::IntElement& mintele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
@@ -1741,15 +1700,15 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   // check for problem dimension
   if (ndim_ != 3) dserror("3D integration method called for non-3D problem");
 
-  if (cell->Shape() != DRT::Element::DiscretizationType::tri3) dserror("wrong cell shape!");
+  if (cell->Shape() != CORE::FE::CellType::tri3) dserror("wrong cell shape!");
 
   // discretization type of slave and master IntElement
-  DRT::Element::DiscretizationType sdt = sintele.Shape();
-  DRT::Element::DiscretizationType mdt = mintele.Shape();
+  CORE::FE::CellType sdt = sintele.Shape();
+  CORE::FE::CellType mdt = mintele.Shape();
 
   // discretization type of slave and master Element
-  DRT::Element::DiscretizationType psdt = sele.Shape();
-  DRT::Element::DiscretizationType pmdt = mele.Shape();
+  CORE::FE::CellType psdt = sele.Shape();
+  CORE::FE::CellType pmdt = mele.Shape();
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -1792,9 +1751,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   bool dualquad3d = false;
   if ((shapefcn_ == INPAR::MORTAR::shape_dual) &&
       (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin) &&
-      (sele.Shape() == DRT::Element::DiscretizationType::quad9 ||
-          sele.Shape() == DRT::Element::DiscretizationType::quad8 ||
-          sele.Shape() == DRT::Element::DiscretizationType::tri6))
+      (sele.Shape() == CORE::FE::CellType::quad9 || sele.Shape() == CORE::FE::CellType::quad8 ||
+          sele.Shape() == CORE::FE::CellType::tri6))
   {
     dualquad3d = true;
   }
@@ -1826,9 +1784,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 
     // check GP projection (SLAVE)
     double tol = 0.01;
-    if (sdt == DRT::Element::DiscretizationType::quad4 ||
-        sdt == DRT::Element::DiscretizationType::quad8 ||
-        sdt == DRT::Element::DiscretizationType::quad9)
+    if (sdt == CORE::FE::CellType::quad4 || sdt == CORE::FE::CellType::quad8 ||
+        sdt == CORE::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -1853,9 +1810,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     }
 
     // check GP projection (MASTER)
-    if (mdt == DRT::Element::DiscretizationType::quad4 ||
-        mdt == DRT::Element::DiscretizationType::quad8 ||
-        mdt == DRT::Element::DiscretizationType::quad9)
+    if (mdt == CORE::FE::CellType::quad4 || mdt == CORE::FE::CellType::quad8 ||
+        mdt == CORE::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -1893,10 +1849,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     // mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
 
     // check GP projection (SLAVE)
-    if (psdt == DRT::Element::DiscretizationType::quad4 ||
-        psdt == DRT::Element::DiscretizationType::quad8 ||
-        psdt == DRT::Element::DiscretizationType::quad9 ||
-        psdt == DRT::Element::DiscretizationType::nurbs9)
+    if (psdt == CORE::FE::CellType::quad4 || psdt == CORE::FE::CellType::quad8 ||
+        psdt == CORE::FE::CellType::quad9 || psdt == CORE::FE::CellType::nurbs9)
     {
       if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol ||
           psxi[1] > 1.0 + tol)
@@ -1922,10 +1876,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     }
 
     // check GP projection (MASTER)
-    if (pmdt == DRT::Element::DiscretizationType::quad4 ||
-        pmdt == DRT::Element::DiscretizationType::quad8 ||
-        pmdt == DRT::Element::DiscretizationType::quad9 ||
-        pmdt == DRT::Element::DiscretizationType::nurbs9)
+    if (pmdt == CORE::FE::CellType::quad4 || pmdt == CORE::FE::CellType::quad8 ||
+        pmdt == CORE::FE::CellType::quad9 || pmdt == CORE::FE::CellType::nurbs9)
     {
       if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol ||
           pmxi[1] > 1.0 + tol)
@@ -1991,88 +1943,55 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 
 
 // line2 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::line2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::line3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line2>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line2, CORE::FE::CellType::line3>;
 
 // line3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::line3,
-    DRT::Element::DiscretizationType::line2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::line3,
-    DRT::Element::DiscretizationType::line3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line2>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::line3, CORE::FE::CellType::line3>;
 
 // quad4 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri6>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad8>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad9>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri6>;
 
 // quad8 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::Element::DiscretizationType::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::Element::DiscretizationType::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::Element::DiscretizationType::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::Element::DiscretizationType::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::Element::DiscretizationType::tri6>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad4>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad8>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::quad9>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad8, CORE::FE::CellType::tri6>;
 
 // quad9 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::Element::DiscretizationType::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::Element::DiscretizationType::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::Element::DiscretizationType::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::Element::DiscretizationType::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::Element::DiscretizationType::tri6>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad4>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad8>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::quad9>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::quad9, CORE::FE::CellType::tri6>;
 
 // tri3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri6>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad8>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad9>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::tri6>;
 
 // tri6 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::Element::DiscretizationType::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::Element::DiscretizationType::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::Element::DiscretizationType::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::Element::DiscretizationType::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::Element::DiscretizationType::tri6>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad4>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad8>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::quad9>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::tri6, CORE::FE::CellType::tri6>;
 
 //==================================================
 //                     NURBS
 //==================================================
 // nurbs2 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>;
 
 // nurbs3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>;

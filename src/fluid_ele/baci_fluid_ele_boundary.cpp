@@ -34,9 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create(const int id
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
-    : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
-      numdofpernode_(-1)
+    : DRT::FaceElement(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
   SetParentMasterElement(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -58,9 +56,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
-    : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
-      numdofpernode_(-1)
+    : DRT::FaceElement(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -121,7 +117,7 @@ void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   FaceElement::Unpack(basedata);
   // distype
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // numdofpernode_
   numdofpernode_ = ExtractInt(position, data);
 

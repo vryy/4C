@@ -22,14 +22,14 @@
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::FluidEleCalcHDGWeakComp() : usescompletepoly_(true)
 {
 }
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
     const DRT::ELEMENTS::Fluid* ele)
 {
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -83,7 +83,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
     const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm)
 {
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
     const DRT::Element& ele, DRT::Discretization& discretization)
 {
@@ -205,7 +205,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMEN
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -317,7 +317,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -428,7 +428,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -641,7 +641,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -827,7 +827,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int funcnum,
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, CORE::LINALG::Matrix<msd_, 1>& L,
     double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const
@@ -849,7 +849,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(const int funcnum,
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r,
     CORE::LINALG::Matrix<nsd_, 1>& w) const
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(co
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -882,7 +882,7 @@ DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance(CORE::UTILS::Singleton
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
     const DRT::ELEMENTS::Fluid* ele, const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
     CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
@@ -976,7 +976,7 @@ DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll()
 {
   // initialize unknowns
@@ -1029,7 +1029,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMaterialMatrix(
     const Teuchos::RCP<MAT::Material>& mat, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseMatrix& DL, CORE::LINALG::SerialDenseMatrix& Dw)
@@ -1087,7 +1087,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteriorResidual(
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const std::vector<double>& alevel)
@@ -1287,7 +1287,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteriorMatrices(
     const Teuchos::RCP<MAT::Material>& mat)
 {
@@ -1460,7 +1460,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceResidual(const int f,
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, const std::vector<double>& alevel)
@@ -1649,7 +1649,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMatrices(
     const int f, const Teuchos::RCP<MAT::Material>& mat)
 {
@@ -1809,7 +1809,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalResidual()
 {
   // fill vector
@@ -1826,7 +1826,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalR
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalResidual(
     DRT::ELEMENTS::Fluid& ele)
 {
@@ -1852,7 +1852,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalLocalMatrix()
 {
   // fill matrix
@@ -1895,7 +1895,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalL
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalGlobalMatrix(
     DRT::ELEMENTS::Fluid& ele)
 {
@@ -1946,7 +1946,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalG
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalLocalMatrix(
     DRT::ELEMENTS::Fluid& ele)
 {
@@ -1983,7 +1983,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalGlobalMatrix(
     DRT::ELEMENTS::Fluid& ele)
 {
@@ -2021,7 +2021,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLocalMatrix()
 {
   KlocallocalInv = Klocallocal;
@@ -2032,7 +2032,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLo
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocalResidual(
     CORE::LINALG::SerialDenseVector& eleVec)
 {
@@ -2051,7 +2051,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocalMatrix(
     CORE::LINALG::SerialDenseMatrix& eleMat)
 {
@@ -2070,7 +2070,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::PrintMatricesAndResiduals(
     DRT::ELEMENTS::Fluid& ele, CORE::LINALG::SerialDenseVector& eleVec,
     CORE::LINALG::SerialDenseMatrix& eleMat)
@@ -2158,18 +2158,18 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::PrintMatrices
 
 
 // explicit instantiation of template classes
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs27>;

@@ -162,10 +162,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   else if (p_master_handle != nullptr and p_slave_handle != nullptr)
   {
     // linear elements
-    if (p_master->Shape() == DRT::Element::DiscretizationType::hex8 or
-        p_master->Shape() == DRT::Element::DiscretizationType::tet4 or
-        p_master->Shape() == DRT::Element::DiscretizationType::wedge6 or
-        p_master->Shape() == DRT::Element::DiscretizationType::pyramid5)
+    if (p_master->Shape() == CORE::FE::CellType::hex8 or
+        p_master->Shape() == CORE::FE::CellType::tet4 or
+        p_master->Shape() == CORE::FE::CellType::wedge6 or
+        p_master->Shape() == CORE::FE::CellType::pyramid5)
     {
       CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
@@ -314,10 +314,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
       }  // loop facets
     }    // if linear elements
-    else if (p_master->Shape() == DRT::Element::DiscretizationType::hex20 or
-             p_master->Shape() == DRT::Element::DiscretizationType::hex27 or
-             p_master->Shape() == DRT::Element::DiscretizationType::tet10 or
-             p_master->Shape() == DRT::Element::DiscretizationType::wedge15)
+    else if (p_master->Shape() == CORE::FE::CellType::hex20 or
+             p_master->Shape() == CORE::FE::CellType::hex27 or
+             p_master->Shape() == CORE::FE::CellType::tet10 or
+             p_master->Shape() == CORE::FE::CellType::wedge15)
     {
       CORE::GEO::CUT::SideHandle* side =
           GetFace(faceele, wizard);  // the side of the quadratic element
@@ -463,14 +463,14 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
            (p_master_handle == nullptr and p_slave_handle != nullptr))
   {
     // linear elements
-    if (p_master->Shape() == DRT::Element::DiscretizationType::hex8 or
-        p_master->Shape() == DRT::Element::DiscretizationType::tet4 or
-        p_master->Shape() == DRT::Element::DiscretizationType::wedge6 or
-        p_master->Shape() == DRT::Element::DiscretizationType::pyramid5 or
-        p_master->Shape() == DRT::Element::DiscretizationType::hex20 or
-        p_master->Shape() == DRT::Element::DiscretizationType::hex27 or
-        p_master->Shape() == DRT::Element::DiscretizationType::tet10 or
-        p_master->Shape() == DRT::Element::DiscretizationType::wedge15)
+    if (p_master->Shape() == CORE::FE::CellType::hex8 or
+        p_master->Shape() == CORE::FE::CellType::tet4 or
+        p_master->Shape() == CORE::FE::CellType::wedge6 or
+        p_master->Shape() == CORE::FE::CellType::pyramid5 or
+        p_master->Shape() == CORE::FE::CellType::hex20 or
+        p_master->Shape() == CORE::FE::CellType::hex27 or
+        p_master->Shape() == CORE::FE::CellType::tet10 or
+        p_master->Shape() == CORE::FE::CellType::wedge15)
     {
       CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
 
@@ -478,10 +478,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       std::vector<CORE::GEO::CUT::Facet*> facets;
       side->Facets(facets);
 
-      if (p_master->Shape() == DRT::Element::DiscretizationType::hex8 or
-          p_master->Shape() == DRT::Element::DiscretizationType::tet4 or
-          p_master->Shape() == DRT::Element::DiscretizationType::wedge6 or
-          p_master->Shape() == DRT::Element::DiscretizationType::pyramid5)
+      if (p_master->Shape() == CORE::FE::CellType::hex8 or
+          p_master->Shape() == CORE::FE::CellType::tet4 or
+          p_master->Shape() == CORE::FE::CellType::wedge6 or
+          p_master->Shape() == CORE::FE::CellType::pyramid5)
       {
         if (facets.size() != 1) dserror("there has to be 1 facet equal to the side");
       }

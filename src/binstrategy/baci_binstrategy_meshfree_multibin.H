@@ -301,10 +301,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override
-      {
-        return DRT::Element::DiscretizationType::dis_none;
-      };
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; };
 
      private:
       //! \brief element ids contained in this bin

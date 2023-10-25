@@ -91,10 +91,10 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override
+      CORE::FE::CellType Shape() const override
       {
         dserror("ConstraintElement3 has no shape!");
-        return DRT::Element::DiscretizationType::dis_none;
+        return CORE::FE::CellType::dis_none;
       };
 
       /*!

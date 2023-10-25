@@ -1509,20 +1509,20 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
 
     if (ndim == 2)
     {
-      if (actele->Shape() == DRT::Element::DiscretizationType::quad4)
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::quad4>(
+      if (actele->Shape() == CORE::FE::CellType::quad4)
+        WEAR::UTILS::av<CORE::FE::CellType::quad4>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::DiscretizationType::quad8)
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::quad8>(
+      else if (actele->Shape() == CORE::FE::CellType::quad8)
+        WEAR::UTILS::av<CORE::FE::CellType::quad8>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::DiscretizationType::quad9)
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::quad9>(
+      else if (actele->Shape() == CORE::FE::CellType::quad9)
+        WEAR::UTILS::av<CORE::FE::CellType::quad9>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::DiscretizationType::tri3)
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::tri3>(
+      else if (actele->Shape() == CORE::FE::CellType::tri3)
+        WEAR::UTILS::av<CORE::FE::CellType::tri3>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->Shape() == DRT::Element::DiscretizationType::tri6)
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::tri6>(
+      else if (actele->Shape() == CORE::FE::CellType::tri6)
+        WEAR::UTILS::av<CORE::FE::CellType::tri6>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
         dserror("shape function not supported!");
@@ -1550,19 +1550,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
     else
     {
       if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::hex8>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex8>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::hex20>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex20>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::hex27>(
+        WEAR::UTILS::av<CORE::FE::CellType::hex27>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::tet4>(
+        WEAR::UTILS::av<CORE::FE::CellType::tet4>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-        WEAR::UTILS::av<DRT::Element::DiscretizationType::tet10>(
+        WEAR::UTILS::av<CORE::FE::CellType::tet10>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
         dserror("element type not supported!");
@@ -1605,20 +1605,20 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
 
   if (ndim == 2)
   {
-    if (actele->Shape() == DRT::Element::DiscretizationType::quad4)
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::quad4>(
+    if (actele->Shape() == CORE::FE::CellType::quad4)
+      WEAR::UTILS::av<CORE::FE::CellType::quad4>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::DiscretizationType::quad8)
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::quad8>(
+    else if (actele->Shape() == CORE::FE::CellType::quad8)
+      WEAR::UTILS::av<CORE::FE::CellType::quad8>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::DiscretizationType::quad9)
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::quad9>(
+    else if (actele->Shape() == CORE::FE::CellType::quad9)
+      WEAR::UTILS::av<CORE::FE::CellType::quad9>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::DiscretizationType::tri3)
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::tri3>(
+    else if (actele->Shape() == CORE::FE::CellType::tri3)
+      WEAR::UTILS::av<CORE::FE::CellType::tri3>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->Shape() == DRT::Element::DiscretizationType::tri6)
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::tri6>(
+    else if (actele->Shape() == CORE::FE::CellType::tri6)
+      WEAR::UTILS::av<CORE::FE::CellType::tri6>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
       dserror("shape function not supported!");
@@ -1626,19 +1626,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
   else
   {
     if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::hex8>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex8>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::hex20>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex20>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::hex27>(
+      WEAR::UTILS::av<CORE::FE::CellType::hex27>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::tet4>(
+      WEAR::UTILS::av<CORE::FE::CellType::tet4>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-      WEAR::UTILS::av<DRT::Element::DiscretizationType::tet10>(
+      WEAR::UTILS::av<CORE::FE::CellType::tet10>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
       dserror("element type not supported!");

@@ -35,7 +35,7 @@ namespace DRT
 
      private:
       //! return instance of element evaluation class depending on implementation type
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static PoroFluidMultiPhaseEleInterface* DefineProblemType(
           const int numdofpernode, const std::string& disname);
     };  // class PoroFluidMultiPhaseBoundaryFactory

@@ -39,7 +39,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
     :  // DRT::ELEMENTS::FluidBoundaryInterface(),
       xyze_(true),
@@ -62,7 +62,7 @@ DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -532,7 +532,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
  | conservative element formulation (since the convective term was      |
  | partially integrated)                                                |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -767,7 +767,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
 /*----------------------------------------------------------------------*
  | compute additional term at Neumann inflow boundary          vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
@@ -1009,7 +1009,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)            gjb 07/07|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1069,7 +1069,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1240,7 +1240,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -1382,7 +1382,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm)
 {
@@ -1478,7 +1478,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
  |                                                       ismail 04/2010 |
  |                                                           vg 06/2013 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm)
@@ -1551,7 +1551,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
 /*----------------------------------------------------------------------*
  |                                                        ismail 10/2010|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm)
@@ -1653,7 +1653,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -1773,7 +1773,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
@@ -2052,7 +2052,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
 /*----------------------------------------------------------------------*
  |  Impedance related parameters on boundary elements          AC 03/08  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -2119,7 +2119,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
 /*---------------------------------------------------------------------------*
  |  linearization of flux w.r.t velocities on boundary elements  Thon 10/15  |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -2182,7 +2182,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
 /*----------------------------------------------------------------------*
  |  get density                                                vg 06/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
     Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,
     const double thermpressaf, const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf)
@@ -2363,7 +2363,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
 /*----------------------------------------------------------------------*
  |  Evaluating the velocity component of the traction      ismail 05/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -2523,7 +2523,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -2535,14 +2535,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::line3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs2>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs4>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::line3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs2>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs9>;

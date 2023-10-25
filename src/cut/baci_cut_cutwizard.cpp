@@ -908,7 +908,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
     CORE::GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
     if (!sh) dserror("couldn't get sidehandle!");
 
-    if (xyze.numCols() == 4 && sh->Shape() == ::DRT::Element::DiscretizationType::quad4)
+    if (xyze.numCols() == 4 && sh->Shape() == CORE::FE::CellType::quad4)
     {
       CORE::LINALG::Matrix<3, 4> XYZE(xyze.values(), true);
 

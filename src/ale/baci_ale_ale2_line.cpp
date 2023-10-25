@@ -47,14 +47,14 @@ DRT::Element* DRT::ELEMENTS::Ale2Line::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

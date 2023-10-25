@@ -24,7 +24,7 @@
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrator(
     const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-    const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm) const
+    const CORE::FE::CellType& slave_type, const Epetra_Comm& comm) const
 {
   Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
   switch (sol_type)
@@ -118,7 +118,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::BuildIntegrator(
     const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-    const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm)
+    const CORE::FE::CellType& slave_type, const Epetra_Comm& comm)
 {
   Factory factory;
   return factory.BuildIntegrator(sol_type, mortar_params, slave_type, comm);

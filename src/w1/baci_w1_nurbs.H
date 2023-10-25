@@ -100,7 +100,7 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        DiscretizationType Shape() const override;
+        CORE::FE::CellType Shape() const override;
 
 
         /*!

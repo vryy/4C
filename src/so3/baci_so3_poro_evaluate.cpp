@@ -28,7 +28,7 @@
 
 #include <iterator>
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& 
   return 0;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -541,7 +541,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
   return 0;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelast(
     std::vector<int>& lm,                                 // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,         // current displacements
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelast(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelastPressureBased(
     std::vector<int>& lm,                          // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,  // current displacements
@@ -629,7 +629,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelastPress
   GaussPointLoopPressureBased(params, xrefe, xcurr, disp, ephi, stiffmatrix, force);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoop(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
@@ -742,7 +742,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoop(Teuchos::Paramete
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopPressureBased(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
@@ -750,8 +750,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopPressureBased(
     CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix, CORE::LINALG::Matrix<numdof_, 1>* force)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
-      distype == DRT::Element::DiscretizationType::nurbs9)
+  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -874,7 +873,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopPressureBased(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelast(
     std::vector<int>& lm,                            // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
@@ -915,7 +914,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelast(
     GaussPointLoopOD(params, xrefe, xcurr, disp, vel, evelnp, epreaf, stiffmatrix);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelastPressureBased(
     std::vector<int>& lm,                          // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,  // current displacements
@@ -949,7 +948,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelastPressureBased(
   GaussPointLoopODPressureBased(params, xrefe, xcurr, disp, ephi, couplmat);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopOD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
@@ -1044,7 +1043,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopOD(Teuchos::Parame
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopODPressureBased(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
@@ -1124,7 +1123,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopODPressureBased(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingStressPoroelast(
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  // current fluid velocities
@@ -1211,7 +1210,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingStressPoroelast(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
 {
   CORE::LINALG::Matrix<numdim_, numnod_> deriv;
@@ -1225,7 +1224,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
     xrefe(i, 2) = Nodes()[i]->X()[2];
   }
 
-  if (distype == DRT::Element::DiscretizationType::nurbs27) isNurbs_ = true;
+  if (distype == CORE::FE::CellType::nurbs27) isNurbs_ = true;
 
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
@@ -1257,7 +1256,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
   if (probtype == ProblemType::poroscatra) scatra_coupling_ = true;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PK2toCauchy(
     CORE::LINALG::Matrix<numstr_, 1>& stress, CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     CORE::LINALG::Matrix<numdim_, numdim_>& cauchystress)
@@ -1282,7 +1281,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PK2toCauchy(
   (cauchystress).MultiplyNT(temp, (defgrd));
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosityAndLinearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
@@ -1303,7 +1302,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosityAndLinearization(
   dphi_dus.Update(dphi_dJ, dJ_dus);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosityAndLinearizationOD(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
@@ -1317,7 +1316,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosityAndLinearizationO
   );
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ExtractValuesFromGlobalVector(
     const DRT::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
     CORE::LINALG::Matrix<numdim_, numnod_>* matrixtofill,
@@ -1381,7 +1380,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ExtractValuesFromGlobalVector(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureDeriv(
     const std::vector<double>& phiAtGP, const int numfluidphases,
     std::vector<double>& solidpressderiv)
@@ -1439,7 +1438,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureDeriv(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfSolPressWrtDisp(
     const double fluidpress, const double porosity, const int totalnumdofpernode,
     const int numfluidphases, const int numvolfrac, const std::vector<double>& phiAtGP,
@@ -1468,7 +1467,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfSolPressWr
   dps_dus.Update(dps_dphi, dphi_dus);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::RecalculateSolPressureDeriv(
     const std::vector<double>& phiAtGP, const int totalnumdofpernode, const int numfluidphases,
     const int numvolfrac, const double press, const double porosity,
@@ -1501,7 +1500,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::RecalculateSolPressureDeriv(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureAtGP(
     const int totalnumdofpernode, const int numfluidphases, const std::vector<double>& phiAtGP)
 {
@@ -1526,7 +1525,7 @@ double DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureAtGP(
   return solidpressure;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele, distype>::RecalculateSolPressureAtGP(double press,
     const double porosity, const int totalnumdofpernode, const int numfluidphases,
     const int numvolfrac, const std::vector<double>& phiAtGP)
@@ -1557,7 +1556,7 @@ double DRT::ELEMENTS::So3_Poro<so3_ele, distype>::RecalculateSolPressureAtGP(dou
   return press;
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePrimaryVariableAtGP(
     const std::vector<double>& ephi, const int totalnumdofpernode,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct, std::vector<double>& phiAtGP)
@@ -1574,7 +1573,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePrimaryVariableAtGP(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetMaterials()
 {
   // get structure material
@@ -1602,7 +1601,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetMaterials()
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetMaterialsPressureBased()
 {
   // get structure material
@@ -1641,7 +1640,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetMaterialsPressureBased()
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosity(Teuchos::ParameterList& params,
     double press, double J, int gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save)
@@ -1650,7 +1649,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputePorosity(Teuchos::Paramet
       params, press, J, gp, porosity, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dJJ, dphi_dpp, save);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSurfPorosity(Teuchos::ParameterList& params,
     double press, double J, int surfnum, int gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save)
@@ -1659,13 +1658,13 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSurfPorosity(Teuchos::Par
       dphi_dJdp, dphi_dJJ, dphi_dpp, save);
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele, distype>::RefPorosityTimeDeriv()
 {
   return struct_mat_->RefPorosityTimeDeriv();
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeShapeFunctionsAndDerivatives(const int& gp,
     CORE::LINALG::Matrix<numnod_, 1>& shapefct, CORE::LINALG::Matrix<numdim_, numnod_>& deriv,
     CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ)
@@ -1706,7 +1705,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeShapeFunctionsAndDerivati
   N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeJacobianDeterminantVolumeChange(double& J,
     double& volchange, const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
@@ -1738,7 +1737,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeJacobianDeterminantVolume
     dserror("invalid kinematic type!");
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,
     distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(double& J, double& volchange,
     CORE::LINALG::Matrix<1, numdof_>& dJ_dus, CORE::LINALG::Matrix<1, numdof_>& dvolchange_dus,
@@ -1779,7 +1778,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,
     dserror("invalid kinematic type!");
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAuxiliaryValues(
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
@@ -1850,7 +1849,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAuxiliaryValues(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeBOperator(
     CORE::LINALG::Matrix<numstr_, numdof_>& bop,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
@@ -1900,7 +1899,7 @@ inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeBOperator(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfJacobian(
     CORE::LINALG::Matrix<1, numdof_>& dJ_dus, const double& J,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
@@ -1950,7 +1949,7 @@ inline void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeLinearizationOfJac
     dserror("invalid kinematic type!");
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectors(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
@@ -2238,7 +2237,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectors(const int& 
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsPressureBased(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
@@ -2312,7 +2311,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsPressureBase
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsBrinkman(const int& gp,
     const double& J, const double& porosity, const CORE::LINALG::Matrix<numdim_, numdim_>& fvelder,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
@@ -2451,7 +2450,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsBrinkman(con
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsOD(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& porosity,
@@ -2613,7 +2612,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsOD(const int
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsODPressureBased(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
@@ -2659,7 +2658,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsODPressureBa
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsBrinkmanOD(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& porosity,
@@ -2754,7 +2753,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsBrinkmanOD(c
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeDefGradient(
     CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
@@ -2774,7 +2773,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeDefGradient(
     dserror("invalid kinematic type!");
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const std::vector<double>& pres, const CORE::LINALG::Matrix<3, 1>& n,
@@ -2786,7 +2785,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fluid_mat_->Type() != MAT::PAR::darcy)
     dserror("GetCauchyAtXi just implemented for pure Darcy flow!");
 
-  if (distype != DRT::Element::DiscretizationType::hex8)
+  if (distype != CORE::FE::CellType::hex8)
     dserror("GetCauchyAtXi for Poro just implemented for hex8!");
 
   so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
@@ -2798,7 +2797,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fabs(dot) > 1e-30)
   {
     CORE::LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex8>(xi, shapefcts);
+    CORE::DRT::UTILS::shape_function<CORE::FE::CellType::hex8>(xi, shapefcts);
 
     for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
@@ -2806,7 +2805,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
-      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex8>(xi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<CORE::FE::CellType::hex8>(xi, deriv);
 
       d_cauchyndir_dp->reshape(NUMNOD_SOH8, 1);
       CORE::LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->values(), true);
@@ -2825,7 +2824,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   }
 }
 
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 std::vector<double>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAnisotropicPermeabilityCoeffsAtGP(
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct) const

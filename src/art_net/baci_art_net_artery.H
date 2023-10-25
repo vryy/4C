@@ -105,7 +105,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -343,14 +343,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(
-          const DRT::Element::DiscretizationType distype  ///< discretization type
+      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 

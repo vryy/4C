@@ -29,7 +29,7 @@ namespace STR::MODELEVALUATOR
 }
 namespace DRT::ELEMENTS
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct MulfHistoryData
   {
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
@@ -53,7 +53,7 @@ namespace DRT::ELEMENTS
     }
   };
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   class SolidEleCalcMulf
   {
    public:
