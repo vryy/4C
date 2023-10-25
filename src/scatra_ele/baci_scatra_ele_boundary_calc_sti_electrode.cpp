@@ -78,7 +78,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterscatra(2, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterscatra, discretization, la, "imasterscatra", 2);
+  my::ExtractNodeValues(
+      emasterscatra, discretization, la, "imasterscatra", my::scatraparams_->NdsScaTra());
 
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -333,7 +334,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterscatra(2, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterscatra, discretization, la, "imasterscatra", 2);
+  my::ExtractNodeValues(
+      emasterscatra, discretization, la, "imasterscatra", my::scatraparams_->NdsScaTra());
 
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -766,7 +768,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Extract
   my::ExtractNodeValues(discretization, la);
 
   // extract nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-  my::ExtractNodeValues(eelchnp_, discretization, la, "scatra", 2);
+  my::ExtractNodeValues(eelchnp_, discretization, la, "scatra", my::scatraparams_->NdsScaTra());
 }
 
 

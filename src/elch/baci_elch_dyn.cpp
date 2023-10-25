@@ -17,7 +17,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_scatra_ele.H"
-#include "baci_scatra_resulttest_elch.H"
 #include "baci_scatra_timint_elch.H"
 #include "baci_scatra_utils_clonestrategy.H"
 
@@ -26,7 +25,6 @@
 
 
 /*----------------------------------------------------------------------*/
-// entry point for ELCH in DRT
 /*----------------------------------------------------------------------*/
 void elch_dyn(int restart)
 {
@@ -278,37 +276,35 @@ void elch_dyn(int restart)
       }
 
       break;
-    }  // case 2
+    }
     default:
       dserror("Unknown velocity field type for transport of passive scalar: %d", veltype);
-      break;
   }
 }
 
 
 /*----------------------------------------------------------------------*/
-// print ELCH-Module logo
 /*----------------------------------------------------------------------*/
 void printlogo()
 {
   // more at http://www.ascii-art.de under entry "moose" (or "elk")
-  std::cout << "     ___            ___    " << std::endl;
-  std::cout << "    /   \\          /   \\ " << std::endl;
-  std::cout << "    \\_   \\        /  __/ " << std::endl;
+  std::cout << "     ___            ___    " << '\n';
+  std::cout << "    /   \\          /   \\ " << '\n';
+  std::cout << "    \\_   \\        /  __/ " << '\n';
   std::cout << "     _\\   \\      /  /__  "
-            << "     _____ _     _____  _   _   " << std::endl;
+            << "     _____ _     _____  _   _   " << '\n';
   std::cout << "     \\___  \\____/   __/  "
-            << "    |  ___| |   /  __ \\| | | |  " << std::endl;
+            << "    |  ___| |   /  __ \\| | | |  " << '\n';
   std::cout << "         \\_       _/      "
-            << "   | |__ | |   | /  \\/| |_| |  " << std::endl;
+            << "   | |__ | |   | /  \\/| |_| |  " << '\n';
   std::cout << "           | @ @  \\_      "
-            << "   |  __|| |   | |    |  _  |   " << std::endl;
+            << "   |  __|| |   | |    |  _  |   " << '\n';
   std::cout << "           |               "
-            << "  | |___| |___| \\__/\\| | | | " << std::endl;
+            << "  | |___| |___| \\__/\\| | | | " << '\n';
   std::cout << "         _/     /\\        "
-            << "   \\____/\\_____/\\____/\\_| |_/ " << std::endl;
-  std::cout << "        /o)  (o/\\ \\_     " << std::endl;
-  std::cout << "        \\_____/ /         " << std::endl;
-  std::cout << "          \\____/          " << std::endl;
-  std::cout << "                           " << std::endl;
+            << "   \\____/\\_____/\\____/\\_| |_/ " << '\n';
+  std::cout << "        /o)  (o/\\ \\_     " << '\n';
+  std::cout << "        \\_____/ /         " << '\n';
+  std::cout << "          \\____/          " << '\n';
+  std::cout << "                           " << '\n';
 }

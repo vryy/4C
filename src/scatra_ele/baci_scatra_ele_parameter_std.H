@@ -63,10 +63,16 @@ namespace DRT
       int EMDSource() const { return emd_source_; };
       //! number of dofset associated with displacement dofs
       int NdsDisp() const;
+      //! number of dofset associated with interface growth dofs
+      int NdsGrowth() const;
       //! number of dofset to write micro scale values on
       int NdsMicro() const;
       //! number of dofset associated with pressure dofs
       int NdsPres() const;
+      //! number of dofset associated with scalar transport dofs
+      int NdsScaTra() const;
+      //! number of dofset associated with temperature dofs
+      int NdsThermo() const;
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
       int NdsTwoTensorQuantity() const;
       //! number of dofset associated with velocity related dofs
@@ -124,11 +130,20 @@ namespace DRT
       //! number of dofset associated with displacement dofs
       int nds_disp_;
 
+      //! number of dofset associated with interface growth dofs
+      int nds_growth_;
+
       //! number of dofset to write micro scale values on
       int nds_micro_;
 
       //! number of dofset associated with pressure dofs
       int nds_pres_;
+
+      //! number of dofset associated with scalar transport dofs
+      int nds_scatra_;
+
+      //! number of dofset associated with temperature dofs
+      int nds_thermo_;
 
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
       int nds_two_tensor_quantitiy_;

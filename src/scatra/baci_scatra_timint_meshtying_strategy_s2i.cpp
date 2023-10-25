@@ -3364,10 +3364,13 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2ICouplingGrowth"))
         (*numdofpernode)[inode] = 1;
     }
+
+    int number_dofsets = scatratimint_->GetMaxDofSetNumber();
     Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(
         new DRT::DofSetPredefinedDoFNumber(numdofpernode, Teuchos::null, Teuchos::null, true));
-    if (scatratimint_->Discretization()->AddDofSet(dofset) != 2)
+    if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
       dserror("Scalar transport discretization exhibits invalid number of dofsets!");
+    scatratimint_->SetNumberOfDofSetGrowth(number_dofsets);
 
     // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
     // layer growth

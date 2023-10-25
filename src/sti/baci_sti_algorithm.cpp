@@ -45,6 +45,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
   scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetThermo(2);
   scatra_->Setup();
 
   // modify field parameters for thermo field
@@ -55,6 +56,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
   thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  thermo_->ScaTraField()->SetNumberOfDofSetScaTra(2);
   thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
@@ -137,7 +139,6 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       default:
       {
         dserror("Invalid type of scatra-scatra interface coupling!");
-        break;
       }
     }
   }
@@ -339,7 +340,6 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
       default:
       {
         dserror("You must be kidding me...");
-        break;
       }
     }
   }
