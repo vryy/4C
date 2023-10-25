@@ -82,11 +82,12 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   // 2. scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true));
 
   // now we can call Init() on the base algo.
   // time integrator is constructed and initialized inside.
-  scatra_->Init(timeparams, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(2);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(2);
 

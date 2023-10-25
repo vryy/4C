@@ -48,19 +48,20 @@ namespace ADAPTER
   {
    public:
     /// constructor
-    ScaTraBaseAlgorithm();
-
-    /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraBaseAlgorithm() = default;
-
-    /// initialize this class
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+    ScaTraBaseAlgorithm(
+        const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
         const Teuchos::ParameterList&
             scatradyn,  ///< parameter list for scalar transport subproblem
         const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
         const std::string& disname = "scatra",       ///< name of scalar transport discretization
         const bool isale = false                     ///< ALE flag
     );
+
+    /// virtual destructor to support polymorph destruction
+    virtual ~ScaTraBaseAlgorithm() = default;
+
+    /// initialize this class
+    virtual void Init();
 
     /// setup this class
     virtual void Setup();

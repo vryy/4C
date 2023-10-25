@@ -37,23 +37,11 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm()
+ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams,
+    const std::string& disname, const bool isale)
     : scatra_(Teuchos::null), issetup_(false), isinit_(false)
 {
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraBaseAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
-{
-  SetIsSetup(false);
-
   // setup scalar transport algorithm (overriding some dynamic parameters
   // with values specified in given problem-dependent ParameterList prbdyn)
 
@@ -514,6 +502,13 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       }  // switch(timintscheme)
     }
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraBaseAlgorithm::Init()
+{
+  SetIsSetup(false);
 
   // initialize scatra time integrator
   scatra_->Init();

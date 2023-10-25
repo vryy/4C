@@ -38,16 +38,10 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void ELCH::MovingBoundaryAlgorithm::Init()
 {
   // call setup in base class
-  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init();
 
   // safety check
   if (!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
@@ -56,8 +50,6 @@ void ELCH::MovingBoundaryAlgorithm::Init(
         "Scalar transport discretization must have boundary condition for flux calculation at FSI "
         "interface!");
   }
-
-  ScaTraField()->SetNumberOfDofSetDisplacement(2);
 
   pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elch_params_,
                           "MOVINGBOUNDARY") == INPAR::ELCH::elch_mov_bndry_pseudo_transient);

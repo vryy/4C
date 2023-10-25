@@ -30,7 +30,8 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
     : AlgorithmBase(comm, prbdyn),
       FluidBaseAlgorithm(prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", isale,
           false),  // false -> no immediate initialization of fluid time integration
-      ScaTraBaseAlgorithm(),
+      ScaTraBaseAlgorithm(prbdyn, DRT::Problem::Instance()->ScalarTransportDynamicParams(),
+          solverparams, scatra_disname, isale),
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING")),
       volcoupl_fluidscatra_(Teuchos::null),
@@ -45,17 +46,11 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void ADAPTER::ScaTraFluidCouplingAlgorithm::Init()
 {
   SetIsSetup(false);
 
-  ADAPTER::ScaTraBaseAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraBaseAlgorithm::Init();
 
   // perform algorithm specific initialization stuff
   DoAlgorithmSpecificInit();
@@ -64,8 +59,6 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
   SetupFieldCoupling("fluid", scatra_disname_);
 
   SetIsInit(true);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/

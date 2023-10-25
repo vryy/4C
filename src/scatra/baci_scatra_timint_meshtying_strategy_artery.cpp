@@ -44,15 +44,15 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       INPAR::SCATRA::velocity_zero)
     dserror("set your velocity field to zero!");
 
-  // artery scatra problem
+  // construct artery scatra problem
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> art_scatra =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+          DRT::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
+          "artery_scatra", false));
 
   // initialize the base algo.
-  // scatra time integrator is constructed and initialized inside.
-  art_scatra->Init(globaltimeparams, myscatraparams,
-      DRT::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
-      "artery_scatra", false);
+  // scatra time integrator is initialized inside.
+  art_scatra->Init();
 
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are

@@ -81,14 +81,16 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
       sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra_->Init(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
+  scatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
+          problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  thermo_->Init(sstitimeparams, CloneThermoParams(scatraparams, thermoparams),
-      problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true);
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams,
+      CloneThermoParams(scatraparams, thermoparams),
+      problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
+  thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
 

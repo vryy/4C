@@ -103,11 +103,25 @@ void scatra_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == -1)
+      {
+        dserror(
+            "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
+            "SCALAR TRANSPORT DYNAMIC to a valid number!");
+      }
+
+      // create instance of scalar transport basis algorithm (empty fluid discretization)
+      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
       // add proxy of velocity related degrees of freedom to scatra discretization
       auto dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -124,23 +138,9 @@ void scatra_dyn(int restart)
       // finalize discretization
       scatradis->FillComplete(true, false, true);
 
-      // get linear solver id from SCALAR TRANSPORT DYNAMIC
-      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-      if (linsolvernumber == -1)
-      {
-        dserror(
-            "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
-            "SCALAR TRANSPORT DYNAMIC to a valid number!");
-      }
-
-      // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
       // now we can call Init() on the base algo.
-      // time integrator is constructed and initialized inside
-      scatraonly->Init(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      // time integrator is initialized inside
+      scatraonly->Init();
 
       // redistribution between Init(...) and Setup()
       // redistribute scatra elements in case of heterogeneous reactions
@@ -219,6 +219,7 @@ void scatra_dyn(int restart)
         // add proxy of fluid transport degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           dserror("Scatra discretization has illegal number of dofsets!");
+        algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
       }
 
       // we create  the aux dofsets before Init(...)
@@ -249,6 +250,7 @@ void scatra_dyn(int restart)
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in scatra field");
+        algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // call AssignDegreesOfFreedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
@@ -261,8 +263,7 @@ void scatra_dyn(int restart)
       }
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->Init(scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      algo->Init();
 
       // redistribution between Init(...) and Setup()
       // redistribute scatra elements if the scatra discretization is not empty

@@ -70,13 +70,6 @@ void elch_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
-      // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
-      if (scatradis->AddDofSet(dofsetaux) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
-
-
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
@@ -87,13 +80,23 @@ void elch_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+      // add proxy of velocity related degrees of freedom to scatra discretization
+      auto dofsetaux = Teuchos::rcp(
+          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+      if (scatradis->AddDofSet(dofsetaux) != 1)
+        dserror("Scatra discretization has illegal number of dofsets!");
+      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+      // now me may redistribute or ghost the scatra discretization
+      // finalize discretization
+      scatradis->FillComplete(true, true, true);
 
       // now we can call Init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
-      scatraonly->Init(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->Init();
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -180,14 +183,6 @@ void elch_dyn(int restart)
         else
           dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
-        // add proxy of fluid degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
-
-        // add proxy of ALE degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
-          dserror("Scatra discretization has illegal number of dofsets!");
-
         // get linear solver id from SCALAR TRANSPORT DYNAMIC
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
         if (linsolvernumber == -1)
@@ -198,13 +193,22 @@ void elch_dyn(int restart)
         }
 
         // create an ELCH::MovingBoundaryAlgorithm instance
+        // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(
             comm, elchcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
 
-        // now we must call Init()
-        // NOTE : elch reads time parameters from scatra dynamic section !
-        elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber), "scatra", true);
+        // add proxy of fluid degrees of freedom to scatra discretization
+        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+          dserror("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+        // add proxy of ALE degrees of freedom to scatra discretization
+        if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
+          dserror("Scatra discretization has illegal number of dofsets!");
+        elch->ScaTraField()->SetNumberOfDofSetDisplacement(2);
+
+        // now we must call Init()
+        elch->Init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -239,17 +243,17 @@ void elch_dyn(int restart)
         }
 
         // create an ELCH::Algorithm instance
+        // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ELCH::Algorithm(
             comm, elchcontrol, scatradyn, fdyn, problem->SolverParams(linsolvernumber)));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           dserror("Scatra discretization has illegal number of dofsets!");
+        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // now we must call Init()
-        // NOTE : elch reads time parameters from scatra dynamic section !
-        elch->Init(scatradyn, scatradyn, problem->SolverParams(linsolvernumber));
-        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        elch->Init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.

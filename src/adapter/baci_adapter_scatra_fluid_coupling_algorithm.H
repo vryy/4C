@@ -52,13 +52,7 @@ namespace ADAPTER
     void Setup() override;
 
     /// init this class
-    void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
-        const Teuchos::ParameterList&
-            scatradyn,  ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-        const std::string& disname = "scatra",       ///< name of scalar transport discretization
-        const bool isale = false                     ///< ALE flag
-        ) override;
+    void Init() override;
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
