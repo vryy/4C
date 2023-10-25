@@ -547,6 +547,20 @@ void STR::ModelEvaluator::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RunRecover() const
+{
+  CheckInitSetup();
+  // set some parameters for the element evaluation
+  eval_data_ptr_->SetIsDefaultStep(true);
+  eval_data_ptr_->SetStepLength(1.0);
+  eval_data_ptr_->ResetMyNorms(true);
+  Vector::iterator me_iter;
+  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
+    (*me_iter)->RunRecover();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::RunPostComputeX(const Epetra_Vector& xold, const Epetra_Vector& dir,
     const double& step, const Epetra_Vector& xnew, const bool isdefaultstep) const
 {
@@ -722,6 +736,16 @@ void STR::ModelEvaluator::UpdateStepElement()
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->UpdateStepElement();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::UpdateResidual()
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
+    (*me_iter)->UpdateResidual();
 }
 
 /*----------------------------------------------------------------------------*

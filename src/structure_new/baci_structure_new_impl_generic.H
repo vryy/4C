@@ -155,6 +155,30 @@ namespace STR
       /// compute the condition number of the structural tangential stiffness matrix if desired
       void ConditionNumber(const NOX::NLN::Group& grp) const;
 
+      //! @name Attribute access functions
+      //@{
+
+      //! Provide Name
+      virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a \f$m\f$-multistep method returns \f$m\f$
+      virtual int MethodSteps() const = 0;
+
+      //! Give local order of accuracy of displacement part
+      virtual int MethodOrderOfAccuracyDis() const = 0;
+
+      //! Give local order of accuracy of velocity part
+      virtual int MethodOrderOfAccuracyVel() const = 0;
+
+      //! Return linear error coefficient of displacements
+      virtual double MethodLinErrCoeffDis() const = 0;
+
+      //! Return linear error coefficient of velocities
+      virtual double MethodLinErrCoeffVel() const = 0;
+
+      //! @}
+
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
       void ResetEvalParams() override;

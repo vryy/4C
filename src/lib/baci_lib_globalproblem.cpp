@@ -193,6 +193,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/GEMM", *list);
+  reader.ReadSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT", *list);
   reader.ReadSection("--MORTAR COUPLING", *list);
   reader.ReadSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
   reader.ReadSection("--CONTACT DYNAMIC", *list);

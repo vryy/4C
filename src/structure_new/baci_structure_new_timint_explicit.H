@@ -79,6 +79,27 @@ namespace STR
 
       ///@}
 
+      //! @name Attribute access functions
+      //@{
+
+      enum INPAR::STR::DynamicType MethodName() const override;
+
+      bool IsImplicit() const override { return false; }
+
+      bool IsExplicit() const override { return true; }
+
+      int MethodSteps() const override;
+
+      int MethodOrderOfAccuracyDis() const override;
+
+      int MethodOrderOfAccuracyVel() const override;
+
+      double MethodLinErrCoeffDis() const override;
+
+      double MethodLinErrCoeffVel() const override;
+
+      //@}
+
      protected:
       STR::EXPLICIT::Generic& ExplInt()
       {

@@ -614,3 +614,42 @@ void STR::TIMINT::Implicit::ComputeConditionNumber(const NOX::NLN::Group& grp) c
     of.close();
   }
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::DynamicType STR::TIMINT::Implicit::MethodName() const
+{
+  return implint_ptr_->MethodName();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Implicit::MethodSteps() const { return implint_ptr_->MethodSteps(); }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Implicit::MethodOrderOfAccuracyDis() const
+{
+  return implint_ptr_->MethodOrderOfAccuracyDis();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Implicit::MethodOrderOfAccuracyVel() const
+{
+  return implint_ptr_->MethodOrderOfAccuracyVel();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::Implicit::MethodLinErrCoeffDis() const
+{
+  return implint_ptr_->MethodLinErrCoeffDis();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::Implicit::MethodLinErrCoeffVel() const
+{
+  return implint_ptr_->MethodLinErrCoeffVel();
+}

@@ -1256,14 +1256,16 @@ void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_ty
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::RunPostComputeX(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+void STR::MODELEVALUATOR::Structure::RunPreComputeX(
+    const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
   CheckInitSetup();
-  Reset(xnew);
-  /* set the class internal displacement increment vector. Check if it is
-   * meaningful/necessary in some cases, like incremental strains etc. */
-  dis_incr_ptr_ = GState().ExtractDisplEntries(dir);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RunRecover()
+{
   // set vector values needed by elements
   Discret().ClearState();
   Discret().SetState(0, "residual displacement", dis_incr_ptr_);
@@ -1277,6 +1279,19 @@ void STR::MODELEVALUATOR::Structure::RunPostComputeX(
       Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RunPostComputeX(
+    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+{
+  CheckInitSetup();
+  Reset(xnew);
+  /* set the class internal displacement increment vector. Check if it is
+   * meaningful/necessary in some cases, like incremental strains etc. */
+  dis_incr_ptr_ = GState().ExtractDisplEntries(dir);
+  RunRecover();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1322,6 +1337,9 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
 
   // store the old reaction force
   GState().GetFreactN()->Scale(1.0, *GState().GetFreactNp());
+
+  // store the old internal force
+  GState().GetFintN()->Scale(1.0, FintNp());
 
   // new at t_{n+1} -> t_{n+timefac_n}
   //    F^{struct}_{n+timefac_n} := timefac_n * F^{struct}_{n+1}
@@ -1404,6 +1422,14 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
   EvaluateInternal(eval_mat.data(), eval_vec.data());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::UpdateResidual()
+{
+  CheckInitSetup();
+  dis_incr_ptr_->Update(-1.0, *GState().GetDisN(), 1.0, *GState().GetDisNp(), 0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1768,6 +1794,16 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintN() const
+{
+  CheckInit();
+  if (GState().GetFintN().is_null()) dserror("NULL pointer!");
+
+  return *GState().GetFintN();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 {
   CheckInit();
@@ -1784,6 +1820,16 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
   dsassert(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextN() const
+{
+  CheckInit();
+  if (GState().GetFextN().is_null()) dserror("NULL pointer!");
+
+  return *GState().GetFextN();
 }
 
 /*----------------------------------------------------------------------------*

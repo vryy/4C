@@ -283,6 +283,7 @@ void STR::TIMINT::Base::UpdateStepTime()
   // --------------------------------------------------------------------------
   // get current time step size
   const double& dtn = (*dataglobalstate_->GetDeltaTime())[0];
+  dataglobalstate_->GetDeltaTime()->UpdateSteps(dtn);
   timenp += dtn;
   stepnp += 1;
 }

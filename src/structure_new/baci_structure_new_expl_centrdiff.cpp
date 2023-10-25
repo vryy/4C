@@ -93,6 +93,12 @@ void STR::EXPLICIT::CentrDiff::SetState(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
   GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelNp(), 1.0);
+
+  // ---------------------------------------------------------------------------
+  // update the elemental state
+  // ---------------------------------------------------------------------------
+  ModelEval().UpdateResidual();
+  ModelEval().RunRecover();
 }
 
 /*----------------------------------------------------------------------------*

@@ -139,9 +139,95 @@ namespace STR
         double rhoinf_ = -1.0;
       };
 
-
-
       //!@}
+
+      //! @name Attribute access functions
+      //@{
+
+      //! Return name
+      enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_genalpha; }
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a m-multistep method returns m
+      int MethodSteps() const override { return 1; }
+
+      //! Give linear order of accuracy of displacement part
+      int MethodOrderOfAccuracyDis() const override
+      {
+        return (fabs(MethodLinErrCoeffDis2()) < 1e-6) ? 3 : 2;
+      }
+
+      //! Give linear order of accuracy of velocity part
+      int MethodOrderOfAccuracyVel() const override
+      {
+        return (fabs(MethodLinErrCoeffVel1()) < 1e-6) ? 2 : 1;
+      }
+
+      //! Return linear error coefficient of displacements
+      double MethodLinErrCoeffDis() const override
+      {
+        if (MethodOrderOfAccuracyDis() == 2)
+          return MethodLinErrCoeffDis2();
+        else
+          return MethodLinErrCoeffDis3();
+      }
+
+      //! 2nd order linear error coefficient of displacements
+      double MethodLinErrCoeffDis2() const
+      {
+        const double& alphaf = coeffs_.alphaf_;
+        const double& alpham = coeffs_.alpham_;
+        const double& beta = coeffs_.beta_;
+
+        // at least true for am<1/2 and large enough n->infty
+        return 1.0 / 6.0 - beta + alphaf / 2.0 - alpham / 2.0;
+      }
+
+      //! 3rd order linear error coefficient of displacements
+      double MethodLinErrCoeffDis3() const
+      {
+        const double& alphaf = coeffs_.alphaf_;
+        const double& alpham = coeffs_.alpham_;
+        const double& beta = coeffs_.beta_;
+
+        // at least true for am<1/2 and large enough n->infty
+        return 1. / 24. - beta / 2. * (1. - 2 * alphaf + 2. * alpham) -
+               1. / 4. * (alphaf - alpham) * (1. - 2. * alpham);
+      }
+
+      //! Return linear error coefficient of velocities
+      double MethodLinErrCoeffVel() const override
+      {
+        if (MethodOrderOfAccuracyVel() == 1)
+          return MethodLinErrCoeffVel1();
+        else
+          return MethodLinErrCoeffVel2();
+      }
+
+      //! 1st order linear error coefficient of velocities
+      double MethodLinErrCoeffVel1() const
+      {
+        const double& alphaf = coeffs_.alphaf_;
+        const double& alpham = coeffs_.alpham_;
+        const double& gamma = coeffs_.gamma_;
+
+        // at least true for am<1/2 and large enough n->infty
+        return 1.0 / 2.0 - gamma + alphaf - alpham;
+      }
+
+      //! 2nd order linear error coefficient of velocities
+      double MethodLinErrCoeffVel2() const
+      {
+        const double& alphaf = coeffs_.alphaf_;
+        const double& alpham = coeffs_.alpham_;
+        const double& gamma = coeffs_.gamma_;
+
+        // at least true for am<1/2 and large enough n->infty
+        return 1. / 6. - gamma / 2. * (1. - 2 * alphaf + 2. * alpham) -
+               1. / 2. * (alphaf - alpham) * (1. - 2. * alpham);
+      }
+
+      //@}
 
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]

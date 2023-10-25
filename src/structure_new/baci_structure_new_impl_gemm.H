@@ -96,6 +96,73 @@ namespace STR
       bool PredictConstAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
+
+      //! @name access methods
+      //@{
+
+      //! Return name
+      enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_gemm; }
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a m-multistep method returns m
+      int MethodSteps() const override { return 1; }
+
+      //! Give linear order of accuracy of displacement part
+      int MethodOrderOfAccuracyDis() const override
+      {
+        dserror("Not yet available");
+        return 0;
+      }
+
+      //! Give linear order of accuracy of velocity part
+      int MethodOrderOfAccuracyVel() const override
+      {
+        dserror("Not yet available");
+        return 0;
+      }
+
+      //! Return linear error coefficient of displacements
+      double MethodLinErrCoeffDis() const override
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+
+      //! 2nd order linear error coefficient of displacements
+      double MethodLinErrCoeffDis2() const
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+
+      //! 3rd order linear error coefficient of displacements
+      double MethodLinErrCoeffDis3() const
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+
+      //! Return linear error coefficient of velocities
+      double MethodLinErrCoeffVel() const override
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+
+      //! 1st order linear error coefficient of velocities
+      double MethodLinErrCoeffVel1() const
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+
+      //! 2nd order linear error coefficient of velocities
+      double MethodLinErrCoeffVel2() const
+      {
+        dserror("Not yet available");
+        return 0.0;
+      }
+      //@}
     };
   }  // namespace IMPLICIT
 }  // namespace STR

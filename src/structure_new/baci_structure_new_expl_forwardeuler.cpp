@@ -74,7 +74,7 @@ void STR::EXPLICIT::ForwardEuler::PostSetup()
 void STR::EXPLICIT::ForwardEuler::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
-  std::cout << "I'm here" << std::endl;
+
   const double dt = (*GlobalState().GetDeltaTime())[0];
 
   // ---------------------------------------------------------------------------
@@ -97,6 +97,12 @@ void STR::EXPLICIT::ForwardEuler::SetState(const Epetra_Vector& x)
     GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelNp(), 1.0);
   else
     GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelN(), 1.0);
+
+  // ---------------------------------------------------------------------------
+  // update the elemental state
+  // ---------------------------------------------------------------------------
+  ModelEval().UpdateResidual();
+  ModelEval().RunRecover();
 }
 
 /*----------------------------------------------------------------------------*

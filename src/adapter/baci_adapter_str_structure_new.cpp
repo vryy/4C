@@ -21,6 +21,7 @@
 #include "baci_adapter_str_redairway.H"
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structalewrapper.H"
+#include "baci_adapter_str_timeada.H"
 #include "baci_adapter_str_timeloop.H"
 #include "baci_adapter_str_timint_adaptive.H"
 #include "baci_adapter_str_wrapper.H"
@@ -799,6 +800,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags, Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
+  // try to firstly create the adaptive wrapper
+  if (str_wrapper_.is_null())
+    str_wrapper_ = ADAPTER::StructureTimeAda::Create(taflags, ti_strategy);
+
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
 

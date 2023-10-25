@@ -88,10 +88,10 @@ namespace STR
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
-      {
-        return;
-      };
+          const NOX::NLN::Group& curr_grp) override;
+
+      //! derived
+      void RunRecover() override;
 
       //! derived
       void RunPostComputeX(
@@ -108,6 +108,9 @@ namespace STR
 
       //! derived
       void UpdateStepElement() override;
+
+      //! derived
+      void UpdateResidual() override;
 
       //! derived
       void DetermineStressStrain() override;
@@ -441,11 +444,17 @@ namespace STR
       //! global internal force at \f$t_{n+1}\f$ (read-only)
       const Epetra_Vector& FintNp() const;
 
+      //! global internal force at \f$t_{n}\f$ (read-only)
+      const Epetra_Vector& FintN() const;
+
       //! global external force at \f$t_{n+1}\f$
       Epetra_Vector& FextNp();
 
       //! global external force at \f$t_{n+1}\f$ (read-only)
       const Epetra_Vector& FextNp() const;
+
+      //! global external force at \f$t_{n}\f$ (read-only)
+      const Epetra_Vector& FextN() const;
 
       //! inertial force at \f$t_{n+1}\f$
       Epetra_Vector& FinertialNp();
