@@ -413,7 +413,7 @@ namespace DRT
      *            \throws dserror() occurs if the error indicator was set while reading
      *            \author Hagmeyer
      */
-    void Checkfgets(char* output, FILE* stream, std::string filenename);
+    void Checkfgets(char* output, FILE* stream, std::string filename);
     /**
      *            \brief Default error handling of scanf().
      *

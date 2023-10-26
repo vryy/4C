@@ -54,12 +54,12 @@ FSI::MonolithicLinearSystem::MonolithicLinearSystem(Teuchos::ParameterList& prin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicLinearSystem::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
+    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
   // AGS: Rare option, similar to Max Iters=1 but twice as fast.
-  if (p.get("Use Preconditioner as Solver", false))
-    return applyRightPreconditioning(false, p, input, result);
+  if (linearSolverParams.get("Use Preconditioner as Solver", false))
+    return applyRightPreconditioning(false, linearSolverParams, input, result);
 
   // Aztec crashes in reuses because its buggy
   Teuchos::RCP<Epetra_Operator> prec = solvePrecOpPtr;
@@ -119,8 +119,8 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   }
 
   // Get linear solver convergence parameters
-  int maxit = p.get("Max Iterations", 400);
-  double tol = p.get("Tolerance", 1.0e-6);
+  int maxit = linearSolverParams.get("Max Iterations", 400);
+  double tol = linearSolverParams.get("Tolerance", 1.0e-6);
 
 
   int aztecStatus = -1;
@@ -178,7 +178,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   // Set the output parameters in the "Output" sublist
   if (outputSolveDetails)
   {
-    Teuchos::ParameterList& outputList = p.sublist("Output");
+    Teuchos::ParameterList& outputList = linearSolverParams.sublist("Output");
     int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
     int curLinIters = 0;
     double achievedTol = -1.0;

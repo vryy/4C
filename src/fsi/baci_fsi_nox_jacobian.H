@@ -39,8 +39,7 @@ namespace NOX
         The vector \c x is used to clone the solution vector.
       */
       FSIMatrixFree(Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-          const NOX::Epetra::Vector& cloneVector);
+          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x);
 
 
       //! If set true, transpose of this operator will be applied.

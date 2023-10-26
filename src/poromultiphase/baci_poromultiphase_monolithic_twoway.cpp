@@ -244,7 +244,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildCombinedDBCMap()
 /*----------------------------------------------------------------------*
  | Evaluate (build global Matrix and RHS)            kremheller 03/17   |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate");
 
@@ -255,11 +256,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   // *********** time measurement ***********
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> fx;
-  ExtractFieldVectors(x, sx, fx);
+  Teuchos::RCP<const Epetra_Vector> s_iterinc;
+  Teuchos::RCP<const Epetra_Vector> f_iterinc;
+  ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
 
-  Evaluate(sx, fx, itnum_ == 0);
+  Evaluate(s_iterinc, f_iterinc, itnum_ == 0);
 
   // *********** time measurement ***********
   dtele_ = timernewton_.wallTime() - dtcpu;

@@ -110,7 +110,7 @@ namespace CORE::GEO
 
       /// adding pair of side-edge to container of intersected, does not insert if such pair already
       /// exists
-      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& or_pair);
+      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair);
 
       /// default call
       void AddPair(Side* side, Edge* edge);

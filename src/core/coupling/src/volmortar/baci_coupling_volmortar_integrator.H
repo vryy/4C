@@ -103,7 +103,7 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEle3D(int domain, ::DRT::Element& sele, ::DRT::Element& mele,
+    void IntegrateEle3D(int domain, ::DRT::Element& Aele, ::DRT::Element& Bele,
         CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
         CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const ::DRT::Discretization> Adis,
@@ -114,8 +114,8 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_ADis(::DRT::Element& sele, std::vector<int>& foundeles,
-        CORE::LINALG::SparseMatrix& dmatrixA, CORE::LINALG::SparseMatrix& mmatrixA,
+    void IntegrateEleBased3D_ADis(::DRT::Element& Aele, std::vector<int>& foundeles,
+        CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
         Teuchos::RCP<const ::DRT::Discretization> Adiscret,
         Teuchos::RCP<const ::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
@@ -123,8 +123,8 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_BDis(::DRT::Element& mele, std::vector<int>& foundeles,
-        CORE::LINALG::SparseMatrix& dmatrixB, CORE::LINALG::SparseMatrix& mmatrixB,
+    void IntegrateEleBased3D_BDis(::DRT::Element& Bele, std::vector<int>& foundeles,
+        CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const ::DRT::Discretization> Adiscret,
         Teuchos::RCP<const ::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
 

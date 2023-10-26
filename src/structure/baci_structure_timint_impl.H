@@ -312,7 +312,8 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> disn,              //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                   //!< forces are added onto
         Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
-        Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
+        Teuchos::ParameterList
+            pwindk  //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness
@@ -762,7 +763,7 @@ namespace STR
     //! Update iteration
     //! Add residual increment to pressures stored in Cardiovascular0D manager
     void UpdateIterIncrCardiovascular0D(
-        Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
+        Teuchos::RCP<Epetra_Vector> cv0ddofincr  ///< pressure increment
         ) override;
 
     //@}

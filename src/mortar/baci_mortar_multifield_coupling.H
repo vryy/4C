@@ -45,7 +45,7 @@ namespace MORTAR
     void CondenseMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
-    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& mat);
+    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs);
 
     /// recover condensed primal slave-sided dofs
     void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);

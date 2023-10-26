@@ -50,7 +50,7 @@ namespace FLD
       */
       Fluid_couplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_redD, IO::DiscretizationWriter& output,
-          double dt_3d, double dt_rm);
+          double dt_3d, double dt_redD);
 
       /*!
       \brief Destructor
@@ -190,7 +190,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis3D,
+      Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_reD, IO::DiscretizationWriter& output, double dt_3d,
           double dt_rm, int condid, int numcond, int numcond2);
 
@@ -262,7 +262,7 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(double& density, double& viscosity, int numcond);
+      double Area(double& density, double& viscosity, int condid);
 
 
 

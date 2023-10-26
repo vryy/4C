@@ -372,7 +372,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::TimeStep()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> x)
+    Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate");
 
@@ -386,7 +386,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
   Teuchos::RCP<const Epetra_Vector> porostructinc;
   Teuchos::RCP<const Epetra_Vector> porofluidinc;
   Teuchos::RCP<const Epetra_Vector> scatrainc;
-  ExtractFieldVectors(x, porostructinc, porofluidinc, scatrainc);
+  ExtractFieldVectors(iterinc, porostructinc, porofluidinc, scatrainc);
 
   // (1) Newton update of the scatra field
   UpdateScatra(scatrainc);

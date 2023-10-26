@@ -122,7 +122,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::GetFiberVecs(
   fibervecs.push_back(A_);
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newgamma,
+void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->angle_ < -90) || (params_->angle_ > 90))

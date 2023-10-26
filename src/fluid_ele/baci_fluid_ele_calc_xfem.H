@@ -299,8 +299,8 @@ namespace DRT
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           std::set<int>& begids,  ///< ids of intersecting boundary elements
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-              conv_side_coupling  ///< contributions to coupling matrices from convective
-                                  ///< stabilizations
+              side_coupling_extra  ///< contributions to coupling matrices from convective
+                                   ///< stabilizations
       );
 
       //! evaluate Neumann boundary condition

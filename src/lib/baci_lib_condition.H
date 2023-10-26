@@ -569,7 +569,7 @@ namespace DRT
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Condition& node);
+std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond);
 
 
 #endif  // LIB_CONDITION_H

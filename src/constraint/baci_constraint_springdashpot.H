@@ -68,14 +68,14 @@ namespace UTILS
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
     void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-        const Teuchos::RCP<const Epetra_Vector> velp, const Teuchos::ParameterList& p);
+        const Teuchos::RCP<const Epetra_Vector> vel, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
     // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
     void EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
-        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velp,
+        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
         Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!

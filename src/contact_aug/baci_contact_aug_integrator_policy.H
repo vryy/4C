@@ -484,9 +484,9 @@ namespace CONTACT
       void Debug_Deriv2nd_WGap_Sl(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
-          const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac, const Deriv1stMap& d_gap_sl,
-          const Deriv2ndMap& dd_jac, const double gapn_sl, const double wgt,
-          const double jac) const;
+          const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac,
+          const Deriv1stMap& d_gapn_sl_complete, const Deriv2ndMap& dd_jac, const double gapn_sl,
+          const double wgt, const double jac) const;
 
       void Debug_Deriv1st_WGap(MORTAR::MortarElement& sele) const;
 

@@ -113,7 +113,7 @@ namespace SSTI
 
     //! assemble structure block  into system matrix for meshtying
     void AssembleStructureMeshtying(CORE::LINALG::SparseMatrix& systemmatrix_structure,
-        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structurematrix);
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structuredomain);
 
     //! assemble structure-x block into system matrix for meshtying
     void AssembleStructureXXXMeshtying(CORE::LINALG::SparseMatrix& systemmatrix_structure_x,

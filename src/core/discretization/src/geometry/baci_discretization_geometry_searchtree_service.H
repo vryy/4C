@@ -115,7 +115,7 @@ namespace CORE::GEO
    */
   void searchCollisions(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs,
       const CORE::LINALG::Matrix<9, 2>& queryKDOP, const int label,
-      const std::map<int, std::set<int>>& elementList, std::set<int>& collisions);
+      const std::map<int, std::set<int>>& elementList, std::set<int>& contactEleIds);
 
   /*!
    \brief Searches for the nearest point to the query point in elementList

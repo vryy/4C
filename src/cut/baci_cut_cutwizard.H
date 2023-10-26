@@ -299,7 +299,7 @@ namespace CORE::GEO
 
     //! Add this background mesh element to the intersection class
     void AddElement(const ::DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
-        double* myphinp = nullptr, bool ls_only_plus_domain = false);
+        double* myphinp = nullptr, bool lsv_only_plus_domain = false);
 
     //@}
 

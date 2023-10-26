@@ -37,8 +37,9 @@ namespace CONTACT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    double GetConstraintRHSNorms(const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ,
-        NOX::Abstract::Vector::NormType type, bool isScaled) const override;
+    double GetConstraintRHSNorms(const Epetra_Vector& F,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
     double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
@@ -57,15 +58,15 @@ namespace CONTACT
 
     /// Returns the active set info [derived]
     enum NOX::StatusTest::StatusType GetActiveSetInfo(
-        enum NOX::NLN::StatusTest::QuantityType qt, int& activesetsize) const override;
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
 
     /// Returns the current active set map
     Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
-        enum NOX::NLN::StatusTest::QuantityType qt) const override;
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
 
     /// Returns the old active set map of the previous Newton step
     Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-        enum NOX::NLN::StatusTest::QuantityType qt) const override;
+        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
     /// @}
 
     /// @name Merit function support functions

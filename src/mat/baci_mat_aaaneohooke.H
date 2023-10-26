@@ -164,7 +164,8 @@ namespace MAT
     void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool VisData(
+        const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
 
    private:
     /// my material parameters

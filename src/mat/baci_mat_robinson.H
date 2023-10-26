@@ -192,7 +192,7 @@ namespace MAT
 
     //! computes relative stress eta = stress - back stress
     void RelDevStress(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&,            //!< back stress tensor
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );

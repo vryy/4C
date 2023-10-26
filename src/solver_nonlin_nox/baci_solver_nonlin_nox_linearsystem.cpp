@@ -568,8 +568,8 @@ void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::createPreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
+bool NOX::NLN::LinearSystem::createPreconditioner(const NOX::Epetra::Vector& x,
+    Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const
 {
   return false;
 }

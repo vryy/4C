@@ -310,7 +310,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
+    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
     const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
@@ -424,7 +424,7 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-    const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
+    const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
 

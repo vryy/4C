@@ -958,7 +958,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystemMatrix(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate");
 
@@ -972,9 +973,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(Teuchos::RCP<const Epe
   Teuchos::RCP<const Epetra_Vector> ax;
   Teuchos::RCP<const Epetra_Vector> lagx;
 
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    ExtractFieldVectors(x, sx, fx, ax, lagx);
+    ExtractFieldVectors(step_increment, sx, fx, ax, lagx);
   }
 
   // Call all elements and assemble rhs and matrices

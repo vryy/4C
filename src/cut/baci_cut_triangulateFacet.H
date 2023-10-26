@@ -108,7 +108,7 @@ namespace CORE::GEO
 
       //! Goes clockwise from the the only no on-line point on the triangle and generates thin
       //! triangles
-      void SplitTriangleWithPointsOnLine(unsigned int head_start);
+      void SplitTriangleWithPointsOnLine(unsigned int start_id);
 
       //! Find second best ear, from the ones we discarded during the first check on the first round
       //! of earclipping

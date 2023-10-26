@@ -277,9 +277,9 @@ namespace UTILS
 
 
     int Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Epetra_Vector> dispinc,            ///< displacement increment to compute
-        const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-        const double k_ptc                              ///< for 3D-0D PTC
+        Teuchos::RCP<Epetra_Vector> dispinc,          ///< displacement increment to compute
+        const Teuchos::RCP<Epetra_Vector> rhsstruct,  ///< standard right hand side
+        const double k_ptc                            ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()

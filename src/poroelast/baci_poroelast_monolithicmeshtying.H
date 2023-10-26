@@ -43,7 +43,8 @@ namespace POROELAST
     void Update() override;
 
     //! Recover Lagrange Multiplier after Newton step
-    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x) override;
+    void RecoverLagrangeMultiplierAfterNewtonStep(
+        Teuchos::RCP<const Epetra_Vector> iterinc) override;
 
     //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
     void BuildConvergenceNorms() override;

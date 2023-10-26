@@ -179,7 +179,7 @@ namespace MAT
 
     //! calculate relative/over stress
     void RelStress(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );

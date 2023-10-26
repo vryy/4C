@@ -320,7 +320,7 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const size_t componnet) const override;
+        const size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,

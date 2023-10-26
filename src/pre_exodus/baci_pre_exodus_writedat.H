@@ -55,7 +55,7 @@ namespace EXODUS
 
   //! Elements from eblock
   void DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
-      int& struele, std::ostream& dat,
+      int& startele, std::ostream& dat,
       const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
       const int eb_id);
 

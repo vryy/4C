@@ -355,8 +355,8 @@ namespace DRT
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
       double ComputeConstrVols(
-          const CORE::LINALG::SerialDenseMatrix& xscurr,  ///< current configuration
-          const int numnode                               ///< num nodes
+          const CORE::LINALG::SerialDenseMatrix& xc,  ///< current configuration
+          const int numnode                           ///< num nodes
       );
 
 

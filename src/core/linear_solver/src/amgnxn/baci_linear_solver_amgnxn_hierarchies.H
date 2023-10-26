@@ -79,9 +79,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void Setup();
 
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> BuildMueLuHierarchy(
-        Teuchos::ParameterList paramListFromXml, int num_pde, int null_space_dim,
-        Teuchos::RCP<std::vector<double>> null_space_data, Teuchos::RCP<Epetra_Operator> A_eop,
-        int block, int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
+        Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
+        Teuchos::RCP<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
+        int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
 
     std::string ConvertInt(int number)
     {

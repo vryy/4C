@@ -107,7 +107,7 @@ namespace CONTACT
     initial state. Only if both vectors point in the same direction integration shall be performed.
 
     */
-    bool RoughCheckRefConfig(int leaf1elegid, int leaf2elegid);
+    bool RoughCheckRefConfig(int ele1gid, int ele2gid);
 
     /*!
     \brief Evaluate unbiased binary search tree

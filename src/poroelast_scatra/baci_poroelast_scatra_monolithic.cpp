@@ -279,7 +279,7 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                              vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroScatraMono::Monolithic::Evaluate");
 
@@ -289,14 +289,14 @@ void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector>
   Teuchos::RCP<const Epetra_Vector> scatrainc;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // process structure unknowns of the first field
-    porostructinc = Extractor()->ExtractVector(x, 0);
-    porofluidinc = Extractor()->ExtractVector(x, 1);
+    porostructinc = Extractor()->ExtractVector(stepinc, 0);
+    porofluidinc = Extractor()->ExtractVector(stepinc, 1);
 
     // process fluid unknowns of the second field
-    scatrainc = Extractor()->ExtractVector(x, 2);
+    scatrainc = Extractor()->ExtractVector(stepinc, 2);
   }
 
   // Newton update of the fluid field

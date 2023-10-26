@@ -179,9 +179,9 @@ namespace DRT
 
       //! calculation of interface penalty term for elliptic reinitialization
       void EvaluateInterfaceTerm(
-          CORE::LINALG::SerialDenseMatrix* emat,         //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector* erhs,         //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& boucell  //!< interface for penalty term
+          CORE::LINALG::SerialDenseMatrix* emat,       //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector* erhs,       //!< element vector to calculate
+          const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
       );
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)

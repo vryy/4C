@@ -391,49 +391,51 @@ namespace MAT
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
     void MillerBravaisToMiller(const std::vector<CORE::LINALG::Matrix<4, 1>>&
-                                   NorHex,  //!< [IN] vector of slip/twinning plane normals
-                                            //!< in Miller-Bravais index notation
+                                   plane_normal_hex,  //!< [IN] vector of slip/twinning plane
+                                                      //!< normals in Miller-Bravais index notation
         const std::vector<CORE::LINALG::Matrix<4,
-            1>>& DirHex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais index
-                          //!< notation
+            1>>& direction_hex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais
+                                 //!< index notation
         std::vector<CORE::LINALG::Matrix<3, 1>>&
-            Nor,  //!< [OUT] vector of slip/twinning plane normals in Miller index notation
+            plane_normal,  //!< [OUT] vector of slip/twinning plane normals in Miller index notation
         std::vector<CORE::LINALG::Matrix<3, 1>>&
             Dir  //!< [OUT] vector of slip/twinning directions in Miller index notation
     );
 
     //! check if two vectors are parallel by checking the angle between them
-    bool CheckParallel(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const CORE::LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
+    bool CheckParallel(const CORE::LINALG::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& vector_2                  //!< [IN] vector 2
     );
     //! check if two vectors are orthogonal by checking the angle between them
-    bool CheckOrthogonal(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const CORE::LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
+    bool CheckOrthogonal(const CORE::LINALG::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& vector_2                    //!< [IN] vector 2
     );
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res
     //! as well as the stress PK2_res for a given deformation gradient F
-    void NewtonRaphson(CORE::LINALG::Matrix<3, 3>& F,  //!< [IN] deformation gradient
-        std::vector<double>& gamma_res,                //!< [OUT] result vector of plastic shears
+    void NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_grad,  //!< [IN] deformation gradient
+        std::vector<double>& gamma_res,  //!< [OUT] result vector of plastic shears
         std::vector<double>&
-            def_dens_res,  //!< [OUT] result vector of defect densities (dislocation densities and
-                           //!< twinned volume fractions)
-        CORE::LINALG::Matrix<3, 3>& PK2_res,  //!< [OUT] 2nd Piola-Kirchhoff stress
-        CORE::LINALG::Matrix<3, 3>& FP_res    //!< [OUT] plastic deformation gradient
+            defect_densites_result,  //!< [OUT] result vector of defect densities (dislocation
+                                     //!< densities and twinned volume fractions)
+        CORE::LINALG::Matrix<3, 3>& second_pk_stress_result,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        CORE::LINALG::Matrix<3, 3>&
+            plastic_deform_grad_result  //!< [OUT] plastic deformation gradient
     );
 
     //! Evaluates the flow rule for a given total deformation gradient F,
     //! and a given vector of plastic shears gamma_trial and
     //! sets up the respective residuals residuals_trial, the 2nd Piola-Kirchhoff stress PK2_trial
     //! and trial defect densities def_dens_trial
-    void SetupFlowRule(CORE::LINALG::Matrix<3, 3> F,  //!< [IN] deformation gradient
-        std::vector<double> gamma_trial,              //!< [OUT] trial vector of plastic shears
-        CORE::LINALG::Matrix<3, 3>& FP_trial,         //!< [OUT] plastic deformation gradient
+    void SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_grad,  //!< [IN] deformation gradient
+        std::vector<double> gamma_trial,  //!< [OUT] trial vector of plastic shears
+        CORE::LINALG::Matrix<3, 3>&
+            plastic_deform_grad_trial,  //!< [OUT] plastic deformation gradient
         std::vector<double>&
-            def_dens_trial,  //!< [OUT] trial vector of defect densities (dislocation densities and
-                             //!< twinned volume fractions)
-        CORE::LINALG::Matrix<3, 3>& PK2_trial,  //!< [OUT] 2nd Piola-Kirchhoff stress
-        std::vector<double>& residuals_trial    //!< [OUT] vector of slip residuals
+            defect_densities_trial,  //!< [OUT] trial vector of defect densities (dislocation
+                                     //!< densities and twinned volume fractions)
+        CORE::LINALG::Matrix<3, 3>& second_pk_stress_trial,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        std::vector<double>& residuals_trial                 //!< [OUT] vector of slip residuals
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation

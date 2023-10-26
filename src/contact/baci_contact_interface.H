@@ -890,7 +890,7 @@ namespace CONTACT
 
     \param[in/out] lambdaglobal Matrix to be assembled into
     */
-    virtual void AssembleLinZ(CORE::LINALG::SparseMatrix& lambdaglobal);
+    virtual void AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal);
 
     /*!
     \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!

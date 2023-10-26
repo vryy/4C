@@ -910,7 +910,7 @@ void TSI::Monolithic::PTC()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
+void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -925,11 +925,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Teuchos::RCP<Epetra_Vector> tx;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // extract displacement sx and temperature tx incremental vector of global
     // unknown incremental vector x
-    ExtractFieldVectors(x, sx, tx);
+    ExtractFieldVectors(stepinc, sx, tx);
 
 #ifdef TSIMONOLITHASOUTPUT
     std::cout << "Recent thermal increment DT_n+1^i\n" << *(tx) << std::endl;

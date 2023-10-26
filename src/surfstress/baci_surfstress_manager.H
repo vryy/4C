@@ -129,11 +129,11 @@ namespace UTILS
     void StiffnessAndInternalForces(const int curvenum, const double& A,
         const Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2,
-        CORE::LINALG::SerialDenseVector& fint, CORE::LINALG::SerialDenseMatrix& stiff, const int ID,
-        const double time, const double dt, const int surface_flag, const double const_gamma,
-        const double k1xC, const double k2, const double m1, const double m2, const double gamma_0,
-        const double gamma_min, const double gamma_min_eq, const double con_quot_max,
-        const double con_quot_eq, const bool newstep);
+        CORE::LINALG::SerialDenseVector& fint, CORE::LINALG::SerialDenseMatrix& K_surf,
+        const int ID, const double time, const double dt, const int surface_flag,
+        const double const_gamma, const double k1xC, const double k2, const double m1,
+        const double m2, const double gamma_0, const double gamma_min, const double gamma_min_eq,
+        const double con_quot_max, const double con_quot_eq, const bool newstep);
 
     /*!
       \brief Surfactant model equations
@@ -154,7 +154,7 @@ namespace UTILS
     */
     void SurfactantModel(const int ID, double& gamma, double& dgamma, const double dt, double k1xC,
         double k2, const double m1, const double m2, const double gamma_0, const double gamma_min,
-        const double gamma_min_eq, const double con_quot_max, const bool newstep);
+        const double gamma_min_eq, const double con_max, const bool newstep);
 
    private:
     // don't want = operator and cctor

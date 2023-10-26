@@ -342,7 +342,7 @@ namespace BEAMINTERACTION
       /// this is necessary to avoid setting crosslinker more than once per time step
       void ManageBindingInParallel(
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>&
-              mysetbonds,  // clgid to cldata
+              mybonds,  // clgid to cldata
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
               undecidedbonds,  // owner of cldatas in vector to be requested
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelebonds) const;
@@ -386,7 +386,7 @@ namespace BEAMINTERACTION
                                                                               */
       int UpdateMyCrosslinkerAndElementBindingStates(
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
-          std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelbonds);
+          std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& myelebonds);
 
       /// bind row linker of myrank
       void UpdateMyCrosslinkerBindingStates(

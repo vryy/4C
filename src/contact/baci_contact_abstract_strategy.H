@@ -718,7 +718,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
+    CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
@@ -1296,7 +1296,7 @@ namespace CONTACT
                            "olddisplacement")
     \param vec (in): current global state of the quantity defined by statename
     */
-    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     /*! \brief Evaluate reference state
 

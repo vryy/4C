@@ -45,15 +45,14 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Add the nodal forces of beams and solid discretization to the output writer.
-   * @param output_writer_base_ptr (in/out) Output writer containting the visualization.
+   * @param visualization (in/out) Output writer containting the visualization.
    * @param discret_ptr (in) Pointer to the discretization.
    * @param displacement (in) Global displacement vector.
    * @param force (in) Global force vector.
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void AddBeamInteractionNodalForces(
-      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
-          output_writer_base_ptr,
+      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>& visualization,
       const Teuchos::RCP<const ::DRT::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
       const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);

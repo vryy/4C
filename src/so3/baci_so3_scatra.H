@@ -323,11 +323,11 @@ namespace DRT
        * @brief calculate nonlinear B-operator (6x24)
        *
        * @param[out] bop    nonlinear B-operator
-       * @param[in] defgrd  deformation gradient
+       * @param[in] defgrad  deformation gradient
        * @param[in] N_XYZ   (material) derivative of shape functions
        */
       void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          const CORE::LINALG::Matrix<numdim_, numdim_>* defgrd,
+          const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,
           const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}
 

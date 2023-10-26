@@ -2057,7 +2057,8 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
 /*----------------------------------------------------------------------*
  |  ElastinDegradation                            (private)        05/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord, double& degr)
+void MAT::ConstraintMixture::ElastinDegradation(
+    CORE::LINALG::Matrix<1, 3> coord, double& elastin_survival)
 {
   if (*params_->elastindegrad_ == "Rectangle")
   {
@@ -2098,7 +2099,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcphi = 1.0;
     }
 
-    degr = 1.0 - funcz * funcphi;
+    elastin_survival = 1.0 - funcz * funcphi;
   }
   else if (*params_->elastindegrad_ == "RectanglePlate")
   {
@@ -2138,7 +2139,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcx = 1.0;
     }
 
-    degr = 1.0 - funcz * funcx;
+    elastin_survival = 1.0 - funcz * funcx;
   }
   else if (*params_->elastindegrad_ == "Wedge")
   {
@@ -2165,7 +2166,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       funcz = 1.0;
     }
 
-    degr = 1.0 - funcz;
+    elastin_survival = 1.0 - funcz;
   }
   else if (*params_->elastindegrad_ == "Circles")
   {
@@ -2204,7 +2205,7 @@ void MAT::ConstraintMixture::ElastinDegradation(CORE::LINALG::Matrix<1, 3> coord
       func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * M_PI));
     }
     double func = std::max(func1, func2);
-    degr = 1.0 - func;
+    elastin_survival = 1.0 - func;
   }
 }
 

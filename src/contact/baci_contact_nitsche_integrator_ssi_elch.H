@@ -79,8 +79,8 @@ namespace CONTACT
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
         const CORE::LINALG::Matrix<dim, 1>& master_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
-        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_data,
-        ElementDataBundle<dim>& electrolyte_data);
+        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
+        ElementDataBundle<dim>& electrolyte_quantities);
 
     /*!
      * @brief calculate the determinant of the deformation gradient in the parent element at the

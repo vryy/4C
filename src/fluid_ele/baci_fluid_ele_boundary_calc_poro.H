@@ -237,14 +237,14 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t
-      to fluid dofs \param elemat2 (out)      : matrix to be filled by element. D matrix (mortar
-      nomenclature) \param elevec1 (out)      : vector to be filled by element. Residual of the
+      \param k_fluid (out)      : matrix to be filled by element. Linearization of constraint w.r.t
+      to fluid dofs
+      \param rhs (out)      : vector to be filled by element. Residual of the
       constraint.
       */
       void NoPenetrationMatAndRHS(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief apply no penetration boundary condition
@@ -253,7 +253,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatAndRHS(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -263,13 +263,13 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t
-      to structure dofs \param elemat2 (out)      : matrix to be filled by element. Linearization of
-      constraint w.r.t to lagrange multiplier
+      \param k_struct (out)      : matrix to be filled by element. Linearization of constraint w.r.t
+      to structure dofs \param k_lambda (out)      : matrix to be filled by element. Linearization
+      of constraint w.r.t to lagrange multiplier
       */
       void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -278,7 +278,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -288,12 +288,12 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t
+      \param k_pres (out)      : matrix to be filled by element. Linearization of constraint w.r.t
       pressure part ofporosity
       */
       void NoPenetrationMatODPoroPres(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& k_pres);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -302,7 +302,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatODPoroPres(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& k_pres);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -312,12 +312,12 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t
+      \param k_disp (out)      : matrix to be filled by element. Linearization of constraint w.r.t
       displacement part ofporosity
       */
       void NoPenetrationMatODPoroDisp(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& k_disp);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -326,7 +326,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatODPoroDisp(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& k_disp);
 
 
       /*!

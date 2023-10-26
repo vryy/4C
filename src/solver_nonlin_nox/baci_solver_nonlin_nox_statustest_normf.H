@@ -97,7 +97,7 @@ namespace NOX
           grp (i.e., grp.isF() is false).
         */
         Teuchos::RCP<const std::vector<double>> ComputeNorm(
-            Teuchos::RCP<const NOX::Abstract::Group>& initialGuess);
+            Teuchos::RCP<const NOX::Abstract::Group>& grp);
 
        protected:
         //! number of status tests

@@ -101,7 +101,7 @@ namespace ADAPTER
     virtual void ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// apply the interface displacements to the fluid
-    virtual void ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+    virtual void ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> interface_disp);
 
     /// convert increment of displacement to increment in velocity
     void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override;

@@ -312,7 +312,7 @@ namespace CORE::GEO
     class Tri6SideHandle : public QuadraticSideHandle
     {
      public:
-      Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
+      Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
       ::DRT::Element::DiscretizationType Shape() override
       {
@@ -330,7 +330,7 @@ namespace CORE::GEO
     class Quad4SideHandle : public QuadraticSideHandle
     {
      public:
-      Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
+      Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
       ::DRT::Element::DiscretizationType Shape() override
       {
@@ -345,7 +345,7 @@ namespace CORE::GEO
     class Quad8SideHandle : public QuadraticSideHandle
     {
      public:
-      Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
+      Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
       ::DRT::Element::DiscretizationType Shape() override
       {
@@ -360,7 +360,7 @@ namespace CORE::GEO
     class Quad9SideHandle : public QuadraticSideHandle
     {
      public:
-      Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
+      Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
       ::DRT::Element::DiscretizationType Shape() override
       {

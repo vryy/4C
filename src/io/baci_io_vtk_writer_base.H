@@ -120,7 +120,7 @@ class VtkWriterBase
    *  \author grill
    *  \date 03/17 */
   void SetAndCreateVtkWorkingDirectory(const std::string& path_existing_working_directory,
-      const std::string& name_new_vtk_subdirectory);
+      const std::string& name_vtk_subdirectory_to_be_created);
 
   /** \brief reset current simulation time and time step number
    *

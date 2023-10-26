@@ -246,7 +246,7 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType parentdistype>
       double CalculateDetFOfParentElement(
-          const DRT::FaceElement* faceele, const double* faceele_xsi);
+          const DRT::FaceElement* faceele, const double* faceele_xi);
 
       /*!
        * @brief Method that calculates the prefactor indicating if interface at current gauss point

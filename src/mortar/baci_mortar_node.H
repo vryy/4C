@@ -710,7 +710,7 @@ namespace MORTAR
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& cnode);
+std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode);
 
 
 #endif  // MORTAR_NODE_H

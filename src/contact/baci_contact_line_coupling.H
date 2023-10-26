@@ -46,7 +46,7 @@ namespace CONTACT
 
      */
     LineToSurfaceCoupling3d(DRT::Discretization& idiscret, int dim, Teuchos::ParameterList& params,
-        CoElement& sele, Teuchos::RCP<MORTAR::MortarElement>& lsele,
+        CoElement& pEle, Teuchos::RCP<MORTAR::MortarElement>& lEle,
         std::vector<CoElement*> surfEles, LineToSurfaceCoupling3d::intType itype);
 
     /*!
@@ -137,8 +137,8 @@ namespace CONTACT
      \brief create intersections
 
      */
-    virtual bool LineToLineClipping(MORTAR::Vertex& edgeVertex0, MORTAR::Vertex& edgeVertex1,
-        MORTAR::Vertex& lineVertex0, MORTAR::Vertex& lineVertex1);
+    virtual bool LineToLineClipping(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
+        MORTAR::Vertex& lineVertex1, MORTAR::Vertex& lineVertex0);
 
     /*!
      \brief check if all vertices are along a line

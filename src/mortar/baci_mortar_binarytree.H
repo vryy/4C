@@ -86,13 +86,13 @@ namespace MORTAR
     \brief Update slabs of current treenode in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps) final;
+    void UpdateSlabsBottomUp(double& enlarge) final;
 
     /*!
     \brief Initialize Tree
 
     */
-    void InitializeTree(double& eps);
+    void InitializeTree(double& enlarge);
 
     /*!
     \brief Divide a TreeNode into two child nodes

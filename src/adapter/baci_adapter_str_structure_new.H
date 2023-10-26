@@ -624,10 +624,10 @@ namespace ADAPTER
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
-        Teuchos::ParameterList& timeadaptivity);
+        Teuchos::ParameterList& time_adaptivity_params);
 
     /// Create, initialize and setup the global state data container
-    virtual void SetGlobalState(Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+    virtual void SetGlobalState(Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
         const Teuchos::RCP<const ::STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
@@ -640,7 +640,7 @@ namespace ADAPTER
     /// set the final structure time integrator object
     virtual void SetStructureWrapper(const Teuchos::ParameterList& ioflags,
         const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
-        const Teuchos::ParameterList& timeadaptivity,
+        const Teuchos::ParameterList& time_adaptivity_params,
         Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 
     /// create the time integrator wrapper

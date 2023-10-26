@@ -265,7 +265,7 @@ namespace MAT
      * \param Out
      * growthfunc - the value of the growthfunction
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      *
@@ -282,7 +282,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -291,7 +291,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM,
+    virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig,
         double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -301,7 +301,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -312,7 +312,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     virtual void EvaluateGrowthFunctionDerivC(
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -514,7 +514,7 @@ namespace MAT
      * \param Out
      * growthfunc - the value of the growthfunction
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      *
@@ -531,7 +531,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -540,7 +540,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
+    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -551,7 +551,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -562,7 +562,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         const CORE::LINALG::Matrix<3, 1>& direction) override;
@@ -658,7 +658,7 @@ namespace MAT
      * \param Out
      * growthfunc - the value of the growthfunction
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      *
@@ -675,7 +675,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -684,7 +684,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
+    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -695,7 +695,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -706,7 +706,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         const CORE::LINALG::Matrix<3, 1>& direction) override;
@@ -789,7 +789,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -798,7 +798,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
+    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -809,7 +809,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -820,7 +820,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         const CORE::LINALG::Matrix<3, 1>& direction) override;
@@ -891,7 +891,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -900,7 +900,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
+    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -911,7 +911,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -922,7 +922,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         const CORE::LINALG::Matrix<3, 1>& direction) override;
@@ -1014,7 +1014,7 @@ namespace MAT
      * \param Out
      * growthfunc - the value of the growthfunction
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      *
@@ -1031,7 +1031,7 @@ namespace MAT
      * \param Out
      * dgrowthfunctheta - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -1040,7 +1040,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
+    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -1051,7 +1051,7 @@ namespace MAT
      * \param Out
      * dgrowthfuncdC - derivation of the growthfunction wrt theta
      * \param In
-     * traceM - the trace of the mandel stress
+     * growthtrig - the trace of the mandel stress
      * \param In
      * theta - the current growth factor theta
      * \param In
@@ -1062,7 +1062,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         const CORE::LINALG::Matrix<3, 1>& direction) override;

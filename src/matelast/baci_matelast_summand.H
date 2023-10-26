@@ -719,7 +719,7 @@ namespace MAT
       };
 
       //! Read FIBERn
-      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& kenner,
+      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& specifier,
           CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR

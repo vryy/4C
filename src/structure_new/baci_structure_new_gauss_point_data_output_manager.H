@@ -119,11 +119,11 @@ namespace STR
       void UnpackQuantities(std::size_t pos, const std::vector<char>& data,
           std::unordered_map<std::string, int>& quantities) const;
 
-      void PrepareNodalDataVectors(const Epetra_Map& nodal_col_map);
+      void PrepareNodalDataVectors(const Epetra_Map& node_col_map);
 
-      void PrepareElementCenterDataVectors(const Epetra_Map& nodal_col_map);
+      void PrepareElementCenterDataVectors(const Epetra_Map& element_col_map);
 
-      void PrepareGaussPointDataVectors(const Epetra_Map& nodal_col_map);
+      void PrepareGaussPointDataVectors(const Epetra_Map& element_col_map);
 
       //! output type of the data
       INPAR::STR::GaussPointDataOutputType output_type_;

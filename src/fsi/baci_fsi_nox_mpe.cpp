@@ -50,13 +50,13 @@ bool NOX::FSI::MinimalPolynomial::reset(
 
 
 bool NOX::FSI::MinimalPolynomial::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
 {
   // We work in a local copy of the group so that we do not spoil the
   // current state.
-  NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
+  NOX::Epetra::Group group(dynamic_cast<NOX::Epetra::Group&>(grp));
 
-  const NOX::Abstract::Vector& x = soln.getX();
+  const NOX::Abstract::Vector& x = group.getX();
 
   std::vector<Teuchos::RCP<NOX::Epetra::Vector>> q;
   CORE::LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
@@ -70,11 +70,11 @@ bool NOX::FSI::MinimalPolynomial::compute(
     NOX::Abstract::Group::ReturnType status;
 
     // Compute F at current solution
-    status = grp.computeF();
+    status = group.computeF();
     if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
     // get f = d(k+1) - d(k)
-    const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
+    const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(group.getF());
 
     // We have to work on the scaled residual here.
     Teuchos::RCP<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
@@ -184,7 +184,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
     // Note: We do not use any extrapolated vector here but simply go
     // on with the series of vectors. The fixed relaxation is needed
     // to keep the iteration from diverging.
-    grp.computeX(grp, f, omega_);
+    group.computeX(group, f, omega_);
   }
 
   // calc extrapolated vector
@@ -213,10 +213,10 @@ bool NOX::FSI::MinimalPolynomial::compute(
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln,
+bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& group,
     const NOX::Solver::LineSearchBased& solver)
 {
-  return NOX::Direction::Generic::compute(dir, soln, solver);
+  return NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 

@@ -375,12 +375,12 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
 void Beam3ContactOctTree::OctreeOutput(
-    std::vector<std::vector<DRT::Element*>> cpairelements, int step)
+    std::vector<std::vector<DRT::Element*>> contactpairelements, int step)
 {
   if (!discret_.Comm().MyPID() && step != -1)
   {
     // active contact pairs
-    if ((int)cpairelements.size() > 0)
+    if ((int)contactpairelements.size() > 0)
     {
       // Print ContactPairs to .dat-file and plot with Matlab....................
       std::ostringstream filename;
@@ -391,8 +391,8 @@ void Beam3ContactOctTree::OctreeOutput(
       FILE* fp = nullptr;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
-      for (int i = 0; i < (int)cpairelements.size(); i++)
-        myfile << ((cpairelements[i])[0])->Id() << "  " << ((cpairelements[i][1]))->Id()
+      for (int i = 0; i < (int)contactpairelements.size(); i++)
+        myfile << ((contactpairelements[i])[0])->Id() << "  " << ((contactpairelements[i][1]))->Id()
                << std::endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);

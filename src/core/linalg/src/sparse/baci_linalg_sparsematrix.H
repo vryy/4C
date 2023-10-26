@@ -517,7 +517,7 @@ namespace CORE::LINALG
     /*!
        Used by public Split, does not call Complete() on output matrix.
      */
-    void SplitMxN(BlockSparseMatrixBase& Abase) const;
+    void SplitMxN(BlockSparseMatrixBase& ABlock) const;
 
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;

@@ -54,7 +54,7 @@ namespace CONTACT
      public:
       /// constructor
       ComboStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
-          const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+          const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map,
           const Teuchos::ParameterList& params, const plain_strategy_set& strategies,
           const plain_lin_solver_set& lin_solvers, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof);

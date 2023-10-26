@@ -85,7 +85,7 @@ namespace CONTACT
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
       void Read(const DRT::Problem& problem, DRT::INPUT::DatFileReader& reader,
-          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> mmap);
+          Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws
       std::ostream& Print(std::ostream& stream,  ///< the output stream

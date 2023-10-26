@@ -310,7 +310,7 @@ namespace DRT
       //! Add whatever your material needs, but make sure that exchange is not
       //! overdone performance-wise.
       void Materialize(CORE::LINALG::Matrix<numstr_, 1>*
-                           stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
+                           couplstress,  //!< (o): Voigt-Vector of stresses at current gp
           CORE::LINALG::Matrix<numstr_, 1>*
               ctemp,  //!< (o): temperature dependent tangent matrix at current gp
           CORE::LINALG::Matrix<1, 1>*

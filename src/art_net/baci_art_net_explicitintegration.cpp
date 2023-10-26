@@ -480,12 +480,6 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
   scatraO2np_->Update(1.0, *scatra_bcval_, 1.0);
 }
 
-
-/*----------------------------------------------------------------------*
- | build system matrix and rhs                              ismail 06/09|
- *----------------------------------------------------------------------*/
-void ART::ArtNetExplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael) {}
-
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                                      |

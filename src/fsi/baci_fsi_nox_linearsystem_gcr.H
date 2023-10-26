@@ -53,7 +53,7 @@ namespace NOX
 
      public:
       //! Constructor with a user supplied Jacobian Operator.
-      LinearSystemGCR(Teuchos::ParameterList& printingParams,
+      LinearSystemGCR(Teuchos::ParameterList& printParams,
           Teuchos::ParameterList& linearSolverParams,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -218,8 +218,7 @@ namespace NOX
         GMRES methods, Num. Lin. Alg. Appl., 1 (1994),
         pp. 369--386. http://citeseer.ist.psu.edu/vandervorst91gmresr.html
        */
-      int SolveGCR(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result, int& maxit, double& tol);
+      int SolveGCR(const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& maxit, double& tol);
 
       /// GMRES solver
       /*!
@@ -232,7 +231,7 @@ namespace NOX
         (1993)
       */
       int SolveGMRES(
-          const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& maxit, double& tol, int m);
+          const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& max_iter, double& tol, int m);
 
       /// helper for GMRES
       void ApplyPlaneRotation(double& dx, double& dy, double& cs, double& sn);

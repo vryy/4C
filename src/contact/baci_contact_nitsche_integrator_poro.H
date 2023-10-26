@@ -109,22 +109,22 @@ namespace CONTACT
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test_val, const CORE::GEN::pairedvector<int, double>& test_deriv_d,
         const CORE::GEN::pairedvector<int, double>& test_deriv_p,
-        const CORE::LINALG::Matrix<dim, 1>& normal,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv);
+        const CORE::LINALG::Matrix<dim, 1>& test_dir,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
     void IntegratePoroNoOutFlow(const double fac, MORTAR::MortarElement& ele, double* xi,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const double jac, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
-        const double wgt, const CORE::LINALG::Matrix<dim, 1>& test_dir,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv,
+        const double wgt, const CORE::LINALG::Matrix<dim, 1>& normal,
+        const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
         MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape);
 
     bool GetPoroPressure(MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
         MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape,
         double& poropressure);
 
-    void GetPoroQuantitiesatGP(MORTAR::MortarElement& ele, double* xi, double& savpresgp,  //(in)
+    void GetPoroQuantitiesatGP(MORTAR::MortarElement& ele, double* xi, double& spresgp,  //(in)
         double& sJ, std::map<int, double>& sJLin, double& sporosity, double& sdphi_dp,
         double& sdphi_dJ);  // out
 

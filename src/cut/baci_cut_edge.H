@@ -201,7 +201,7 @@ namespace CORE::GEO
       const std::vector<Node*>& Nodes() const { return nodes_; }
 
       /// Find common points (excluding cut_points points) between two edges
-      void CommonNodalPoints(Edge* edge, std::vector<Point*>& nodes);
+      void CommonNodalPoints(Edge* edge, std::vector<Point*>& common);
 
       bool FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other);
 
@@ -315,7 +315,7 @@ namespace CORE::GEO
         }
       }
 
-      void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
+      void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) override;
 
       /*! \brief Handles intersection of two edges that are close to each other */

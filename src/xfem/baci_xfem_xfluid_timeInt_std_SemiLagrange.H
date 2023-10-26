@@ -109,7 +109,7 @@ namespace XFEM
     void newIteration_prepare(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! gradients at a node
-    void newIteration_nodalData(std::vector<Teuchos::RCP<Epetra_Vector>> newColVectors);
+    void newIteration_nodalData(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! reinitialize some data for new computations, e.g. at a new FGI
     void reinitializeData();
@@ -178,7 +178,7 @@ namespace XFEM
     void exportAlternativAlgoData();
 
     //! export data to neighbour proc in Newton loop
-    void exportIterData(bool& procfinished);
+    void exportIterData(bool& procDone);
 
 
     /*========================================================================*/

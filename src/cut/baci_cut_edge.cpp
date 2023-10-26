@@ -221,9 +221,9 @@ void CORE::GEO::CUT::Edge::GetCutPoints(Edge* other, PointSet& cuts)
 }
 
 /// Find common points (excluding cut_points points) between two edges
-void CORE::GEO::CUT::Edge::CommonNodalPoints(Edge* other, std::vector<Point*>& common)
+void CORE::GEO::CUT::Edge::CommonNodalPoints(Edge* edge, std::vector<Point*>& common)
 {
-  const std::vector<Node*>& other_nodes = other->Nodes();
+  const std::vector<Node*>& other_nodes = edge->Nodes();
   const std::vector<Node*>& my_nodes = Nodes();
   for (std::vector<Node*>::const_iterator it = other_nodes.begin(); it != other_nodes.end(); ++it)
   {

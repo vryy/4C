@@ -281,7 +281,7 @@ namespace MAT
 
     /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of
     /// a cylinder
-    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<1, 3> gprefecoord, double const dt);
+    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<1, 3> elecenter, double const dt);
 
     /// Setup anisotropic growth tensors. Here we assume that the growth direction corresponds with
     /// the radial/ thickness direction
@@ -412,8 +412,8 @@ namespace MAT
         CORE::LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse growth deformation
                                                       ///< gradient w.r.t. the mass density
         CORE::LINALG::Matrix<1, 6> const&
-            sum_drhoC,  ///< Sum over all fiber families of the derivatives of the individual mass
-                        ///< density w.r.t. right Cauchy Green tensor
+            sum_drhodC,  ///< Sum over all fiber families of the derivatives of the individual mass
+                         ///< density w.r.t. right Cauchy Green tensor
         CORE::LINALG::Matrix<6, 9> const&
             dSdiFg,           ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
                               ///< the inverse inelastic growth deformation gradient

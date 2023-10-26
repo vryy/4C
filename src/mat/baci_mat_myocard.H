@@ -192,10 +192,10 @@ namespace MAT
     double ReaCoeffN(const double phi, const double dt, int gp) const;
 
     /// compute reaction coefficient derivative
-    double ReaCoeffDeriv(const double csnp, const double dt) const;
+    double ReaCoeffDeriv(const double phi, const double dt) const;
 
     /// compute reaction coefficient derivative for multiple points per element
-    double ReaCoeffDeriv(const double csnp, const double dt, int gp) const;
+    double ReaCoeffDeriv(const double phi, const double dt, int gp) const;
 
     /// compute Heaviside step function
     double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,

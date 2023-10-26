@@ -274,7 +274,7 @@ namespace DRT
 
    \note If record with name name already exists, it will be overwritten
    */
-    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> data);
+    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix);
 
     /*!
    \brief Add Teuchos::rcp to Epetra_MultiVector to the container
@@ -551,7 +551,7 @@ namespace DRT
 }  // namespace DRT
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Container& node);
+std::ostream& operator<<(std::ostream& os, const DRT::Container& cont);
 
 
 

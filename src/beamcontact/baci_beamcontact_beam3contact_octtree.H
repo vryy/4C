@@ -63,7 +63,7 @@ class Beam3ContactOctTree
       CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID);
 
   /*!\brief output of octree discretization, bounding boxes and contact pairs
-   * \param cpairs (in) vector with contact pairs
+   * \param contactpairelements (in) vector with contact pairs
    * \param step   (in) time step */
   void OctreeOutput(std::vector<std::vector<DRT::Element*>> contactpairelements, int step);
 

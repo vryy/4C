@@ -65,7 +65,7 @@ namespace NOX
             const Teuchos::RCP<NOX::Abstract::Group>& grp,
             const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-            const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+            const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
       };
 
       /*! \brief Nonmember helper function for the NOX::Constraint::Solver::Factory.
@@ -77,7 +77,7 @@ namespace NOX
       Teuchos::RCP<NOX::Solver::Generic> BuildSolver(const Teuchos::RCP<NOX::Abstract::Group>& grp,
           const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
           const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-          const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+          const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
 
     }  // namespace Solver
   }    // namespace NLN

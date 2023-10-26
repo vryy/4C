@@ -876,7 +876,7 @@ namespace MORTAR
     \brief Evaluate 2nd derivative of shape functions
     */
     virtual bool Evaluate2ndDerivShape(
-        const double* xi, CORE::LINALG::SerialDenseMatrix& val, const int& valdim);
+        const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim);
 
     template <unsigned elenumnode>
     inline bool Evaluate2ndDerivShape(

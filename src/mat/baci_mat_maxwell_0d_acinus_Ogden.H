@@ -146,7 +146,7 @@ namespace MAT
     void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int eleID) override;
+    bool VisData(const std::string& name, std::vector<double>& data, int eleGID) override;
 
     /// Return value of class parameter
     double GetParams(std::string parametername) override;

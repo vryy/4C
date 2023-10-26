@@ -26,7 +26,7 @@ namespace CORE::LINALG
    \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
    \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
    */
-  void SVD(const CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix& U,
+  void SVD(const CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix& Q,
       CORE::LINALG::SerialDenseMatrix& SIGMA, CORE::LINALG::SerialDenseMatrix& Vt);
 
   /*!

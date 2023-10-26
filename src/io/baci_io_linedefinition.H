@@ -180,8 +180,7 @@ namespace DRT::INPUT
        * that gives the length of the vector. The integer component has to
        * precede the vector definition on the input line.
        */
-      Builder& AddOptionalNamedDoubleVector(
-          const std::string& name, LengthDefinition length_definition);
+      Builder& AddOptionalNamedDoubleVector(const std::string& name, LengthDefinition lengthdef);
 
       /// Add a name followed by a vector of string variables.
       Builder& AddOptionalNamedStringVector(const std::string& name, int length);
@@ -194,8 +193,7 @@ namespace DRT::INPUT
        * precede the vector definition on the input line.
        * The space defines the separation between a string and the next one.
        */
-      Builder& AddOptionalNamedStringVector(
-          const std::string& name, LengthDefinition length_definition);
+      Builder& AddOptionalNamedStringVector(const std::string& name, LengthDefinition lengthdef);
 
       /*!
        * Add a name followed by a vector of double variables.
@@ -205,7 +203,7 @@ namespace DRT::INPUT
        * precede the vector definition on the input line.
        */
       Builder& AddOptionalNamedPairOfStringAndDoubleVector(
-          const std::string& name, LengthDefinition length_definition);
+          const std::string& name, LengthDefinition lengthdef);
 
      private:
       /// Implementation details are hidden behind the PIMPL idiom.

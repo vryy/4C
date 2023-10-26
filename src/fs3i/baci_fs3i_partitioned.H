@@ -89,8 +89,7 @@ namespace FS3I
 
     /// create a volmortar object
     Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
-        Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> structscatradis);
+        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
     void SetupSystem() override;

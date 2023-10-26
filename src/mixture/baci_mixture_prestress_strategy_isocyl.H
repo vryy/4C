@@ -89,7 +89,7 @@ namespace MIXTURE
      * \return double Fraction of the membrane stress contribution to ensure equilibrium
      */
     double EvaluateMueFrac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 

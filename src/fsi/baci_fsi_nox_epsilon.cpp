@@ -41,21 +41,21 @@ bool NOX::FSI::EpsilonExtrapolation::reset(
 
 
 bool NOX::FSI::EpsilonExtrapolation::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
 {
   // We work in a local copy of the group so that we do not spoil the
   // current state.
-  NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
+  NOX::Epetra::Group group(dynamic_cast<NOX::Epetra::Group&>(grp));
 
   // Compute F at current solution
-  NOX::Abstract::Group::ReturnType status = grp.computeF();
+  NOX::Abstract::Group::ReturnType status = group.computeF();
   if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
   // get f = d(k+1) - d(k)
-  const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
-  grp.computeX(grp, f, omega_);
+  const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(group.getF());
+  group.computeX(group, f, omega_);
 
-  const NOX::Abstract::Vector& x = grp.getX();
+  const NOX::Abstract::Vector& x = group.getX();
 
   std::vector<Teuchos::RCP<NOX::Epetra::Vector>> epslist(maxcol_ + 1);
   epslist[0] = Teuchos::rcp(new NOX::Epetra::Vector(dynamic_cast<const NOX::Epetra::Vector&>(x)));
@@ -69,11 +69,11 @@ bool NOX::FSI::EpsilonExtrapolation::compute(
   for (int k = 0; k < kmax_; ++k)
   {
     // Compute F at current solution
-    status = grp.computeF();
+    status = group.computeF();
     if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
     // get f = d(k+1) - d(k)
-    const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
+    const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(group.getF());
 
     // We have to work on the scaled residual here.
     Teuchos::RCP<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
@@ -123,7 +123,7 @@ bool NOX::FSI::EpsilonExtrapolation::compute(
     // Note: We do not use any extrapolated vector here but simply go
     // on with the series of vectors. The fixed relaxation is needed
     // to keep the iteration from diverging.
-    grp.computeX(grp, f, omega_);
+    group.computeX(group, f, omega_);
   }
 
   // set direction from original position
@@ -140,10 +140,10 @@ bool NOX::FSI::EpsilonExtrapolation::compute(
 }
 
 
-bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln,
-    const NOX::Solver::LineSearchBased& solver)
+bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
+    NOX::Abstract::Group& group, const NOX::Solver::LineSearchBased& solver)
 {
-  return NOX::Direction::Generic::compute(dir, soln, solver);
+  return NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 

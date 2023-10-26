@@ -68,7 +68,8 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) = 0;
 
       /// Internal implementation class for acinus element
-      static RedAirBloodScatraLine3ImplInterface* Impl(DRT::ELEMENTS::RedAirBloodScatraLine3* elem);
+      static RedAirBloodScatraLine3ImplInterface* Impl(
+          DRT::ELEMENTS::RedAirBloodScatraLine3* red_acinus);
     };
 
 
@@ -126,13 +127,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
           CORE::LINALG::SerialDenseMatrix& estif, CORE::LINALG::SerialDenseVector& eforce,
           Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, double time,
-          double dt);
+          double dt){};
 
 
       void EvaluateTerminalBC(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -158,7 +159,7 @@ namespace DRT
       void CalcFlowRates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
        \Essential functions to evaluate the coupled results
@@ -170,7 +171,7 @@ namespace DRT
       void SolveBloodAirTransport(RedAirBloodScatraLine3* ele,
           CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<MAT::Material> material) override{};
 
      private:
     };

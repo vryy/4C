@@ -122,11 +122,11 @@ namespace EXODUS
 
     //! Transform SideSet into NodeSet
     NodeSet SideSetToNodeSet(
-        const SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const;
+        const SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const;
 
     //! Get Set of Nodes in SideSet
     std::set<int> GetSideSetNodes(
-        const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sideconn) const;
+        const EXODUS::SideSet& sideset, const std::map<int, std::vector<int>>& sidesetconn) const;
 
     //! Get Node map
     Teuchos::RCP<std::map<int, std::vector<double>>> GetNodes() const { return nodes_; }

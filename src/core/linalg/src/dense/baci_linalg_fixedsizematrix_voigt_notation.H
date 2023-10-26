@@ -52,8 +52,8 @@ namespace CORE::LINALG::VOIGT
      *  \param[in] vtensor      input tensor in Voigt <type> notation
      *  \param[in] vtensor_pow  result, i.e. input tensor to the given power
      */
-    static void PowerOfSymmetricTensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& vtensor,
-        CORE::LINALG::Matrix<6, 1>& vtensor_pow);
+    static void PowerOfSymmetricTensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& strain,
+        CORE::LINALG::Matrix<6, 1>& strain_pow);
 
     /** \brief Compute the inverse tensor in perturbed Voigt notation
      *
@@ -61,7 +61,7 @@ namespace CORE::LINALG::VOIGT
      *  \param[out] vtensor_inv  inverse tensor in Voigt <type> notation
      */
     static void InverseTensor(
-        const CORE::LINALG::Matrix<6, 1>& vtensor, CORE::LINALG::Matrix<6, 1>& vtensor_inv);
+        const CORE::LINALG::Matrix<6, 1>& tens, CORE::LINALG::Matrix<6, 1>& tens_inv);
 
     /**
      * \brief Compute the determinant of a matrix in Voigt <type> notation
@@ -103,7 +103,7 @@ namespace CORE::LINALG::VOIGT
      *  \param[in]  vtensor      tensor in Voigt <type> notation
      *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
      */
-    static void MultiplyTensorVector(const CORE::LINALG::Matrix<6, 1>& vtensor,
+    static void MultiplyTensorVector(const CORE::LINALG::Matrix<6, 1>& strain,
         const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& vec_res);
 
     /** \brief Compute the symmetric outer product of two vectors
@@ -170,7 +170,7 @@ namespace CORE::LINALG::VOIGT
      *
      *  \param[out] tensor  scale the off-diagonal values of this tensor
      */
-    static void ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& tensor);
+    static void ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain);
 
     /** \brief unscale off diagonal values
      *

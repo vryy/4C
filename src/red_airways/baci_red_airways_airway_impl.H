@@ -165,9 +165,8 @@ namespace DRT
 
 
       void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& disctretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          DRT::Discretization& discretization, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -214,7 +213,7 @@ namespace DRT
        \Essential functions to compute the volume mixing and  flowing into a junction
       */
       void SolveScatra(RedAirway* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) override;
 
@@ -251,7 +250,7 @@ namespace DRT
       void EvalNodalEssentialValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
           CORE::LINALG::SerialDenseVector& nodal_volume,
-          CORE::LINALG::SerialDenseVector& nodal_flow, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) override;
 
 

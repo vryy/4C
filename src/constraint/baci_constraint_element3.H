@@ -312,7 +312,7 @@ namespace DRT
 
       /// Compute difference of spatial configuration to masternode in given direction
       double ComputeWeightedDistance(
-          const CORE::LINALG::Matrix<2, 3> x, const std::vector<double> direct);
+          const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct);
     };  // class ConstraintElement3
 
 

@@ -257,7 +257,7 @@ namespace IO
      *
      *  \author hiermeier \date 08/17 */
     DiscretizationWriter(const IO::DiscretizationWriter& writer,
-        const Teuchos::RCP<OutputControl>& output, enum CopyType type);
+        const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
     virtual ~DiscretizationWriter();
@@ -356,7 +356,7 @@ namespace IO
     virtual void WriteNodeData(bool writeowner);
 
     //! write a non discretisation based vector of chars
-    virtual void WriteCharVector(const std::string name, Teuchos::RCP<std::vector<char>> doublevec);
+    virtual void WriteCharVector(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
 
     //! write a non discretisation based vector of doubles
     /*!
@@ -374,7 +374,7 @@ namespace IO
       communicated to all present procs.
      */
     virtual void WriteRedundantIntVector(
-        const std::string name, Teuchos::RCP<std::vector<int>> setint);
+        const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
 
 
     /// overwrite result files

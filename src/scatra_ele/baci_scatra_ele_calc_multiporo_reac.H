@@ -260,7 +260,7 @@ namespace DRT
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,  //!< number of dofs per node of fluid element // only a dummy
                                        //!< variable
-          const double timefacfac,     //!< domain-integration factor times time-integration factor
+          const double rhsfac,         //!< domain-integration factor times time-integration factor
           const double densnp,         //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
           ) override;

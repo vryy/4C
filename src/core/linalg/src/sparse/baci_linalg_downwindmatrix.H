@@ -115,7 +115,7 @@ namespace CORE::LINALG
 
     /// sets an index in the Hackbusch method
     void SetL(
-        const int i, int& nf, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
+        const int i, int& nl, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
 
     /// Do downwinding according to Bey & Wittum
     void DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,

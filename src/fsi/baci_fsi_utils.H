@@ -86,13 +86,13 @@ namespace FSI
 
       /// Compute new coupling matrices D and M for solid/fluid
       void EvaluateMortar(Teuchos::RCP<Epetra_Vector> idispstruct,  ///< displacement of structure
-          Teuchos::RCP<Epetra_Vector> idispale,                     ///< (proj.) displacement of ale
+          Teuchos::RCP<Epetra_Vector> idispfluid,                   ///< (proj.) displacement of ale
           ::CORE::ADAPTER::CouplingMortar& coupsf                   ///< mortar adapter
       );
 
       /// Compute new coupling matrices D and M for solid/ale coupling
-      void EvaluateFluidMortar(Teuchos::RCP<Epetra_Vector> idispma,  ///< displacement of structure
-          Teuchos::RCP<Epetra_Vector> idispsl  ///< (proj.) displacement of ale
+      void EvaluateFluidMortar(Teuchos::RCP<Epetra_Vector> ima,  ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> isl                        ///< (proj.) displacement of ale
       );
 
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after

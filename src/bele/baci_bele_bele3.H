@@ -217,8 +217,8 @@ namespace DRT
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
       double ComputeConstrVols(
-          const CORE::LINALG::SerialDenseMatrix& xscurr,  ///< current configuration
-          const int numnode                               ///< num nodes
+          const CORE::LINALG::SerialDenseMatrix& xc,  ///< current configuration
+          const int numnode                           ///< num nodes
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
@@ -381,7 +381,7 @@ namespace DRT
 
 
       //! compute infintesimal line element dr for integration along the line
-      double f2_substitution(const CORE::LINALG::SerialDenseMatrix xyze,
+      double f2_substitution(const CORE::LINALG::SerialDenseMatrix xye,
           const CORE::LINALG::SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL

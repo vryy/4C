@@ -48,8 +48,7 @@ namespace BEAMINTERACTION
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
               assembly_contact_elepairs,
           const Teuchos::RCP<const ::DRT::Discretization>& discret,
-          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>&
-              beam_contact_params_ptr);
+          const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params);
 
       /**
        * \brief Destructor.

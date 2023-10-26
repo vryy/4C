@@ -477,7 +477,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdim_, numnod_>& derivs_ortho, double& G1G2_cn,
           CORE::LINALG::Matrix<noddof_, 1>& dXds1, CORE::LINALG::Matrix<noddof_, 1>& dXds2,
           CORE::LINALG::Matrix<noddof_, 1>& dxds1, CORE::LINALG::Matrix<noddof_, 1>& dxds2,
-          CORE::LINALG::Matrix<noddof_, noddof_>& Q_trafo) const;
+          CORE::LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const;
 
       //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
       void mem_PK2toCauchy(const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,

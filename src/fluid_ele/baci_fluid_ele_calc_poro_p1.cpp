@@ -1043,7 +1043,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::Par
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(const double& dphi_dp,
-    const double& dphi_dpp, const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+    const double& dphi_dpp, const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
     CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp)
 {
   // porosity is a primary variable -> d(grad(phi)/d(pressure)) is zero!

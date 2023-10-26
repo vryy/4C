@@ -229,7 +229,7 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrad, const double& press,
+    void CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrd, const double& press,
         CORE::LINALG::Matrix<6, 1>& couplstress) const;
 
     /*!
@@ -239,7 +239,7 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrad, const double& press,
+    void CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, const double& press,
         CORE::LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives

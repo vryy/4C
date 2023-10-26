@@ -69,7 +69,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) = 0;
 
       /// Internal implementation class for acinus element
-      static RedAirBloodScatraImplInterface* Impl(DRT::ELEMENTS::RedAirBloodScatra* elem);
+      static RedAirBloodScatraImplInterface* Impl(DRT::ELEMENTS::RedAirBloodScatra* red_acinus);
     };
 
 
@@ -127,13 +127,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
           CORE::LINALG::SerialDenseMatrix& estif, CORE::LINALG::SerialDenseVector& eforce,
           Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, double time,
-          double dt);
+          double dt){};
 
 
       void EvaluateTerminalBC(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -159,7 +159,7 @@ namespace DRT
       void CalcFlowRates(RedAirBloodScatra* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<MAT::Material> mat) override{};
 
       /*!
        \Essential functions to evaluate the coupled results
@@ -169,7 +169,7 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) override;
 
       void SolveBloodAirTransport(RedAirBloodScatra* ele, CORE::LINALG::SerialDenseVector& dscatra,
-          CORE::LINALG::SerialDenseVector& dvO2, CORE::LINALG::SerialDenseVector& scatraAcinus,
+          CORE::LINALG::SerialDenseVector& dvO2, CORE::LINALG::SerialDenseVector& scatra_acinus,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) override;
 

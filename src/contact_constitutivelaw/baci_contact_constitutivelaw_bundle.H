@@ -40,7 +40,7 @@ namespace CONTACT
        * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
-      void Insert(int id, Teuchos::RCP<Container> law);
+      void Insert(int id, Teuchos::RCP<Container> mat);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *

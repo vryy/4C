@@ -248,7 +248,7 @@ namespace BEAMINTERACTION
     */
     void GetShapeFunctions(CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
-        CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& xi);
+        CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta);
 
     /*!
     \brief Compute linearizations of contact point

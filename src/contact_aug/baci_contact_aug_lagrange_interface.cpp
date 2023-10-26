@@ -17,7 +17,6 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr)
     : ::CONTACT::AUG::Interface(idata_ptr)
 {
-  /* do nothing */
 }
 
 /*----------------------------------------------------------------------------*
@@ -28,13 +27,4 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
     const bool selfcontact)
     : ::CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
-  /* left blank, nothing to do here */
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LAGRANGE::Interface::AssembleDGGLinMatrix(
-    CORE::LINALG::SparseMatrix& dGGSlLinMatrix, const Epetra_Vector& cnVec) const
-{
-  /* do nothing */
 }

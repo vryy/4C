@@ -557,7 +557,8 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
 /*----------------------------------------------------------------------*/
 void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
     int& startele, std::ostream& datfile,
-    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elescli, const int eb_id)
+    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
+    const int eb_id)
 {
   auto eles = eb->GetEleConn();
   for (const auto& ele : *eles)
@@ -571,14 +572,14 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"
-    if (elescli.size() != 0)
+    if (elecenterlineinfo.size() != 0)
     {
       // quick check wether elements in ele Block have a fiber direction
-      if (elescli.find(eb_id) != elescli.end())
+      if (elecenterlineinfo.find(eb_id) != elecenterlineinfo.end())
       {
         // write local cosy from centerline to each element
         std::vector<std::vector<double>> ecli =
-            (elescli.find(eb_id)->second).find(ele.first)->second;
+            (elecenterlineinfo.find(eb_id)->second).find(ele.first)->second;
         dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1]
             << " " << ecli[0][2];
         dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];

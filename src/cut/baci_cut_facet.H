@@ -269,7 +269,7 @@ namespace CORE::GEO
       \brief split the facet into a number of tri and quad. Reduced number of Gauss points when
       facet is split instead of triangulated
        */
-      void SplitFacet(const std::vector<Point*>& points);
+      void SplitFacet(const std::vector<Point*>& facetpts);
 
       /*!
       \brief Get the triangulated sides of this facet

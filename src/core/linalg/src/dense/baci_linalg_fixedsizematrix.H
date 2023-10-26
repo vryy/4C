@@ -761,7 +761,7 @@ namespace CORE::LINALG
         pointer to the matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type fac, value_type* mat);
+    inline void scaleMatrix(const value_type factor, value_type* mat);
 
     /// Dot product
     /*!
@@ -1620,8 +1620,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& out,
-        const CORE::LINALG::SerialDenseMatrix::Base& in);
+    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src);
 
     /// Calculate reciprocal values of a matrix
     /*!
@@ -1635,8 +1635,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& out,
-        const CORE::LINALG::SerialDenseMatrix::Base& in);
+    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src);
 
     /// 1-norm
     /*!
@@ -2638,10 +2638,10 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type scalar, value_type* mat)
+    inline void scaleMatrix(const value_type factor, value_type* mat)
     {
-      *mat *= scalar;
-      for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= scalar;
+      *mat *= factor;
+      for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= factor;
     }
 
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,

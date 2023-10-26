@@ -1588,9 +1588,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::WriteToDisk(
-    const double visualziation_time, const int visualization_step)
+    const double visualization_time, const int visualization_step)
 {
-  visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
+  visualization_manager_->WriteToDisk(visualization_time, visualization_step);
 }
 
 /*-----------------------------------------------------------------------------------------------*

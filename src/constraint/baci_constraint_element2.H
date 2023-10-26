@@ -280,7 +280,7 @@ namespace DRT
       /// Compute second derivatives of normal distance with respect to the nodal displacements
       void ComputeSecondDerivDist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
-          CORE::LINALG::SerialDenseMatrix& elevector,  ///< matrix to store results into
+          CORE::LINALG::SerialDenseMatrix& elematrix,  ///< matrix to store results into
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 

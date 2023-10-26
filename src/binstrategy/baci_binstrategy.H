@@ -258,19 +258,19 @@ namespace BINSTRATEGY
     /*!
      * \brief get all bin ids for given range of ijk
      *
-     * \param[in] ijk_bound given range of ijk
+     * \param[in] ijk_range given range of ijk
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether the gids are woned from myrank
      */
-    void GidsInijkRange(const int* ijk_bound, std::set<int>& binIds, bool checkexistence) const;
+    void GidsInijkRange(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
     /*!
      * \brief get all bin ids for given range of ijk
      *
-     * \param[in] ijk_bound given range of ijk
+     * \param[in] ijk_range given range of ijk
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether gids are owned from myrank
      */
-    void GidsInijkRange(const int* ijk_bound, std::vector<int>& binIds, bool checkexistence) const;
+    void GidsInijkRange(const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const;
 
     /*!
      * \brief get number of bins in ijk range

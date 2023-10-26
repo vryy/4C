@@ -84,14 +84,14 @@ namespace AIRWAY
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief Do one step time integration (time loop)
 
     */
     void TimeStep(bool CoupledTo3D = false,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
+        Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
     /*!
     \brief Integrate one step
@@ -127,7 +127,7 @@ namespace AIRWAY
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear

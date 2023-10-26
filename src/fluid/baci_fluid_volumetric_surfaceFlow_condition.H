@@ -113,7 +113,7 @@ namespace FLD
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
       void EvaluateVelocities(
-          Teuchos::RCP<Epetra_Vector> bcdof, double time, double theta, double dta);
+          Teuchos::RCP<Epetra_Vector> velocities, double time, double theta, double dta);
 
       /*!
       \brief export and set boundary values
@@ -320,7 +320,7 @@ namespace FLD
       \brief Interpolation function
       */
       void Interpolate(Teuchos::RCP<std::vector<double>> V1, Teuchos::RCP<std::vector<double>> V2,
-          int index1, int& index2, double time);
+          int index1, int& index2, double period);
 
       /*!
       \brief Return prebiasing flag

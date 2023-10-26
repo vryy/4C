@@ -56,9 +56,9 @@ namespace UTILS
     */
 
     Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName,  ///< Name of condition to creat constraint from
-        int& minID,                   ///< minimum constraint or monitor ID so far
-        int& maxID                    ///< maximum constraint or monitor ID so far
+        const std::string& conditionname,  ///< Name of condition to creat constraint from
+        int& minID,                        ///< minimum constraint or monitor ID so far
+        int& maxID                         ///< maximum constraint or monitor ID so far
     );
 
     /*!
@@ -66,7 +66,7 @@ namespace UTILS
     */
 
     Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName  ///< Name of condition to create constraints from
+        const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
     /*!

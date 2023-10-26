@@ -82,7 +82,7 @@ namespace CONTACT
         const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
 
     /// evaluate the Levi Civita pseudo tensor
-    double LeviCivitaSymbol(const int i_1, const int i_2, const int i_3);
+    double LeviCivitaSymbol(const int i_1, const int j, const int k);
 
     /** \brief Find a feasible master element in a given set of master elements
      *

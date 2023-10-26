@@ -149,11 +149,11 @@ namespace DRT
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside) override;
+        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xslave) override;
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //!  gaussian point
-        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside,
+        void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xslave,
             CORE::LINALG::Matrix<nsd_, 1>& rst_slave) override;
 
         //! compute interface force

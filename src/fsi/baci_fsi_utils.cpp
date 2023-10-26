@@ -354,8 +354,8 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisptotal,
-    Teuchos::RCP<Epetra_Vector> ifluid, CORE::ADAPTER::CouplingMortar& coupsf)
+void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idispstruct,
+    Teuchos::RCP<Epetra_Vector> idispfluid, CORE::ADAPTER::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
   idispms_->PutScalar(0.0);
@@ -367,8 +367,8 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   Teuchos::RCP<Epetra_Import> slave_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
-  if (idispms_->Import(*idisptotal, *master_importer, Add)) dserror("Import operation failed.");
-  if (idispms_->Import(*ifluid, *slave_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*idispstruct, *master_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*idispfluid, *slave_importer, Add)) dserror("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);

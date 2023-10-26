@@ -364,8 +364,7 @@ namespace FLD
           Teuchos::RCP<const Epetra_Vector> stresses, double dt);
 
       /// time average wss
-      Teuchos::RCP<Epetra_Vector> TimeAverageWss(
-          Teuchos::RCP<const Epetra_Vector> stresses, double dt);
+      Teuchos::RCP<Epetra_Vector> TimeAverageWss(Teuchos::RCP<const Epetra_Vector> wss, double dt);
 
       /// Calculate Aggregation Matrix
       void CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);

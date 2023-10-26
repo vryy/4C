@@ -154,7 +154,7 @@ namespace POROELAST
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
     //! increment separately)
     void UpdateStateIncrementally(
-        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
@@ -164,17 +164,18 @@ namespace POROELAST
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> sx,  //!< structural increment between iteration i and i+1
-        Teuchos::RCP<const Epetra_Vector> fx,  //!< fluid increment between iteration i and i+1
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+                      s_iterinc,  //!< structural increment between iteration i and i+1
+        Teuchos::RCP<const Epetra_Vector>
+            f_iterinc,  //!< fluid increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> x);
+    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void EvaluateFields(
-        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
@@ -227,7 +228,8 @@ namespace POROELAST
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
+    virtual void RecoverLagrangeMultiplierAfterNewtonStep(
+        Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! Setup solver for monolithic system
     bool SetupSolver() override;

@@ -71,7 +71,7 @@ namespace FLD
     \brief One-Step-Theta Constructor (public)
 
     */
-    TurbulenceStatisticManager(FluidImplicitTimeInt& timeint);
+    TurbulenceStatisticManager(FluidImplicitTimeInt& fluid);
 
 
     /*!

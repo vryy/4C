@@ -123,10 +123,10 @@ namespace MAT
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
-      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants

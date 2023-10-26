@@ -98,7 +98,7 @@ namespace XFEM
 
     /// pack values in the round robin communication pattern
     void PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolatedvecs,
+        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 

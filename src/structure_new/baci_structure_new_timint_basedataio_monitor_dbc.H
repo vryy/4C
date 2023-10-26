@@ -37,7 +37,7 @@ namespace STR
       virtual ~ParamsMonitorDBC() = default;
 
       /// initialize the class variables
-      void Init(const Teuchos::ParameterList& IO_vtk_structure_paramslist);
+      void Init(const Teuchos::ParameterList& IO_monitor_dbc_structure_paramslist);
 
       /// setup new class variables
       void Setup();

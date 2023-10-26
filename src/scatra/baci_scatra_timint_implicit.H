@@ -347,7 +347,7 @@ namespace SCATRA
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
     Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesMeanAverage(
-        Teuchos::RCP<const Epetra_Vector> state,
+        Teuchos::RCP<const Epetra_Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );

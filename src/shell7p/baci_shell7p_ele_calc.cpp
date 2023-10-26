@@ -476,7 +476,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::Recover(DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& dof_index_array,
-    Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& interface_ptr)
+    Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface)
 {
 }
 

@@ -144,21 +144,21 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // Increment lagrange multiplier
   //-----------------------------------------------------------------------------
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> lagrincr = Extractor().ExtractVector(x, 3);
+    Teuchos::RCP<Epetra_Vector> lagrincr = Extractor().ExtractVector(step_increment, 3);
     conman_->UpdateTotLagrMult(lagrincr);
   }
 
   //-----------------------------------------------------------------------------
   // evaluation of all fields; constraints are evaluated by strucuture
   //-----------------------------------------------------------------------------
-  FSI::Monolithic::Evaluate(x);
+  FSI::Monolithic::Evaluate(step_increment);
 }
 
 

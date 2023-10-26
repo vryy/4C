@@ -161,8 +161,8 @@ namespace DRT
           DRT::Element::DiscretizationType pdistype>
       void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat2);
+          CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
+          CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2);
 
       template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>

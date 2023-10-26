@@ -153,7 +153,7 @@ namespace CONTACT
           std::vector<double>& vec_vals) const;
 
       void GetWGapDirectionGradients(const enum CONTACT::AUG::WGapGradientType wgap_type,
-          const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& vec_vals) const;
+          const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
 
       void GetEnergyDirectionGradients(
           const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;

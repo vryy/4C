@@ -1554,12 +1554,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
 
 
 /*----------------------------------------------------------------------*
- | build system matrix and rhs                              ismail 01/10|
- *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael) {}
-
-
-/*----------------------------------------------------------------------*
  | Current solution becomes most recent solution of next timestep       |
  |                                                                      |
  |  pnm_  =  pn_                                                        |

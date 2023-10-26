@@ -294,7 +294,7 @@ namespace DRT
             CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
-            const std::vector<double>& valnp, const std::vector<double>& valn,
+            const std::vector<double>& valnp, const std::vector<double>& accel,
             const double avgPressure, const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce,
             const std::vector<double>& intebodyforce, CORE::LINALG::SerialDenseVector& eleVec,
             const std::vector<double>& interiorecorrectionterm,
@@ -412,10 +412,10 @@ namespace DRT
           const CORE::LINALG::SerialDenseVector& updateG,
           const CORE::LINALG::SerialDenseVector& updateUp);
 
-      void EvaluateVelocity(const int start_func, const INPAR::FLUID::InitialField initfield,
+      void EvaluateVelocity(const int startfunc, const INPAR::FLUID::InitialField initfield,
           const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u) const;
 
-      void EvaluateAll(const int start_func, const INPAR::FLUID::InitialField initfield,
+      void EvaluateAll(const int startfunc, const INPAR::FLUID::InitialField initfield,
           const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u,
           CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const;
 

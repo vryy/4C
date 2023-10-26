@@ -236,23 +236,24 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVo
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactor(
     const double thickness, const double eta,
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize regularization factor
   double regfac(1.0);
 
   // get the S2I condition type
-  const DRT::Condition::ConditionType conditiontype = scatraeleboundary->ConditionType();
+  const DRT::Condition::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
 
   // get the S2I coupling growth regularization type
-  const INPAR::S2I::RegularizationType regularizationtype = scatraeleboundary->RegularizationType();
+  const INPAR::S2I::RegularizationType regularizationtype =
+      scatraeleparamsboundary->RegularizationType();
 
   // actually compute regularization factor if lithium stripping is relevant
   if (conditiontype == DRT::Condition::S2ICouplingGrowth and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
-    const double regularizationparameter = scatraeleboundary->RegularizationParameter();
+    const double regularizationparameter = scatraeleparamsboundary->RegularizationParameter();
     if (regularizationparameter < 0.0)
       dserror("Regularization parameter for lithium stripping must not be negative!");
 
@@ -312,23 +313,24 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
 double
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactorDerivative(
     const double thickness, const double eta,
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleboundary)
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize derivative of regularization factor
   double regfacderiv(0.0);
 
   // get the S2I condition type
-  const DRT::Condition::ConditionType conditiontype = scatraeleboundary->ConditionType();
+  const DRT::Condition::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
 
   // get the S2I coupling growth regularization type
-  const INPAR::S2I::RegularizationType regularizationtype = scatraeleboundary->RegularizationType();
+  const INPAR::S2I::RegularizationType regularizationtype =
+      scatraeleparamsboundary->RegularizationType();
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
   if (conditiontype == DRT::Condition::S2ICouplingGrowth and thickness > 0.0 and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
-    const double regularizationparameter = scatraeleboundary->RegularizationParameter();
+    const double regularizationparameter = scatraeleparamsboundary->RegularizationParameter();
 
     // evaluate dependent on the regularization type
     switch (regularizationtype)

@@ -387,7 +387,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,
           const CORE::LINALG::Matrix<numnod_, 1>& epreaf,
           const CORE::LINALG::Matrix<numnod_, 1>* porosity_dof,
-          CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix);
+          CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
       //! Gauss Point Loop evaluating stiffness and force
       void GaussPointLoopPressureBased(Teuchos::ParameterList& params,

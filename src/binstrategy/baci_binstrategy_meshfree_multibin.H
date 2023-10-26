@@ -320,6 +320,6 @@ namespace DRT
 }  // namespace DRT
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& ele);
+std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin);
 
 #endif  // BINSTRATEGY_MESHFREE_MULTIBIN_H

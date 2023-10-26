@@ -95,7 +95,7 @@ namespace NOX
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
           const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
           const NOX::Epetra::Vector& cloneVector,
           const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
 
@@ -105,7 +105,7 @@ namespace NOX
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
           const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
           const NOX::Epetra::Vector& cloneVector);
 
       //! Constructor without preconditioner

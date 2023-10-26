@@ -352,7 +352,7 @@ namespace DRT
       {
        public:
         //! constructor
-        explicit PhaseManagerCore(int totalnumdofpernode, int numphase);
+        explicit PhaseManagerCore(int totalnumdofpernode, int numfluidphases);
 
         //! copy constructor
         PhaseManagerCore(const PhaseManagerCore& old);
@@ -1522,7 +1522,7 @@ namespace DRT
             const MAT::Material& material, int phasenum, double abspressgrad) const override;
 
         //! get the permeability tensor for volume fraction pressures
-        void PermeabilityTensorVolFracPressure(int volfracnum,
+        void PermeabilityTensorVolFracPressure(int volfracpressnum,
             CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const override;
 
         //! check for constant dynamic viscosity of volume fraction pressure

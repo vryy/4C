@@ -334,7 +334,7 @@ namespace MAT
 
     //! evaluate derivative of saturation with respect to pressure
     double EvaluateDerivOfSaturationWrtPressure(
-        int phasenum, int doftoderive, const std::vector<double>& state) const;
+        int phasenum, int doftoderive, const std::vector<double>& pressure) const;
 
     //! evaluate 2nd derivative of saturation with respect to pressure
     double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,

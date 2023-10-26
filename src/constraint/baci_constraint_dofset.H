@@ -71,7 +71,7 @@ namespace UTILS
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
-        const Teuchos::RCP<DRT::Discretization> dis, const int numdofs, const int start);
+        const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start);
 
     /// reset all internal variables
     void Reset() override;

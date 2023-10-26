@@ -734,7 +734,7 @@ namespace CORE::DRT::UTILS
    public:
     /// Constructor
     template <class G>
-    explicit IntPointsAndWeights(const G gaussrule);
+    explicit IntPointsAndWeights(const G intrule);
   };
 
 
@@ -744,8 +744,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 3D specialization
-    explicit IntPointsAndWeights(const GaussRule3D gaussrule)
-        : intpoints_(IntegrationPoints3D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule3D intrule)
+        : intpoints_(IntegrationPoints3D(intrule))
     {
       return;
     };
@@ -770,8 +770,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 2D specialization
-    explicit IntPointsAndWeights(const GaussRule2D gaussrule)
-        : intpoints_(IntegrationPoints2D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule2D intrule)
+        : intpoints_(IntegrationPoints2D(intrule))
     {
       return;
     };
@@ -796,8 +796,8 @@ namespace CORE::DRT::UTILS
   {
    public:
     /// Constructor for 1D specialization
-    explicit IntPointsAndWeights(const GaussRule1D gaussrule)
-        : intpoints_(IntegrationPoints1D(gaussrule))
+    explicit IntPointsAndWeights(const GaussRule1D intrule)
+        : intpoints_(IntegrationPoints1D(intrule))
     {
       return;
     };

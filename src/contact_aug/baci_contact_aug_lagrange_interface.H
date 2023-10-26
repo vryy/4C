@@ -31,7 +31,7 @@ namespace CONTACT
          *                          data container object
          *
          *  \author hiermeier \date 03/17 */
-        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
+        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr);
 
         /// constructor
         Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
@@ -46,7 +46,7 @@ namespace CONTACT
          *
          *  \author hiermeier \date 03/17 */
         void AssembleDGGLinMatrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override{};
 
       };  // class Interface
     }     // namespace LAGRANGE

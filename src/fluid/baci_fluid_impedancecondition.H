@@ -168,7 +168,7 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(const int numcond);
+      double Area(const int condid);
 
       /*!
       \brief return relative error of last cycle

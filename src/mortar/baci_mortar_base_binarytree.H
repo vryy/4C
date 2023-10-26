@@ -84,7 +84,7 @@ namespace MORTAR
     \brief Enlarge geometry of a tree node by an offset, dependent on size
 
     */
-    void EnlargeGeometry(double& eps) override;
+    void EnlargeGeometry(double& enlarge) override;
     //@}
 
     //! @name Print methods

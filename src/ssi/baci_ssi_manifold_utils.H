@@ -437,8 +437,8 @@ namespace SSI
     //! tuple.
     std::tuple<Teuchos::RCP<const Epetra_Map>, Teuchos::RCP<const Epetra_Map>>
     IntersectCouplingMapsBlockMap(Teuchos::RCP<const Epetra_Map> block_map,
-        Teuchos::RCP<const Epetra_Map> intersecting_map, Teuchos::RCP<const Epetra_Map> perm_map,
-        const Epetra_Comm& comm);
+        Teuchos::RCP<const Epetra_Map> intersecting_map,
+        Teuchos::RCP<const Epetra_Map> permuted_map, const Epetra_Comm& comm);
 
     //! all interior and master dofs split into blocks
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> condensed_block_dof_map_;

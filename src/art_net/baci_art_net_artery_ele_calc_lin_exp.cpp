@@ -857,7 +857,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
     const CORE::LINALG::Matrix<2 * my::iel_, 1>& escatran,
     const CORE::LINALG::Matrix<my::iel_, 1>& ewfnp, const CORE::LINALG::Matrix<my::iel_, 1>& ewbnp,
-    const CORE::LINALG::Matrix<my::iel_, 1>& vec2, const CORE::LINALG::Matrix<my::iel_, 1>& vec3,
+    const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
+    const CORE::LINALG::Matrix<my::iel_, 1>& earean,
     CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
     CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
     double dt)
@@ -1458,7 +1459,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, DRT::Discretization& disctretization, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   //  const int numnode = my::iel_;

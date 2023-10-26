@@ -319,7 +319,7 @@ void FSI::MonolithicNoNOX::LinearSolve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;
@@ -327,7 +327,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(x, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -341,7 +341,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // The update of the latest increment with step increment:
     // x^n+1_i+1 = x^n     + stepinc
 
-    x_sum_->Update(1.0, *x, 1.0);
+    x_sum_->Update(1.0, *step_increment, 1.0);
 
     ExtractFieldVectors(x_sum_, sx, fx, ax);
 

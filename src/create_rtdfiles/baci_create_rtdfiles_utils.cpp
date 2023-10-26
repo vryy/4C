@@ -25,7 +25,7 @@ namespace DRT
   {
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    Table::Table(const unsigned &t) : tablewidth_(t)
+    Table::Table(const unsigned &size) : tablewidth_(size)
     {
       for (unsigned i = 0; i < tablewidth_; ++i)
       {

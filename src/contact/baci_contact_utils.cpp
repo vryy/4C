@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& ccond,
+int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_conditions,
     const std::vector<DRT::Condition*>& beamandsolidcontactconditions, const bool& throw_error)
 {
   /* Sort out beam-to-solid contact pairs, since these are treated in the
@@ -29,20 +29,20 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& ccond,
   {
     if (*(beamandsolidcontactcondition->Get<std::string>("Application")) != "Beamtosolidcontact")
     {
-      ccond.push_back(beamandsolidcontactcondition);
+      contact_conditions.push_back(beamandsolidcontactcondition);
     }
   }
 
   /* There must be more than one contact condition unless we have a self
    * contact problem! */
-  if (ccond.size() < 1)
+  if (contact_conditions.size() < 1)
   {
     if (throw_error) dserror("Not enough contact conditions in discretization");
     return -1;
   }
-  if (ccond.size() == 1)
+  if (contact_conditions.size() == 1)
   {
-    const auto* side = ccond[0]->Get<std::string>("Side");
+    const auto* side = contact_conditions[0]->Get<std::string>("Side");
     if (*side != "Selfcontact")
     {
       if (throw_error) dserror("Not enough contact conditions in discretization");

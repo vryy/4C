@@ -507,7 +507,7 @@ void EHL::Monolithic::NewtonFull()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
+void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::Evaluate");
 
@@ -516,11 +516,11 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Teuchos::RCP<Epetra_Vector> lx;
 
   // if an increment vector exists
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // extract displacement sx and pressure lx incremental vector of global
     // unknown incremental vector x
-    ExtractFieldVectors(x, sx, lx);
+    ExtractFieldVectors(stepinc, sx, lx);
   }
 
   // Newton update of the lubrication field

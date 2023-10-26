@@ -83,7 +83,7 @@ namespace ART
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     //! set the initial field on the artery discretization
     virtual void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
