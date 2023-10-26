@@ -36,12 +36,10 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   //  PrintElementLines(stream,"ART");
   PrintElementLines(stream, "BEAM3");
   PrintElementLines(stream, "BEAM3R");
-  PrintElementLines(stream, "BEAM3CL");
   PrintElementLines(stream, "BEAM3EB");
   PrintElementLines(stream, "BEAM3K");
   PrintElementLines(stream, "BELE3");
   PrintElementLines(stream, "RIGIDSPHERE");
-  PrintElementLines(stream, "NSTET4");
   PrintElementLines(stream, "NSTET5");
   PrintElementLines(stream, "SHELL7P");
   PrintElementLines(stream, "SHELL7PSCATRA");
@@ -108,14 +106,12 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream, "FLUIDHDGWEAKCOMP");
   PrintElementLines(stream, "FLUIDIMMERSED");
   PrintElementLines(stream, "FLUIDPOROIMMERSED");
-  PrintElementLines(stream, "MEFLUID");
 
   PrintSectionHeader(stream, "LUBRICATION ELEMENTS");
   PrintElementLines(stream, "LUBRICATION");
 
   PrintSectionHeader(stream, "TRANSPORT ELEMENTS");
   PrintElementLines(stream, "TRANSP");
-  PrintElementLines(stream, "METRANSP");
 
   PrintSectionHeader(stream, "TRANSPORT2 ELEMENTS");
   PrintElementLines(stream, "TRANSP");
