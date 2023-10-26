@@ -347,7 +347,7 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   volcoupl_structurescatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Init(structdis, scatradis);
+  volcoupl_structurescatra_->Init(ndim, structdis, scatradis);
 
   // parallel redistribution is performed in the global control
   // algorithm. We redistribute between Init(...) and Setup().
@@ -363,7 +363,7 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
   CheckIsInit();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup();
+  volcoupl_structurescatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
 
   SetIsSetup(true);
 }

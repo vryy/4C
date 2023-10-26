@@ -81,7 +81,8 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
   FluidField()->Init();
 
   // setup coupling adapter
-  if (not volcoupl_fluidscatra_.is_null()) volcoupl_fluidscatra_->Setup();
+  if (not volcoupl_fluidscatra_.is_null())
+    volcoupl_fluidscatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
 
   // set also initial field
   SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams());
@@ -180,8 +181,8 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(
     volcoupl_fluidscatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // setup projection matrices (use default material strategy)
-    volcoupl_fluidscatra_->Init(
-        fluiddis, scatradis, nullptr, nullptr, nullptr, nullptr, Teuchos::null, true);
+    volcoupl_fluidscatra_->Init(problem->NDim(), fluiddis, scatradis, nullptr, nullptr, nullptr,
+        nullptr, Teuchos::null, true);
   }
 }
 

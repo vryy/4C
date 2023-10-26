@@ -63,9 +63,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     // setup projection matrices
-    volcoupl_->Init(structdis, fluiddis, nullptr, nullptr, nullptr, nullptr, materialstrategy);
+    volcoupl_->Init(DRT::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
+        nullptr, nullptr, materialstrategy);
     volcoupl_->Redistribute();
-    volcoupl_->Setup();
+    volcoupl_->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time
