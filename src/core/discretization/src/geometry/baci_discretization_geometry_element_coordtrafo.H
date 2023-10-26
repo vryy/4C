@@ -899,14 +899,11 @@ namespace CORE::GEO
   }
 
   /*!
-  \brief compute element coordinates from a given point
-         in the 3-dim physical space lies on a given surface element
-         Template version
+  \brief compute element coordinates from a given point in the 3-dim physical space
+         lies on a given surface element
   \param xyze_surfaceElement      (in) :  element nodal coordinates
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r,s)
-
-   RQI
    */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   static void currentToSurfaceElementCoordinatesT(const M& xyze_surfaceElement,
@@ -957,10 +954,13 @@ namespace CORE::GEO
     return;
   }
 
-  /*----------------------------------------------------------------------*
-   |  RQI:    compute element coordinates from a given point              |
-   |          in the 3-dim physical space lies on a given surface element |
-   *----------------------------------------------------------------------*/
+  /*!
+  \brief compute element coordinates from a given point in the 3-dim physical space
+         lies on a given line element
+  \param xyze_lineElement         (in) :  element nodal coordinates
+  \param physCoord                (in) :  physical coordinates (x,y,z)
+  \param eleCoord                 (in) :  element coordinates (r)
+   */
   template <class M>
   static void CurrentToSurfaceElementCoordinates(const ::DRT::Element::DiscretizationType distype,
       const M& xyze_surfaceElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
@@ -997,7 +997,6 @@ namespace CORE::GEO
   /*!
   \brief compute element coordinates from a given point
          in the 3-dim physical space lies on a given line element
-         Template version
   \param xyze_lineElement         (in) :  element nodal coordinates
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r)
@@ -1099,10 +1098,13 @@ namespace CORE::GEO
     }
   }
 
-  /*----------------------------------------------------------------------*
-   | GM:      transforms a point in global coordinates        schott 07/12|
-   |          into local element coordinates                              |
-   *----------------------------------------------------------------------*/
+  /*!
+  \brief transforms a point in global coordinates into local element coordinates
+
+  \param xyze (in) : global coordinates of the element nodes
+  \param x (out) : global coordinates of the point
+  \param xsi (in) : local element coordinates of the point (parameter space)
+  */
   template <::DRT::Element::DiscretizationType DISTYPE>
   static bool ComputeLocalCoordinates(
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
@@ -1112,37 +1114,29 @@ namespace CORE::GEO
   {
     bool inelement = true;
 
-    const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int numDim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     const int maxiter = 20;
     double residual = 1.0;
 
-    CORE::LINALG::Matrix<nsd_, nsd_> A(true);
-    CORE::LINALG::Matrix<nsd_, nsd_> A_inv(true);
+    CORE::LINALG::Matrix<numDim, numDim> A(true);
+    CORE::LINALG::Matrix<numDim, numDim> A_inv(true);
 
-    CORE::LINALG::Matrix<nsd_, 1> b(true);
-    CORE::LINALG::Matrix<nsd_, 1> dx(true);
+    CORE::LINALG::Matrix<numDim, 1> b(true);
+    CORE::LINALG::Matrix<numDim, 1> dx(true);
 
     // initialize != 0
     dx(0) = 1.0;
 
     CORE::LINALG::Matrix<numNodes, 1> funct(true);
-    CORE::LINALG::Matrix<nsd_, numNodes> deriv1(true);
-
+    CORE::LINALG::Matrix<numDim, numNodes> deriv1(true);
 
     // initial guess
     startingValueCurrentToElementCoords<DISTYPE>(xsi);
 
     // update rhs b= -(x(xi)-x_point)
     CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-
-    for (int isd = 0; isd < nsd_; ++isd)
-    {
-      b(isd) = x(isd);
-      for (int inode = 0; inode < numNodes; ++inode) b(isd) -= xyze(isd, inode) * funct(inode);
-    }
-
 
     // newton loop
     int iter = 0;
@@ -1152,8 +1146,8 @@ namespace CORE::GEO
 
       // get the jacobian
       A.Clear();
-      for (int isd = 0; isd < nsd_; ++isd)
-        for (int jsd = 0; jsd < nsd_; ++jsd)
+      for (int isd = 0; isd < numDim; ++isd)
+        for (int jsd = 0; jsd < numDim; ++jsd)
           for (int inode = 0; inode < numNodes; ++inode)
             A(isd, jsd) += xyze(isd, inode) * deriv1(jsd, inode);
 
@@ -1164,19 +1158,18 @@ namespace CORE::GEO
         dserror("determinant is near zero %d", det);
       }
 
-      dx.Clear();
-      dx.Multiply(A_inv, b);
-
-      // update of local coordinates
-      for (int i = 0; i < nsd_; i++) xsi(i, 0) += dx(i);
-
       // update rhs b= -(x(xi)-x_point)
       CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
-      for (int isd = 0; isd < nsd_; ++isd)
+      for (int isd = 0; isd < numDim; ++isd)
       {
         b(isd) = x(isd);
         for (int inode = 0; inode < numNodes; ++inode) b(isd) -= xyze(isd, inode) * funct(inode);
       }
+
+      // update of local coordinates
+      dx.Clear();
+      dx.Multiply(A_inv, b);
+      for (int i = 0; i < numDim; i++) xsi(i, 0) += dx(i);
 
       residual = b.Norm2();
       iter++;
