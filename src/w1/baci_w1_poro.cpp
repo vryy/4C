@@ -10,7 +10,6 @@
 
 #include "baci_w1_poro.H"
 
-#include "baci_discretization_fem_general_utils_shapefunctions_service.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils_factory.H"
@@ -28,7 +27,6 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
       myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
 
   invJ_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
@@ -49,7 +47,6 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
       data_(old.data_),
       xsi_(old.xsi_),
       intpoints_(distype),
-      ishigherorder_(old.ishigherorder_),
       init_(old.init_),
       scatra_coupling_(old.scatra_coupling_),
       weights_(old.weights_),

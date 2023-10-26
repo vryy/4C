@@ -234,9 +234,6 @@ namespace DRT
 
       CORE::DRT::UTILS::GaussIntegration intpoints_;
 
-      //! flag indicating higher order element
-      bool ishigherorder_;
-
       //! @name TSI related stuff
 
       //! evaluate an element
