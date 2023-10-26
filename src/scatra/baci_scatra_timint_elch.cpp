@@ -10,7 +10,6 @@
 
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_lib_utils_parameter_list.H"
@@ -30,6 +29,7 @@
 #include "baci_scatra_timint_meshtying_strategy_fluid_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 #include "baci_scatra_timint_meshtying_strategy_std_elch.H"
+#include "baci_utils_function_of_time.H"
 
 #include <unordered_set>
 
@@ -2188,7 +2188,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       ComputeTimeDerivative();
 
       double targetcurrent =
-          problem_->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
+          problem_->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1).Evaluate(time_);
       double timefacrhs = 1.0 / ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -3291,7 +3291,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
  *-----------------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeTemperatureFromFunction() const
 {
-  return problem_->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+  return problem_->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
       .Evaluate(time_);
 }
 

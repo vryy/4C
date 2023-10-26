@@ -5,17 +5,17 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_LIB_GET_FUNCTIONOFANYTHING_H
-#define BACI_LIB_GET_FUNCTIONOFANYTHING_H
+#ifndef BACI_UTILS_GET_FUNCTIONOFANYTHING_H
+#define BACI_UTILS_GET_FUNCTIONOFANYTHING_H
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function.H"
 
 namespace DRT::UTILS
 {
-  inline const DRT::UTILS::FunctionOfAnything& GetFunctionOfAnything(int functnum)
+  inline const CORE::UTILS::FunctionOfAnything& GetFunctionOfAnything(int functnum)
   {
-    return DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfAnything>(functnum);
+    return DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
   }
 }  // namespace DRT::UTILS
 

@@ -10,9 +10,9 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_utils_function.H"
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -122,7 +122,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
             const double function_scale_factor =
                 (function_number > 0)
                     ? DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
                           .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;
 

@@ -11,10 +11,10 @@
 
 #include "baci_mat_muscle_utils.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <cmath>
 #include <functional>
@@ -326,7 +326,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
 }
 
 double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-    const DRT::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+    const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
     const CORE::LINALG::Matrix<1, 3> &x)
 {
   const std::vector<double> x_vec{x(0), x(1), x(2)};

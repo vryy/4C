@@ -18,13 +18,13 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_lubrication_ele_action.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -289,9 +289,10 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
 
     for (int index = 0; index < nsd_; ++index)
     {
-      double heightfuncvalue = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-                                   .Evaluate(lnode->X(), time_, index);
+      double heightfuncvalue =
+          DRT::Problem::Instance()
+              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
+              .Evaluate(lnode->X(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -333,7 +334,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
     for (int index = 0; index < nsd_; ++index)
     {
       double velfuncvalue = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
                                 .Evaluate(lnode->X(), time_, index);
 
       // get global and local dof IDs

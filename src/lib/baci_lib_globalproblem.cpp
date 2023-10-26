@@ -33,7 +33,6 @@
 #include "baci_lib_discret_xwall.H"
 #include "baci_lib_dofset_independent.H"
 #include "baci_lib_elementreader.H"
-#include "baci_lib_function.H"
 #include "baci_lib_meshreader.H"
 #include "baci_lib_nodereader.H"
 #include "baci_lib_utils_createdis.H"
@@ -44,6 +43,7 @@
 #include "baci_mat_scatra_mat_multiscale.H"
 #include "baci_particle_engine_particlereader.H"
 #include "baci_rebalance.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListExceptions.hpp>
@@ -2379,7 +2379,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
 
         {
-          DRT::UTILS::FunctionManager function_manager;
+          CORE::UTILS::FunctionManager function_manager;
           BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
           function_manager.ReadInput(micro_reader);
           micro_problem->SetFunctionManager(std::move(function_manager));
@@ -2636,7 +2636,7 @@ void DRT::Problem::SetRestartStep(int r)
 void DRT::Problem::SetProblemType(ProblemType targettype) { probtype_ = targettype; }
 
 
-void DRT::Problem::SetFunctionManager(DRT::UTILS::FunctionManager&& function_manager_in)
+void DRT::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager_in)
 {
   functionmanager_ = std::move(function_manager_in);
 }

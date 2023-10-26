@@ -56,7 +56,7 @@ void ntainp_ccadiscret(
   problem->ReadCloningMaterialMap(reader);
 
   {
-    DRT::UTILS::FunctionManager function_manager;
+    CORE::UTILS::FunctionManager function_manager;
     BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
     problem->SetFunctionManager(std::move(function_manager));

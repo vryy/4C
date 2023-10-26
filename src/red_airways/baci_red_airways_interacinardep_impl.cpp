@@ -17,14 +17,14 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_red_airways_acinus_impl.H"
 #include "baci_red_airways_evaluation_data.h"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <fstream>
 #include <iomanip>
@@ -211,7 +211,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if ((*curve)[0] >= 0)
           {
             curvefac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                           ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if (functnum > 0)
           {
             functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[i])->X(), time, 0);
           }
 
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
             curve2fac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>(curve2num)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               if ((*curve)[0] >= 0)
               {
                 curvefac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                               ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }
 

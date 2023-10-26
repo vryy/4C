@@ -19,7 +19,6 @@
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -27,6 +26,7 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -256,14 +256,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 

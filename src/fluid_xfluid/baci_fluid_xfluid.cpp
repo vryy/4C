@@ -36,7 +36,6 @@ interface
 #include "baci_lib_discret_xfem.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_dofset_transparent_independent.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_lib_xfem_dofset.H"
@@ -47,6 +46,7 @@ interface
 #include "baci_mat_list.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function.H"
 #include "baci_xfem_condition_manager.H"
 #include "baci_xfem_discretization_utils.H"
 #include "baci_xfem_edgestab.H"
@@ -4457,7 +4457,7 @@ void FLD::XFluid::SetInitialFlowField(
           int gid = nodedofset[dof];
 
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }

@@ -8,8 +8,8 @@
 
 #include "baci_mat_scatra_reaction_coupling.H"
 
-#include "baci_lib_get_functionofanything.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_get_functionofanything.H"
 
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16

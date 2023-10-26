@@ -14,13 +14,13 @@
 #include "baci_inpar_browniandyn.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
 
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
       if (functnum >= 0)
         functfac[i] = DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                           .Evaluate(time);
     }
 
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
         {
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .Evaluate(X_ref.data(), time, dof);
         }
         else

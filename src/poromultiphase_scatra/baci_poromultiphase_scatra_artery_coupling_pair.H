@@ -31,22 +31,24 @@ namespace DRT
 {
   class Element;
   class Discretization;
-
-  namespace UTILS
-  {
-    class FunctionOfAnything;
-  }  // namespace UTILS
 }  // namespace DRT
 namespace MAT
 {
   class MatList;
   class Cnst_1d_art;
 }  // namespace MAT
-namespace CORE::LINALG
+namespace CORE
 {
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+  namespace LINALG
+  {
+    class SerialDenseVector;
+    class SerialDenseMatrix;
+  }  // namespace LINALG
+  namespace UTILS
+  {
+    class FunctionOfAnything;
+  }
+}  // namespace CORE
 namespace POROMULTIPHASESCATRA
 {
   class PoroMultiPhaseScatraArteryCouplingPairBase
@@ -411,7 +413,7 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate function and its derivative
 
-    void EvaluateFunctionAndDeriv(const DRT::UTILS::FunctionOfAnything& funct,
+    void EvaluateFunctionAndDeriv(const CORE::UTILS::FunctionOfAnything& funct,
         const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
         const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
         std::vector<double>& contderivs);
@@ -467,12 +469,12 @@ namespace POROMULTIPHASESCATRA
         CORE::LINALG::SerialDenseMatrix& M_ele, CORE::LINALG::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
-    void FillFunctionVector(std::vector<const DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
+    void FillFunctionVector(std::vector<const CORE::UTILS::FunctionOfAnything*>& my_funct_vec,
         const std::vector<int>& funct_vec, const std::vector<int>& scale_vec);
 
 
     //! initialize a function
-    void InitializeFunction(const DRT::UTILS::FunctionOfAnything& funct);
+    void InitializeFunction(const CORE::UTILS::FunctionOfAnything& funct);
 
     //! initialize names used in functions
     void InitializeFunctionNames();
@@ -664,10 +666,10 @@ namespace POROMULTIPHASESCATRA
     //! scale vector
     std::vector<std::vector<int>> scale_vec_;
     //! function vector
-    std::vector<std::vector<const DRT::UTILS::FunctionOfAnything*>> funct_vec_;
+    std::vector<std::vector<const CORE::UTILS::FunctionOfAnything*>> funct_vec_;
 
     //! diameter function
-    const DRT::UTILS::FunctionOfAnything* artdiam_funct_;
+    const CORE::UTILS::FunctionOfAnything* artdiam_funct_;
 
     //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;

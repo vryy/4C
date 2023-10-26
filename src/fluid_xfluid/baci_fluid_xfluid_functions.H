@@ -8,10 +8,15 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_function.H"
+#include "baci_utils_function.H"
 
 #ifndef BACI_FLUID_XFLUID_FUNCTIONS_H
 #define BACI_FLUID_XFLUID_FUNCTIONS_H
+
+namespace CORE::UTILS
+{
+  class FunctionManager;
+}
 
 namespace DRT
 {
@@ -19,16 +24,11 @@ namespace DRT
 
   namespace UTILS
   {
-    class FunctionManager;
-  }  // namespace UTILS
-
-  namespace UTILS
-  {
     /// add valid xfluid-specific function lines
-    void AddValidXfluidFunctions(DRT::UTILS::FunctionManager& function_manager);
+    void AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_manager);
 
     /// special implementation level set cut utilizing xfluid
-    class GerstenbergerForwardfacingStep : public FunctionOfSpaceTime
+    class GerstenbergerForwardfacingStep : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -47,7 +47,7 @@ namespace DRT
      *   at the time t_dist = n*PI/2   n=0,1,2,3,...
      *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
      */
-    class MovingLevelSetCylinder : public FunctionOfSpaceTime
+    class MovingLevelSetCylinder : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -111,7 +111,7 @@ namespace DRT
      *   0)
      *   1) Increasing sliplength in shape of sphere.
      */
-    class MovingLSTorus : public FunctionOfSpaceTime
+    class MovingLSTorus : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -215,7 +215,7 @@ namespace DRT
      * @brief Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner
      * cylinder.
      */
-    class TaylorCouetteFlow : public FunctionOfSpaceTime
+    class TaylorCouetteFlow : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor (for NavSlip at both boundaries)
@@ -246,7 +246,7 @@ namespace DRT
      * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity.
      * is chosen as the analytic solution to the Nav-Stokes equations).
      */
-    class UrquizaBoxFlow : public FunctionOfSpaceTime
+    class UrquizaBoxFlow : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor

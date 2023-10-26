@@ -9,7 +9,6 @@
 
 #include "baci_mixture_constituent_elasthyper_elastin_membrane.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
@@ -18,6 +17,7 @@
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
+#include "baci_utils_function.H"
 
 MIXTURE::ElastinMembraneAnisotropyExtension::ElastinMembraneAnisotropyExtension(
     const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy)
@@ -224,7 +224,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
 
   current_reference_growth_[gp] =
       DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(gprefecoord.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);

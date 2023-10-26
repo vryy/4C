@@ -14,7 +14,6 @@
 #include "baci_io_pstream.H"
 #include "baci_levelset_algorithm.H"
 #include "baci_levelset_intersection_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"
@@ -23,6 +22,7 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_utils.H"
+#include "baci_utils_function.H"
 
 
 /*----------------------------------------------------------------------*
@@ -254,7 +254,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
             int doflid = dofrowmap->LID(dofgid);
             // evaluate component k of spatial function
             double initialval =
-                problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                     .Evaluate(lnode->X(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) dserror("dof not on proc");

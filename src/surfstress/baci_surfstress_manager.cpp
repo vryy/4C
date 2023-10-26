@@ -16,12 +16,12 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -268,7 +268,8 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, co
   /*------------gradual application of surface stresses via time curve*/
   if (time <= t_end)
     curvefac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            time);
 
   double ndof = Adiff->length();
 

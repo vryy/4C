@@ -16,7 +16,6 @@
 #include "baci_inpar_thermo.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"
@@ -27,6 +26,7 @@
 #include "baci_nurbs_discret.H"
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_element.H"  // only for visualization of element data
+#include "baci_utils_function.H"
 
 #include <algorithm>
 
@@ -2745,7 +2745,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac = (functnum > 0)
                                 ? DRT::Problem::Instance()
-                                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                       .Evaluate(xrefegp.A(), time, 0)
                                 : 1.0;
 
@@ -3278,15 +3278,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
         for (int dim = 0; dim < nsd_; ++dim) position[dim] = xyzint(dim);
 
-        const double T_exact = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
-                                   .Evaluate(position, t, 0);
+        const double T_exact =
+            DRT::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                .Evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
         std::vector<double> Tder_exact =
             DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
 
         if (Tder_exact.size())

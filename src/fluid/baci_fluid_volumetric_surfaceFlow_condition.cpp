@@ -13,9 +13,9 @@
 #include "baci_fluid_volumetric_surfaceFlow_condition.H"
 
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <stdio.h>
 
@@ -1064,7 +1064,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   if (functnum > 0)
   {
     functfac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                    .Evaluate(time);
     flowrate = val * functfac;
   }

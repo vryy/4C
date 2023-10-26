@@ -10,10 +10,10 @@
 #include "baci_poromultiphase_scatra_function.H"
 
 #include "baci_io_linedefinition.H"
-#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_poromultiphase_scatra_utils.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function_manager.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -21,7 +21,7 @@ namespace
 {
 
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> CreatePoroFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CreatePoroFunction(
       const std::string& type, const std::vector<std::pair<std::string, double>>& params)
   {
     if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
@@ -55,14 +55,14 @@ namespace
     else
     {
       dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-      return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
+      return Teuchos::RCP<CORE::UTILS::FunctionOfAnything>(nullptr);
     }
   }
 
 
 
   template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfAnything> TryCreatePoroFunction(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -82,7 +82,7 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
+      return Teuchos::RCP<CORE::UTILS::FunctionOfAnything>(nullptr);
     }
   }
 
@@ -113,7 +113,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::AddValidPoroFunctions(DRT::UTILS::FunctionManager& function_manager)
+void POROMULTIPHASESCATRA::AddValidPoroFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   function_manager.AddFunctionDefinition(
       {DRT::INPUT::LineDefinition::Builder()

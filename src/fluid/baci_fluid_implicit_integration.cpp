@@ -56,7 +56,6 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_lib_utils_discret.H"
@@ -65,6 +64,7 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
+#include "baci_utils_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
@@ -2703,7 +2703,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           for (int i = 0; i < numdim_; i++)
           {
             (*nodeNormals)[dofsLocalInd[i]] =
-                (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
                     .Evaluate(currPos.data(), 0.0, i);
           }
@@ -4281,7 +4281,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         int gid = nodedofset[index];
 
         double initialval = DRT::Problem::Instance()
-                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                 .Evaluate(lnode->X(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);

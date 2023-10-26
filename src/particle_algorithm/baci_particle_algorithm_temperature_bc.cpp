@@ -10,13 +10,13 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_temperature_bc.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_interface.H"
+#include "baci_utils_function.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -108,7 +108,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
 
     // get reference to function
     const auto& function =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functid - 1);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get pointer to particle states
     const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);

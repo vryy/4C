@@ -10,7 +10,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_heatsource.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_interface.H"
@@ -18,6 +17,7 @@
 #include "baci_particle_interaction_sph_neighbor_pairs.H"
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -102,7 +102,7 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
   std::vector<double> funct(1);
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
       heatsourcefctnumber_ - 1);
 
   // safety check
@@ -276,7 +276,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
   std::vector<double> funct(1);
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
       heatsourcefctnumber_ - 1);
 
   // safety check

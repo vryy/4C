@@ -10,10 +10,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
 #include "baci_w1_poro_p1.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
@@ -956,7 +956,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, i);
         }
 

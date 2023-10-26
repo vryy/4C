@@ -17,13 +17,13 @@
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_beampotential.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
 
@@ -241,14 +241,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
@@ -622,14 +622,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     q1 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     q2 *= DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
@@ -1235,14 +1235,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     rho1 *= DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
     rho2 *= DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(function_number - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 
 

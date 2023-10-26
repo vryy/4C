@@ -11,9 +11,9 @@
 
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <stdio.h>
 
@@ -82,7 +82,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[1])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[1])
                        .Evaluate(time);
         Rf = (*vals)[1] * curvefac;
       }
@@ -109,7 +109,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     if ((*curve)[0] >= 0)
     {
       curvefac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                      .Evaluate(time);
       BCin = (*vals)[0] * curvefac;
     }
@@ -553,7 +553,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   {
     double time = params.get<double>("total time");
     curvefac = DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                   ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                    .Evaluate(time);
     Rf = (*vals)[0] * curvefac;
   }
@@ -663,7 +663,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time);
         R = (*vals)[1] * curvefac;
       }
@@ -681,7 +681,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time);
         Pout = (*vals)[0] * curvefac;
       }
@@ -738,7 +738,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time);
         //        Pout = (*vals)[0]*curvefac;
       }
@@ -750,7 +750,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[1])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[1])
                        .Evaluate(time);
         R = (*vals)[1] * curvefac;
       }
@@ -762,7 +762,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[2])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[2])
                        .Evaluate(time);
         C = (*vals)[2] * curvefac;
       }
@@ -798,11 +798,11 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time);
         //        Pout = (*vals)[0]*curvefac;
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time - dt);
       }
       else
@@ -818,7 +818,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         else
           t = time - dt;
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(t);
         Poutnm = (*vals)[0] * curvefac;
       }
@@ -830,7 +830,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[1])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[1])
                        .Evaluate(time);
         R1 = (*vals)[1] * curvefac;
       }
@@ -842,7 +842,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[2])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[2])
                        .Evaluate(time);
         C = (*vals)[2] * curvefac;
       }
@@ -854,7 +854,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[3] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[3])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[3])
                        .Evaluate(time);
         R2 = (*vals)[3] * curvefac;
       }
@@ -934,7 +934,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[0])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                        .Evaluate(time);
         //        Pout = (*vals)[0]*curvefac;
       }
@@ -946,7 +946,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[1])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[1])
                        .Evaluate(time);
         R1 = (*vals)[1] * curvefac;
       }
@@ -958,7 +958,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[2])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[2])
                        .Evaluate(time);
         C = (*vals)[2] * curvefac;
       }
@@ -970,7 +970,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[3] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[3])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[3])
                        .Evaluate(time);
         R2 = (*vals)[3] * curvefac;
       }
@@ -982,7 +982,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       if ((*curve)[4] >= 0)
       {
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>((*curve)[4])
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[4])
                        .Evaluate(time);
         L = (*vals)[4] * curvefac;
       }

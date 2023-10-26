@@ -23,10 +23,10 @@ bridge between the xfluid class and the cut-library
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mat_newtonianfluid.H"
+#include "baci_utils_function.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"
 
@@ -398,7 +398,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       value = FunctImplementation(func_no, lnode->X(), time);
     else if (func_no >= 1)
       value = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                   .Evaluate(lnode->X(), time, 0);
     else
       dserror("invalid function no. to set level-set field!");

@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
+#include "baci_utils_function.H"
 
 
 /*----------------------------------------------------------------------*
@@ -991,7 +991,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), isd);
           }
           else

@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_function.H"
+#include "baci_utils_function.H"
 
 #include "baci_io.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_function_manager.H"
-#include "baci_lib_functionvariables.H"
+#include "baci_utils_function_manager.H"
+#include "baci_utils_functionvariables.H"
 
 #include <Sacado.hpp>
 
@@ -54,7 +54,7 @@ namespace
 
   /// returns a vector of times either from NUMPOINTS and TIMERANGE or from TIMES of a line
   /// definition
-  std::vector<double> ExtractTimeVector(const DRT::INPUT::LineDefinition& timevar)
+  std::vector<double> ExtractTimeVector(const ::DRT::INPUT::LineDefinition& timevar)
   {
     // read the number of points
     int numpoints;
@@ -120,7 +120,7 @@ namespace
   /// sets the values of the variables in second derivative of expression
   template <int dim>
   void SetValuesInExpressionSecondDeriv(
-      const std::vector<Teuchos::RCP<DRT::UTILS::FunctionVariable>>& variables, const double* x,
+      const std::vector<Teuchos::RCP<CORE::UTILS::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
@@ -188,7 +188,7 @@ namespace
   std::vector<double> EvaluateAndAssembleExpressionToResultVector(
       const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
       const std::size_t component,
-      std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>> expr,
+      std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>> expr,
       const std::map<std::string, double>& constant_values)
   {
     // number of variables
@@ -208,7 +208,7 @@ namespace
 
   /// modifies the component to zero in case the expression is of size one
   std::size_t FindModifiedComponent(const std::size_t component,
-      const std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>>& expr)
+      const std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>>& expr)
   {
     return (expr.size() == 1) ? 0 : component;
   }
@@ -244,8 +244,8 @@ namespace
 
 
 template <int dim>
-Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFunctionOfAnything(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunctionOfAnything(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -262,7 +262,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFuncti
       function_lin_def.ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
-    return Teuchos::rcp(new DRT::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
+    return Teuchos::rcp(new CORE::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
   }
   else
   {
@@ -273,8 +273,8 @@ Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFuncti
 
 
 template <int dim>
-Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -315,7 +315,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const ::DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -333,14 +333,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const ::DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
     ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
 
     const auto variable = std::invoke(
-        [&]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
+        [&]() -> Teuchos::RCP<CORE::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;
@@ -457,7 +457,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
 }
 
 template <int dim>
-DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
+CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -466,14 +466,14 @@ DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new DRT::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new CORE::UTILS::SymbolicExpression<ValueType>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
 template <int dim>
-double DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
+double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -503,7 +503,7 @@ double DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
 }
 
 template <int dim>
-std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatialDerivative(
+std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatialDerivative(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -525,7 +525,7 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatia
 }
 
 template <int dim>
-std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeDerivative(
+std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeDerivative(
     const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector
@@ -613,12 +613,12 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeDe
 
 
 template <int dim>
-DRT::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
+CORE::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
     const std::string& component, std::vector<std::pair<std::string, double>> constants)
     : constants_from_input_(std::move(constants))
 {
   // build the parser for the function evaluation
-  auto symbolicexpression = Teuchos::rcp(new DRT::UTILS::SymbolicExpression<double>(component));
+  auto symbolicexpression = Teuchos::rcp(new CORE::UTILS::SymbolicExpression<double>(component));
 
   // save the parsers
   expr_.push_back(symbolicexpression);
@@ -627,7 +627,7 @@ DRT::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
 
 
 template <int dim>
-double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
+double CORE::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -658,7 +658,7 @@ double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
 
 
 template <int dim>
-std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
+std::vector<double> CORE::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -693,30 +693,30 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivat
 
 // explicit instantiations
 
-template class DRT::UTILS::SymbolicFunctionOfSpaceTime<1>;
-template class DRT::UTILS::SymbolicFunctionOfSpaceTime<2>;
-template class DRT::UTILS::SymbolicFunctionOfSpaceTime<3>;
+template class CORE::UTILS::SymbolicFunctionOfSpaceTime<1>;
+template class CORE::UTILS::SymbolicFunctionOfSpaceTime<2>;
+template class CORE::UTILS::SymbolicFunctionOfSpaceTime<3>;
 
-template class DRT::UTILS::SymbolicFunctionOfAnything<1>;
-template class DRT::UTILS::SymbolicFunctionOfAnything<2>;
-template class DRT::UTILS::SymbolicFunctionOfAnything<3>;
+template class CORE::UTILS::SymbolicFunctionOfAnything<1>;
+template class CORE::UTILS::SymbolicFunctionOfAnything<2>;
+template class CORE::UTILS::SymbolicFunctionOfAnything<3>;
 
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
-DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
-DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
-DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
+CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
+CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
+CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
 
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-DRT::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-DRT::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-DRT::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
+CORE::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
+CORE::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
+CORE::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);

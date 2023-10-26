@@ -31,7 +31,6 @@ For a detailed description see:
 #include "baci_io_control.H"                                    // for debug plotting with gmsh
 #include "baci_io_gmsh.H"                                       // for debug plotting with gmsh
 #include "baci_io_linedefinition.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"  // for debug plotting with gmsh
@@ -39,6 +38,7 @@ For a detailed description see:
 #include "baci_mat_constraintmixture_history.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -975,7 +975,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
         curvefac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                        .Evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f",
@@ -1450,7 +1450,7 @@ void MAT::ConstraintMixture::EvaluateElastin(const CORE::LINALG::Matrix<NUM_STRE
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
       curvefac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                      .Evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       dserror(

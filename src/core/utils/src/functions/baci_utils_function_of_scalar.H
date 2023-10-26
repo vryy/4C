@@ -3,10 +3,10 @@
 \level 0
 */
 
-#ifndef BACI_LIB_FUNCTION_OF_SCALAR_H
-#define BACI_LIB_FUNCTION_OF_SCALAR_H
+#ifndef BACI_UTILS_FUNCTION_OF_SCALAR_H
+#define BACI_UTILS_FUNCTION_OF_SCALAR_H
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /**
    * This interface encodes functions \f$ y = f(s) \f$ which take a single scalar \f$ s \f$ and
@@ -30,6 +30,6 @@ namespace DRT::UTILS
      */
     [[nodiscard]] virtual double EvaluateDerivative(double scalar, int deriv_order) const = 0;
   };
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif

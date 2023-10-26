@@ -19,7 +19,6 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_exporter.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"
@@ -32,6 +31,7 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 #include "baci_w1.H"
 
 #include <Teuchos_BLAS.hpp>
@@ -589,7 +589,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             for (unsigned int d = 0; d < 2; ++d)
               uanalyt(d, 0) =
                   DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                       .Evaluate(xgp.A(), finaltime, d);
 
             // set strains to zero
@@ -1080,7 +1080,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
 
         // evaluate function at current gauss point
         functfac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .Evaluate(coordgpref, time, i);
       }
 

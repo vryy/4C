@@ -9,11 +9,11 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_functionvariables.H"
+#include "baci_utils_functionvariables.H"
 
 namespace
 {
-  class FunctionVariableStub : public DRT::UTILS::FunctionVariable
+  class FunctionVariableStub : public CORE::UTILS::FunctionVariable
   {
    public:
     FunctionVariableStub(double start, double end, double returnValue = 0.0)
@@ -39,7 +39,7 @@ namespace
   TEST(PiecewiseVariableTest, ContainTimeSingle)
   {
     auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
-    DRT::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
+    CORE::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_TRUE(piecewiseVariable.ContainTime(0.0));
     EXPECT_TRUE(piecewiseVariable.ContainTime(0.5));
@@ -50,7 +50,7 @@ namespace
   TEST(PiecewiseVariableTest, ValueSingle)
   {
     auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
-    DRT::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
+    CORE::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_EQ(piecewiseVariable.Value(0.0), 0.0);
     EXPECT_EQ(piecewiseVariable.Value(0.5), 0.0);
@@ -61,7 +61,7 @@ namespace
   TEST(PiecewiseVariableTest, TimeDerivativeValueSingle)
   {
     auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
-    DRT::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
+    CORE::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_EQ(piecewiseVariable.TimeDerivativeValue(0.0, 1), 0.0);
     EXPECT_EQ(piecewiseVariable.TimeDerivativeValue(0.5, 1), 0.0);
@@ -72,7 +72,7 @@ namespace
   TEST(PiecewiseVariableTest, ContainTimeMultiple)
   {
     // define a piece-wise variable which has overlapping areas
-    DRT::UTILS::PiecewiseVariable piecewiseVariable(
+    CORE::UTILS::PiecewiseVariable piecewiseVariable(
         "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
                     Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
                     Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});
@@ -88,7 +88,7 @@ namespace
   TEST(PiecewiseVariableTest, ValueMultiple)
   {
     // define a piece-wise variable which has overlapping areas
-    DRT::UTILS::PiecewiseVariable piecewiseVariable(
+    CORE::UTILS::PiecewiseVariable piecewiseVariable(
         "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
                     Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
                     Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});
@@ -102,7 +102,7 @@ namespace
   TEST(PiecewiseVariableTest, TimeDerivativeValueMultiple)
   {
     // define a piece-wise variable which has overlapping areas
-    DRT::UTILS::PiecewiseVariable piecewiseVariable(
+    CORE::UTILS::PiecewiseVariable piecewiseVariable(
         "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
                     Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
                     Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});

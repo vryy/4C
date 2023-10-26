@@ -15,11 +15,11 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electromagnetic.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -927,7 +927,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
     CORE::LINALG::SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If there is on component for each entry of the vector use une for each
@@ -935,7 +935,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = DRT::Problem::Instance()
-                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d);
   }
   // If the vector is half the number of the component only use the firt half
@@ -943,7 +943,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = DRT::Problem::Instance()
-                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d);
   }
   // If the number of component is half of the vector, repeat the first half twice
@@ -951,7 +951,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = DRT::Problem::Instance()
-                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d % numComp);
   }
   // If there is only one component always use it
@@ -959,7 +959,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = DRT::Problem::Instance()
-                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, 0);
   }
   // If the number is not recognised throw an error

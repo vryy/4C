@@ -15,10 +15,10 @@ vectors and matrices.
 
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_utils_function.H"
 
 
 
@@ -227,7 +227,7 @@ void DRT::UTILS::LocsysManager::Update(
 
                   // Evaluate function with current node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
                           .Evaluate(currPos.data(), time, j);
                 }
@@ -235,7 +235,7 @@ void DRT::UTILS::LocsysManager::Update(
                 {
                   // Evaluate function with reference node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
                           .Evaluate(node->X(), time, j);
                 }

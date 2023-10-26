@@ -14,7 +14,6 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parallel.H"
@@ -29,6 +28,7 @@
 #include "baci_scatra_resulttest_elch.H"
 #include "baci_scatra_timint_elch_service.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

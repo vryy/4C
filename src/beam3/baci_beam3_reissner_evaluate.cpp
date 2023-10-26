@@ -15,7 +15,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -26,6 +25,7 @@
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -650,7 +650,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
       // evaluate function at the position of the current GP
       if (functnum > 0)
         functionfac = DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;

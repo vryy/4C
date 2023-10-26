@@ -15,11 +15,11 @@
 #include "baci_art_net_art_terminal_bc.H"
 #include "baci_art_net_artery_ele_calc.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_cnst_1d_art.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 #include "baci_utils_singleton_owner.H"
 
 #include <fstream>
@@ -1487,7 +1487,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       if (curvenum > 0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
       }
 

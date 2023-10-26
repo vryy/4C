@@ -12,12 +12,12 @@
 
 #include "baci_contact_nitsche_strategy_tsi.H"
 #include "baci_io_control.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_resulttest.H"
 #include "baci_timestepping_mstep.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -906,7 +906,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)

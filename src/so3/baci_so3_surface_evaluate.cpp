@@ -15,8 +15,6 @@
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
@@ -30,6 +28,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_surfstress_manager.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
 
@@ -307,7 +307,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, dof);
             }
             else
@@ -354,7 +354,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
           // evaluate function at current gauss point
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, 0);
         }
 
@@ -430,7 +430,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, 0);
           }
           else
@@ -1701,7 +1701,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         {
           springstiff[i] = (*numfuncstiff)[i] != 0
                                ? springstiff[i] * DRT::Problem::Instance()
-                                                      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                      ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                           (*numfuncstiff)[i] - 1)
                                                       .Evaluate(time)
                                : springstiff[i];
@@ -1711,7 +1711,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] = (*numfuncvisco)[i] != 0
                              ? dashpotvisc[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                    ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                         (*numfuncvisco)[i] - 1)
                                                     .Evaluate(time)
                              : dashpotvisc[i];
@@ -1719,7 +1719,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * DRT::Problem::Instance()
-                                                    ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                                    ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                         (*numfuncdisploffset)[i] - 1)
                                                     .Evaluate(time)
                              : disploffset[i];
@@ -1928,12 +1928,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                       std::numeric_limits<double>::infinity()};
                   displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
                   force_disp = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
                                    .Evaluate(displ, time, 0);
 
                   force_disp_deriv = (DRT::Problem::Instance()
-                                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                               (*numfuncnonlinstiff)[dim] - 1)
                                           .EvaluateSpatialDerivative(displ, time, 0))[dim];
                 }
@@ -2008,12 +2008,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                     std::numeric_limits<double>::infinity(),
                     std::numeric_limits<double>::infinity()};
                 force_disp = DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
                                  .Evaluate(displ, time, 0);
 
                 force_disp_deriv = (DRT::Problem::Instance()
-                                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                             (*numfuncnonlinstiff)[0] - 1)
                                         .EvaluateSpatialDerivative(displ, time, 0))[0];
               }

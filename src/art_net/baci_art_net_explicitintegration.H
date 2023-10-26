@@ -21,9 +21,9 @@
 #include "baci_art_net_timint.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrix.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>

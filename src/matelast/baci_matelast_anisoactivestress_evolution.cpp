@@ -8,11 +8,11 @@
 
 #include "baci_matelast_anisoactivestress_evolution.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_material.H"
+#include "baci_utils_function.H"
 
 
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
@@ -143,7 +143,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const double* coordgpref_ = pos_->data();
     activationFunction =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
             .Evaluate(coordgpref_, totaltime, 0);
   }
 

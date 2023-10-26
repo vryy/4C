@@ -19,8 +19,6 @@
 #include "baci_fluid_ele_tds.H"
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_arrhenius_pv.H"
 #include "baci_mat_carreauyasuda.H"
@@ -37,6 +35,8 @@
 #include "baci_mat_tempdepwater.H"
 #include "baci_mat_yoghurt.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[jnode])->X(), time, isd);
           }
           else
@@ -1478,7 +1478,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functionfac = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[jnode])->X(), time, isd);
           }
           else
@@ -1527,9 +1527,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
       {
         // time factor (negative time indicating error)
         if (time >= 0.0)
-          functfac =
-              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(
-                  time);
+          functfac = DRT::Problem::Instance()
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum)
+                         .Evaluate(time);
         else
           dserror("Negative time in bodyforce calculation: time = %f", time);
       }
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectionTerm(
   for (int i = 0; i < nen_; ++i)
   {
     ecorrectionterm(i) = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate((ele->Nodes()[i])->X(), 0.0, 0);
   }
 }
@@ -1823,7 +1823,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetAdvectiveVelOseen(DRT::EL
       const double* jx = ele->Nodes()[jnode]->X();
       for (int idim = 0; idim < nsd_; ++idim)
         eadvvel_(idim, jnode) = DRT::Problem::Instance()
-                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                                     .Evaluate(jx, time, idim);
     }
   }

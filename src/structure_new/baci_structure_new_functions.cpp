@@ -11,10 +11,10 @@
 
 #include "baci_structure_new_functions.H"
 
-#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_stvenantkirchhoff.H"
+#include "baci_utils_function_manager.H"
 
 namespace
 {
@@ -32,7 +32,7 @@ namespace
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -76,7 +76,7 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
@@ -84,7 +84,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AddValidStructureFunctions(DRT::UTILS::FunctionManager& function_manager)
+void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   std::vector<DRT::INPUT::LineDefinition> lines;
   lines.emplace_back(DRT::INPUT::LineDefinition::Builder()

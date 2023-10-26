@@ -10,11 +10,11 @@
 #include "baci_fluid_xfluid_functions_combust.H"
 
 #include "baci_io_linedefinition.H"
-#include "baci_lib_function_manager.H"
+#include "baci_utils_function_manager.H"
 
 namespace
 {
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -34,7 +34,7 @@ namespace
   }
 }  // namespace
 
-void DRT::UTILS::AddValidCombustFunctions(DRT::UTILS::FunctionManager& function_manager)
+void DRT::UTILS::AddValidCombustFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   DRT::INPUT::LineDefinition zalesaksdisk =
       DRT::INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();

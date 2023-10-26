@@ -15,11 +15,11 @@
 
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>

@@ -10,9 +10,9 @@
 #include "baci_scatra_timint_elch_scheme.H"
 
 #include "baci_io.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
@@ -283,7 +283,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -848,7 +848,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;

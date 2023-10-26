@@ -13,12 +13,12 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_nurbs_discret.H"
+#include "baci_utils_function.H"
 
 
 
@@ -338,7 +338,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 // important: position has to have always three components!!
                 initialval(rr) =
                     DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }
 
@@ -467,7 +467,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 // important: position has to have always three components!!
                 initialval(rr) =
                     DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }
 

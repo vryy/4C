@@ -15,7 +15,6 @@
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -28,6 +27,7 @@
 #include "baci_porofluidmultiphase_meshtying_strategy_std.H"
 #include "baci_porofluidmultiphase_resulttest.H"
 #include "baci_porofluidmultiphase_utils.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -903,7 +903,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
                 dirichlet_dofs.push_back(gid);
               }
               const double dbc_value = DRT::Problem::Instance()
-                                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
                                            .Evaluate(current_node->X(), time_, 0);
               phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
@@ -1918,7 +1918,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");

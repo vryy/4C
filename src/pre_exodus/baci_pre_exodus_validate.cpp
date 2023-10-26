@@ -52,7 +52,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
   std::cout << "...";
   {
-    DRT::UTILS::FunctionManager function_manager;
+    CORE::UTILS::FunctionManager function_manager;
     BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
   }

@@ -6,7 +6,6 @@
 */
 
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_material.H"
@@ -16,6 +15,7 @@
 #include "baci_shell7p_ele_scatra.H"
 #include "baci_shell7p_ele_scatra_preevaluator.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_RCP.hpp>
 

@@ -13,7 +13,6 @@
 
 #include "baci_io_control.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
@@ -27,6 +26,7 @@
 #include "baci_red_airways_evaluation_data.h"
 #include "baci_red_airways_resulttest.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <stdio.h>
 

@@ -8,13 +8,13 @@
 
 #include "baci_mixture_constituent_elasthyper_damage.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
+#include "baci_utils_function.H"
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(
@@ -88,7 +88,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(CORE::LINALG::Matrix<3
 
   current_reference_growth_[gp] =
       DRT::Problem::Instance()
-          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(gprefecoord.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);

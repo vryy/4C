@@ -21,10 +21,10 @@
 #include "baci_inpar_validmaterials.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_elementdefinition.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <iostream>
 

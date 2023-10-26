@@ -42,7 +42,6 @@
 #include "baci_fluid_functions.H"
 #include "baci_fluid_xfluid_functions.H"
 #include "baci_fluid_xfluid_functions_combust.H"
-#include "baci_lib_function_library.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_lubrication_ele.H"
 #include "baci_mat_aaa_mixedeffects.H"
@@ -166,6 +165,7 @@
 #include "baci_torsion3.H"
 #include "baci_truss3.H"
 #include "baci_truss3_scatra.H"
+#include "baci_utils_function_library.H"
 #include "baci_w1.H"
 #include "baci_w1_nurbs.H"
 #include "baci_w1_poro_eletypes.H"
@@ -378,13 +378,13 @@ namespace
       << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
   }
 
-  void AttachFunctionDefinitions(DRT::UTILS::FunctionManager& function_manager)
+  void AttachFunctionDefinitions(CORE::UTILS::FunctionManager& function_manager)
   {
     AddValidBuiltinFunctions(function_manager);
     STR::AddValidStructureFunctions(function_manager);
     FLD::AddValidFluidFunctions(function_manager);
-    AddValidCombustFunctions(function_manager);
-    AddValidXfluidFunctions(function_manager);
+    DRT::UTILS::AddValidCombustFunctions(function_manager);
+    DRT::UTILS::AddValidXfluidFunctions(function_manager);
     AddValidLibraryFunctions(function_manager);
     POROMULTIPHASESCATRA::AddValidPoroFunctions(function_manager);
   }

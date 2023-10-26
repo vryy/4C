@@ -13,10 +13,10 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
-#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
+#include "baci_utils_function_manager.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
@@ -598,7 +598,7 @@ namespace DRT
      * @note The parsing of functions must take place before. This calls wants a filled
      * FunctionManager.
      */
-    void SetFunctionManager(UTILS::FunctionManager&& function_manager);
+    void SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager);
 
    private:
     /// private default constructor to disallow creation of instances
@@ -653,7 +653,7 @@ namespace DRT
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
 
     /// basket of spatial function
-    DRT::UTILS::FunctionManager functionmanager_;
+    CORE::UTILS::FunctionManager functionmanager_;
 
     /// all test values we might have
     DRT::ResultTestManager resulttest_;
