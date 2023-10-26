@@ -12,26 +12,10 @@
 #include <iostream>
 #include <numeric>
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
+
 UTILS::ConstraintDofSet::ConstraintDofSet() : DRT::DofSet() { return; }
 
 
-
-/*----------------------------------------------------------------------*
- |  reset everything  (public)                                ukue 04/07|
- *----------------------------------------------------------------------*/
-void UTILS::ConstraintDofSet::Reset()
-{
-  dofrowmap_ = Teuchos::null;
-  dofcolmap_ = Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- |  setup everything  (public)                                ukue 04/07|
- *----------------------------------------------------------------------*/
 int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
 {

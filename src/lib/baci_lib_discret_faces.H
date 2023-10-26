@@ -279,35 +279,9 @@ namespace DRT
     }
 
     /*!
-    \brief Query whether a Face with global id gid is stored on this proc
-           (Filled()==true NOT prerequisite)
-
-    */
-    virtual bool HaveGlobalFace(int gid) const;
-
-    /*!
-    \brief Get the face with global row id gid (Filled()==true NOT prerequisite)
-
-    Returns the face with global row id gid if node is on this proc.
-    Will return row or column face, ghosted or not.
-    This is an individual call
-
-    \return Address of face if face is stored on calling proc
-    */
-    virtual DRT::FaceElement* gFace(int gid) const;
-
-    /*!
     \brief Build internal faces extension
     */
     void CreateInternalFacesExtension(const bool verbose = false);
-
-    /*!
-    \brief Evaluate edge-based integrals
-    */
-    void EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Epetra_Vector> systemvector1,
-        Teuchos::ParameterList edgebasedparams = Teuchos::ParameterList());
-
 
     /*!
     \brief Complete construction of a face elements

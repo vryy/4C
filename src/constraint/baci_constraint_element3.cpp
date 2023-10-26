@@ -127,16 +127,3 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
-
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement3::Print(std::ostream& os) const
-{
-  os << "ConstraintElement3 ";
-  Element::Print(os);
-  std::cout << std::endl;
-  std::cout << data_;
-  return;
-}

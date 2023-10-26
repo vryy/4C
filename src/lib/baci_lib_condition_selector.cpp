@@ -81,42 +81,6 @@ bool DRT::UTILS::ConditionSelector::ContainsNode(int ngid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::DirichletSelector::SelectDofs(DRT::Node* node, std::set<int>& conddofset)
-{
-  bool found = false;
-  int ngid = node->Id();
-
-  // The condition vector is sorted by condition type. Thus lesser entity
-  // ranks are considered first. The first condition that covers a node gets
-  // it.
-
-  for (const auto& cond : Conditions())
-  {
-    const auto* onoff = cond->Get<std::vector<int>>("onoff");
-    if (onoff == nullptr) dserror("not a valid Dirichlet condition");
-    if (cond->ContainsNode(ngid))
-    {
-      std::vector<int> dof = Discretization().Dof(node);
-      for (unsigned k = 0; k < dof.size(); ++k)
-      {
-        if (k > onoff->size()) dserror("not a valid Dirichlet condition");
-        if ((*onoff)[k] != 0)
-        {
-          conddofset.insert(dof[k]);
-        }
-      }
-
-      // if a node has been covered by one Dirichlet condition do not look for
-      // further conditions
-      found = true;
-      break;
-    }
-  }
-  return found;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 DRT::UTILS::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
 
 /*----------------------------------------------------------------------*/

@@ -186,26 +186,6 @@ void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Node* node,
   return;
 }
 
-
-
-/*----------------------------------------------------------------------*
- | extract location vector based on numdof of dis      winklmaier 12/12 |
- *----------------------------------------------------------------------*/
-void DRT::UTILS::DisBasedLocationVector(
-    const DRT::Discretization& dis, const DRT::Element& ele, std::vector<int>& lm, const int num)
-{
-  lm.clear();
-  std::vector<int> giddofs;
-  const int numnodes = ele.NumNode();
-  for (int i = 0; i < numnodes; i++)
-  {
-    giddofs.clear();
-    giddofs = dis.Dof(ele.Nodes()[i]);
-    for (int j = 0; j < num; j++) lm.push_back(giddofs[j]);
-  }
-}
-
-
 /*----------------------------------------------------------------------*
  | compute node based L2 projection originating from a dof based        |
  | state vector                                                         |
@@ -1286,27 +1266,8 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
 
   return centercoords;
 }
-/*-----------------------------------------------------------------------------*
- *------------------------------------------------------------------------------*/
-void DRT::UTILS::Checkfgets(char* output, FILE* stream, std::string filename)
-{
-  if (output == nullptr)
-  {
-    if (ferror(stream))
-    {
-      dserror("Error while reading %s.\n", filename.c_str());
-    }
-#ifdef DEBUG
-    else if (feof(stream))
-    {
-      printf(
-          "Error while reading %s. End-of-File encountered before reading the first character. You "
-          "might want to check that.\n",
-          filename.c_str());
-    }
-#endif
-  }
-}
+
+
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 void DRT::UTILS::Checkscanf(int output)

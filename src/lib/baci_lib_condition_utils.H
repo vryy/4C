@@ -54,9 +54,6 @@ namespace DRT
       \param dis : (in) Discretization
       \param condname : (in) name of condition in question
       \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-      \author u.kue
-      \date 06/07
     */
     void FindConditionedNodes(
         const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes);
@@ -78,9 +75,6 @@ namespace DRT
       \param dis : (in) Discretization
       \param conds : (in) conditions in question
       \param nodes : (out) empty set on input, filled with nodal gids of local nodes
-
-      \author u.kue
-      \date 06/07
     */
     void FindConditionedNodes(const DRT::Discretization& dis,
         const std::vector<DRT::Condition*>& conds, std::vector<int>& nodes);

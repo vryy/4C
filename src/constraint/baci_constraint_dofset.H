@@ -39,9 +39,6 @@ namespace UTILS
 
   There are two possible states in this class: Reset and setup. To
   change back and forth use AssignDegreesOfFreedom() and Reset().
-
-
-  \author tk
   */
   class ConstraintDofSet : public DRT::DofSet
   {
@@ -72,9 +69,6 @@ namespace UTILS
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
         const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start);
-
-    /// reset all internal variables
-    void Reset() override;
 
     //@}
 

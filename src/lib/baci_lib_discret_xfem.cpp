@@ -72,17 +72,6 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
   // store copy of initial dofset
   initialdofsets_.clear();
 
-  //  for (unsigned int dofset = 0; dofset < dofsets_.size(); ++dofset)
-  //  {
-  //    std::cout << "Dofset " << dofset << std::endl;
-  //    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset],
-  //    true)->Clone());
-  ////    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset],
-  /// true)->Clone()); /    initialdofsets_.push_back(dofsets_[dofset]->Clone());
-  //    // use a dofsetproxy here!
-  ////    initialdofsets_.push_back(GetDofSetProxy(dofset));
-  //  }
-
   initialdofsets_.push_back(
       Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[nds[0]], true)->Clone());
 

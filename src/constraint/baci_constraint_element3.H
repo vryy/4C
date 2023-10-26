@@ -154,11 +154,6 @@ namespace DRT
       */
       int NumDofPerElement() const override { return 0; }
 
-      /*!
-      \brief Print this element
-      */
-      void Print(std::ostream& os) const override;
-
       DRT::ElementType& ElementType() const override { return ConstraintElement3Type::Instance(); }
 
       //@}
