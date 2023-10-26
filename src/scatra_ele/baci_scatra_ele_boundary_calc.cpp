@@ -1014,7 +1014,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
     dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  normal = CORE::GEO::computeCrossProduct(dist1, dist2);
+  normal.CrossProduct(dist1, dist2);
 
   const double length = normal.Norm2();
   if (length < 1.0e-16) dserror("Zero length for element normal");
@@ -1053,8 +1053,8 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
 {
   if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-  CORE::LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true),
-      parent_ele_v2(true);
+  CORE::LINALG::Matrix<3, 1> normal(true), normal_parent_ele(true), boundary_ele(true),
+      parent_ele_v1(true), parent_ele_v2(true);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -1063,8 +1063,8 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
     parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
   }
 
-  const auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
-  normal = CORE::GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
+  normal_parent_ele.CrossProduct(parent_ele_v1, parent_ele_v2);
+  normal.CrossProduct(normal_parent_ele, boundary_ele);
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
   // Otherwise, change the sign of the normal vector

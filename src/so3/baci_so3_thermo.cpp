@@ -10,7 +10,6 @@
  *----------------------------------------------------------------------*/
 #include "baci_so3_thermo.H"
 
-#include "baci_discretization_fem_general_utils_shapefunctions_service.H"
 #include "baci_io_linedefinition.H"
 
 
@@ -22,7 +21,6 @@ DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::So3_Thermo(int id, int owner)
     : so3_ele(id, owner), intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
   return;
 }
 
@@ -33,7 +31,7 @@ DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::So3_Thermo(int id, int owner)
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::So3_Thermo(
     const DRT::ELEMENTS::So3_Thermo<so3_ele, distype>& old)
-    : so3_ele(old), intpoints_(distype), ishigherorder_(old.ishigherorder_)
+    : so3_ele(old), intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
   return;

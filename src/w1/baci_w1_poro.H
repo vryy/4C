@@ -623,9 +623,6 @@ namespace DRT
       //! Gauss integration rule
       CORE::DRT::UTILS::GaussIntegration intpoints_;
 
-      //! flag indicating higher order element
-      bool ishigherorder_;
-
       //! flag indicating initialization of element
       bool init_;
 

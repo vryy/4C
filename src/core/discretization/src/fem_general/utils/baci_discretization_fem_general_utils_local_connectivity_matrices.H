@@ -28,10 +28,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_hex16_surfaces_q6[4][6] = {
       {0, 1, 4, 8, 9, 12}, {1, 2, 5, 9, 10, 13}, {2, 3, 6, 10, 11, 14}, {3, 0, 7, 11, 8, 15}};
 
-  //! 8 Lines of a Hex16 element with 3 nodes per line
+  //! 8 lines of a Hex16 element with 3 nodes per line
   const int eleNodeNumbering_hex16_lines_quad[8][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {0, 3, 7},
       {8, 9, 12}, {9, 10, 13}, {10, 11, 14}, {8, 11, 15}};
-  //! 4 Lines in a Hex16 element with 2 nodes per line
+  //! 4 lines in a Hex16 element with 2 nodes per line
   const int eleNodeNumbering_hex16_lines_lin[4][2] = {{0, 8}, {1, 9}, {2, 10}, {3, 11}};
 
   //! 2 surfaces on a Hex18 element with 9 nodes per surface
@@ -41,10 +41,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_hex18_surfaces_q6[4][6] = {
       {0, 1, 4, 9, 10, 13}, {1, 2, 5, 10, 11, 14}, {2, 3, 6, 11, 12, 15}, {3, 0, 7, 12, 9, 16}};
 
-  //! 8 Lines of a Hex18 element with 3 nodes per line
+  //! 8 lines of a Hex18 element with 3 nodes per line
   const int eleNodeNumbering_hex18_lines_quad[8][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {0, 3, 7},
       {9, 10, 13}, {10, 11, 14}, {11, 12, 15}, {9, 12, 16}};
-  //! 4 Lines in a Hex18 element with 2 nodes per line
+  //! 4 lines in a Hex18 element with 2 nodes per line
   const int eleNodeNumbering_hex18_lines_lin[4][2] = {{0, 9}, {1, 10}, {2, 11}, {3, 12}};
 
   //! 6 Surfaces of a Hex27 element with 9 nodes per surface
@@ -53,7 +53,7 @@ namespace CORE::DRT::UTILS
       {2, 3, 7, 6, 10, 15, 18, 14, 23}, {0, 4, 7, 3, 12, 19, 15, 11, 24},
       {4, 5, 6, 7, 16, 17, 18, 19, 25}};
 
-  //! 12 Lines of a Hex27 element with 3 nodes per line
+  //! 12 lines of a Hex27 element with 3 nodes per line
   const int eleNodeNumbering_hex27_lines[12][3] = {{0, 1, 8}, {1, 2, 9}, {2, 3, 10}, {0, 3, 11},
       {0, 4, 12}, {1, 5, 13}, {2, 6, 14}, {3, 7, 15}, {4, 5, 16}, {5, 6, 17}, {6, 7, 18},
       {4, 7, 19}};
@@ -62,15 +62,15 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_tet10_surfaces[4][6] = {
       {0, 1, 3, 4, 8, 7}, {1, 2, 3, 5, 9, 8}, {0, 3, 2, 7, 9, 6}, {0, 2, 1, 6, 5, 4}};
 
-  //! 6 Lines of a Tet10 element with 3 nodes per line
+  //! 6 lines of a Tet10 element with 3 nodes per line
   const int eleNodeNumbering_tet10_lines[6][3] = {
       {0, 1, 4}, {1, 2, 5}, {0, 2, 6}, {0, 3, 7}, {1, 3, 8}, {2, 3, 9}};
 
-  //! Triangular surfaces of wedge18 with 6 nodes per surface
+  //! 2 triangular surfaces of wedge18 with 6 nodes per surface
   const int eleNodeNumbering_wedge18_trisurfaces[2][6] = {
       {2, 1, 0, 7, 6, 8}, {5, 3, 4, 14, 12, 13}};
 
-  //! Rectangular surfaces of wedge18 with 9 nodes per surface
+  //! 3 rectangular surfaces of wedge18 with 9 nodes per surface
   const int eleNodeNumbering_wedge18_quadsurfaces[3][9] = {{0, 1, 4, 3, 6, 10, 12, 9, 15},
       {1, 2, 5, 4, 7, 11, 13, 10, 16}, {2, 0, 3, 5, 8, 9, 14, 11, 17}};
 
@@ -78,10 +78,10 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_wedge18_lines[9][3] = {{0, 1, 6}, {1, 2, 7}, {2, 0, 8}, {3, 4, 12},
       {4, 5, 13}, {5, 3, 14}, {0, 3, 9}, {1, 4, 10}, {2, 5, 11}};
 
-  //! Rectangular surface of pyramid5
+  //! 1 rectangular surface of pyramid5
   const int eleNodeNumbering_pyramid5_quadsurfaces[1][4] = {{0, 3, 2, 1}};
 
-  //! Triangular surfaces of pyramid5
+  //! 4 triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3] = {
       {0, 1, 4}, {1, 2, 4}, {2, 3, 4}, {0, 4, 3}};
 
@@ -89,13 +89,11 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_pyramid5_lines[8][2] = {
       {0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 4}, {1, 4}, {2, 4}, {3, 4}};
 
-
-  //! 4 Lines of a Quad9 element with 3 nodes per line
+  //! 4 lines of a Quad9 element with 3 nodes per line
   const int eleNodeNumbering_quad9_lines[4][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {3, 0, 7}};
 
-  //! 4 Lines of a nurbs4 element with 2 control points per line
+  //! 4 lines of a nurbs4 element with 2 control points per line
   //! we apply the nurbs specific cartesian numbering
-  //!
   //! \verbatim
   //!
   //!          2   (2)   3
@@ -112,9 +110,8 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_nurbs4_lines[4][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
 
 
-  //! 4 Lines of a nurbs9 element with 3 control points per line
-  //! we apply the nurbs specific cartesian numbering.
-  //!
+  //! 4 lines of a nurbs9 element with 3 control points per line
+  //! we apply the nurbs specific cartesian numbering
   //! \verbatim
   //!
   //!            (2) -->
@@ -130,53 +127,28 @@ namespace CORE::DRT::UTILS
   //!            (0) -->
   //!
   //! \endverbatim
-
   const int eleNodeNumbering_nurbs9_lines[4][3] = {{0, 1, 2}, {2, 5, 8}, {6, 7, 8}, {0, 3, 6}};
 
-  //! 3 Lines of a Tri6 element with 3 nodes per line
+  //! 3 lines of a Tri6 element with 3 nodes per line
   const int eleNodeNumbering_tri6_lines[3][3] = {{0, 1, 3}, {1, 2, 4}, {2, 0, 5}};
 
   //! for each of the 12 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_hex27_lines_surfaces[12][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {1, 4},
       {1, 2}, {2, 3}, {3, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}};
 
-
   //! for each of the 6 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_tet10_lines_surfaces[6][2] = {
       {0, 3}, {1, 3}, {2, 3}, {2, 0}, {0, 1}, {1, 2}};
-
-
-  //! for each of the 8 corner nodes, tell me the 3 neighbouring faces
-  const int eleNodeNumbering_hex27_nodes_surfaces[8][3] = {
-      {0, 1, 4}, {0, 1, 2}, {0, 2, 3}, {0, 3, 4}, {1, 4, 5}, {1, 2, 5}, {2, 3, 5}, {3, 4, 5}};
-
-
-  //! for each of the 8 corner nodes, tell me the 3 neighbouring lines
-  const int eleNodeNumbering_hex27_nodes_lines[8][3] = {
-      {0, 3, 4}, {0, 1, 5}, {1, 2, 6}, {2, 3, 7}, {4, 8, 11}, {5, 8, 9}, {6, 9, 10}, {7, 10, 11}};
-
-
-  //! for each of the 4 corner nodes, tell me the 3 neighbouring faces
-  const int eleNodeNumbering_tet10_nodes_surfaces[4][3] = {
-      {0, 2, 3}, {0, 1, 3}, {1, 2, 3}, {0, 1, 2}};
-
 
   //! for each of the 4 corner nodes, tell me the 3 neighbouring lines
   const int eleNodeNumbering_tet10_nodes_lines[4][3] = {{0, 2, 3}, {0, 1, 4}, {1, 2, 5}, {3, 4, 5}};
 
   //! for each node the reference coordinates are stored for quad9
   const double eleNodeNumbering_quad9_nodes_reference[9][2] = {{-1.0, -1.0}, {1.0, -1.0},
-      {1.0, 1.0}, {-1.0, 1.0},
+      {1.0, 1.0}, {-1.0, 1.0}, {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0}, {0.0, 0.0}};
 
-      {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0},
-
-      {0.0, 0.0}};
-
-
-  //! 6 Surfaces of a nurbs8 element with 4 control points per
-  //! surface we apply the nurbs specific cartesian numbering,
-  //! only interpolated surfaces are valid!
-  //!
+  //! 6 surfaces of a nurbs8 element with 4 control points per surface
+  //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
   //! \verbatim
   //!                         v
   //!                        /
@@ -209,8 +181,7 @@ namespace CORE::DRT::UTILS
   const int eleNodeNumbering_nurbs8_surfaces[6][4] = {
       {0, 1, 2, 3}, {4, 5, 6, 7}, {0, 1, 4, 5}, {2, 3, 6, 7}, {0, 2, 4, 6}, {1, 3, 5, 7}};
 
-
-  //! 6 Surfaces of a nurbs27 element with 9 control points per surface
+  //! 6 surfaces of a nurbs27 element with 9 control points per surface
   //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
   //!
   //! \verbatim
@@ -247,7 +218,7 @@ namespace CORE::DRT::UTILS
       {6, 7, 8, 15, 16, 17, 24, 25, 26}, {2, 5, 8, 11, 14, 17, 20, 23, 26},
       {0, 3, 6, 9, 12, 15, 18, 21, 24}};
 
-  //! 12 Lines of a Nurbs27 element with 3 control points per line
+  //! 12 lines of a Nurbs27 element with 3 control points per line
   //!                          v
   //!                         /
   //!                   10   /
@@ -278,47 +249,38 @@ namespace CORE::DRT::UTILS
       {0, 9, 18}, {2, 11, 20}, {8, 17, 26}, {6, 15, 24}, {18, 19, 20}, {20, 23, 26}, {24, 25, 26},
       {18, 21, 24}};
 
-
   //! for each node the reference coordinates are stored for tri6
-  const double eleNodeNumbering_tri6_nodes_reference[6][2] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0},
-
-      {0.5, 0.0}, {0.5, 0.5}, {0.0, 0.5}};
-
+  const double eleNodeNumbering_tri6_nodes_reference[6][2] = {
+      {0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}, {0.5, 0.0}, {0.5, 0.5}, {0.0, 0.5}};
 
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {{-1.0, -1.0, -1.0},
-      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0},
+      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0},
+      {1.0, 1.0, 1.0}, {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
+      {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
+      {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
+      {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0},
+      {0.0, 0.0, 0.0}};
 
-      {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0}, {-1.0, 1.0, 1.0},
-
-      {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0}, {-1.0, 0.0, -1.0},
-
-      {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
-
-      {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0},
-
-      {0.0, 0.0, -1.0}, {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
-
-      {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}};
-
-  //! for each node the reference coordinates are stored for a tet10
+  //! reference parameter coordinates for a tet10
   const double eleNodeNumbering_tet10_nodes_reference[10][3] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-      {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
+      {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0},
+      {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5}, {0.0, 0.5, 0.5}};
 
-      {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0}, {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5},
-      {0.0, 0.5, 0.5}};
+  //! reference parameter coordinates for a line3
   const double eleNodeNumbering_line3_nodes_reference[3][1] = {{-1.0}, {1.0}, {0.0}};
 
+  //! reference parameter coordinates for a line4
   const double eleNodeNumbering_line4_nodes_reference[4][1] = {
       {-1.0}, {1.0}, {-1.0 / 3.0}, {1.0 / 3.0}};
+
   /*!
- \brief Returns the number of nodes
-        for each discretization type
-
- \return number of nodes of the discretization type
- */
+   * @brief Returns the number of nodes for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of nodes
+   */
   int getNumberOfElementNodes(const ::DRT::Element::DiscretizationType& distype);
-
 
   //! Template Meta Programming version of switch over discretization type
   template <::DRT::Element::DiscretizationType DISTYPE>
@@ -453,123 +415,122 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-  \brief Returns the number of corner nodes
-         for each discretization type
-
-  \return number of corner nodes of the discretization type
-  */
+   * @brief Returns the number of corner nodes for an element of the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of corner nodes
+   */
   int getNumberOfElementCornerNodes(const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief  Returns the number of corner nodes
-          for each face element of a given element discretization type
-
-  \return   number of corner nodes for each face element of a given element
-             of the discretization type
+   * @brief Returns the number of corner nodes for each face element for an element of the given
+   * discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of corner nodes for each face element
    */
   std::vector<int> getNumberOfFaceElementCornerNodes(
       const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief  Returns the number of internal nodes
-          for each face element of a given element discretization type
-
-  \return   number of internal nodes for each face element of a given element
-             of the discretization type
+   * @brief Returns the number of internal nodes for each face element for an element of the given
+   * discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of internal nodes for each face element
    */
   std::vector<int> getNumberOfFaceElementInternalNodes(
       const ::DRT::Element::DiscretizationType& distype);
 
   /*!
- \brief Returns the number of lines
-        for each discretization type
+   * @brief Returns the number of lines for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of lines
    */
   int getNumberOfElementLines(const ::DRT::Element::DiscretizationType& distype);
 
   /*!
- \brief Returns the number of surfaces
-        for each discretization type
+   * @brief Returns the number of surface for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of surfaces
    */
   int getNumberOfElementSurfaces(const ::DRT::Element::DiscretizationType& distype);
 
   /*!
- \brief Returns the number of Volumes
-        for each discretization type
+   * @brief Returns the number of volumes for the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return number of volumes
    */
   int getNumberOfElementVolumes(const ::DRT::Element::DiscretizationType& distype);
 
   /*!
- \brief Returns the number of faces
-        for each discretization type (as opposed to Lines/Surfaces, this is always dim-1)
+   * @brief Returns the number of faces for the given discretization type (as opposed to
+   * lines/surfaces, this is always dim-1)
+   *
+   * @param[in] distype discretization type
+   * @return number of faces
    */
   int getNumberOfElementFaces(const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief Returns the shape type of a face of a given element
+   * @brief Returns the shape type of a face of a given element
+
+   * @param[in] distype discretization type
+   * @param[in] face face index
+   * @return discretization type of the element face
    */
   ::DRT::Element::DiscretizationType getEleFaceShapeType(
-      const ::DRT::Element::DiscretizationType& distype,  ///< discretization type
-      const unsigned int face = 0                         ///< which face?
-  );
+      const ::DRT::Element::DiscretizationType& distype, const unsigned int face = 0);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every face
-         (surface in 3D, line in 2D) for each discretization type
-
-  \return map with all nodes for each face
+   * @brief Fills a vector<std::vector<int>> with all nodes for every face (surface in 3D, line in
+   * 2D)
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each face
    */
   std::vector<std::vector<int>> getEleNodeNumberingFaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+      const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every surface
-         for each discretization type
-
-  \return map with all nodes for each surface
+   * @brief Fills a vector<std::vector<int>> with all nodes for every surface
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each surface
    */
   std::vector<std::vector<int>> getEleNodeNumberingSurfaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+      const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all nodes for every line
-         for each discretization type
-
-  \return map with all nodes for each line
+   * @brief Fills a vector<std::vector<int>> with all nodes for every line
+   *
+   * @param[in] distype discretization type
+   * @return map with all nodes for each line
    */
   std::vector<std::vector<int>> getEleNodeNumberingLines(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+      const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all surfaces for every line
-         for each discretization type
-
-  \return map with surfaces adjacent to each line
-  */
+   * @brief Fills a vector<std::vector<int>> with all surfaces for every line
+   *
+   * @param[in] distype discretization type
+   * @return map with surfaces adjacent to each line
+   */
   std::vector<std::vector<int>> getEleNodeNumbering_lines_surfaces(
-      const ::DRT::Element::DiscretizationType& distype  ///< discretization type
-  );
+      const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all lines for every node
-         for each discretization type
-
-  \return map with all lines adjacent to each node
-  */
-  std::vector<std::vector<int>> getEleNodeNumbering_nodes_lines(
-      const ::DRT::Element::DiscretizationType distype);
-
-  /*!
-  \brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
-         for each discretization type
-
-  \return map of parameter space coordinates for all nodes
-  */
+   * @brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
+   * of the given discretization type
+   *
+   * @param[in] distype discretization type
+   * @return map of parameter space coordinates for all nodes
+   */
   CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
+      const ::DRT::Element::DiscretizationType distype);
 
   /*!
    * @brief Returns the coordinates in parameter space for a given node id and discretization type
@@ -584,29 +545,29 @@ namespace CORE::DRT::UTILS
       const int nodeId, const ::DRT::Element::DiscretizationType distype);
 
   /*!
-  \brief    Returns the indices of the element corner nodes lying
-            adjacent to a specified higher order (edge) node index
-            for each discretization type
-
-  */
-  void getCornerNodeIndices(int& index1,                ///< index of corner node
-      int& index2,                                      ///< index of corner node
-      const int& hoindex,                               ///< index of edge node
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief    Returns the dimension of an element based on its discretization-type
-
-  */
-  int getDimension(
-      const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
+   * @brief Computes the indices of the element corner nodes lying adjacent to a specified higher
+   * order (edge) node index for each discretization type
+   *
+   * @param[out] index1  index of corner node
+   * @param[out] index2  index of corner node
+   * @param[in] hoindex  index of edge node
+   * @param[in] distype  discretization type
+   */
+  void getCornerNodeIndices(int& index1, int& index2, const int& hoindex,
+      const ::DRT::Element::DiscretizationType distype);
 
   /*!
-  \brief    Returns the dimension of an element based on its discretization-type
-            Template version
-  */
+   * @brief Returns the dimension of an element based on its discretization type
+   *
+   * @param[in] distype  discretization type
+   */
+  int getDimension(const ::DRT::Element::DiscretizationType distype);
+
+  /*!
+   * @brief Returns the dimension of an element based on its discretization type
+   *
+   * @tparam DISTYPE discretization type
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToDim
   {
@@ -743,9 +704,10 @@ namespace CORE::DRT::UTILS
   };
 
   /*!
-  \brief    Returns the degree of an element based on its discretization-type
-            Template version
-  */
+   * @brief Returns the degree of an element based on its discretization type
+   *
+   * @tparam DISTYPE discretization type
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToDegree
   {
@@ -867,17 +829,16 @@ namespace CORE::DRT::UTILS
   };
 
   /*!
-  \brief    Returns the number of independent components for 2nd derivatives per
-  discretization-type Template version
-
-            Number of components necessary to store second derivatives:
-            in general:
-              (n*(n+1))/2 components for nsd=n;
-            in practice:
-              1 component  for nsd=1:  (N,xx)
-              3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
-              6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-  */
+   * @brief Returns the number of independent components for 2nd derivatives per discretization type
+   * @tparam DISTYPE discretization type
+   *
+   * Number of components necessary to store second derivatives:
+   *  in general: (n*(n+1))/2 components for nsd=n;
+   *  in practice:
+   *   1 component  for nsd=1:  (N,xx)
+   *   3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+   *   6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToNumDeriv2
   {
@@ -1010,9 +971,11 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-  \brief    Returns the shape of face elements of a given element at compile time
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
+   * @brief Returns the shape of face elements of a given element at compile time (invalid for wedge
+   * and pyramid as it depends on the face number)
+   *
+   * @tparam DISTYPE discretization type
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToFaceShapeType
   {
@@ -1169,16 +1132,16 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-  \brief    Returns the shape of face elements of a given element
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
+   * @brief Returns the shape of face elements of a given element (invalid for wedge and pyramid as
+   * it depends on the face number)
+   *
+   * @tparam DISTYPE discretization type
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToNumFaces
   {
     static const int numFaces = 0;
   };
-  // template<> struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::point1>   {}; //
-  // invalid
   template <>
   struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::line2>
   {
@@ -1302,9 +1265,11 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-  \brief    Returns the number of nodes on face elements
-  (invalid for wedge and pyramid as it depends on the face number)
-  */
+   * @brief Returns the number of nodes on face elements (invalid for wedge and pyramid as it
+   * depends on the face number)
+   *
+   * @tparam DISTYPE discretization type
+   */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToNumNodePerFace
   {
@@ -1314,8 +1279,9 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-    \brief    Returns the order of an element edges based on its discretization-type
-              Template version
+   * @brief Returns the order of an element edges based on its discretization type
+   *
+   * @tparam DISTYPE discretization type
    */
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToEdgeOrder
@@ -1414,35 +1380,36 @@ namespace CORE::DRT::UTILS
 
 
   /*!
-    \brief    returns the order of the element-edges
+   * @brief returns the order of the element-edges
+   *
+   * @param[in]  distype  shape of the element
    */
-  int getOrder(const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
+  int getOrder(const ::DRT::Element::DiscretizationType distype);
 
   /*!
-    \brief    returns the order of the element
+   * @brief returns the order of the element
+   *
+   * @param[in]  distype  shape of the element
    */
-  int getDegree(const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
-  );
+  int getDegree(const ::DRT::Element::DiscretizationType distype);
 
   /*!
-    \brief    returns local node number in the parent element
-              from a given face number and local node number in the face element
+   * @brief Returns local node number in the parent element from a given face number and local node
+   * number in the face element
    */
   int getParentNodeNumberFromFaceNodeNumber(const ::DRT::Element::DiscretizationType parent_distype,
       const int faceId, const int faceNodeId);
 
   /*!
-   * \brief Get the geometric center of the element in local coordinates
+   * @brief Get the geometric center of the element in local coordinates
    *
    * @param[in]  dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[in]  distype  shape of the element
    * @param[out] pos  local center position
    */
   template <unsigned dim>
   CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
-      const ::DRT::Element::DiscretizationType distype,  ///< shape of the element
-      CORE::LINALG::Matrix<dim, 1>& pos                  ///< center position
-  )
+      const ::DRT::Element::DiscretizationType distype, CORE::LINALG::Matrix<dim, 1>& pos)
   {
     switch (distype)
     {
@@ -1509,16 +1476,15 @@ namespace CORE::DRT::UTILS
   }
 
   /*!
-   * \brief Returns the geometric center of the element in local coordinates
+   * @brief Returns the geometric center of the element in local coordinates
    *
-   * @param[in] dim  dimension of the element space (e.g. dim=2 for quad4)
-   *
-   * \return local center position.
+   * @tparam dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[in] distype  discretization type
+   * @return local center position.
    */
   template <unsigned dim>
   inline CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
-      const ::DRT::Element::DiscretizationType distype  ///< shape of the element
-  )
+      const ::DRT::Element::DiscretizationType distype)
   {
     CORE::LINALG::Matrix<dim, 1> pos(false);
     getLocalCenterPosition(distype, pos);
@@ -1526,31 +1492,14 @@ namespace CORE::DRT::UTILS
   }
 
   /*!
-   *  returns the shape of a given boundary element (is used in various element classes
-   *  for implementing the Shape() method of boundary elements)
+   * @brief Returns the shape of a given boundary element (is used in various element classes for
+   * implementing the Shape() method of boundary elements)
+   *
+   * @param[in] nen number of nodes of the boundary element
+   * @param[in] parentshape shape of parent element
    */
   ::DRT::Element::DiscretizationType getShapeOfBoundaryElement(
-      const int nen,  ///< number of nodes of the boundary element
-      const ::DRT::Element::DiscretizationType parentshape  ///< shape of parent element
-  );
-
-  /*!
-   * returns the power of a number as a compile time constant
-   */
-  template <int a, int N>
-  struct FixedPower
-  {
-    static const int value = a * FixedPower<a, N - 1>::value;
-  };
-
-  /*!
-   * Base case for fixed power: A number raised to power 0 is 1.
-   */
-  template <int a>
-  struct FixedPower<a, 0>
-  {
-    static const int value = 1;
-  };
+      const int nen, const ::DRT::Element::DiscretizationType parentshape);
 
   /// a trait to identify NURBS discretization types
   template <::DRT::Element::DiscretizationType type>

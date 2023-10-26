@@ -47,7 +47,6 @@ namespace CORE::DRT::ELEMENTS
   void EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
       const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
-
   /*!
    * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
    *
@@ -62,7 +61,6 @@ namespace CORE::DRT::ELEMENTS
 
 
   // --- template and inline functions --- //
-
   template <class T>
   void DRT::ELEMENTS::AssembleAveragedElementValues(
       Epetra_MultiVector& global_data, const T& gp_data, const ::DRT::Element& ele)
