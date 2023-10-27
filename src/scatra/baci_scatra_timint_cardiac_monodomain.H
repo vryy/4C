@@ -35,8 +35,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! virtual destructor
-    ~TimIntCardiacMonodomain() override { return; };
 
     //! setup algorithm
     void Setup() override;

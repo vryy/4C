@@ -71,10 +71,6 @@ namespace GEOMETRYPAIR
           line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
           is_unit_test_(false){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurface() override{};
 
     /**
      * \brief Initialize the pair.

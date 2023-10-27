@@ -126,12 +126,6 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       /*!
-      \brief Destructor
-
-      */
-      ~StructuralSurface() override = default;
-
-      /*!
       \brief Get number of degrees of freedom of a certain node
              (implements pure virtual DRT::Element)
 

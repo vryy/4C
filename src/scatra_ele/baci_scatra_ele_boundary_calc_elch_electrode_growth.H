@@ -45,9 +45,6 @@ namespace DRT
       static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      ~ScaTraEleBoundaryCalcElchElectrodeGrowth() override { return; };
-
 
 
      private:

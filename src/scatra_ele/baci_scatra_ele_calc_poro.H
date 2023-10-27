@@ -198,8 +198,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerPoro() override{};
-
       void SetPorosity(double porosity) { porosity_ = porosity; }
 
       double GetPorosity(const int k) const

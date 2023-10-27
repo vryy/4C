@@ -31,10 +31,6 @@ namespace GEOMETRYPAIR
      */
     LineTo3DEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 
-    /**
-     * \brief Destructor.
-     */
-    ~LineTo3DEvaluationData() override{};
 
     /**
      * \brief Clear the evaluation data.

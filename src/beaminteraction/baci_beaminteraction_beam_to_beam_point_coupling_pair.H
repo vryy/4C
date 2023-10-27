@@ -53,10 +53,6 @@ namespace BEAMINTERACTION
     BeamToBeamPointCouplingPair(double penalty_parameter_rot, double penalty_parameter_pos,
         std::array<double, 2> pos_in_parameterspace);
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToBeamPointCouplingPair() override{};
 
     /**
      * \brief Setup the beam coupling pair.

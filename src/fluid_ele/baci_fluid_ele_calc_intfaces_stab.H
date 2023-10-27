@@ -128,8 +128,6 @@ namespace DRT
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();
 
-      /// empty destructor
-      ~FluidInternalSurfaceStab() override { return; };
 
       /// number of space dimensions of the FluidIntFace element
       static const int facensd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;

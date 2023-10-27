@@ -64,13 +64,6 @@ namespace DRT
        */
       Knotvector();
 
-
-      /*!
-      \brief destructor
-
-      */
-      ~Knotvector() override = default;
-
       /*!
       \brief copy constructor
 

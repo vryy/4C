@@ -46,10 +46,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
         : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeSegmentation() override{};
 
     /**
      * \brief Setup the segment tracker for this line element.

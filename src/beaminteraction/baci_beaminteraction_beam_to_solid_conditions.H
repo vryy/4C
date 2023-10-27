@@ -60,10 +60,6 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const DRT::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidCondition() override{};
 
     /**
      * \brief Check if a combination of beam and solid id is in this condition.
@@ -149,10 +145,6 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const DRT::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidConditionVolumeMeshtying() override{};
 
     /**
      * \brief Build the volume ID sets for this condition.
@@ -197,10 +189,6 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
         const bool is_mesh_tying);
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidConditionSurface() override{};
 
     /**
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base

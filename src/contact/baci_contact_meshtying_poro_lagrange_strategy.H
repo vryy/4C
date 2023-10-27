@@ -28,11 +28,6 @@ namespace CONTACT
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~PoroMtLagrangeStrategy() override{};
 
     /*!
     /brief initial Poro Meshtying calculations

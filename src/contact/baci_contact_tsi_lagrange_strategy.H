@@ -62,11 +62,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
-    /*!
-      \brief Destructor
-
-     */
-    ~CoTSILagrangeStrategy() override{};
 
     //! @name Access methods
 

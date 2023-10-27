@@ -101,15 +101,6 @@ namespace TUTORIAL
       TutorialMatStVenantKirchhoff(const double young);
 
       /*!
-      \brief destructor (dtor)
-
-      \note This Destructor is declared virtual, since class NonlinearTruss contains virtual
-      methods. This is an indicator, that this class is supposed to be part of some inheritance
-      line. Check the internet on why it is then important to declare the destructor virtual.
-      */
-      ~TutorialMatStVenantKirchhoff() override{};
-
-      /*!
       \brief evaluate stress and material linearization (called for each integration point of
       elements)
 

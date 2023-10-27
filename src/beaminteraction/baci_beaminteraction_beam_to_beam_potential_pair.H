@@ -50,10 +50,7 @@ namespace BEAMINTERACTION
     */
     BeamToBeamPotentialPair();
 
-    /*!
-    \brief Destructor
-    */
-    ~BeamToBeamPotentialPair() override{};
+
 
     //! Setup
     void Setup() override;

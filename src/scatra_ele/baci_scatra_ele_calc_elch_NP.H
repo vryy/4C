@@ -25,8 +25,6 @@ namespace DRT
     class ScaTraEleCalcElchNP : public ScaTraEleCalcElch<distype>
     {
      public:
-      ~ScaTraEleCalcElchNP() override = default;
-
       /// Singleton access method
       static ScaTraEleCalcElchNP<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

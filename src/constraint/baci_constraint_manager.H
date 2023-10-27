@@ -57,8 +57,6 @@ namespace UTILS
     //! Constructor of constraint manager, allocating the constraints
     ConstrManager();
 
-    //! Destructor
-    ~ConstrManager() { return; };
 
     //! initialize this class
     void Init(Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params);

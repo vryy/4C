@@ -42,11 +42,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~PoroLagrangeStrategy() override{};
 
     //! @name Access methods
 

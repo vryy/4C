@@ -51,11 +51,6 @@ namespace BEAMINTERACTION
           Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);
 
       /**
-       * \brief empty Destructor
-       */
-      ~PartitionedBeamInteractionAssemblyManagerDirect() override = default;
-
-      /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
        * \param[in] fluid_dis (in) Pointer to the fluid disretization
        * \param[in] solid_dis (in) Pointer to the solid disretization

@@ -51,11 +51,6 @@ namespace UTILS
         int& maxID                                    ///< maximum monitor ID so far
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~Monitor() { return; };
 
     /*!
      \brief Return if there are monitors

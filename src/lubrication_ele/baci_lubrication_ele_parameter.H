@@ -33,10 +33,6 @@ namespace DRT
           const std::string& disname  //!< name of discretization
       );
 
-
-      //! dtor
-      ~LubricationEleParameter() {}
-
       //! set parameters
       void SetTimeParameters(Teuchos::ParameterList& parameters  //!< parameter list
       );

@@ -69,10 +69,7 @@ namespace BEAMINTERACTION
     */
     BeamLinkTruss(const BeamLinkTruss& old);
 
-    /*!
-    \brief Destructor
-    */
-    ~BeamLinkTruss() override{};
+
 
     //! Initialization [derived]
     void Init(int id, const std::vector<std::pair<int, int>>& eleids,

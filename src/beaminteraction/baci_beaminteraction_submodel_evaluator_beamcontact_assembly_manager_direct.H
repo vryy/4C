@@ -38,10 +38,6 @@ namespace BEAMINTERACTION
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
               assembly_contact_elepairs);
 
-      /**
-       * \brief Destructor.
-       */
-      ~BeamContactAssemblyManagerDirect() override{};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

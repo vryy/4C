@@ -27,11 +27,6 @@ namespace FBI
     BeamToFluidMeshtyingVtkOutputParams();
 
     /**
-     * \brief Destructor.
-     */
-    ~BeamToFluidMeshtyingVtkOutputParams() override = default;
-
-    /**
      * \brief Setup member variables.
      */
     void Setup();

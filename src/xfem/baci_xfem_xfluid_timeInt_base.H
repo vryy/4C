@@ -204,9 +204,6 @@ namespace XFEM
         return;
       }
 
-      //! destructor
-      ~TimeIntData() { return; }
-
       //@}
 
 

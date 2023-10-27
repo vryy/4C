@@ -69,10 +69,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
         : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolume() override{};
 
     /**
      * \brief Initialize the pair.

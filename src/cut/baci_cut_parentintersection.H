@@ -85,9 +85,6 @@ namespace CORE::GEO
           }
         }
 
-        //! destructor
-        ~DofSetData() { return; }
-
         int set_index_;     ///< set index for Volumecell
         bool inside_cell_;  ///< bool inside or outside cell
         std::vector<CORE::LINALG::Matrix<3, 1>>

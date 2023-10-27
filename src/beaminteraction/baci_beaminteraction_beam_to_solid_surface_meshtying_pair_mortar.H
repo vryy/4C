@@ -55,10 +55,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairMortar();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceMeshtyingPairMortar() override{};
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)

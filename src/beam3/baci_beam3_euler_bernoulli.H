@@ -160,11 +160,6 @@ namespace DRT::ELEMENTS
     Beam3eb(const Beam3eb& old);
 
     /*!
-    \brief Destructor
-    */
-    ~Beam3eb() override = default;
-
-    /*!
     \brief Deep copy this instance of Beam3eb and return pointer to the copy
 
     The Clone() method is used by the virtual base class Element in cases

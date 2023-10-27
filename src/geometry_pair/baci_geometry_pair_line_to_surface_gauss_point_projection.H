@@ -48,10 +48,6 @@ namespace GEOMETRYPAIR
             line_to_surface_evaluation_data)
         : GeometryPairLineToSurface<scalar_type, line, surface>(line_to_surface_evaluation_data){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurfaceGaussPointProjection() override{};
 
     /**
      * \brief Setup the projection tracker for this line element.

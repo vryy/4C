@@ -40,8 +40,6 @@ namespace DRT
       static PoroFluidMultiPhaseEleBoundaryCalc<distype>* Instance(
           const int numdofpernode, const std::string& disname);
 
-      /// Empty destructor
-      ~PoroFluidMultiPhaseEleBoundaryCalc() override { return; };
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

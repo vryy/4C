@@ -34,10 +34,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidPairBase() override{};
 
     /**
      * \brief Setup the contact pair (derived).

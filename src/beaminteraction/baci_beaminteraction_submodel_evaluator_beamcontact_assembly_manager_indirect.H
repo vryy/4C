@@ -50,10 +50,6 @@ namespace BEAMINTERACTION
           const Teuchos::RCP<const ::DRT::Discretization>& discret,
           const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params);
 
-      /**
-       * \brief Destructor.
-       */
-      ~BeamContactAssemblyManagerInDirect() override{};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

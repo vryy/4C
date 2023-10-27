@@ -47,11 +47,6 @@ namespace BEAMINTERACTION
 
    public:
     /**
-     * \brief empty Destructor.
-     */
-    ~BeamToFluidMeshtyingPairBase() override = default;
-
-    /**
      * \brief Setup the contact pair and set information on the current position of the elements in
      * the pair
      */

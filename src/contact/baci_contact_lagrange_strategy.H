@@ -44,11 +44,7 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
         Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~CoLagrangeStrategy() override = default;
 
     //! @name Access methods
 

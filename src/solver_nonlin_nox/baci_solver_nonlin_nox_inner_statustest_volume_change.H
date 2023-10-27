@@ -68,7 +68,6 @@ namespace NOX
          public:
           VolumeChange(const VolumeChangeParams& params, const NOX::Utils& u)
               : params_(params), utils_(u){};
-          ~VolumeChange() override{};
 
           StatusType CheckStatus(const Interface::Required& interface,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,

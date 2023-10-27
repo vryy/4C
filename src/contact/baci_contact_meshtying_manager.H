@@ -53,11 +53,7 @@ namespace CONTACT
     */
     MtManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~MtManager() override = default;
 
     //!@}
 

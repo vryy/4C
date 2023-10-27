@@ -38,13 +38,6 @@ namespace SCATRA
     //! constructor
     HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
 
-    //! destructor
-    ~HomIsoTurbScalarForcing() { return; };
-
-    //    //! set time integration scheme specific vectors (required for gen-alpha)
-    //    void SetTimeIntSpecificVectors(Teuchos::RCP<Epetra_Vector> phiaf,
-    //                                   bool gen_alpha = false);
-
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::SCATRA::InitialField init_field_type);
 

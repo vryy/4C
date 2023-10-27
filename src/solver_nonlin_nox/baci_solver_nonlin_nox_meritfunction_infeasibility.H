@@ -43,8 +43,6 @@ namespace NOX
         /// constructor
         Infeasibility(const Teuchos::ParameterList& params, const NOX::Utils& u);
 
-        ~Infeasibility() override{};
-
         //! Computes the merit function, \f$ f(x) \f$.
         double computef(const NOX::Abstract::Group& grp) const override;
 

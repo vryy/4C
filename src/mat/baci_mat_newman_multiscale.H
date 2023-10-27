@@ -23,8 +23,6 @@ namespace MAT
       //! constructor
       NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~NewmanMultiScale() override { return; };
 
       //! create instance of Newman multi-scale material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

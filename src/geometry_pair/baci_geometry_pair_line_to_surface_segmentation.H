@@ -47,10 +47,6 @@ namespace GEOMETRYPAIR
             line_to_surface_evaluation_data)
         : GeometryPairLineToSurface<scalar_type, line, surface>(line_to_surface_evaluation_data){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurfaceSegmentation() override{};
 
     /**
      * \brief Setup the segment tracker for this line element.

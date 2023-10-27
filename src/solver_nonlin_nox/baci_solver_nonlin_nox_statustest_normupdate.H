@@ -202,9 +202,6 @@ namespace NOX
           return;
         };
 
-        //! Destructor.
-        ~NormUpdateSkipFirstIter() override { return; };
-
        private:
         //! check status in first nonlinear iteration step
         NOX::StatusTest::StatusType checkStatusFirstIter() override;

@@ -252,8 +252,6 @@ namespace CONTACT
       ElementNormal()
           : xi_{0.0, 0.0}, unit_n_(true), ele_(nullptr), length_n_inv_(-1.0){/* empty */};
 
-      /// destructor
-      ~ElementNormal(){/* empty */};
 
       /// access the element unit normal components (read-only)
       double operator()(unsigned i) const { return unit_n_(i, 0); }

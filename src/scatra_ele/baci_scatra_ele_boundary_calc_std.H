@@ -28,8 +28,6 @@ namespace DRT
       static ScaTraEleBoundaryCalcStd<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      /// Empty destructor
-      ~ScaTraEleBoundaryCalcStd() override { return; };
 
      private:
       /// private constructor since we are singleton

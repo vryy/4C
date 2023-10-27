@@ -58,10 +58,7 @@ namespace BEAMINTERACTION
     */
     BeamToSphereContactPair();
 
-    /*!
-    \brief Destructor
-    */
-    ~BeamToSphereContactPair() override{};
+
 
     //! Setup
     void Setup() override;

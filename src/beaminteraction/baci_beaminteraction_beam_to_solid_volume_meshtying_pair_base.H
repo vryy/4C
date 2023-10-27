@@ -56,10 +56,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidVolumeMeshtyingPairBase() override{};
 
     /**
      * \brief Setup the contact pair (derived).

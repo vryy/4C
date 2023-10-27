@@ -142,8 +142,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleInternalVariableManagerArtery() override{};
-
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void SetInternalVariablesArtery(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions

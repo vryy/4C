@@ -65,13 +65,6 @@ namespace XFEM
   class XFEM_EdgeStab
   {
    public:
-    //! constructor
-    XFEM_EdgeStab(){};
-
-    //! destructor
-    ~XFEM_EdgeStab() { return; }
-
-
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate
     //! routine
     void EvaluateEdgeStabGhostPenalty(

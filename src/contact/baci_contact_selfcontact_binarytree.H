@@ -68,11 +68,6 @@ namespace CONTACT
         const int& nvectors, const int layer, const bool nonsmoothsurf,
         std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~SelfBinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -513,11 +508,6 @@ namespace CONTACT
     SelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~SelfBinaryTree() override{};
 
     //! @name Evaluation methods
 

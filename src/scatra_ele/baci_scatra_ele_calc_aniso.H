@@ -152,8 +152,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerAniso() override{};
-
       //! Set the anisotropic diffusion coefficient
       virtual void SetAnisotropicDiff(const CORE::LINALG::Matrix<NSD, NSD> difftensor, const int k)
       {

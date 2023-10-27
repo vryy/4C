@@ -40,10 +40,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceContactPairGapVariation();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceContactPairGapVariation() override{};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -75,10 +71,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceContactPairPotential();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceContactPairPotential() override{};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

@@ -36,11 +36,7 @@ namespace MORTAR
     */
     MortarDofSet();
 
-    /*!
-    \brief Destructor
 
-    */
-    ~MortarDofSet() override = default;
 
     /// create a copy of this object
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new MortarDofSet(*this)); }

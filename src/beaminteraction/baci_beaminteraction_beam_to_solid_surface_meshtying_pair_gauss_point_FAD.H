@@ -38,10 +38,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairGaussPointFAD();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceMeshtyingPairGaussPointFAD() override{};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

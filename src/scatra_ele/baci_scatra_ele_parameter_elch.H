@@ -28,9 +28,6 @@ namespace DRT
     class ScaTraEleParameterElch : public ScaTraEleParameterBase
     {
      public:
-      //! destructor
-      ~ScaTraEleParameterElch() override { return; };
-
       //! singleton access method
       static ScaTraEleParameterElch* Instance(
           const std::string& disname  //!< name of discretization

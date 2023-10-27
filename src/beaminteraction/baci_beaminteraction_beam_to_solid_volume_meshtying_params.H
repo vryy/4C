@@ -35,10 +35,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingParams();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidVolumeMeshtyingParams() override{};
 
     /**
      * \brief Initialize with the stuff coming from input file.

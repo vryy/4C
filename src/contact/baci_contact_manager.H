@@ -52,11 +52,7 @@ namespace CONTACT
     */
     CoManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~CoManager() override = default;
 
     //! @name Access methods
     //! @{

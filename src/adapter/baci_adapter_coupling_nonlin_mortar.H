@@ -56,11 +56,6 @@ namespace ADAPTER
     */
     CouplingNonLinMortar();
 
-    /*!
-    \brief Virtual destructor
-
-    */
-    ~CouplingNonLinMortar() override{};
 
     /*!
     \brief initialize routine

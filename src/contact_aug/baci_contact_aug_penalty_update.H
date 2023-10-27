@@ -307,8 +307,6 @@ namespace CONTACT
 
       PenaltyUpdate_Empty(const PenaltyUpdate_Empty& pu) = delete;
 
-      ~PenaltyUpdate_Empty() override{};
-
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
@@ -331,8 +329,6 @@ namespace CONTACT
           : PenaltyUpdate(pu){/* empty */};
 
       PenaltyUpdate_SufficientLinReduction(const PenaltyUpdate_SufficientLinReduction& pu) = delete;
-
-      ~PenaltyUpdate_SufficientLinReduction() override{};
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
@@ -365,8 +361,6 @@ namespace CONTACT
           : PenaltyUpdate(pu){/* empty */};
 
       PenaltyUpdate_SufficientAngle(const PenaltyUpdate_SufficientAngle& pu) = delete;
-
-      ~PenaltyUpdate_SufficientAngle() override{};
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 

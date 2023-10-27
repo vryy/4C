@@ -167,8 +167,6 @@ namespace FLD
 
       void TimeUpdate() override { reduced_D_time_integ_->TimeUpdate(); }
 
-      ~Fluid_couplingWrapper() override{};
-
      private:
       //! Reduced-D artery network time integration
       Teuchos::RCP<red_D_time_int> reduced_D_time_integ_;

@@ -26,8 +26,6 @@ namespace MAT
       //! constructor
       ScatraMatMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~ScatraMatMultiScale() override { return; };
 
       //! create material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

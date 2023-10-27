@@ -55,11 +55,6 @@ namespace ADAPTER
     */
     CouplingPoroMortar();
 
-    /*!
-    \brief Virtual destructor
-
-    */
-    ~CouplingPoroMortar() override{};
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,

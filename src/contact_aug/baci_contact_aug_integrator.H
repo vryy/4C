@@ -453,8 +453,6 @@ namespace CONTACT
 
       EvaluatorDeriv1stOnly(const class_type& source) = delete;
 
-      ~EvaluatorDeriv1stOnly() override{};
-
      protected:
       typename base_type::Type GetType() const override { return base_type::Type::deriv1st_only; };
 
@@ -506,8 +504,6 @@ namespace CONTACT
       EvaluatorFull(parent_type& parent) : base_type(parent){};
 
       EvaluatorFull(const class_type& source) = delete;
-
-      ~EvaluatorFull() override{};
 
      private:
       typename base_type::Type GetType() const override { return base_type::Type::full; };

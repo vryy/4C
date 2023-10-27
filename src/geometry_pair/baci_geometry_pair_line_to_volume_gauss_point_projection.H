@@ -47,10 +47,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
         : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeGaussPointProjection() override{};
 
     /**
      * \brief Setup the projection tracker for this line element.

@@ -45,12 +45,6 @@ namespace DRT
       PreStress(const DRT::ELEMENTS::PreStress& old);
 
       /*!
-      \brief Destructor
-
-      */
-      ~PreStress() override = default;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
