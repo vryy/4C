@@ -33,7 +33,6 @@ UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
     constrtype_ = GetConstrType(conditionname);
     for (unsigned int i = 0; i < constrcond_.size(); i++)
     {
-      // constrcond_[i]->Print(std::cout);
       int condID = (*(constrcond_[i]->Get<std::vector<int>>("ConditionID")))[0];
       if (condID > maxID)
       {
@@ -432,6 +431,7 @@ void UTILS::Constraint::InitializeConstraint(
   return;
 }  // end of Initialize Constraint
 
+
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 std::vector<int> UTILS::Constraint::GetActiveCondID()
@@ -443,13 +443,4 @@ std::vector<int> UTILS::Constraint::GetActiveCondID()
     if (mapit->second) condID.push_back(mapit->first);
   }
   return condID;
-}
-
-/*-----------------------------------------------------------------------*
- *-----------------------------------------------------------------------*/
-void UTILS::Constraint::SetState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Epetra_Vector> V                           ///< values to set
-)
-{
-  actdisc_->SetState(state, V);
 }

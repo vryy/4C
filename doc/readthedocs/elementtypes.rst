@@ -121,25 +121,6 @@ RIGIDSPHERE
 | DENSITY      |  1 x number |
 +--------------+-------------+
 
-.. _structurenstet4:
-
-NSTET4
-^^^^^^
-
-*Shapes:*
-
-- :ref:`TET4 <tet4>` (4 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| KINEM        |  1 x string |
-+--------------+-------------+
-
 .. _structurenstet5:
 
 NSTET5

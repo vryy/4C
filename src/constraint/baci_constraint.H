@@ -80,12 +80,6 @@ namespace UTILS
     */
     bool HaveConstraint() { return constrtype_ != none; };
 
-    /// Set state of the underlying discretization
-    void SetState(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Epetra_Vector> V        ///< values to set
-    );
-
-
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
     void Initialize(

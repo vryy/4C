@@ -1036,29 +1036,6 @@ int DRT::DiscretizationFaces::NumMyColFaces() const
     return (int)faces_.size();
 }
 
-/*----------------------------------------------------------------------*
- |  query existance of element (public)                kronbichler 05/13|
- *----------------------------------------------------------------------*/
-bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
-{
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator curr = faces_.find(gid);
-  if (curr == faces_.end())
-    return false;
-  else
-    return true;
-}
-
-/*----------------------------------------------------------------------*
- |  get element with global id (public)                kronbichler 05/13|
- *----------------------------------------------------------------------*/
-DRT::FaceElement* DRT::DiscretizationFaces::gFace(int gid) const
-{
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator curr = faces_.find(gid);
-#ifdef DEBUG
-  if (curr == faces_.end()) dserror("Face with gobal id gid=%d not stored on this proc", gid);
-#endif
-  return curr->second.get();
-}
 
 
 /*----------------------------------------------------------------------*
