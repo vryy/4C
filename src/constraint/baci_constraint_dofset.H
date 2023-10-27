@@ -45,11 +45,8 @@ namespace UTILS
    public:
     /*!
     \brief Standard Constructor
-
     */
-    ConstraintDofSet();
-
-
+    ConstraintDofSet() = default;
 
     //! @name Access methods
 

@@ -13,8 +13,6 @@
 #include <numeric>
 
 
-UTILS::ConstraintDofSet::ConstraintDofSet() : DRT::DofSet() { return; }
-
 
 int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
