@@ -25,7 +25,8 @@ namespace
       // function parameters
       const std::vector<std::pair<std::string, double>> func_params = {{"rho_oxy", 1.429e-9},
           {"DiffAdVTLC", 5.36}, {"alpha_oxy", 2.1e-4}, {"rho_air", 1.0e-9}, {"rho_bl", 1.03e-6},
-          {"n", 3}, {"P_oB50", 3.6}, {"NC_Hb", 0.25}, {"P_atmospheric", 101.3}};
+          {"n", 3}, {"P_oB50", 3.6}, {"NC_Hb", 0.25}, {"P_atmospheric", 101.3},
+          {"volfrac_blood_ref", 0.1}};
 
       // construct LungOxygenExchangeLaw
       LungOxygenExchangeLaw_ =
@@ -61,19 +62,20 @@ namespace
     // input arguments
     const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {{"phi1", 0.19}, {"phi2", 0.0}};
-    const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
+    const std::vector<std::pair<std::string, double>> constants = {
+        {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.3}};
 
     // test Evaluate
-    EXPECT_NEAR(
-        LungOxygenExchangeLaw_->Evaluate(variables, constants, component), 2.166549252e-11, 1e-14);
+    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+        6.4996477560000005e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
-        1.14028908e-10, 1e-14);
+        3.42086724e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi2
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
-        -3.33897984e-08, 1e-14);
+        -1.0016939520000001e-07, 1e-14);
   }
 
   TEST_F(LungOxygenExchangeLawTest, TestEvaluateAndEvaluateDerivativeHalfOxygenatedBlood)
@@ -82,19 +84,20 @@ namespace
     const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {
         {"phi1", 0.19}, {"phi2", 1.5e-4}};
-    const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
+    const std::vector<std::pair<std::string, double>> constants = {
+        {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.2}};
 
     // test Evaluate
     EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
-        1.639622325407e-11, 1e-14);
+        3.2792446508136922e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi1
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
-        1.14028908e-10, 1e-14);
+        2.2805781600000004e-10, 1e-14);
 
     // test EvaluateDerivative wrt phi2
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
-        -2.058724672649e-08, 1e-14);
+        -4.1174493452973438e-08, 1e-14);
   }
 
   TEST_F(LungOxygenExchangeLawTest, TestEvaluateAndEvaluateDerivativeNearlyFullyOxygenatedBlood)
@@ -103,19 +106,20 @@ namespace
     const int component = 0;
     const std::vector<std::pair<std::string, double>> variables = {
         {"phi1", 0.19}, {"phi2", 3.0e-4}};
-    const std::vector<std::pair<std::string, double>> constants = {{"p1", 0.005}};
+    const std::vector<std::pair<std::string, double>> constants = {
+        {"p1", 0.005}, {"S1", 0.005}, {"porosity", 0.2}, {"VF1", 0.03}};
 
     // test Evaluate
-    EXPECT_NEAR(
-        LungOxygenExchangeLaw_->Evaluate(variables, constants, component), 1.10777752e-11, 1e-14);
+    EXPECT_NEAR(LungOxygenExchangeLaw_->Evaluate(variables, constants, component),
+        3.3233325598255571e-12, 1e-14);
 
     // test EvaluateDerivative wrt phi1
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
-        1.14028908e-10, 1e-14);
+        3.4208672400000007e-11, 1e-14);
 
     // test EvaluateDerivative wrt phi2
     EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
-        -8.295063236e-08, 1e-14);
+        -2.4885189707947446e-08, 1e-14);
   }
 
   TEST_F(LungCarbonDioxideExchangeLawTest,
