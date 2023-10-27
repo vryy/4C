@@ -226,7 +226,10 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   scatradis_->FillComplete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+      ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   SetIsInit(true);
 }

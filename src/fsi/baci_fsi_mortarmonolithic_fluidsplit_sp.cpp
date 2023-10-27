@@ -144,7 +144,10 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
 
   notsetup_ = true;
 
-  coupling_solid_fluid_mortar_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  coupling_solid_fluid_mortar_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+      ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   ale_inner_interf_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fluid_mesh_inner_inner_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);

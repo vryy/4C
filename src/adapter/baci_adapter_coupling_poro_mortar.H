@@ -53,7 +53,8 @@ namespace ADAPTER
     \brief Empty constructor
 
     */
-    CouplingPoroMortar();
+    CouplingPoroMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
 
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,

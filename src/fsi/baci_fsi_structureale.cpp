@@ -32,7 +32,10 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(::DRT::Problem::Instance()->NDim(),
+      ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
   {

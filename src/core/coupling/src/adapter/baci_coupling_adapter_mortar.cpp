@@ -14,7 +14,6 @@
 #include "baci_io.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -28,7 +27,17 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::ADAPTER::CouplingMortar::CouplingMortar() : issetup_(false) { return; }
+CORE::ADAPTER::CouplingMortar::CouplingMortar(int spatial_dimension,
+    Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
+    ShapeFunctionType shape_function_type)
+    : spatial_dimension_(spatial_dimension),
+      mortar_coupling_params_(mortar_coupling_params),
+      contact_dynamic_params_(contact_dynamic_params),
+      shape_function_type_(shape_function_type),
+      issetup_(false)
+{
+  ;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -118,10 +127,8 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 
   // get mortar coupling parameters
   Teuchos::ParameterList inputmortar;
-  const Teuchos::ParameterList& mortar = ::DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& cmortar = ::DRT::Problem::Instance()->ContactDynamicParams();
-  inputmortar.setParameters(cmortar);
-  inputmortar.setParameters(mortar);
+  inputmortar.setParameters(contact_dynamic_params_);
+  inputmortar.setParameters(mortar_coupling_params_);
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
@@ -157,7 +164,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
     // Warning:
     // Mesh relocation is not possible if coupled degrees of freedom are less than
     // the spatial dimensions!
-    if (numcoupleddof < ::DRT::Problem::Instance()->NDim())
+    if (numcoupleddof < spatial_dimension_)
     {
       std::cout << "Warning: " << std::endl;
       std::cout
@@ -269,38 +276,22 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   // - ....
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = ::DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& inputcontact = ::DRT::Problem::Instance()->ContactDynamicParams();
   Teuchos::ParameterList input;
-  input.setParameters(inputmortar);
-  input.setParameters(inputcontact);
+  input.setParameters(mortar_coupling_params_);
+  input.setParameters(contact_dynamic_params_);
 
   // is this a nurbs problem?
-  ShapeFunctionType distype = ::DRT::Problem::Instance()->SpatialApproximationType();
-  bool nurbs;
-  switch (distype)
-  {
-    case ShapeFunctionType::shapefunction_nurbs:
-    {
-      nurbs = true;
-      break;
-    }
-    default:
-    {
-      nurbs = false;
-      break;
-    }
-  }
+  const bool nurbs = shape_function_type_ == ShapeFunctionType::shapefunction_nurbs;
   input.set<bool>("NURBS", nurbs);
 
   // set valid parameter values
   input.set<std::string>("LM_SHAPEFCN", "dual");
   input.set<std::string>("LM_DUAL_CONSISTENT", "none");
   input.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "none");
-  input.set<int>("DIMENSION", ::DRT::Problem::Instance()->NDim());
+  input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
-  interface_ = MORTAR::MortarInterface::Create(0, comm, ::DRT::Problem::Instance()->NDim(), input);
+  interface_ = MORTAR::MortarInterface::Create(0, comm, spatial_dimension_, input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -411,9 +402,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, nurbs));
 
-    if (nurbs)
-      MORTAR::UTILS::PrepareNURBSElement(
-          *masterdis, ele, mrtrele, ::DRT::Problem::Instance()->NDim());
+    if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*masterdis, ele, mrtrele, spatial_dimension_);
     interface_->AddMortarElement(mrtrele);
   }
 
@@ -431,9 +420,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
           Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->NumNode(), ele->NodeIds(), true, nurbs));
 
-      if (nurbs)
-        MORTAR::UTILS::PrepareNURBSElement(
-            *slavedis, ele, mrtrele, ::DRT::Problem::Instance()->NDim());
+      if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*slavedis, ele, mrtrele, spatial_dimension_);
       interface_->AddMortarElement(mrtrele);
     }
     else
@@ -518,7 +505,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   CheckSetup();
 
   // problem dimension
-  const int dim = ::DRT::Problem::Instance()->NDim();
+  const int dim = spatial_dimension_;
 
   //**********************************************************************
   // (0) check constraints in reference configuration
@@ -827,8 +814,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
     if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-            ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
-        INPAR::MORTAR::relocation_initial)
+            mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
       {
@@ -848,8 +834,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
       }
     }
     else if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-                 ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
-             INPAR::MORTAR::relocation_timestep)
+                 mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
     {
       // modification of ALE displacements
       if (isininterfacecolmap and idisp != Teuchos::null)
@@ -1178,8 +1163,7 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input =
-      ::DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+  const Teuchos::ParameterList& input = mortar_coupling_params_.sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
@@ -1196,8 +1180,6 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
     Dinv_ = MORTAR::MatrixRowColTransform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
     P_ = MORTAR::MatrixRowColTransform(P_, pslavedofrowmap_, pmasterdofrowmap_);
   }
-
-  return;
 }
 
 
@@ -1258,8 +1240,7 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
   if (::DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-          ::DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") ==
-      INPAR::MORTAR::relocation_timestep)
+          mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
     MeshRelocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 
   // only for parallel redistribution case

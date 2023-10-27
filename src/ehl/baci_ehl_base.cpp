@@ -623,7 +623,10 @@ void EHL::Base::SetupFieldCoupling(
   // matching node coupling is defined below.
 
   std::vector<int> coupleddof(ndim, 1);
-  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar);
+  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(::DRT::Problem::Instance()->NDim(),
+      ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(

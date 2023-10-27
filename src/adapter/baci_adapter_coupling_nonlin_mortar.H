@@ -50,12 +50,12 @@ namespace ADAPTER
   class CouplingNonLinMortar : public CORE::ADAPTER::CouplingMortar
   {
    public:
-    /*!
-    \brief Empty constructor
-
-    */
-    CouplingNonLinMortar();
-
+    /**
+     * Construct nonlinear coupling with basic parameters. The remaining information is passed in
+     * Setup().
+     */
+    CouplingNonLinMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
 
     /*!
     \brief initialize routine

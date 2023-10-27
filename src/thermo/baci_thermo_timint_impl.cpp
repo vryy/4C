@@ -71,7 +71,10 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)
     {
-      adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+      adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+          ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
+          ::DRT::Problem::Instance()->ContactDynamicParams(),
+          ::DRT::Problem::Instance()->SpatialApproximationType()));
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(

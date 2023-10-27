@@ -177,7 +177,10 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(::DRT::Problem::Instance()->NDim(),
+      ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;

@@ -2173,7 +2173,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             slaveelements, slavecondition);
 
         // initialize mortar coupling adapter
-        icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar());
+        icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
+            ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
+            ::DRT::Problem::Instance()->ContactDynamicParams(),
+            ::DRT::Problem::Instance()->SpatialApproximationType()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
         icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),

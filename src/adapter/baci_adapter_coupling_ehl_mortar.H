@@ -44,10 +44,10 @@ namespace ADAPTER
     //! @name Construction / Destruction
     //@{
     /*!
-    \brief Empty constructor
-
+    \brief Constructor.
     */
-    CouplingEhlMortar();
+    CouplingEhlMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
 
     //@}
 
