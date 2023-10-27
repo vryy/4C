@@ -86,13 +86,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
+    const DRT::Element* element1, const DRT::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Make sure that the contact pair is not initialized yet
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
   // Set up the geometry pair
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
-      geometry_evaluation_data_ptr);
+      element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**

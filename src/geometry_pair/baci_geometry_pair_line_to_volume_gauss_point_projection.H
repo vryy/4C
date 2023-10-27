@@ -43,19 +43,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjection(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
+    GeometryPairLineToVolumeGaussPointProjection(const DRT::Element* element1,
+        const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToVolumeGaussPointProjection() override{};
-
-    /**
-     * \brief Setup the projection tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief Try to project all Gauss points to the volume.

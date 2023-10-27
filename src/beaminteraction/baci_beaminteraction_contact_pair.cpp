@@ -52,9 +52,6 @@ void BEAMINTERACTION::BeamContactPair::Init(
   element1_ = elements[0];
   element2_ = elements[1];
 
-  // If a geometry pair is created at this point, call its Init function.
-  if (geometry_pair_ != Teuchos::null) geometry_pair_->Init(element1_, element2_);
-
   isinit_ = true;
 }
 
@@ -63,9 +60,6 @@ void BEAMINTERACTION::BeamContactPair::Init(
 void BEAMINTERACTION::BeamContactPair::Setup()
 {
   CheckInit();
-
-  // If a geometry pair is created by a derived class, call its Setup function.
-  if (geometry_pair_ != Teuchos::null) geometry_pair_->Setup();
 
   // the flag issetup_ will be set in the derived method!
 }

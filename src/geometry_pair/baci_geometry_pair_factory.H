@@ -17,6 +17,10 @@
 
 
 // Forward declarations.
+namespace DRT
+{
+  class Element;
+}
 namespace GEOMETRYPAIR
 {
   class GeometryPair;
@@ -31,7 +35,8 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename scalar_type, typename line, typename volume>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(
+  Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(const DRT::Element* element1,
+      const DRT::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
@@ -39,7 +44,8 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename scalar_type, typename line, typename surface>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(
+  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(const DRT::Element* element1,
+      const DRT::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
@@ -51,7 +57,8 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename scalar_type, typename line, typename surface>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(
+  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(const DRT::Element* element1,
+      const DRT::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
 

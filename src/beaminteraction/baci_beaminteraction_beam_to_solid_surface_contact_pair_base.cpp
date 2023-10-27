@@ -70,16 +70,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>&
-        geometry_evaluation_data_ptr)
+    surface>::CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  // Call the method of the base class.
-  BeamContactPair::CreateGeometryPair(geometry_evaluation_data_ptr);
-
-  // Set up the geometry pair, it will be initialized in the Init call of the base class.
   this->geometry_pair_ =
       GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<scalar_type, beam, surface>(
-          geometry_evaluation_data_ptr);
+          element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**

@@ -12,6 +12,10 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
 // Forward declarations.
+namespace DRT
+{
+  class Element;
+}
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -100,9 +104,11 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create the geometry pair for this contact pair.
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(
+    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
