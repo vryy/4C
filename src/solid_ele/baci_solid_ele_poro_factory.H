@@ -8,6 +8,7 @@
 #ifndef BACI_SOLID_ELE_PORO_FACTORY_H
 #define BACI_SOLID_ELE_PORO_FACTORY_H
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_poro.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_factory_lib.H"
@@ -20,14 +21,13 @@ namespace DRT::ELEMENTS
 {
   namespace DETAILS
   {
-    using ImplementedSolidPoroDiscretizationTypes =
-        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
-            CORE::FE::CellType::hex20, CORE::FE::CellType::hex27, CORE::FE::CellType::tet4,
-            CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>;
+    using ImplementedSolidPoroCellTypes = CORE::FE::CellTypeList<CORE::FE::CellType::hex8,
+        CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
+        CORE::FE::CellType::tet4, CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>;
     using PoroPressureBasedEvaluators =
-        DRT::ApplyToBase<SolidPoroPressureBasedEleCalc, ImplementedSolidPoroDiscretizationTypes>;
+        CORE::FE::ApplyToBase<SolidPoroPressureBasedEleCalc, ImplementedSolidPoroCellTypes>;
 
-    using SolidPoroEvaluators = DRT::Join_t<PoroPressureBasedEvaluators>;
+    using SolidPoroEvaluators = CORE::FE::Join<PoroPressureBasedEvaluators>;
   }  // namespace DETAILS
   using SolidPoroCalcVariant = CreateVariantType<DETAILS::SolidPoroEvaluators>;
 

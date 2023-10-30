@@ -8,6 +8,7 @@
 #ifndef BACI_SOLID_ELE_FACTORY_H
 #define BACI_SOLID_ELE_FACTORY_H
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_calc.H"
@@ -26,22 +27,22 @@ namespace DRT::ELEMENTS
 {
   namespace DETAILS
   {
-    using ImplementedSolidDiscretizationTypes =
-        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
+    using ImplementedSolidCellTypes =
+        CORE::FE::CellTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
             CORE::FE::CellType::hex20, CORE::FE::CellType::hex27, CORE::FE::CellType::tet4,
             CORE::FE::CellType::tet10, CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
-        DRT::ApplyToBase<SolidEleCalc, ImplementedSolidDiscretizationTypes>;
-    using FbarEvaluators = DRT::ApplyToBase<SolidEleCalcFbar,
-        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
-    using EASEvaluators = DRT::BaseTypeList<
+        CORE::FE::ApplyToBase<SolidEleCalc, ImplementedSolidCellTypes>;
+    using FbarEvaluators = CORE::FE::ApplyToBase<SolidEleCalcFbar,
+        CORE::FE::CellTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+    using EASEvaluators = CORE::FE::BaseTypeList<
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
-    using MulfEvaluators = DRT::ApplyToBase<SolidEleCalcMulf, ImplementedSolidDiscretizationTypes>;
+    using MulfEvaluators = CORE::FE::ApplyToBase<SolidEleCalcMulf, ImplementedSolidCellTypes>;
 
     using SolidEvaluators =
-        DRT::Join_t<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
+        CORE::FE::Join<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
