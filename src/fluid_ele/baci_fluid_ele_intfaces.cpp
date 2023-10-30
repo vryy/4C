@@ -78,7 +78,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
  |                                                             (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::FluidIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());

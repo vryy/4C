@@ -39,7 +39,7 @@ namespace BEAMINTERACTION
         double const& xi_master_initial_guess,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>&
             master_centerline_dof_values,
-        const DRT::Element::DiscretizationType& master_distype, double master_ele_ref_length);
+        const CORE::FE::CellType& master_distype, double master_ele_ref_length);
 
     /** \brief evaluates residual of orthogonality condition for so-called unilateral closest-point
      *         projection, i.e. a point-to-curve projection

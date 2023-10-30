@@ -154,20 +154,20 @@ DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Bele3::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return DiscretizationType::tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return DiscretizationType::quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return DiscretizationType::tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return DiscretizationType::quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return DiscretizationType::quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
@@ -246,17 +246,17 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:

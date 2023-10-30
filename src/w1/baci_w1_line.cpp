@@ -53,45 +53,45 @@ DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
  |                                                             (public) |
  |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
 {
-  DRT::Element::DiscretizationType distype_line = DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType distype_line = CORE::FE::CellType::dis_none;
 
   switch (ParentMasterElement()->Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      distype_line = DRT::Element::DiscretizationType::line2;
+      distype_line = CORE::FE::CellType::line2;
       break;
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      distype_line = DRT::Element::DiscretizationType::line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      distype_line = DRT::Element::DiscretizationType::line2;
+      distype_line = CORE::FE::CellType::line2;
       break;
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      distype_line = DRT::Element::DiscretizationType::line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      distype_line = DRT::Element::DiscretizationType::line3;
+      distype_line = CORE::FE::CellType::line3;
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      distype_line = DRT::Element::DiscretizationType::nurbs2;
+      distype_line = CORE::FE::CellType::nurbs2;
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      distype_line = DRT::Element::DiscretizationType::nurbs3;
+      distype_line = CORE::FE::CellType::nurbs3;
       break;
     }
     default:

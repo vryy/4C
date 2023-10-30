@@ -23,17 +23,17 @@
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_nodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dof_per_ele = num_nodes<distype>* num_dim<distype>;
 
   /*!
@@ -55,7 +55,7 @@ namespace
     if (err_inv != 0) dserror("Inversion of matrix failed");
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct CentroidTransformation
   {
     // transformation matrix T0^{-T}, which maps the matrix M from parameter space to the material
@@ -76,7 +76,7 @@ namespace
    * @param jacobian_centroid(in) : Jacobian mapping evaluated at the element centroid
    * @return double : transformation matrix
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_str<distype>, num_str<distype>> EvaluateT0invT(
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_centroid)
   {
@@ -149,7 +149,7 @@ namespace
    * @return CentroidTransformation<distype> : Jacobi determinant at the element centroid and
    * transformation matrix T0^{-T}
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CentroidTransformation<distype> EvaluateCentroidTransformation(
       const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates)
   {
@@ -175,7 +175,7 @@ namespace
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @return double : residual displacement or displacement increment
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1> GetDisplacementIncrement(
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -196,7 +196,7 @@ namespace
    * @param eas_iteration_data(in) : EAS matrices and vectors from iteration i
    * @return double : enhanced strains scalar increment delta_alpha_{i+1}
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> EvaluateAlphaIncrement(
       const CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1>& displ_inc,
       const DRT::ELEMENTS::EasIterationData<distype, eastype>& eas_iteration_data)
@@ -227,7 +227,7 @@ namespace
    * @param discretization(in) : reference to the discretization
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   void EvaluateAlpha(DRT::ELEMENTS::EasIterationData<distype, eastype>& eas_iteration_data,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -252,7 +252,7 @@ namespace
    * @return CORE::LINALG::Matrix<num_str, num_eas> : enhanced strains shape function matrix in
    * parameter space
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<num_str<distype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   EvaluateEASShapeFunctionsParameterSpace(const CORE::LINALG::Matrix<num_dim<distype>, 1>& xi)
   {
@@ -366,7 +366,7 @@ namespace
    * @param M(in) : matrix M in the parameter space
    * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<num_str<distype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   MapEASShapeFunctionsToMaterialConfig(const double detJ,
       const CentroidTransformation<distype>& centroid_transformation,
@@ -393,7 +393,7 @@ namespace
    * @param xi(in) : coordinate in the parameter space
    * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<num_str<distype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   EvaluateEASShapeFunctionsMaterialConfig(const double detJ,
       const CentroidTransformation<distype>& centroid_transformation,
@@ -421,7 +421,7 @@ namespace
    * @param alpha(in) : enhanced strain scalars
    * @return CORE::LINALG::Matrix<num_str, 1>  : enhanced Green-Lagrange strains E^{enh}
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<num_str<distype>, 1> EvaluateEnhancedAssumedGLStrains(
       const CORE::LINALG::Matrix<num_str<distype>, 1>& gl_strain,
       const CORE::LINALG::Matrix<num_str<distype>,
@@ -442,7 +442,7 @@ namespace
    * @param alpha(in) : enhanced strain scalars
    * @return CORE::LINALG::Matrix<num_str, 1> : Enhanced Green-Lagrange strains E^{enh}
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<num_str<distype>, 1> EvaluateEnhancedAssumedGLStrains(
       const DRT::ELEMENTS::SpatialMaterialMapping<distype>& displacement_based_mapping,
       const CORE::LINALG::Matrix<num_str<distype>,
@@ -523,7 +523,7 @@ namespace
    * determinant)
    * @param eas_iteration_data(in/out) : EAS matrices and vectors
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   void IntegrateEAS(const DRT::ELEMENTS::Stress<distype>& stress,
       const CORE::LINALG::Matrix<num_str<distype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
@@ -556,7 +556,7 @@ namespace
    * @param s(in) : enhancement vector s
    * @param force(in/out) : internal force vector where the contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   void AddEASInternalForce(const CORE::LINALG::Matrix<num_dof_per_ele<distype>,
                                STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
       const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& s,
@@ -575,7 +575,7 @@ namespace
    * @param Kda(in) : EAS stiffness matrix part K_{da}
    * @param stiffness_matrix(in/out) : stiffness matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+  template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
   void AddEASStiffnessMatrix(const CORE::LINALG::Matrix<num_dof_per_ele<distype>,
                                  STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
       const CORE::LINALG::Matrix<num_dof_per_ele<distype>,
@@ -586,7 +586,7 @@ namespace
   }
 }  // namespace
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::SolidEleCalcEas()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
@@ -594,7 +594,7 @@ DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::SolidEleCalcEas()
 {
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& data) const
 {
   constexpr int num_dof_per_element =
@@ -610,7 +610,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& dat
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.Kda_);
 };
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -620,7 +620,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Unpack(
   DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
 };
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -740,7 +740,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   }
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceStiffnessMassGEMM(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -750,7 +750,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   dserror("GEMM is not implemented for EAS elements.");
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -758,7 +758,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Recover(const DRT::Elemen
   dserror("Recovering is not yet implemented for EAS elements");
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -802,7 +802,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -900,14 +900,14 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
   return intenergy;
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Setup(
     MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::MaterialPostSetup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -921,7 +921,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::MaterialPostSetup(
   solid_material.PostSetup(params, ele.Id());
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::InitializeGaussPointDataOutput(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -933,7 +933,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::InitializeGaussPointDataO
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateGaussPointDataOutput(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -945,7 +945,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateGaussPointDataOut
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::ResetToLastConverged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -953,16 +953,15 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
+template class DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_9>;
-template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
+template class DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_21>;
 
-static_assert(
-    DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
-        STR::ELEMENTS::EasType::eastype_h8_9>*>,
+static_assert(DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+                  STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Pack(DRT::PackBuffer&) to be able to store history data!");
-static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<
-                  DRT::Element::DiscretizationType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
+static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+                  STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");

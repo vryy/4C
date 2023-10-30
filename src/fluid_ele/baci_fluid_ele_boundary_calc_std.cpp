@@ -14,7 +14,7 @@
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_lib_elementtype.H"
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(CORE::UTILS::SingletonAction action)
 {
@@ -30,7 +30,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(CORE::UTILS::Singleton
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
     : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
@@ -41,14 +41,14 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::line3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs9>;

@@ -32,12 +32,12 @@ namespace DRT
       //! dtor
       virtual ~ArtNetFactory() = default;
       //! ProvideImpl
-      static ArteryEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
-          INPAR::ARTDYN::ImplType problem, const std::string& disname);
+      static ArteryEleInterface* ProvideImpl(
+          CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
      private:
       //! define ArteryEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static ArteryEleInterface* DefineProblemType(
           INPAR::ARTDYN::ImplType problem, const std::string& disname);
 

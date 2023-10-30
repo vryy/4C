@@ -48,7 +48,7 @@ bool CORE::GEO::CUT::BoundaryCell::IsValid() const { return points_->size() > 0;
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <::DRT::Element::DiscretizationType celldistype>
+template <CORE::FE::CellType celldistype>
 void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
     const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow)
@@ -109,8 +109,8 @@ double CORE::GEO::CUT::Line2BoundaryCell::Area() { return CORE::GEO::ElementArea
  *----------------------------------------------------------------------------*/
 double CORE::GEO::CUT::Tri3BoundaryCell::Area()
 {
-  const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::tri3>::numNodePerElement;
+  const int numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
 
   const std::vector<Point*> points = this->Points();
 
@@ -259,8 +259,8 @@ void CORE::GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
 {
   file.precision(16);
 
-  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::line2>::numNodePerElement;
+  const unsigned num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
 
   file << "VP(";
   CORE::LINALG::Matrix<3, 1> midpoint(true);
@@ -317,10 +317,10 @@ void CORE::GEO::CUT::Line2BoundaryCell::Normal(
   switch (probdim)
   {
     case 2:
-      EvalNormalVectors<2, ::DRT::Element::DiscretizationType::line2>(xyz_, xsi, normal);
+      EvalNormalVectors<2, CORE::FE::CellType::line2>(xyz_, xsi, normal);
       break;
     case 3:
-      EvalNormalVectors<3, ::DRT::Element::DiscretizationType::line2>(xyz_, xsi, normal);
+      EvalNormalVectors<3, CORE::FE::CellType::line2>(xyz_, xsi, normal);
       break;
   }
 }
@@ -336,8 +336,7 @@ void CORE::GEO::CUT::Tri3BoundaryCell::Normal(
   CORE::LINALG::Matrix<2, 3> deriv;
   CORE::LINALG::Matrix<2, 3> A;
 
-  CORE::DRT::UTILS::shape_function_2D_deriv1(
-      deriv, xsi(0), xsi(1), ::DRT::Element::DiscretizationType::tri3);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::tri3);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -356,14 +355,13 @@ void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
 {
   // get derivatives at pos
   CORE::LINALG::Matrix<3, 4> side_xyze(xyz_.values(), true);
-  // Position2d<DRT::Element::DiscretizationType::quad4> position( side_xyze, xsi );
+  // Position2d<CORE::FE::CellType::quad4> position( side_xyze, xsi );
   // position.Normal( xsi, normal );
 
   CORE::LINALG::Matrix<2, 4> deriv;
   CORE::LINALG::Matrix<2, 3> A;
 
-  CORE::DRT::UTILS::shape_function_2D_deriv1(
-      deriv, xsi(0), xsi(1), ::DRT::Element::DiscretizationType::quad4);
+  CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), CORE::FE::CellType::quad4);
   A.MultiplyNT(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -395,7 +393,7 @@ void CORE::GEO::CUT::ArbitraryBoundaryCell::Normal(
  *----------------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(::DRT::Element::DiscretizationType::point1, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::point1, cubaturedegree);
   return gi;
 }
 
@@ -403,7 +401,7 @@ CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Point1BoundaryCell::gaussRule
  *----------------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(::DRT::Element::DiscretizationType::line2, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::line2, cubaturedegree);
   return gi;
 }
 
@@ -411,7 +409,7 @@ CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Line2BoundaryCell::gaussRule(
  *----------------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(::DRT::Element::DiscretizationType::tri3, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::tri3, cubaturedegree);
   return gi;
 }
 
@@ -419,7 +417,7 @@ CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Tri3BoundaryCell::gaussRule(i
  *----------------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
 {
-  CORE::DRT::UTILS::GaussIntegration gi(::DRT::Element::DiscretizationType::quad4, cubaturedegree);
+  CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::quad4, cubaturedegree);
   return gi;
 }
 
@@ -450,7 +448,7 @@ void CORE::GEO::CUT::Point1BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1
 void CORE::GEO::CUT::Line2BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   CORE::LINALG::Matrix<3, 1> center_rst(true);
-  MyElementCenter<::DRT::Element::DiscretizationType::line2>(center_rst, midpoint);
+  MyElementCenter<CORE::FE::CellType::line2>(center_rst, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
@@ -461,7 +459,7 @@ void CORE::GEO::CUT::Tri3BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>&
   center(0, 0) = 0.25;
   center(1, 0) = 0.25;
   center(2, 0) = 0.0;
-  MyElementCenter<::DRT::Element::DiscretizationType::tri3>(center, midpoint);
+  MyElementCenter<CORE::FE::CellType::tri3>(center, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
@@ -472,7 +470,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>
   center(0, 0) = 0.0;
   center(1, 0) = 0.0;
   center(2, 0) = 0.0;
-  MyElementCenter<::DRT::Element::DiscretizationType::quad4>(center, midpoint);
+  MyElementCenter<CORE::FE::CellType::quad4>(center, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
@@ -548,8 +546,8 @@ std::vector<std::vector<double>> CORE::GEO::CUT::BoundaryCell::CoordinatesV()
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 {
-  const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-      ::DRT::Element::DiscretizationType::tri3>::numNodePerElement;
+  const int numnodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
 
   const std::vector<Point*> points = this->Points();
 
@@ -603,11 +601,9 @@ bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 }
 
 // function specializations
-template void
-CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<::DRT::Element::DiscretizationType::tri3>(
+template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellType::tri3>(
     Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
-template void
-CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<::DRT::Element::DiscretizationType::quad4>(
+template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellType::quad4>(
     Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);

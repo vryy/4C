@@ -74,7 +74,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
   // create middle node
 
   CORE::LINALG::Matrix<4, 1> funct;
-  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::DiscretizationType::quad4);
+  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad4);
 
   CORE::LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
@@ -171,7 +171,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     CORE::LINALG::Matrix<8, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::DiscretizationType::quad8);
+    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad8);
 
     CORE::LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
@@ -313,7 +313,7 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::tri6>(xyze, xyz);
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -335,7 +335,7 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad4>(xyze, xyz);
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -357,7 +357,7 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad8>(xyze, xyz);
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -379,7 +379,7 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad9>(xyze, xyz);
+      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {

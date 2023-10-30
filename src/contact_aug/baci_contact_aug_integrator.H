@@ -39,8 +39,8 @@ namespace CONTACT
 
      public:
       /// constructor
-      IntegrationWrapper(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-          const Epetra_Comm& comm);
+      IntegrationWrapper(
+          Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
       //! @name 2D augmented Lagrange integration methods
       //! @{
@@ -88,34 +88,32 @@ namespace CONTACT
     class IntegratorGeneric
     {
      public:
-      static CONTACT::AUG::IntegratorGeneric* Create(int probdim,
-          DRT::Element::DiscretizationType slavetype, DRT::Element::DiscretizationType mastertype,
-          CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-
-     private:
-      static CONTACT::AUG::IntegratorGeneric* Create2D(DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::AUG::IntegratorGeneric* Create(int probdim, CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create2D(DRT::Element::DiscretizationType mastertype,
+     private:
+      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+          CONTACT::CoIntegrator* wrapper);
+
+      template <CORE::FE::CellType slavetype>
+      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype>
+      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create2D(
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      static CONTACT::AUG::IntegratorGeneric* Create3D(DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType slavetype,
+          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create3D(DRT::Element::DiscretizationType mastertype,
+      template <CORE::FE::CellType slavetype>
+      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
-      template <DRT::Element::DiscretizationType slavetype,
-          DRT::Element::DiscretizationType mastertype>
+      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
       static CONTACT::AUG::IntegratorGeneric* Create3D(
           CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
@@ -193,8 +191,8 @@ namespace CONTACT
     };  //
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator : public IntegratorGeneric, public IntPolicy
     {
       // used for static const declarations
@@ -391,8 +389,8 @@ namespace CONTACT
     };  // class AugmentedIntegrator
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
     {
      protected:
@@ -436,8 +434,8 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
     {
@@ -489,8 +487,8 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype, class IntPolicy>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+        class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorFull
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
     {

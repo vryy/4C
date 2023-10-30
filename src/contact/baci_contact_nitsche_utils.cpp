@@ -14,7 +14,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parent_distype>
+template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::MortarElement* mele,
     const CORE::LINALG::Matrix<
@@ -38,7 +38,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Morta
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parent_distype>
+template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
     const std::unordered_map<int, CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
@@ -67,7 +67,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 }
 
 
-template <DRT::Element::DiscretizationType parent_distype>
+template <CORE::FE::CellType parent_distype>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
     MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
 {
@@ -99,7 +99,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
   }
 }
 
-template <DRT::Element::DiscretizationType parent_distype>
+template <CORE::FE::CellType parent_distype>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
     DRT::UTILS::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
@@ -166,7 +166,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 }
 
 
-template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex8>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::tet4>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex27>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::nurbs27>;
+template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex8>;
+template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::tet4>;
+template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex27>;
+template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::nurbs27>;

@@ -58,7 +58,7 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() = 0;
+      virtual CORE::FE::CellType Shape() = 0;
 
       //! get the nodes of the element
       virtual const std::vector<Node*>& Nodes() = 0;
@@ -236,7 +236,7 @@ namespace CORE::GEO
        \brief Project the integration rule available in the local coordinates of the
        integation-cells to the local coordinates of background element
        */
-      template <::DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(
           const std::vector<CORE::GEO::CUT::Point*>& cpoints,
           Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic);
@@ -294,7 +294,7 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override { return element_->Shape(); }
+      CORE::FE::CellType Shape() override { return element_->Shape(); }
 
       //! get the nodes of the element
       const std::vector<Node*>& Nodes() override { return element_->Nodes(); }
@@ -627,10 +627,7 @@ namespace CORE::GEO
       Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override
-      {
-        return ::DRT::Element::DiscretizationType::hex20;
-      }
+      CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -645,10 +642,7 @@ namespace CORE::GEO
       Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override
-      {
-        return ::DRT::Element::DiscretizationType::hex27;
-      }
+      CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -663,10 +657,7 @@ namespace CORE::GEO
       Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override
-      {
-        return ::DRT::Element::DiscretizationType::tet10;
-      }
+      CORE::FE::CellType Shape() override { return CORE::FE::CellType::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -681,10 +672,7 @@ namespace CORE::GEO
       Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override
-      {
-        return ::DRT::Element::DiscretizationType::wedge15;
-      }
+      CORE::FE::CellType Shape() override { return CORE::FE::CellType::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(

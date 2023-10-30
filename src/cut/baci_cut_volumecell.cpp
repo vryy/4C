@@ -402,7 +402,7 @@ void CORE::GEO::CUT::VolumeCell::Print(std::ostream& stream) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::VolumeCell::NewBoundaryCell(
-    Mesh& mesh, ::DRT::Element::DiscretizationType shape, Facet* f, const std::vector<Point*>& x)
+    Mesh& mesh, CORE::FE::CellType shape, Facet* f, const std::vector<Point*>& x)
 {
   if (facets_.count(f) == 0)
   {
@@ -410,16 +410,16 @@ void CORE::GEO::CUT::VolumeCell::NewBoundaryCell(
   }
   switch (shape)
   {
-    case ::DRT::Element::DiscretizationType::point1:
+    case CORE::FE::CellType::point1:
       NewPoint1Cell(mesh, f, x);
       break;
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       NewLine2Cell(mesh, f, x);
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       NewTri3Cell(mesh, f, x);
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       NewQuad4Cell(mesh, f, x);
       break;
     default:
@@ -479,7 +479,7 @@ void CORE::GEO::CUT::VolumeCell::NewArbitraryCell(Mesh& mesh, Facet* f,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::VolumeCell::NumGaussPoints(::DRT::Element::DiscretizationType shape)
+int CORE::GEO::CUT::VolumeCell::NumGaussPoints(CORE::FE::CellType shape)
 {
   int numgp = 0;
 
@@ -513,32 +513,32 @@ void CORE::GEO::CUT::VolumeCell::Disconnect()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::VolumeCell::NewIntegrationCell(
-    Mesh& mesh, ::DRT::Element::DiscretizationType shape, const std::vector<Point*>& x)
+    Mesh& mesh, CORE::FE::CellType shape, const std::vector<Point*>& x)
 {
   switch (shape)
   {
     // --- 1-D elements ---
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       NewLine2Cell(mesh, x);
       break;
     // --- 2-D elements ---
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       NewTri3Cell(mesh, x);
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       NewQuad4Cell(mesh, x);
       break;
     // --- 3-D elements ---
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       NewHex8Cell(mesh, x);
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       NewTet4Cell(mesh, x);
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
       NewWedge6Cell(mesh, x);
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       NewPyramid5Cell(mesh, x);
       break;
     default:
@@ -934,17 +934,17 @@ void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
     CORE::GEO::CUT::IntegrationCell* ic = *i;
     switch (ic->Shape())
     {
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
-            CreateProjected<::DRT::Element::DiscretizationType::hex8>(ic);
+            CreateProjected<CORE::FE::CellType::hex8>(ic);
         gpc->Append(gp);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
-            CreateProjected<::DRT::Element::DiscretizationType::tet4>(ic);
+            CreateProjected<CORE::FE::CellType::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -989,17 +989,17 @@ void CORE::GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
     CORE::GEO::CUT::IntegrationCell* ic = *i;
     switch (ic->Shape())
     {
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
         Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
-            CreateProjected<::DRT::Element::DiscretizationType::hex8>(ic);
+            CreateProjected<CORE::FE::CellType::hex8>(ic);
         gpc->Append(gp);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
         Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp =
-            CreateProjected<::DRT::Element::DiscretizationType::tet4>(ic);
+            CreateProjected<CORE::FE::CellType::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -1030,7 +1030,7 @@ void CORE::GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
   std::cout << std::setprecision(20) << "TESSELLATION Integration = " << intVal << "\n";
 }
 
-template <::DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
     CORE::GEO::CUT::IntegrationCell* ic)
 {
@@ -1462,7 +1462,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::VolumeCell::Generate
         quadint.Point());  // coordinates and weight of main gauss point
     CORE::LINALG::Matrix<3, 1> intpt(etaFacet);
 
-    CORE::DRT::UTILS::GaussIntegration gi(::DRT::Element::DiscretizationType::line2,
+    CORE::DRT::UTILS::GaussIntegration gi(CORE::FE::CellType::line2,
         (DIRECTDIV_GAUSSRULE - 1));  // internal gauss rule for interval (-1,1)
 
     // x-coordinate of main Gauss point is projected in the reference plane
@@ -1546,8 +1546,7 @@ is identified which will be used to find the modified integral in fluid integrat
 void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype)
 {
-  if (elem->Shape() != ::DRT::Element::DiscretizationType::hex8 &&
-      elem->Shape() != ::DRT::Element::DiscretizationType::hex20)
+  if (elem->Shape() != CORE::FE::CellType::hex8 && elem->Shape() != CORE::FE::CellType::hex20)
     throw std::runtime_error("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
 
   if (BCellgausstype != INPAR::CUT::BCellGaussPts_Tessellation)
@@ -1628,31 +1627,30 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
  *----------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
 {
-  if (element_->Shape() != ::DRT::Element::DiscretizationType::hex8)
+  if (element_->Shape() != CORE::FE::CellType::hex8)
     dserror("Currently Direct divergence in global coordinates works only for hex8 elements\n");
 
   CORE::DRT::UTILS::GaussIntegration intpoints(gp_);
 
-  if (element_->isShadow() &&
-      (element_->getQuadShape() == ::DRT::Element::DiscretizationType::hex20 ||
-          element_->getQuadShape() == ::DRT::Element::DiscretizationType::hex27))
+  if (element_->isShadow() && (element_->getQuadShape() == CORE::FE::CellType::hex20 ||
+                                  element_->getQuadShape() == CORE::FE::CellType::hex27))
   {
     switch (element_->getQuadShape())
     {
-      case ::DRT::Element::DiscretizationType::hex20:
+      case CORE::FE::CellType::hex20:
       {
         CORE::LINALG::Matrix<3, 20> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<
-            ::DRT::Element::DiscretizationType::hex20>(xyze, intpoints, false);
+            CORE::FE::CellType::hex20>(xyze, intpoints, false);
         break;
       }
-      case ::DRT::Element::DiscretizationType::hex27:
+      case CORE::FE::CellType::hex27:
       {
         CORE::LINALG::Matrix<3, 27> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<
-            ::DRT::Element::DiscretizationType::hex27>(xyze, intpoints, false);
+            CORE::FE::CellType::hex27>(xyze, intpoints, false);
         break;
       }
       default:
@@ -1669,7 +1667,7 @@ void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
     CORE::LINALG::Matrix<3, 8> xyze;
     element_->Coordinates(xyze.A());
     gp_ = CORE::DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<
-        ::DRT::Element::DiscretizationType::hex8>(xyze, intpoints, false);
+        CORE::FE::CellType::hex8>(xyze, intpoints, false);
   }
 }
 

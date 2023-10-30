@@ -45,20 +45,20 @@ DRT::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3Surface::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return DiscretizationType::tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return DiscretizationType::quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return DiscretizationType::tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return DiscretizationType::quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return DiscretizationType::quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

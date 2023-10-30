@@ -27,8 +27,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitschePoro::CoIntegratorNitschePoro(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitschePoro::CoIntegratorNitschePoro(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitsche(params, eletype, comm),
       no_penetration_(params.get<bool>("CONTACTNOPEN")),
       dv_dd_(params.get<double>("porotimefac"))
@@ -190,8 +190,7 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
   }
   else
   {
-    dynamic_cast<
-        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*>(
+    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
         moEle.ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(),
             moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,

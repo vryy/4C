@@ -231,10 +231,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      inline DiscretizationType Shape() const override
-      {
-        return DRT::Element::DiscretizationType::tet4;
-      }
+      inline CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tet4; }
 
       /*!
       \brief Return number of volumes of this element

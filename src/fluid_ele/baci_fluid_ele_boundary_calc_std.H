@@ -24,7 +24,7 @@ namespace DRT
   {
     class FluidBoundary;
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleBoundaryCalcStd : public FluidBoundaryImpl<distype>
     {
       typedef DRT::ELEMENTS::FluidBoundaryImpl<distype> my;

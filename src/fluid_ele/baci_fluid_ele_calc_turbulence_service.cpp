@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  compute turbulence parameters                       rasthofer 10/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
     Teuchos::ParameterList& turbmodelparams, double& Cs_delta_sq, double& Ci_delta_sq, int& nlayer,
     double CsDeltaSq, double CiDeltaSq)
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
 /*----------------------------------------------------------------------*
  |  calculation of (all-scale) subgrid viscosity               vg 09/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
     double& Ci_delta_sq)
@@ -536,7 +536,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
 /*----------------------------------------------------------------------*
  |  calculation of fine-scale subgrid viscosity                vg 09/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcFineScaleSubgrVisc(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const double vol)
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcFineScaleSubgrVisc(
 /*----------------------------------------------------------------------*
  |  compute multifractal subgrid scales parameters    rasthofer 04/2011 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScales(
     CORE::LINALG::Matrix<nsd_, 1>& B_mfs, double& D_mfs,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
@@ -1011,7 +1011,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
 /*-------------------------------------------------------------------------------*
  |calculation parameter for multifractal subgrid scale modeling  rasthofer 03/11 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridVelCoef(const double Csgs,
     const double alpha, const std::vector<double> Nvel, CORE::LINALG::Matrix<nsd_, 1>& B_mfs)
 {
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridVelCoef(
  |calculation parameter for multifractal subgrid scale modeling  rasthofer 02/12 |
  |subgrid-scale scalar for loma                                                  |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(const double Csgs,
     const double alpha, const double Pr, const double Pr_limit, const std::vector<double> Nvel,
     double Nphi, double& D_mfs)
@@ -1119,7 +1119,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(
 }
 
 
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FineScaleSubGridViscosityTerm(
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& fssgviscfac)
 {
@@ -1179,7 +1179,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FineScaleSubGridViscosityTer
 //----------------------------------------------------------------------
 // Cross-stress terms: multifractal subgrid-scales       rasthofer 06/11
 //----------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
@@ -1333,7 +1333,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
 //----------------------------------------------------------------------
 // Reynolds-stress terms: multifractal subgrid-scales    rasthofer 06/11
 //----------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesReynolds(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
@@ -1403,7 +1403,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesReynold
 //----------------------------------------------------------------------
 // concistency terms for residual-based stabilization           bk 10/14
 //----------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesConsistentResidual()
 {
   if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales &&
@@ -1467,7 +1467,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesConsist
 //----------------------------------------------------------------------
 // outpu for statistics of dynamic Smagorinsky           rasthofer 09/12
 //----------------------------------------------------------------------
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::StoreModelParametersForOutput(
     const double Cs_delta_sq, const double Ci_delta_sq, const int nlayer, const bool isowned,
     Teuchos::ParameterList& turbmodelparams)
@@ -1524,37 +1524,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::StoreModelParametersForOutpu
 }
 
 
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex8, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex20, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::hex27, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tet10, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::wedge15, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::pyramid5,
     DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
-    DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
-    DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex20,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex27,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet10,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge6,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge15,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::pyramid5,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad4,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad8,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad9,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri3,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri6,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs9,
-    DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs27,
-    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad4, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad8, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::quad9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri3, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri6, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs9, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs27, DRT::ELEMENTS::Fluid::none>;

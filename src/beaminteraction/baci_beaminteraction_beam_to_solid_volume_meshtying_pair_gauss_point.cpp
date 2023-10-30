@@ -367,7 +367,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
 
       // Force terms.
       CORE::DRT::UTILS::shape_function_1D(
-          L_i, projected_gauss_point.GetEta(), DRT::Element::DiscretizationType::line3);
+          L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
       potential_variation = psi_rel;
       potential_variation.Scale(rotational_penalty_parameter);
       for (unsigned int i_node = 0; i_node < 3; i_node++)

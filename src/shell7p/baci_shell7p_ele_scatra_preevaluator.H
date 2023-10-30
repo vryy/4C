@@ -47,7 +47,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param discretization (in) : Reference to the discretization
    * @param dof_index_array (in) : The location array of the owned dofs
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void PreEvaluateScatra(DRT::Element& ele, Teuchos::ParameterList& params,
       DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array);
 

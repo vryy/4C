@@ -99,7 +99,7 @@ namespace DRT
     //!
     //! \author gjb
     //! \date 08/08
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class TemperBoundaryImpl : public TemperBoundaryImplInterface
     {
      public:

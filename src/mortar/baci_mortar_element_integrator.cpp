@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
  *----------------------------------------------------------------------*/
-MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType eletype)
+MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
 {
   //*********************************************************************
   // Create integration points according to eletype!
@@ -28,10 +28,10 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
 
   switch (eletype)
   {
-    case DRT::Element::DiscretizationType::line2:
-    case DRT::Element::DiscretizationType::line3:
-    case DRT::Element::DiscretizationType::nurbs2:
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::nurbs2:
+    case CORE::FE::CellType::nurbs3:
     {
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(
           CORE::DRT::UTILS::GaussRule1D::line_5point);
@@ -46,22 +46,22 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
       }
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_7point));
       break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_16point));
       break;
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_9point));
       break;
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
-    case DRT::Element::DiscretizationType::nurbs4:
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_25point));
       break;

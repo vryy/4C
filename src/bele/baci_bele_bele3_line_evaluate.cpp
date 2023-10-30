@@ -98,7 +98,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // set number of nodes
   const size_t iel = this->NumNode();
 
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -182,15 +182,15 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -235,7 +235,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   const size_t iel = this->NumNode();
 
   // gaussian points
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
   const CORE::DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 

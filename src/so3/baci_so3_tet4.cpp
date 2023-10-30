@@ -157,10 +157,7 @@ DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4::Shape() const
-{
-  return DRT::Element::DiscretizationType::tet4;
-}
+CORE::FE::CellType DRT::ELEMENTS::So_tet4::Shape() const { return CORE::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
@@ -309,7 +306,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
@@ -358,7 +355,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::tet4>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet4>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -373,7 +370,7 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::tet4>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tet4>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

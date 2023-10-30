@@ -102,7 +102,7 @@ namespace CORE::GEO
 
       bool Equals(const std::vector<Point*>& facet_points) { return Equals(points_, facet_points); }
 
-      bool Equals(::DRT::Element::DiscretizationType distype);
+      bool Equals(CORE::FE::CellType distype);
 
       bool CornerEquals(const std::vector<Point*>& facet_points)
       {

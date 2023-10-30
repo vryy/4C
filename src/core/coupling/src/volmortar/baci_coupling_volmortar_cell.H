@@ -36,7 +36,7 @@ namespace CORE::VOLMORTAR
 
     */
     Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
-        const ::DRT::Element::DiscretizationType& shape);
+        const CORE::FE::CellType& shape);
 
     /*!
     \brief destructor
@@ -72,7 +72,7 @@ namespace CORE::VOLMORTAR
     \brief get shape
 
     */
-    virtual ::DRT::Element::DiscretizationType Shape() const { return shape_; }
+    virtual CORE::FE::CellType Shape() const { return shape_; }
 
     /*!
     \brief get cell volume
@@ -82,10 +82,10 @@ namespace CORE::VOLMORTAR
 
     //@}
    protected:
-    int id_;                                    // local ID of this cell
-    CORE::LINALG::SerialDenseMatrix coords_;    // coords of cell vertices (dim,vertices)
-    ::DRT::Element::DiscretizationType shape_;  // shape of this element (always tet4)
-    double vol_;                                // integration cell volume
+    int id_;                                  // local ID of this cell
+    CORE::LINALG::SerialDenseMatrix coords_;  // coords of cell vertices (dim,vertices)
+    CORE::FE::CellType shape_;                // shape of this element (always tet4)
+    double vol_;                              // integration cell volume
   };
 
 }  // namespace CORE::VOLMORTAR

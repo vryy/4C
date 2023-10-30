@@ -127,7 +127,7 @@ namespace XFEM
     );
 
     //! track back the Lagrangian origin to get final values
-    template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
+    template <const int numnode, CORE::FE::CellType DISTYPE>
     void backTracking(DRT::Element*& fittingele,  ///< pointer to element
         TimeIntData* data,                        ///< data
         CORE::LINALG::Matrix<3, 1>& xi,           ///< local coordinates

@@ -28,7 +28,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! define shell calculation instances dependent on element technology
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     static std::unique_ptr<Shell7pEleCalcInterface> DefineCalculationInterfaceType(
         const std::set<INPAR::STR::EleTech>& eletech);
   };  // class Shell7pFactory

@@ -132,7 +132,7 @@ namespace DRT
       */
       Shell7p(int id, int owner)
           : DRT::Element(id, owner),
-            distype_(DRT::Element::DiscretizationType::dis_none),
+            distype_(CORE::FE::CellType::dis_none),
             interface_ptr_(Teuchos::null),
             thickness_(0.0),
             material_post_setup_(false)
@@ -171,7 +171,7 @@ namespace DRT
         return Shell7pType::Instance();
       }
 
-      [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
+      [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
       [[nodiscard]] int NumLine() const override;
 
@@ -249,7 +249,7 @@ namespace DRT
 
      private:
       //! discretization type
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
       //! interface ptr, data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;

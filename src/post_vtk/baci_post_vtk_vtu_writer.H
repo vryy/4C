@@ -96,12 +96,12 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <DRT::Element::DiscretizationType nurbs_type>
+  template <CORE::FE::CellType nurbs_type>
   void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
       std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
-  DRT::Element::DiscretizationType MapNurbsDisTypeToLagrangeDisType(
-      const DRT::Element::DiscretizationType nurbs_dis_type) const;
+  CORE::FE::CellType MapNurbsDisTypeToLagrangeDisType(
+      const CORE::FE::CellType nurbs_dis_type) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
   virtual void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
@@ -117,7 +117,7 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <DRT::Element::DiscretizationType nurbs_type>
+  template <CORE::FE::CellType nurbs_type>
   void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
       const bool fillzeros) const;
@@ -135,7 +135,7 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <DRT::Element::DiscretizationType nurbs_type>
+  template <CORE::FE::CellType nurbs_type>
   void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 

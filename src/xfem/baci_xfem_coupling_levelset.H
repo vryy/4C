@@ -339,8 +339,8 @@ namespace XFEM
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
-    template <DRT::Element::DiscretizationType DISTYPE, class V1, class V2, class X1, class T1,
-        class M1, class M2, class M3>
+    template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+        class M2, class M3>
     void EvaluateCouplingConditions(V1& ivel,  ///< prescribed velocity at interface
         V2& itraction,                         ///< prescribed traction at interface
         X1& x,                                 ///< coordinates of gauss point
@@ -398,7 +398,7 @@ namespace XFEM
     /*!
      Return a smoothed/non-smoothed tangiential projection of the level set surface.
      */
-    template <DRT::Element::DiscretizationType DISTYPE, class T1, class M1, class M2, class M3>
+    template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2, class M3>
     void EvalProjectionMatrix(T1& projection_matrix,  ///< Projection matrix
         int eid,                                      ///< element ID
         M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -553,7 +553,7 @@ namespace XFEM
   /// set material pointer for coupling slave side
   void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat);
 
-  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template <CORE::FE::CellType DISTYPE, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed
       int eid,                                ///< element ID
       M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -576,7 +576,7 @@ namespace XFEM
     return;
   }
 
-  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template <CORE::FE::CellType DISTYPE, class M1, class M2>
   void GetPhiAtGP(double& phi_gp,  ///< phi at gausspoint
       int eid,                     ///< element ID
       M1& funct,                   ///< local shape function for Gauss Point (from fluid element)
@@ -596,7 +596,7 @@ namespace XFEM
     phi_gp = funct.Dot(ephinp_T);
   }
 
-  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4>
+  template <CORE::FE::CellType DISTYPE, class M1, class M2, class M3, class M4>
   double InterpolateCurvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
       const M4& esmoothedcurvature_T, const int numnode)
   {
@@ -608,7 +608,7 @@ namespace XFEM
   }
 
 
-  template <DRT::Element::DiscretizationType DISTYPE, class T1, class M1, class M2>
+  template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2>
   void EvalProjectionMatrix(
       T1& itraction_jump_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
       int eid,                    ///< element ID

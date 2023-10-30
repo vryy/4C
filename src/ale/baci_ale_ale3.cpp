@@ -131,24 +131,24 @@ DRT::Element* DRT::ELEMENTS::Ale3::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
 {
   switch (NumNode())
   {
     case 4:
-      return DiscretizationType::tet4;
+      return CORE::FE::CellType::tet4;
     case 5:
-      return DiscretizationType::pyramid5;
+      return CORE::FE::CellType::pyramid5;
     case 6:
-      return DiscretizationType::wedge6;
+      return CORE::FE::CellType::wedge6;
     case 8:
-      return DiscretizationType::hex8;
+      return CORE::FE::CellType::hex8;
     case 10:
-      return DiscretizationType::tet10;
+      return CORE::FE::CellType::tet10;
     case 20:
-      return DiscretizationType::hex20;
+      return CORE::FE::CellType::hex20;
     case 27:
-      return DiscretizationType::hex27;
+      return CORE::FE::CellType::hex27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

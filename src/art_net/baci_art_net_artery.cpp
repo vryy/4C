@@ -97,12 +97,12 @@ DRT::Element* DRT::ELEMENTS::Artery::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Artery::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Artery::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }

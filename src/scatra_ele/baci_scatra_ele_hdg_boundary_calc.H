@@ -55,7 +55,7 @@ namespace DRT
     };  // class ScaTraHDGBoundaryImplInterface
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraHDGBoundaryImpl : public ScaTraHDGBoundaryImplInterface
     {
      public:

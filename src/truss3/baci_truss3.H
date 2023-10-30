@@ -192,7 +192,7 @@ namespace DRT
       //! \param xrefe     nodal coordinates in reference frame
       void SetUpReferenceGeometry(const std::vector<double>& xrefe);
 
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 

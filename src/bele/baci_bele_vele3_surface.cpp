@@ -55,20 +55,20 @@ DRT::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Surface::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
 {
   switch (NumNode())
   {
     case 3:
-      return DiscretizationType::tri3;
+      return CORE::FE::CellType::tri3;
     case 4:
-      return DiscretizationType::quad4;
+      return CORE::FE::CellType::quad4;
     case 6:
-      return DiscretizationType::tri6;
+      return CORE::FE::CellType::tri6;
     case 8:
-      return DiscretizationType::quad8;
+      return CORE::FE::CellType::quad8;
     case 9:
-      return DiscretizationType::quad9;
+      return CORE::FE::CellType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
@@ -125,22 +125,22 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
 CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
-    const DRT::Element::DiscretizationType& distype) const
+    const CORE::FE::CellType& distype) const
 {
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:

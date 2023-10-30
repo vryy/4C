@@ -179,17 +179,17 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
       {
         int spacedim = -1;
 
-        const DRT::Element::DiscretizationType distype = actele->Shape();
+        const CORE::FE::CellType distype = actele->Shape();
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::nurbs4:
-          case DRT::Element::DiscretizationType::nurbs9:
+          case CORE::FE::CellType::nurbs4:
+          case CORE::FE::CellType::nurbs9:
           {
             spacedim = 2;
             break;
           }
-          case DRT::Element::DiscretizationType::nurbs8:
-          case DRT::Element::DiscretizationType::nurbs27:
+          case CORE::FE::CellType::nurbs8:
+          case CORE::FE::CellType::nurbs27:
           {
             spacedim = 3;
             break;

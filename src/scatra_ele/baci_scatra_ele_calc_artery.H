@@ -24,7 +24,7 @@ namespace DRT
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerArtery;
 
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcArtery : public ScaTraEleCalc<distype, probdim>
     {
      private:

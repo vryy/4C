@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
 /*----------------------------------------------------------------------*
  |  calculate domain integral                                   vg 01/09|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
     CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele)
 {
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
 /*-----------------------------------------------------------------------------------------*
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
 /*-----------------------------------------------------------------------------*
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element* ele,
     Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, const double tempnp)
 {
@@ -201,7 +201,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
 /*-----------------------------------------------------------------------------*
  | calculate viscous part of subgrid-scale velocity                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
     CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
@@ -256,23 +256,23 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs27>;

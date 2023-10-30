@@ -17,14 +17,13 @@
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, INPAR::ARTDYN::ImplType problem,
-    const std::string& disname)
+    CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::line2>(problem, disname);
+      return DefineProblemType<CORE::FE::CellType::line2>(problem, disname);
 
       break;
     }
@@ -46,7 +45,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemType(
     INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {

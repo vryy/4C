@@ -30,7 +30,7 @@
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(true)
 {
 }
@@ -40,7 +40,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(t
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -56,7 +56,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMENTS::Fluid* ele)
 {
   // Check if this is an HDG element, if yes, can initialize...
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Element& ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, const bool updateLocally)
 {
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT::Element& ele,
     DRT::Discretization& discretization, const CORE::LINALG::SerialDenseVector& updateG,
     const CORE::LINALG::SerialDenseVector& updateUp)
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -390,7 +390,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
 
 
 /// projection of function field
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -656,7 +656,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -842,7 +842,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 /*----------------------------------------------------------------------*
  * interpolate solution for postprocessing of hit              bk 03/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -912,7 +912,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
 /*----------------------------------------------------------------------*
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector& elevec2)
@@ -1028,7 +1028,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
 /*----------------------------------------------------------------------*
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
@@ -1207,7 +1207,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfunc,
     const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::Matrix<nsd_, 1>& u) const
@@ -1221,7 +1221,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::Matrix<nsd_, 1>& u, CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const
@@ -1306,7 +1306,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -1323,7 +1323,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     CORE::LINALG::SerialDenseVector& elevec)
@@ -1374,7 +1374,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELEMENTS::Fluid* ele,
     const CORE::DRT::UTILS::ShapeValues<distype>& shapeValues,
     CORE::DRT::UTILS::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
@@ -1431,7 +1431,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidual(
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
@@ -1647,7 +1647,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatrices(
     const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear)
 {
@@ -1900,7 +1900,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(const int face,
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, CORE::LINALG::SerialDenseVector& elevec)
@@ -2055,7 +2055,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(const int face,
     const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear,
     CORE::LINALG::SerialDenseMatrix& elemat)
@@ -2219,7 +2219,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGradient(
     CORE::LINALG::SerialDenseMatrix& elemat)
 {
@@ -2277,7 +2277,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 {
   // get physical type
@@ -2386,7 +2386,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
     CORE::LINALG::SerialDenseMatrix& eleMat, CORE::LINALG::SerialDenseVector& eleVec)
 {
@@ -2494,7 +2494,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
       eleMat.numRows());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm(
     std::vector<double>& interiorecorrectionterm, int corrtermfuncnum)
 {
@@ -2510,7 +2510,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
     std::vector<double>& interiorebodyforce, int bodyforcefuncnum)
 {
@@ -2527,7 +2527,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
@@ -2569,7 +2569,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS:
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS::Fluid* ele)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
@@ -2604,7 +2604,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS:
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalCorrection(
     DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm)
 {
@@ -2629,7 +2629,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalCorrection(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
     DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorebodyforce)
 {
@@ -2656,18 +2656,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
 
 
 // explicit instantiation of template classes
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs27>;

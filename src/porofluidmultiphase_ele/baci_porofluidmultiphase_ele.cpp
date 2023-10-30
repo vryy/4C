@@ -193,9 +193,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
  |  create an empty element                                vuong 08/16 |
  *------------------------------------------------------ ----------------*/
 DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
-    : DRT::Element(id, owner),
-      distype_(DRT::Element::DiscretizationType::dis_none),
-      numdofpernode_(-1)
+    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -224,10 +222,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
  |  Return the shape of a PoroFluidMultiPhase element          (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const
-{
-  return distype_;
-}
+CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Initialize element                                      (protected) |
@@ -284,7 +279,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   ExtractfromPack(position, data, numdofpernode_);
 
   if (position != data.size())
@@ -440,7 +435,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }

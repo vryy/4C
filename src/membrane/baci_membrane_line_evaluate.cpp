@@ -18,7 +18,7 @@
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;

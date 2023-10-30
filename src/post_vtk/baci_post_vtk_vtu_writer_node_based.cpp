@@ -30,8 +30,8 @@
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
 {
-  static_assert(29 == static_cast<int>(DRT::Element::DiscretizationType::max_distype),
-      "The number of element types defined by DRT::Element::DiscretizationType does not match the "
+  static_assert(29 == static_cast<int>(CORE::FE::CellType::max_distype),
+      "The number of element types defined by CORE::FE::CellType does not match the "
       "number of element types supported by the post vtu filter.");
   if (myrank_ != 0) dserror("Node based filtering only works in serial mode");
 }

@@ -222,7 +222,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FillGraphAndCycleWithLineFacets(
   {
     Facet *f = *cit;
 
-    if (not f->Equals(::DRT::Element::DiscretizationType::line2))
+    if (not f->Equals(CORE::FE::CellType::line2))
       dserror("This function works only for line facets!");
 
     const std::vector<Point *> &line_points = f->Points();

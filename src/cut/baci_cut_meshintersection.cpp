@@ -19,7 +19,7 @@
  *-----------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int eid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    ::DRT::Element::DiscretizationType distype, const double* lsv)
+    CORE::FE::CellType distype, const double* lsv)
 {
   for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
        ++i)
@@ -58,7 +58,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
  * sidehandle for quadratic sides)
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
-    int sid, const std::vector<int>& nids, ::DRT::Element::DiscretizationType distype, int mi)
+    int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi)
 {
   // create side
   return cut_mesh_[mi]->CreateSide(sid, nids, distype, options_);
@@ -70,7 +70,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    ::DRT::Element::DiscretizationType distype, int mi)
+    CORE::FE::CellType distype, int mi)
 {
   Mesh& cut_mesh = CutMesh(mi);
 

@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  pre-evaluate the element (public)                      sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& par
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>;

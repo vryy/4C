@@ -17,7 +17,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <DRT::Element::DiscretizationType distype, int probdim>
+    template <CORE::FE::CellType distype, int probdim>
     class ScaTraEleCalcStd : public ScaTraEleCalc<distype, probdim>
     {
      public:

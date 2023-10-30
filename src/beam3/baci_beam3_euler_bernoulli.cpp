@@ -332,10 +332,7 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
-{
-  return DiscretizationType::line2;
-}
+CORE::FE::CellType DRT::ELEMENTS::Beam3eb::Shape() const { return CORE::FE::CellType::line2; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -436,7 +433,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
     isinit_ = true;
 
     // Get DiscretizationType
-    DRT::Element::DiscretizationType distype = Shape();
+    CORE::FE::CellType distype = Shape();
 
     // Get integrationpoints for exact integration
     CORE::DRT::UTILS::IntegrationPoints1D gausspoints =

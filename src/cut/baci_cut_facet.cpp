@@ -970,23 +970,23 @@ void CORE::GEO::CUT::Facet::Neighbors(Point* p, const plain_volumecell_set& cell
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::Equals(::DRT::Element::DiscretizationType distype)
+bool CORE::GEO::CUT::Facet::Equals(CORE::FE::CellType distype)
 {
   if (holes_.size() == 0)
   {
     FindCornerPoints();
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::point1:
+      case CORE::FE::CellType::point1:
         return KERNEL::IsValidPoint1(corner_points_);
         break;
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
         return KERNEL::IsValidLine2(corner_points_);
         break;
-      case ::DRT::Element::DiscretizationType::quad4:
+      case CORE::FE::CellType::quad4:
         return KERNEL::IsValidQuad4(corner_points_);
         break;
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::tri3:
         return KERNEL::IsValidTri3(corner_points_);
         break;
       default:

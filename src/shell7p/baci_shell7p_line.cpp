@@ -26,10 +26,10 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
   // type of gaussian integration
   switch (Shape())
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       gaussrule_ = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -48,14 +48,14 @@ DRT::Element* DRT::ELEMENTS::Shell7pLine::Clone() const
   return newelement;
 }
 
-DRT::Element::DiscretizationType DRT::ELEMENTS::Shell7pLine::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Shell7pLine::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DRT::Element::DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }

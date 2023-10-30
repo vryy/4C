@@ -27,21 +27,17 @@ namespace DRT::ELEMENTS
   namespace DETAILS
   {
     using ImplementedSolidDiscretizationTypes =
-        DRT::DiscretizationTypeList<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::hex18, DRT::Element::DiscretizationType::hex20,
-            DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::tet4,
-            DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::wedge6,
-            DRT::Element::DiscretizationType::pyramid5>;
+        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
+            CORE::FE::CellType::hex20, CORE::FE::CellType::hex27, CORE::FE::CellType::tet4,
+            CORE::FE::CellType::tet10, CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
         DRT::ApplyToBase<SolidEleCalc, ImplementedSolidDiscretizationTypes>;
     using FbarEvaluators = DRT::ApplyToBase<SolidEleCalcFbar,
-        DRT::DiscretizationTypeList<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::pyramid5>>;
-    using EASEvaluators = DRT::BaseTypeList<SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
-                                                STR::ELEMENTS::EasType::eastype_h8_9>,
-        SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
-            STR::ELEMENTS::EasType::eastype_h8_21>>;
+        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+    using EASEvaluators = DRT::BaseTypeList<
+        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
+        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
     using MulfEvaluators = DRT::ApplyToBase<SolidEleCalcMulf, ImplementedSolidDiscretizationTypes>;
 
     using SolidEvaluators =
@@ -58,7 +54,7 @@ namespace DRT::ELEMENTS
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   SolidCalcVariant CreateSolidCalculationInterface(const DRT::Element& ele,
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);

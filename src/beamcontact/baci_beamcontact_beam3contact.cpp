@@ -4371,8 +4371,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
     const TYPE& eta2)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype1 = element1_->Shape();
-  const DRT::Element::DiscretizationType distype2 = element2_->Shape();
+  const CORE::FE::CellType distype1 = element1_->Shape();
+  const CORE::FE::CellType distype2 = element2_->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
@@ -4399,8 +4399,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::DiscretizationType::line2;
-    const DRT::Element::DiscretizationType distype2herm = DRT::Element::DiscretizationType::line2;
+    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
+    const CORE::FE::CellType distype2herm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
     CORE::DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1herm);
@@ -4435,7 +4435,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
     DRT::Element* ele)
 {
   // get both discretization types
-  const DRT::Element::DiscretizationType distype = ele->Shape();
+  const CORE::FE::CellType distype = ele->Shape();
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N_i(true);
 
   if (numnodalvalues == 1)
@@ -4466,7 +4466,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions(
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const DRT::Element::DiscretizationType distypeherm = DRT::Element::DiscretizationType::line2;
+    const CORE::FE::CellType distypeherm = CORE::FE::CellType::line2;
 
     // get values and derivatives of shape functions
     switch (deriv)

@@ -30,12 +30,11 @@ namespace DRT
       virtual ~FluidBoundaryFactory() = default;
 
       //! ProvideImpl
-      static FluidBoundaryInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, std::string problem);
+      static FluidBoundaryInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEleBoundaryCalc instances dependent on problemtype
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static FluidBoundaryInterface* DefineProblemType(std::string problem);
     };
 

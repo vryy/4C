@@ -21,7 +21,7 @@
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
 /*----------------------------------------------------------------------*
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
     const double penalty,                   ///< element penalty parameter
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 /*-------------------------------------------------------------------------------*
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParameter(
     double& penalty)
 {
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
 /*------------------------------------------------------------------- *
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
     CORE::LINALG::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
@@ -332,7 +332,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
 /*-------------------------------------------------------------------------*
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, unsigned probDim>
+template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     const int dir,                          ///< current spatial direction
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
@@ -475,27 +475,27 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::line3, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::quad8,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad8,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::hex20,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::wedge6,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::DiscretizationType::nurbs27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex20,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::wedge6,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs27,3>;

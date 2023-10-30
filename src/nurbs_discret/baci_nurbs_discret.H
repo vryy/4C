@@ -222,7 +222,7 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -243,7 +243,7 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       void FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,

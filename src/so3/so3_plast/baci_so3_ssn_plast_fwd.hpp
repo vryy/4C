@@ -8,10 +8,10 @@
 #define BACI_SO3_SSN_PLAST_FWD_HPP
 
 // template classes
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>;
 
 #endif

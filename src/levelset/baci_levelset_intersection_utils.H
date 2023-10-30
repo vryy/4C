@@ -138,8 +138,7 @@ namespace SCATRA
 
       /// collect the cut elements after a successful cut operation
       void CollectCutEles(CORE::GEO::CUT::ElementHandle& ehandle,
-          CORE::GEO::CUT::plain_element_set& cuteles,
-          DRT::Element::DiscretizationType distype) const;
+          CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const;
 
       /** \brief check the point position (OR-combination)
        *
@@ -157,13 +156,13 @@ namespace SCATRA
        *
        *  \author rasthofer \date 09/13 */
       void GetZeroLevelSetContour(const CORE::GEO::CUT::plain_element_set& cuteles,
-          const CORE::LINALG::SerialDenseMatrix& xyze, DRT::Element::DiscretizationType distype);
+          const CORE::LINALG::SerialDenseMatrix& xyze, CORE::FE::CellType distype);
 
       /// check for supported boundary cell discretization types
-      virtual void CheckBoundaryCellType(DRT::Element::DiscretizationType distype_bc) const;
+      virtual void CheckBoundaryCellType(CORE::FE::CellType distype_bc) const;
 
       virtual void AddToBoundaryIntCellsPerEle(const CORE::LINALG::SerialDenseMatrix& xyze,
-          const CORE::GEO::CUT::BoundaryCell& bcell, DRT::Element::DiscretizationType distype_ele);
+          const CORE::GEO::CUT::BoundaryCell& bcell, CORE::FE::CellType distype_ele);
 
       /// access the private boundary cell vector
       template <typename T>

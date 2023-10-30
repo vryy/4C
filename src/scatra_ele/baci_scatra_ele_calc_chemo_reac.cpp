@@ -22,7 +22,7 @@ reactive scalars
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoReac(
     const int numdofpernode, const int numscal, const std::string& disname)
     : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
@@ -36,7 +36,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoReac(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
@@ -56,7 +56,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                    thon 06/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
@@ -164,23 +164,23 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::nurbs9>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs9>;
+// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs27>;

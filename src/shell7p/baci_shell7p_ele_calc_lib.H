@@ -25,7 +25,7 @@ namespace DRT::ELEMENTS::SHELL
    *
    * @tparam distype : The discretization type known at compile time
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct NodalCoordinates
   {
     CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim> x_refe_;
@@ -43,7 +43,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param disp    (int)  : Displacements
    * @param index   (int)  : Integer to consider either displacements or director displacmenets
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void SpatialConfiguration(CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
       const CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x_refe,
       const std::vector<double>& disp, const int index)
@@ -67,7 +67,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param a3_reference (int)  : Nodal directors in reference frame
    * @param factor (int)  : Scaling factor due to SDC
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   DRT::ELEMENTS::SHELL::NodalCoordinates<distype> EvaluateNodalCoordinates(DRT::Node** nodes,
       std::vector<double>& disp, const double& thickness,
       const CORE::LINALG::SerialDenseMatrix& a3_reference, const double factor)
@@ -160,7 +160,7 @@ namespace DRT::ELEMENTS::SHELL
   /*!
    * @brief Returns the optimal gauss integration rule based on the element discretization type
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   constexpr auto GetGaussRule()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
@@ -173,7 +173,7 @@ namespace DRT::ELEMENTS::SHELL
    * @tparam GaussRuleType (in) : Optimal gauss rule integration type
    * @return CORE::DRT::UTILS::IntegrationPoints2D : Integration points
    */
-  template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
+  template <CORE::FE::CellType distype, typename GaussRuleType>
   CORE::DRT::UTILS::IntegrationPoints2D CreateGaussIntegrationPoints(GaussRuleType gaussrule)
   {
     return CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
@@ -256,7 +256,7 @@ namespace DRT::ELEMENTS::SHELL
    *
    * @tparam distype :  The discretization type known at compile time
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct ShapefunctionsAndDerivatives
   {
     CORE::LINALG::Matrix<DETAIL::num_node<distype>, 1> shapefunctions_;
@@ -272,7 +272,7 @@ namespace DRT::ELEMENTS::SHELL
    * @return ShapeFunctionsAndDerivatives<distype> : An object holding the shape functions and the
    * first derivatives evaluated at the respective point in the parameter space
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   ShapefunctionsAndDerivatives<distype> EvaluateShapefunctionsAndDerivs(
       const std::array<double, 2>& xi_gp)
   {
@@ -289,7 +289,7 @@ namespace DRT::ELEMENTS::SHELL
    *
    * @tparam distype :  The discretization type known at compile time
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   struct BasisVectorsAndMetrics
   {
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> kovariant_;
@@ -312,7 +312,7 @@ namespace DRT::ELEMENTS::SHELL
    * space
    * @return CORE::LINALG::SerialDenseMatrix: B-operator Matrix
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix CalcBOperator(
       const CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim>& akov,
       const CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim>& da3kov,
@@ -428,7 +428,7 @@ namespace DRT::ELEMENTS::SHELL
    * points
    * @param numans (in) : Number of ANS collocation points
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ModifyBOperatorAns(CORE::LINALG::SerialDenseMatrix& Bop,
       const std::vector<double>& shapefunctions_ans,
       const std::vector<ShapefunctionsAndDerivatives<distype>>& shapefunctions_q,
@@ -505,7 +505,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param shape_functions (in) : Shape functions and derivatives evaluated at the respective point
    * in the parameter space
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   double UpdateGaussPointThickness(
       const CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& a3current,
       const CORE::LINALG::Matrix<DETAIL::num_node<distype>, 1>& shapefunctions)
@@ -535,7 +535,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param nodal_coordinates (in) : Coordinates of the nodes of the element
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateMetrics(
       const DRT::ELEMENTS::SHELL::ShapefunctionsAndDerivatives<distype>& shape_functions,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& basis_and_metrics_reference,
@@ -562,7 +562,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param a3 (in) : Coordinates of the nodal directors of the element
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateKovariantVectorsAndMetrics(
       const DRT::ELEMENTS::SHELL::ShapefunctionsAndDerivatives<distype>& shape_functions,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& basis_and_metrics,
@@ -604,7 +604,7 @@ namespace DRT::ELEMENTS::SHELL
    *
    * @param metrics (in/out) : An object holding the basis vectors and metric tensors of the element
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateKontravariantVectorsAndMetrics(
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& metrics)
   {
@@ -644,7 +644,7 @@ namespace DRT::ELEMENTS::SHELL
    * tensors of the midsurface
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ModifyKovariantMetricsStandart(
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current,
@@ -739,7 +739,7 @@ namespace DRT::ELEMENTS::SHELL
    * tensors of the midsurface at collocation points
    * @param numansq (in) : Number of ANS collocation points
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ModifyKovariantMetricsAns(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
@@ -843,7 +843,7 @@ namespace DRT::ELEMENTS::SHELL
    * tensors of the midsurface at collocation points
    * @param numansq (in) : Number of ANS collocation points
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ModifyKovariantMetrics(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
@@ -891,7 +891,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param g_current (in) : An object holding the current basis vectors and metric
    * tensors of the shell body
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateDeformationGradient(DRT::ELEMENTS::SHELL::Strains& strains,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current)
@@ -915,7 +915,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param g_current (in) : An object holding the current basis vectors and metric
    * tensors of the shell body
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateGreenLagrangeStrain(Strains& strains,
       const BasisVectorsAndMetrics<distype>& g_reference,
       const BasisVectorsAndMetrics<distype>& g_current)
@@ -952,7 +952,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param g_reference (in) : An object holding the reference basis vectors and metric
    * tensors of the shell body
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void MapMaterialStressToCurvilinearSystem(
       Stress<MAT::NUM_STRESS_3D>& stress, const BasisVectorsAndMetrics<distype>& g_reference)
   {
@@ -994,14 +994,14 @@ namespace DRT::ELEMENTS::SHELL
    * @params xi_gp (in) : Coordinate of the integration point in the parameter space
    * @return shapefunctions for ANS
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   static std::vector<double> SetShapefunctionsForAns(const std::array<double, 2>& xi_gp)
   {
     std::vector<double> shapefunctions;
     double r = xi_gp[0];
     double s = xi_gp[1];
 
-    if (distype == DRT::Element::DiscretizationType::quad4)
+    if (distype == CORE::FE::CellType::quad4)
     {
       shapefunctions.resize(4);
       shapefunctions[0] = 0.5 * (1.0 - s);
@@ -1009,7 +1009,7 @@ namespace DRT::ELEMENTS::SHELL
       shapefunctions[2] = 0.5 * (1.0 - r);
       shapefunctions[3] = 0.5 * (1.0 + r);
     }
-    else if (distype == DRT::Element::DiscretizationType::quad9)
+    else if (distype == CORE::FE::CellType::quad9)
     {
       shapefunctions.resize(12);
       const double rthreei = 1.0 / (sqrt(3.0));
@@ -1058,7 +1058,7 @@ namespace DRT::ELEMENTS::SHELL
    * @params num_ans (in) : Number of ANS collocation points
    * @return shapefunctions for ANS
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   std::vector<double> GetShapefunctionsForAns(
       const std::array<double, 2>& xi_gp, const int& num_ans)
   {
@@ -1084,7 +1084,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param defgrd (in) : Deformations gradient tensor
    * @param ea (in/out) : Euler-Almansi strains
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void GreenLagrangeToEulerAlmansi(const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& gl,
       const CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim>& defgrd,
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& ea)
@@ -1112,7 +1112,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param defgrd (in) : Deformations gradient tensor
    * @param cauchy (in/out) : Cauchy stresses
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void Pk2ToCauchy(const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& pk2,
       const CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim>& defgrd,
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& cauchy)
@@ -1155,7 +1155,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param row (in) : Row number
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AssembleStrainTypeToMatrixRow(const Strains& strains, INPAR::STR::StrainType strain_type,
       CORE::LINALG::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
@@ -1193,7 +1193,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param row (in) : Row number
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AssembleStressTypeToMatrixRow(const Strains& strains,
       const Stress<MAT::NUM_STRESS_3D> stress, INPAR::STR::StressType stress_type,
       CORE::LINALG::SerialDenseMatrix& data, int row, const double thickness_weight)
@@ -1239,10 +1239,10 @@ namespace DRT::ELEMENTS::SHELL
    * @tparam distype : Discretization type
    * @params qp (in) :  Index of collocation point
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void GetCoordinatesOfAnsCollocationPoints(std::vector<std::array<double, 2>>& collocation_points)
   {
-    if (distype == DRT::Element::DiscretizationType::quad4)
+    if (distype == CORE::FE::CellType::quad4)
     {
       collocation_points.resize(4);
       // for a_13
@@ -1252,7 +1252,7 @@ namespace DRT::ELEMENTS::SHELL
       collocation_points[2] = {-1.0, 0.0};
       collocation_points[3] = {1.0, 0.0};
     }
-    else if (distype == DRT::Element::DiscretizationType::quad9)
+    else if (distype == CORE::FE::CellType::quad9)
     {
       const double sqrt3inv = 1.0 / (sqrt(3.0));
       collocation_points.resize(DETAIL::num_internal_variables);
@@ -1287,7 +1287,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param nodal_coordinates (in) : Nodal coordinates in reference and current frame
    * @param num_collocation_points (in) : Number of collocation points
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void SetupANS(
       std::vector<SHELL::ShapefunctionsAndDerivatives<distype>>& shapefunctions_collocation,
       std::vector<SHELL::BasisVectorsAndMetrics<distype>>& metrics_collocation_reference,
@@ -1320,7 +1320,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    * to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void ThicknessIntegration(DRT::ELEMENTS::SHELL::StressEnhanced& stress_enh,
       const DRT::ELEMENTS::SHELL::Stress<MAT::NUM_STRESS_3D>& stress,
       const double& integration_factor, const double& zeta)
@@ -1356,7 +1356,7 @@ namespace DRT::ELEMENTS::SHELL
    * @return Strains<distype> : Strain measures of the element (deformation gradient, Green-Lagrange
    * strain tensor)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   DRT::ELEMENTS::SHELL::Strains EvaluateStrains(
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_metric_reference,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_metric_current)
@@ -1379,7 +1379,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param stiffness_matrix (in/out) : Stiffness matrix where the local contribution is added
    * to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddElasticStiffnessMatrix(const CORE::LINALG::SerialDenseMatrix& Bop,
       const CORE::LINALG::SerialDenseMatrix& Dmat, const double& integration_fac,
       CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
@@ -1407,7 +1407,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param stiffness_matrix (in/out) : Stiffness matrix where the local contribution is added
    * to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddGeometricStiffnessMatrix(
       const std::vector<DRT::ELEMENTS::SHELL::ShapefunctionsAndDerivatives<distype>>&
           shapefunctions_q,
@@ -1511,7 +1511,7 @@ namespace DRT::ELEMENTS::SHELL
    * of the jacobian)
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddInternalForceVector(const CORE::LINALG::SerialDenseMatrix& Bop,
       const CORE::LINALG::SerialDenseVector& stress_enh, const double integration_fac,
       CORE::LINALG::SerialDenseVector& force_vector)
@@ -1527,7 +1527,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param mass_matrix_variables (in) : Thickness Integration factor for mass matrix
    * @param mass_matrix (in/out) : Mass matrix where the local contribution is added to
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void AddMassMatrix(
       const DRT::ELEMENTS::SHELL::ShapefunctionsAndDerivatives<distype>& shapefunctions,
       DRT::ELEMENTS::SHELL::MassMatrixVariables& mass_matrix_variables, const double& thickness,
@@ -1587,7 +1587,7 @@ namespace DRT::ELEMENTS::SHELL
    * SHELL::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp) that
    * will be called for each integration point.
    */
-  template <DRT::Element::DiscretizationType distype, typename GaussPointEvaluator>
+  template <CORE::FE::CellType distype, typename GaussPointEvaluator>
   inline void ForEachGaussPoint(DRT::ELEMENTS::SHELL::NodalCoordinates<distype>& nodal_coordinates,
       const CORE::DRT::UTILS::IntegrationPoints2D& intpoints_, GaussPointEvaluator gp_evaluator)
   {

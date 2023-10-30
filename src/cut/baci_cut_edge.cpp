@@ -22,7 +22,7 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
-    ::DRT::Element::DiscretizationType edgetype, const std::vector<Node*>& nodes)
+    CORE::FE::CellType edgetype, const std::vector<Node*>& nodes)
 {
   EdgeFactory factory;
   return factory.CreateEdge(edgetype, nodes);
@@ -574,8 +574,7 @@ void CORE::GEO::CUT::Edge::replaceNode(Node* nod, Node* replwith)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Cut(
     Mesh& mesh, Side& side, PointSet& cuts)
 {
@@ -587,8 +586,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Cut
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::JustParallelCut(
     Mesh& mesh, Side& side, PointSet& cuts, int skip_id)
 {
@@ -598,8 +596,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Jus
   return (inter_ptr->HandleParallelIntersection(cuts, skip_id) > 0);
 }
 
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::HandleParallelCut(
     Edge* other, Side* side, PointSet* cut_points, INPAR::CUT::CUT_Floattype floattype)
 {
@@ -677,8 +674,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
   return false;
 }
 
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::GetTouchingPoints(
     const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
     INPAR::CUT::CUT_Floattype floattype)
@@ -757,8 +753,7 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::ComputeCut(
     Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance)
 {
@@ -891,11 +886,10 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType, unsigned dimEdge,
-    unsigned numNodesEdge>
+template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 Teuchos::RCP<CORE::GEO::CUT::IntersectionBase>
 CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::IntersectionPtr(
-    const ::DRT::Element::DiscretizationType& sidetype) const
+    const CORE::FE::CellType& sidetype) const
 {
   return CORE::GEO::CUT::IntersectionBase::Create(edgeType, sidetype);
 }
@@ -903,16 +897,15 @@ CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Intersec
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
-    const ::DRT::Element::DiscretizationType& edgetype, const std::vector<Node*>& nodes) const
+    const CORE::FE::CellType& edgetype, const std::vector<Node*>& nodes) const
 {
   Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (edgetype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      cedge_ptr = Teuchos::rcp(
-          CreateConcreteEdge<::DRT::Element::DiscretizationType::line2>(nodes, probdim));
+      cedge_ptr = Teuchos::rcp(CreateConcreteEdge<CORE::FE::CellType::line2>(nodes, probdim));
       break;
     }
     default:
@@ -925,5 +918,5 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
   return cedge_ptr;
 }
 
-template class CORE::GEO::CUT::ConcreteEdge<2, ::DRT::Element::DiscretizationType::line2>;
-template class CORE::GEO::CUT::ConcreteEdge<3, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteEdge<2, CORE::FE::CellType::line2>;
+template class CORE::GEO::CUT::ConcreteEdge<3, CORE::FE::CellType::line2>;

@@ -27,7 +27,7 @@
 
 #include <fstream>
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -44,7 +44,7 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
     : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
       densaf_master_(0.0),
@@ -84,7 +84,7 @@ namespace DRT
     /*-------------------------------------------------------------------------------*
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
@@ -112,7 +112,7 @@ namespace DRT
     /*-------------------------------------------------------------------------------*
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -134,7 +134,7 @@ namespace DRT
 
 
     /// error computation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
@@ -147,7 +147,7 @@ namespace DRT
       return ComputeError(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
     }
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
@@ -347,7 +347,7 @@ namespace DRT
       return 0;
     }
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::AnalyticalReference(
         const int calcerr,                         ///< which reference solution
         const int calcerrfunctno,                  ///< error function number
@@ -778,7 +778,7 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * compute interface error norms
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         DRT::ELEMENTS::Fluid* ele,                                 ///< fluid element
         DRT::Discretization& dis,                                  ///< background discretization
@@ -1056,7 +1056,7 @@ namespace DRT
             CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
+            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -1271,7 +1271,7 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * add mixed/hybrid stress-based LM interface condition to element matrix and rhs
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         DRT::ELEMENTS::Fluid* ele,                                 ///< fluid element
         DRT::Discretization& dis,                                  ///< background discretization
@@ -1835,7 +1835,7 @@ namespace DRT
             CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
+            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -2624,7 +2624,7 @@ namespace DRT
      * setup volume-based terms
      * (mixed/hybrid viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
         const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells,
@@ -2698,7 +2698,7 @@ namespace DRT
      * evaluate volume-based terms for current gauss point
      * (mixed/hybrid Cauchy stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::MHCS_Evaluate_VolBased(
         const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
         const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
@@ -2820,7 +2820,7 @@ namespace DRT
      * evaluate volume-based matrices K for current gauss point
      * (mixed/hybrid viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::MHVS_Evaluate_VolBased(
         const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, CORE::LINALG::Matrix<nen_, nen_>& bK_ss,
         CORE::LINALG::Matrix<nen_, nen_>& invbK_ss,
@@ -3006,7 +3006,7 @@ namespace DRT
      * build surface-based terms for current gauss point
      * (mixed/hybrid Cauchy or viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::HybridLM_Evaluate_SurfBased(
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
         const CORE::LINALG::Matrix<nen_, nen_>& bK_ss,
@@ -3178,7 +3178,7 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -3623,7 +3623,7 @@ namespace DRT
 
 
             // compute transformation factor, normal vector and global Gauss point coordinates
-            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
+            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
             }
@@ -3647,8 +3647,7 @@ namespace DRT
                 CORE::LINALG::Matrix<3, 1> x_ref = x_gp_lin_;
                 double tmp_drs;
                 CORE::LINALG::Matrix<3, 1> tmp_normal;
-                if (bc->Shape() !=
-                    DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
+                if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
                 {
                   XFEM::UTILS::ComputeSurfaceTransformation(
                       tmp_drs, x_ref, tmp_normal, bc, eta, true);
@@ -3967,7 +3966,7 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * get the interface jump vectors for velocity and traction at the Gaussian point
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
         const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
         Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
@@ -4152,7 +4151,7 @@ namespace DRT
      * get the interface jump vectors for velocity and traction at the Gaussian point
      * for previous time step
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
         const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
         Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
@@ -4285,7 +4284,7 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
         CORE::LINALG::SerialDenseMatrix&
             Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
@@ -4326,7 +4325,7 @@ namespace DRT
      * prepare coupling matrices, that include contributions from convective stabilization
      * and contributions from previous time steps (rhs)
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::HybridLM_CreateSpecialContributionMatrices(
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         std::set<int>& begids,  ///< ids of intersecting boundary elements
@@ -4379,7 +4378,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | evaluate shape functions and derivatives at given local coordinates  |
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::EvalFuncAndDeriv(CORE::LINALG::Matrix<3, 1>& rst)
     {
       // evaluate shape functions
@@ -4400,7 +4399,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | build traction vector w.r.t fluid domain                             |
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::BuildTractionVector(
         CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
         double& press,                            ///< pressure at gaussian point
@@ -4430,7 +4429,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | assemble side's interface force                                      |
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
         Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
         DRT::Discretization& cutdis,             ///< cut discretization
@@ -4456,7 +4455,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::EvaluateNeumann(const double& timefacfac,  ///< theta*dt
         const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
         const CORE::LINALG::Matrix<nsd_, 1>&
@@ -4495,7 +4494,7 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
         DRT::ELEMENTS::Fluid* ele,                           ///< fluid element
         DRT::Discretization& dis,                            ///< discretization
@@ -4547,7 +4546,7 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
         DRT::ELEMENTS::Fluid* ele,                       ///< fluid element
         DRT::Discretization& dis,                        ///< discretization
@@ -4560,7 +4559,7 @@ namespace DRT
 
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell(
         Teuchos::RCP<const MAT::Material> material,
         double& densaf,  // done
@@ -4605,11 +4604,11 @@ namespace DRT
 }  // end namespace DRT
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::wedge15>;
-// template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge15>;
+// template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::pyramid5>;

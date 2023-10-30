@@ -25,7 +25,7 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   linedef->Print(std::cout);
 
-  DiscretizationType shape = StringToDistype(distype);
+  CORE::FE::CellType shape = StringToDistype(distype);
 
   std::cout << " distype " << distype << std::endl;
 
@@ -33,28 +33,28 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   switch (shape)
   {
-    case DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
     }
-    case DiscretizationType::hex20:
-    case DiscretizationType::hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
     }
-    case DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     }
-    case DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
     }
-    case DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;

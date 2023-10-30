@@ -36,10 +36,7 @@ namespace CORE::GEO
       }
 
       /// Returns the geometric shape of this side
-      ::DRT::Element::DiscretizationType Shape() const override
-      {
-        return ::DRT::Element::DiscretizationType::dis_none;
-      }
+      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; }
 
       /// element dimension
       unsigned Dim() const override

@@ -53,7 +53,7 @@ namespace CORE::DRT::UTILS
   *----------------------------------------------------------------------*/
   // for enriched elements (e.g. xwall), NumNode may be larger than the number of element nodes
   // for all other elements, NumNode==numnode
-  template <::DRT::Element::DiscretizationType DISTYPE, int NumNode, int ProbDim>
+  template <CORE::FE::CellType DISTYPE, int NumNode, int ProbDim>
   void gder2(const CORE::LINALG::Matrix<ProbDim, ProbDim>& xjm,
       const CORE::LINALG::Matrix<ProbDim, NumNode>& derxy,
       const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
@@ -132,7 +132,7 @@ namespace CORE::DRT::UTILS
 
   }  // CORE::DRT::UTILS::gder2
 
-  template <::DRT::Element::DiscretizationType DISTYPE, int NumNode>
+  template <CORE::FE::CellType DISTYPE, int NumNode>
   void gder2(const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
                  ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& xjm,
       const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& derxy,

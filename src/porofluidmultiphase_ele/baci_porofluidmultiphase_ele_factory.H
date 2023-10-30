@@ -29,12 +29,12 @@ namespace DRT
       //! dtor
       virtual ~PoroFluidMultiPhaseFactory() = default;
       //! ProvideImpl
-      static PoroFluidMultiPhaseEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
-          const int numdofpernode, const std::string& disname);
+      static PoroFluidMultiPhaseEleInterface* ProvideImpl(
+          CORE::FE::CellType distype, const int numdofpernode, const std::string& disname);
 
      private:
       //! define PoroFluidMultiPhaseEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype>
+      template <CORE::FE::CellType distype>
       static PoroFluidMultiPhaseEleInterface* DefineProblemType(
           const int numdofpernode, const std::string& disname);
 

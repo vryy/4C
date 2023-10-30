@@ -66,7 +66,7 @@ namespace DRT
       \author ehrl
       \date 03/10
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidBoundaryImpl : public FluidBoundaryInterface
     {
       friend class FluidEleParameter;

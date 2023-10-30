@@ -93,10 +93,10 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       //! \brief set discretization type of element
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
+      virtual void SetDisType(CORE::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -110,32 +110,32 @@ namespace DRT
       {
         switch (distype_)
         {
-          case DRT::Element::DiscretizationType::hex8:
-          case DRT::Element::DiscretizationType::hex20:
-          case DRT::Element::DiscretizationType::hex27:
-          case DRT::Element::DiscretizationType::nurbs27:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
+          case CORE::FE::CellType::nurbs27:
             return 6;
             break;
-          case DRT::Element::DiscretizationType::tet4:
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::tet10:
             return 4;
             break;
-          case DRT::Element::DiscretizationType::wedge6:
-          case DRT::Element::DiscretizationType::wedge15:
-          case DRT::Element::DiscretizationType::pyramid5:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::pyramid5:
             return 5;
             break;
-          case DRT::Element::DiscretizationType::quad4:
-          case DRT::Element::DiscretizationType::quad8:
-          case DRT::Element::DiscretizationType::quad9:
-          case DRT::Element::DiscretizationType::nurbs4:
-          case DRT::Element::DiscretizationType::nurbs9:
-          case DRT::Element::DiscretizationType::tri3:
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::nurbs4:
+          case CORE::FE::CellType::nurbs9:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::tri6:
             return 1;
             break;
-          case DRT::Element::DiscretizationType::line2:
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::line2:
+          case CORE::FE::CellType::line3:
             return 0;
             break;
           default:
@@ -150,25 +150,25 @@ namespace DRT
       {
         switch (distype_)
         {
-          case DRT::Element::DiscretizationType::hex8:
-          case DRT::Element::DiscretizationType::hex20:
-          case DRT::Element::DiscretizationType::hex27:
-          case DRT::Element::DiscretizationType::tet4:
-          case DRT::Element::DiscretizationType::tet10:
-          case DRT::Element::DiscretizationType::wedge6:
-          case DRT::Element::DiscretizationType::wedge15:
-          case DRT::Element::DiscretizationType::pyramid5:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::pyramid5:
             return 1;
             break;
-          case DRT::Element::DiscretizationType::quad4:
-          case DRT::Element::DiscretizationType::quad8:
-          case DRT::Element::DiscretizationType::quad9:
-          case DRT::Element::DiscretizationType::nurbs4:
-          case DRT::Element::DiscretizationType::nurbs9:
-          case DRT::Element::DiscretizationType::tri3:
-          case DRT::Element::DiscretizationType::tri6:
-          case DRT::Element::DiscretizationType::line2:
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::nurbs4:
+          case CORE::FE::CellType::nurbs9:
+          case CORE::FE::CellType::tri3:
+          case CORE::FE::CellType::tri6:
+          case CORE::FE::CellType::line2:
+          case CORE::FE::CellType::line3:
             return 0;
             break;
           default:
@@ -352,7 +352,7 @@ namespace DRT
       //! (storage neccessary because we don't know the material in the post filters anymore)
       static const int numdofpernode_ = 1;
       //! the element discretization type
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
       //! container containing all kind of element this-and-that
       DRT::Container data_;
 
@@ -425,7 +425,7 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       //! \brief Return number of lines of boundary element
       int NumLine() const override

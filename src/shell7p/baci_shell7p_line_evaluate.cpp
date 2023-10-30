@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(CORE::DRT::UTILS::GaussRule1D::line_2point);
   CORE::LINALG::SerialDenseVector shape_functions(numnode);
   CORE::LINALG::SerialDenseMatrix derivatives(1, numnode);
-  const DRT::Element::DiscretizationType shape = Shape();
+  const CORE::FE::CellType shape = Shape();
 
   // integration
   for (int gp = 0; gp < intpoints.NumPoints(); ++gp)

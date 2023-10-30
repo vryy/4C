@@ -19,7 +19,7 @@
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
 /*---------------------------------------------------------------------*
  |  calculate error compared to analytical solution    rasthofer 04/14 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
 /*----------------------------------------------------------------------*
  | smoothed heaviside function                          rasthofer 04/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::SmoothHeavisideFunction(
     const double charelelength, const double phi, double& smoothH)
 {
@@ -149,23 +149,23 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::SmoothHeavisideFunction(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs27>;

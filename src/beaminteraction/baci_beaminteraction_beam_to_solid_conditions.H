@@ -268,7 +268,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class bts_class, typename... bts_template_arguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShape(
-      const DRT::Element::DiscretizationType shape);
+      const CORE::FE::CellType shape);
 
   /**
    * \brief Create a beam-to-solid volume pair depending on the solid volume shape, without nurbs.
@@ -282,7 +282,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class bts_class, typename... bts_template_arguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShapeNoNurbs(
-      const DRT::Element::DiscretizationType shape);
+      const CORE::FE::CellType shape);
 
   /**
    * \brief Create a beam-to-solid volume mortar pair depending on the solid volume shape and mortar
@@ -300,7 +300,7 @@ namespace BEAMINTERACTION
   template <template <typename...> class bts_class, typename... bts_mortar_template_arguments,
       typename... bts_mortar_shape>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
-      const DRT::Element::DiscretizationType shape,
+      const CORE::FE::CellType shape,
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function,
       bts_mortar_shape... other_mortar_shape_function);
 
@@ -314,7 +314,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class bts_class, typename... bts_mortar_template_arguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
-      const DRT::Element::DiscretizationType shape);
+      const CORE::FE::CellType shape);
 }  // namespace BEAMINTERACTION
 
 #endif

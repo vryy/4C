@@ -21,7 +21,7 @@ namespace CONTACT
     class NodeDataContainer;
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype>
+    template <unsigned probdim, CORE::FE::CellType slavetype>
     class BaseSlaveIntPolicy
     {
      protected:
@@ -98,8 +98,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class BaseIntPolicy : public BaseSlaveIntPolicy<probdim, slavetype>
     {
       typedef BaseSlaveIntPolicy<probdim, slavetype> my;
@@ -192,8 +191,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class IncompleteIntPolicy : public BaseIntPolicy<probdim, slavetype, mastertype>
     {
       typedef BaseIntPolicy<probdim, slavetype, mastertype> my;
@@ -281,8 +279,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class CompleteIntPolicy : public BaseIntPolicy<probdim, slavetype, mastertype>
     {
       typedef BaseIntPolicy<probdim, slavetype, mastertype> my;
@@ -368,8 +365,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class DebugIncompleteIntPolicy : public IncompleteIntPolicy<probdim, slavetype, mastertype>
     {
       typedef IncompleteIntPolicy<probdim, slavetype, mastertype> my;
@@ -410,8 +406,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-        DRT::Element::DiscretizationType mastertype>
+    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
     class DebugCompleteIntPolicy : public CompleteIntPolicy<probdim, slavetype, mastertype>
     {
       typedef CompleteIntPolicy<probdim, slavetype, mastertype> my;

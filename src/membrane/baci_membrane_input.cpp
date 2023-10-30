@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  ReadElement                                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -57,7 +57,7 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
   return true;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;

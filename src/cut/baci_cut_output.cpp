@@ -100,43 +100,43 @@ void CORE::GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vce
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-char CORE::GEO::CUT::OUTPUT::GmshElementType(::DRT::Element::DiscretizationType shape)
+char CORE::GEO::CUT::OUTPUT::GmshElementType(CORE::FE::CellType shape)
 {
   switch (shape)
   {
-    case ::DRT::Element::DiscretizationType::point1:
+    case CORE::FE::CellType::point1:
     {
       return 'P';
     }
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
       return 'L';
     }
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       return 'T';
     }
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       return 'Q';
     }
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       return 'H';
     }
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       return 'S';
     }
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
       return 'I';
     }
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       return 'P';
     }
-    case ::DRT::Element::DiscretizationType::dis_none:
+    case CORE::FE::CellType::dis_none:
     {
       // arbitrary cells are not yet supported
       return ' ';
@@ -190,9 +190,9 @@ void CORE::GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file,
-    ::DRT::Element::DiscretizationType shape, const CORE::LINALG::SerialDenseMatrix& xyze,
-    const Point::PointPosition* position, const int* value)
+void CORE::GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file, CORE::FE::CellType shape,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const Point::PointPosition* position,
+    const int* value)
 {
   char elementtype = GmshElementType(shape);
 
@@ -1239,7 +1239,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
              << "\n";
       }
       file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, "
-              "::DRT::Element::DiscretizationType::tri3 );"
+              "CORE::FE::CellType::tri3 );"
            << "\n";
       file << "  }"
            << "\n";
@@ -1285,11 +1285,11 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     if (not haslevelsetside)
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, ::DRT::Element::DiscretizationType::hex8);"
+           << ", nids, hex8_xyze, CORE::FE::CellType::hex8);"
            << "\n";
     else
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, ::DRT::Element::DiscretizationType::hex8, &lsvs[0], false );"
+           << ", nids, hex8_xyze, CORE::FE::CellType::hex8, &lsvs[0], false );"
            << "\n";
     file << "  }"
          << "\n";

@@ -27,8 +27,7 @@ namespace CORE::GEO
   {
    public:
     //! Standard Constructor
-    explicit IntCell(
-        const ::DRT::Element::DiscretizationType& distype  ///< distype of the integration cell
+    explicit IntCell(const CORE::FE::CellType& distype  ///< distype of the integration cell
     );
 
     //! Copy Constructor
@@ -40,7 +39,7 @@ namespace CORE::GEO
     virtual IntCell& operator=(const IntCell& intcell);
 
     //! brief returns the shape of the integration cell
-    ::DRT::Element::DiscretizationType Shape() const { return distype_; };
+    CORE::FE::CellType Shape() const { return distype_; };
 
     //! return boolean indicating plus domain
     bool getDomainPlus() const { return indomainplus_; }
@@ -51,15 +50,14 @@ namespace CORE::GEO
 
    protected:
     //! shape
-    ::DRT::Element::DiscretizationType distype_;
+    CORE::FE::CellType distype_;
 
     // boolean indicating that cell belongs to "+"-part of the domain
     bool indomainplus_;
 
     //! get geometric center of the cell in physical coordinates
     CORE::LINALG::Matrix<3, 1> ComputePhysicalCenterPosition(
-        const ::DRT::Element::DiscretizationType& distype,
-        const CORE::LINALG::SerialDenseMatrix& xyze) const;
+        const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const;
   };
 
   /*----------------------------------------------------------------------------*/
@@ -80,15 +78,14 @@ namespace CORE::GEO
      *  \param indomainplus             (in) : domain part of the integration cell
      *
      *  \author hiermeier \date 11/16 */
-    static BoundaryIntCell* Create(const ::DRT::Element::DiscretizationType& distype,
-        const int& surface_ele_gid, const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
+    static BoundaryIntCell* Create(const CORE::FE::CellType& distype, const int& surface_ele_gid,
+        const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
         const CORE::LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
         const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus);
 
    public:
     //! Standard Constructor
-    explicit BoundaryIntCell(
-        const ::DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
+    explicit BoundaryIntCell(const CORE::FE::CellType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
         const CORE::LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
@@ -99,8 +96,7 @@ namespace CORE::GEO
     );
 
     //! constructor used for combustion problems
-    explicit BoundaryIntCell(
-        const ::DRT::Element::DiscretizationType& distype,  ///< shape of the integration cell
+    explicit BoundaryIntCell(const CORE::FE::CellType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
         const CORE::LINALG::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
@@ -141,8 +137,8 @@ namespace CORE::GEO
 
    protected:
     //! constructor for derived class only.
-    BoundaryIntCell(::DRT::Element::DiscretizationType distype,  ///< shape of the integration cell
-        const int& surface_ele_gid  ///< global id of the boundary element (cutter)
+    BoundaryIntCell(CORE::FE::CellType distype,  ///< shape of the integration cell
+        const int& surface_ele_gid               ///< global id of the boundary element (cutter)
     );
 
     //! the boundaryIntCell should know, to which cutterElement it belongs!?

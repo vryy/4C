@@ -166,21 +166,21 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::ExtractMyValues(*scanp, mysca, lm);
 
           // integrate mean values
-          const DiscretizationType distype = this->Shape();
+          const CORE::FE::CellType distype = this->Shape();
 
           switch (distype)
           {
-            case DRT::Element::DiscretizationType::hex8:
+            case CORE::FE::CellType::hex8:
             {
               FLD::f3_calc_scatra_means<8>(this, discretization, myvelpre, mysca, params);
               break;
             }
-            case DRT::Element::DiscretizationType::hex20:
+            case CORE::FE::CellType::hex20:
             {
               FLD::f3_calc_scatra_means<20>(this, discretization, myvelpre, mysca, params);
               break;
             }
-            case DRT::Element::DiscretizationType::hex27:
+            case CORE::FE::CellType::hex27:
             {
               FLD::f3_calc_scatra_means<27>(this, discretization, myvelpre, mysca, params);
               break;
@@ -225,21 +225,21 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           const double eosfac = params.get<double>("eos factor", 100000.0 / 287.0);
 
           // integrate mean values
-          const DiscretizationType distype = this->Shape();
+          const CORE::FE::CellType distype = this->Shape();
 
           switch (distype)
           {
-            case DRT::Element::DiscretizationType::hex8:
+            case CORE::FE::CellType::hex8:
             {
               FLD::f3_calc_loma_means<8>(this, discretization, myvelpre, mysca, params, eosfac);
               break;
             }
-            case DRT::Element::DiscretizationType::hex20:
+            case CORE::FE::CellType::hex20:
             {
               FLD::f3_calc_loma_means<20>(this, discretization, myvelpre, mysca, params, eosfac);
               break;
             }
-            case DRT::Element::DiscretizationType::hex27:
+            case CORE::FE::CellType::hex27:
             {
               FLD::f3_calc_loma_means<27>(this, discretization, myvelpre, mysca, params, eosfac);
               break;
@@ -259,11 +259,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         int nen = 0;
-        if (distype == DRT::Element::DiscretizationType::hex8)
+        if (distype == CORE::FE::CellType::hex8)
           nen = 8;
-        else if (distype == DRT::Element::DiscretizationType::tet4)
+        else if (distype == CORE::FE::CellType::tet4)
           nen = 4;
         else
           dserror("not supported");
@@ -324,7 +324,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         // the results are assembled onto the *_hat arrays
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             FLD::f3_apply_box_filter<8>(this, fldpara, myvel, mytemp, thermpress, vel_hat,
                 densvel_hat, reynoldsstress_hat, modeled_subgrid_stress, volume_contribution,
@@ -332,7 +332,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
                 alphaij_hat);
             break;
           }
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             FLD::f3_apply_box_filter<4>(this, fldpara, myvel, mytemp, thermpress, vel_hat,
                 densvel_hat, reynoldsstress_hat, modeled_subgrid_stress, volume_contribution,
@@ -395,10 +395,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         double ycenter = 0.0;
         double zcenter = 0.0;
 
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             FLD::f3_calc_smag_const_LijMij_and_MijMij<8>(this, fldpara, col_filtered_vel,
                 col_filtered_reynoldsstress, col_filtered_modeled_subgrid_stress,
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
                 MijMij, CI_numerator, CI_denominator, xcenter, ycenter, zcenter);
             break;
           }
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             FLD::f3_calc_smag_const_LijMij_and_MijMij<4>(this, fldpara, col_filtered_vel,
                 col_filtered_reynoldsstress, col_filtered_modeled_subgrid_stress,
@@ -478,16 +478,16 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         double cv_numerator = 0.0;
         double cv_denominator = 0.0;
         double volume = 0.0;
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             FLD::f3_calc_vreman_const<8>(this, col_filtered_strainrate, col_filtered_alphaij,
                 col_filtered_expression, col_filtered_alpha2, cv_numerator, cv_denominator, volume);
             break;
           }
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
             FLD::f3_calc_vreman_const<4>(this, col_filtered_strainrate, col_filtered_alphaij,
                 col_filtered_expression, col_filtered_alpha2, cv_numerator, cv_denominator, volume);
@@ -537,15 +537,15 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         DRT::ELEMENTS::FluidEleParameterStd* fldpara =
             DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
             // don't store values of ghosted elements
             if (this->Owner() == discretization.Comm().MyPID())
             {
-              FLD::f3_get_mf_params<8, 3, DRT::Element::DiscretizationType::hex8>(
+              FLD::f3_get_mf_params<8, 3, CORE::FE::CellType::hex8>(
                   this, fldpara, params, mat, myvel, myfsvel);
             }
             break;
@@ -564,9 +564,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         int nen = 0;
-        if (distype == DRT::Element::DiscretizationType::hex8)
+        if (distype == CORE::FE::CellType::hex8)
           nen = 8;
         else
           dserror("not supported");
@@ -612,9 +612,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         {
           switch (distype)
           {
-            case DRT::Element::DiscretizationType::hex8:
+            case CORE::FE::CellType::hex8:
             {
-              FLD::f3_get_mf_nwc<8, 3, DRT::Element::DiscretizationType::hex8>(
+              FLD::f3_get_mf_nwc<8, 3, CORE::FE::CellType::hex8>(
                   this, fldpara, Cai, vol, myvel, mysca, thermpress);
               break;
             }
@@ -645,36 +645,36 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        const DiscretizationType distype = this->Shape();
+        const CORE::FE::CellType distype = this->Shape();
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::hex27:
+          case CORE::FE::CellType::hex27:
           {
-            FLD::ElementNodeNormal<DRT::Element::DiscretizationType::hex27>(
+            FLD::ElementNodeNormal<CORE::FE::CellType::hex27>(
                 this, params, discretization, lm, elevec1);
             break;
           }
-          case DRT::Element::DiscretizationType::hex20:
+          case CORE::FE::CellType::hex20:
           {
-            FLD::ElementNodeNormal<DRT::Element::DiscretizationType::hex20>(
+            FLD::ElementNodeNormal<CORE::FE::CellType::hex20>(
                 this, params, discretization, lm, elevec1);
             break;
           }
-          case DRT::Element::DiscretizationType::hex8:
+          case CORE::FE::CellType::hex8:
           {
-            FLD::ElementNodeNormal<DRT::Element::DiscretizationType::hex8>(
+            FLD::ElementNodeNormal<CORE::FE::CellType::hex8>(
                 this, params, discretization, lm, elevec1);
             break;
           }
-          case DRT::Element::DiscretizationType::tet4:
+          case CORE::FE::CellType::tet4:
           {
-            FLD::ElementNodeNormal<DRT::Element::DiscretizationType::tet4>(
+            FLD::ElementNodeNormal<CORE::FE::CellType::tet4>(
                 this, params, discretization, lm, elevec1);
             break;
           }
-          case DRT::Element::DiscretizationType::tet10:
+          case CORE::FE::CellType::tet10:
           {
-            FLD::ElementNodeNormal<DRT::Element::DiscretizationType::tet10>(
+            FLD::ElementNodeNormal<CORE::FE::CellType::tet10>(
                 this, params, discretization, lm, elevec1);
             break;
           }

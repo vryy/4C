@@ -103,7 +103,7 @@ namespace DRT
       (see fluid_ele_intfaces_calc.H)
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagIntFaceImpl : public ElemagIntFaceImplInterface
     {
       friend class ElemagEleParameterTimInt;

@@ -33,8 +33,8 @@ struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitscheSsi(params, eletype, comm)
 {
   if (std::abs(theta_) > 1.0e-16) dserror("SSI Elch Contact just implemented Adjoint free ...");
@@ -199,19 +199,17 @@ double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
   static CORE::LINALG::Matrix<dim, dim> defgrd;
   switch (electrode_ele->ParentElement()->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::hex8, dim>(
-          defgrd, electrode_ele->ParentElement()->Nodes(), xi_parent,
-          electrode_ele->MoData().ParentDisp());
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8, dim>(defgrd,
+          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet4, dim>(
-          defgrd, electrode_ele->ParentElement()->Nodes(), xi_parent,
-          electrode_ele->MoData().ParentDisp());
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4, dim>(defgrd,
+          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
     }
@@ -235,15 +233,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
   auto* electrode_ele = electrode_quantities.element;
   switch (electrode_ele->Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::DiscretizationType::quad4, dim>(
+      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::quad4, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::DiscretizationType::tri3, dim>(
+      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::tri3, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
@@ -257,7 +255,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int dim>
+template <CORE::FE::CellType distype, int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::pairedvector<int, double>& d_detF_dd)

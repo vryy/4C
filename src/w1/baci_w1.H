@@ -139,10 +139,10 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       /// Get shape type of element
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /// Set discretization type of element
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
+      virtual void SetDisType(CORE::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -322,7 +322,7 @@ namespace DRT
       bool structale_;
 
       //! the element discretization type (shape)
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
       /// @name Internal calculation methods
       //@{
@@ -494,12 +494,12 @@ namespace DRT
 
       /// setup of constant EAS data
       void w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,  ///< linear B-op at origin
-          CORE::LINALG::SerialDenseVector& F0,             ///< deformation gradient at origin
-          CORE::LINALG::SerialDenseMatrix& xjm0,           ///< jacobian matrix at origin
-          double& detJ0,                                   ///< det of Jacobian at origin
-          const CORE::LINALG::SerialDenseMatrix& xrefe,    ///< material element coords
-          const CORE::LINALG::SerialDenseMatrix& xcure,    ///< current element coords
-          const DRT::Element::DiscretizationType& distype  ///< discretisation type
+          CORE::LINALG::SerialDenseVector& F0,           ///< deformation gradient at origin
+          CORE::LINALG::SerialDenseMatrix& xjm0,         ///< jacobian matrix at origin
+          double& detJ0,                                 ///< det of Jacobian at origin
+          const CORE::LINALG::SerialDenseMatrix& xrefe,  ///< material element coords
+          const CORE::LINALG::SerialDenseMatrix& xcure,  ///< current element coords
+          const CORE::FE::CellType& distype              ///< discretisation type
       );
 
       /// Get the enhanced deformation gradient and
@@ -842,7 +842,7 @@ namespace DRT
 
 
       /// Get shape type of element
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
 
       /// Return unique ParObject id
@@ -970,7 +970,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
     };  // class Wall1Line
 

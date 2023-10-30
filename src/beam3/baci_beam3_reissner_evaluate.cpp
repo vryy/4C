@@ -574,7 +574,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   const unsigned int dofpertriadnode = 3;
   const unsigned int dofpercombinode = dofperclnode + dofpertriadnode;
 
-  const DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   // gaussian points
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
@@ -610,7 +610,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     // evaluation of shape functions at Gauss points
     CORE::DRT::UTILS::shape_function_1D(I_i, xi, distype);
     if (centerline_hermite_)
-      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, DiscretizationType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(H_i, xi, reflength_, CORE::FE::CellType::line2);
     else
       CORE::DRT::UTILS::shape_function_1D(H_i, xi, distype);
 

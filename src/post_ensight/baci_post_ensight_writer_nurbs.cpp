@@ -147,7 +147,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
     switch (actele->Shape())
     {
-      case DRT::Element::DiscretizationType::nurbs4:
+      case CORE::FE::CellType::nurbs4:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -243,7 +243,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
         break;
       }
-      case DRT::Element::DiscretizationType::nurbs9:
+      case CORE::FE::CellType::nurbs9:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -504,7 +504,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
         }
         break;
       }
-      case DRT::Element::DiscretizationType::nurbs27:
+      case CORE::FE::CellType::nurbs27:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(3);
@@ -1405,7 +1405,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
          cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
-void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distype, const int gid,
+void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int gid,
     std::ofstream& geofile, std::vector<int>& nodevector,
     const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
@@ -1447,7 +1447,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
 
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       // get dimension
       const int dim = 2;
@@ -1490,7 +1490,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       // get dimension
       const int dim = 2;
@@ -1607,7 +1607,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       //               v
       //              /
@@ -2175,7 +2175,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 
   switch (actele->Shape())
   {
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       // number of visualisation points in u direction
       int nvpu = (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
@@ -2260,7 +2260,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       int idu;
       int idv;
@@ -2496,7 +2496,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       // element local point position
       CORE::LINALG::SerialDenseVector uv(3);

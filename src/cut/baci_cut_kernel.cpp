@@ -118,8 +118,7 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
       points[(i + 2) % 4]->Coordinates(&xyze(0, 2));
       points[(i + 3) % 4]->Coordinates(&xyz(0, 0));
 
-      Teuchos::RCP<Position> pos =
-          Position::Create(xyze, xyz, ::DRT::Element::DiscretizationType::tri3);
+      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, CORE::FE::CellType::tri3);
       if (pos->Compute())
       {
         return false;

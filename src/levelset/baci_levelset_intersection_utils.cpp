@@ -85,7 +85,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
   {
     // get element from discretization
     const DRT::Element* ele = scatradis.lRowElement(iele);
-    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const CORE::FE::CellType distype = ele->Shape();
 
     // clear vector each loop
     BoundaryIntCellsPerEle<T>().clear();
@@ -151,7 +151,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
     const CORE::GEO::CUT::plain_element_set& cuteles, const CORE::LINALG::SerialDenseMatrix& xyze,
-    DRT::Element::DiscretizationType distype)
+    CORE::FE::CellType distype)
 {
   for (CORE::GEO::CUT::plain_element_set::const_iterator icutele = cuteles.begin();
        icutele != cuteles.end(); ++icutele)
@@ -196,9 +196,9 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
     const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::GEO::CUT::BoundaryCell& bcell,
-    DRT::Element::DiscretizationType distype_ele)
+    CORE::FE::CellType distype_ele)
 {
-  DRT::Element::DiscretizationType distype_bc = bcell.Shape();
+  CORE::FE::CellType distype_bc = bcell.Shape();
   CheckBoundaryCellType(distype_bc);
 
   const int numnodebc = CORE::DRT::UTILS::getNumberOfElementNodes(distype_bc);
@@ -230,11 +230,9 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(
-    DRT::Element::DiscretizationType distype_bc) const
+void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(CORE::FE::CellType distype_bc) const
 {
-  if (distype_bc != DRT::Element::DiscretizationType::tri3 and
-      distype_bc != DRT::Element::DiscretizationType::quad4)
+  if (distype_bc != CORE::FE::CellType::tri3 and distype_bc != CORE::FE::CellType::quad4)
   {
     dserror("unexpected type of boundary integration cell: %s",
         DRT::DistypeToString(distype_bc).c_str());
@@ -263,20 +261,20 @@ void SCATRA::LEVELSET::Intersection::AddToVolume(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::CollectCutEles(CORE::GEO::CUT::ElementHandle& ehandle,
-    CORE::GEO::CUT::plain_element_set& cuteles, DRT::Element::DiscretizationType distype) const
+    CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const
 {
   ehandle.CollectElements(cuteles);
 
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::line2:
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::hex8:
     {
       if (cuteles.size() != 1) dserror("one cut element expected for linear elements");
       break;
     }
-    case DRT::Element::DiscretizationType::hex20:
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       if (cuteles.size() != 8) dserror("eight cut elements expected for quadratic elements");
       break;
@@ -296,32 +294,30 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
 {
-  const DRT::Element::DiscretizationType distype = ele->Shape();
+  const CORE::FE::CellType distype = ele->Shape();
   unsigned numnode = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
   const unsigned probdim = DRT::Problem::Instance()->NDim();
 
   xyze.shape(3, numnode);
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-      CORE::GEO::fillInitialPositionArray<DRT::Element::DiscretizationType::hex8, 3>(ele, xyze);
+    case CORE::FE::CellType::hex8:
+      CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::hex8, 3>(ele, xyze);
       break;
-    case DRT::Element::DiscretizationType::hex20:
-      CORE::GEO::fillInitialPositionArray<DRT::Element::DiscretizationType::hex20, 3>(ele, xyze);
+    case CORE::FE::CellType::hex20:
+      CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::hex20, 3>(ele, xyze);
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      CORE::GEO::fillInitialPositionArray<DRT::Element::DiscretizationType::hex27, 3>(ele, xyze);
+    case CORE::FE::CellType::hex27:
+      CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::hex27, 3>(ele, xyze);
       break;
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       switch (probdim)
       {
         case 2:
-          CORE::GEO::fillInitialPositionArray<DRT::Element::DiscretizationType::line2, 2>(
-              ele, xyze);
+          CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::line2, 2>(ele, xyze);
           break;
         case 3:
-          CORE::GEO::fillInitialPositionArray<DRT::Element::DiscretizationType::line2, 3>(
-              ele, xyze);
+          CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::line2, 3>(ele, xyze);
           break;
         default:
           dserror("Unsupported problem dimension! (probdim = %d)", probdim);
@@ -536,7 +532,7 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
     {
       CORE::GEO::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
-      const DRT::Element::DiscretizationType distype = cell.Shape();
+      const CORE::FE::CellType distype = cell.Shape();
       DRT::ParObject::AddtoPack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
@@ -579,12 +575,11 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       // extract all member variables for a single boundary integration cell
       //--------------------------------------------------------------------
       // distype of cell
-      DRT::Element::DiscretizationType distype;
+      CORE::FE::CellType distype;
       int distypeint = -1;
       DRT::ParObject::ExtractfromPack(posingroup, data, distypeint);
-      distype = (DRT::Element::DiscretizationType)distypeint;
-      if (!(distype == DRT::Element::DiscretizationType::tri3 ||
-              distype == DRT::Element::DiscretizationType::quad4))
+      distype = (CORE::FE::CellType)distypeint;
+      if (!(distype == CORE::FE::CellType::tri3 || distype == CORE::FE::CellType::quad4))
         dserror("unexpected distype %d", distypeint);
 
       CORE::LINALG::SerialDenseMatrix vertices_xi;

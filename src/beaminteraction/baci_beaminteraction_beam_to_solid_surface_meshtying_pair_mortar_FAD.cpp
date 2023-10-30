@@ -622,7 +622,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::DiscretizationType::line3);
+            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -862,7 +862,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::DiscretizationType::line3);
+            L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -1004,29 +1004,29 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation(const bool rotatio
 template <typename mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
-    const DRT::Element::DiscretizationType surface_shape, const bool rotational_coupling)
+    const CORE::FE::CellType surface_shape, const bool rotational_coupling)
 {
   using namespace BEAMINTERACTION;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri3, mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri6, mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad4, mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad8, mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad9, mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
           mortar>(rotational_coupling);
@@ -1042,22 +1042,22 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
 template <typename mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
-    const DRT::Element::DiscretizationType surface_shape, const bool rotational_coupling)
+    const CORE::FE::CellType surface_shape, const bool rotational_coupling)
 {
   using namespace BEAMINTERACTION;
   using namespace GEOMETRYPAIR;
 
   switch (surface_shape)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4,
           mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
           mortar>(rotational_coupling);
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
           mortar>(rotational_coupling);
@@ -1072,7 +1072,7 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
-    const DRT::Element::DiscretizationType surface_shape,
+    const CORE::FE::CellType surface_shape,
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
     const bool rotational_coupling,
     const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)

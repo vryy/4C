@@ -34,7 +34,7 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToGlobal(MORTAR::MortarElement& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
@@ -62,8 +62,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs2:
-                case DRT::Element::DiscretizationType::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -85,9 +85,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs4:
-                case DRT::Element::DiscretizationType::nurbs8:
-                case DRT::Element::DiscretizationType::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -138,8 +138,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs2:
-                case DRT::Element::DiscretizationType::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -162,9 +162,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs4:
-                case DRT::Element::DiscretizationType::nurbs8:
-                case DRT::Element::DiscretizationType::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -213,8 +213,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs2:
-                case DRT::Element::DiscretizationType::nurbs3:
+                case CORE::FE::CellType::nurbs2:
+                case CORE::FE::CellType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -237,9 +237,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::DiscretizationType::nurbs4:
-                case DRT::Element::DiscretizationType::nurbs8:
-                case DRT::Element::DiscretizationType::nurbs9:
+                case CORE::FE::CellType::nurbs4:
+                case CORE::FE::CellType::nurbs8:
+                case CORE::FE::CellType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -291,7 +291,7 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToGlobal(DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
@@ -343,7 +343,7 @@ namespace MORTAR
      |                                                                           |
      |  globcoord (out): global xyz coordinate in current configuration of "xi"  |
      *---------------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     bool LocalToCurrentGlobal(DRT::Element& ele, const int globdim, const double* xi,
         const std::vector<double> edisp, double* globcoord)
     {
@@ -392,7 +392,7 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToLocal(DRT::Element& ele,  // element (input)
         double* xgl,                       // global position (input)
         double* xi)                        // local position  (output)
@@ -413,23 +413,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::DiscretizationType::quad4 or
-            distype == DRT::Element::DiscretizationType::quad8 or
-            distype == DRT::Element::DiscretizationType::quad9 or
-            distype == DRT::Element::DiscretizationType::hex8 or
-            distype == DRT::Element::DiscretizationType::hex20 or
-            distype == DRT::Element::DiscretizationType::hex27)
+        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
+            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
+            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::DiscretizationType::tri3 or
-                 distype == DRT::Element::DiscretizationType::tri6 or
-                 distype == DRT::Element::DiscretizationType::tet4 or
-                 distype == DRT::Element::DiscretizationType::tet10)
+        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
+                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::DiscretizationType::pyramid5)
+        else if (distype == CORE::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -525,7 +520,7 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToLocal(DRT::Element& ele,  // element (input)
         double* xgl,                       // global position (input)
         double* xi,
@@ -550,23 +545,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::DiscretizationType::quad4 or
-            distype == DRT::Element::DiscretizationType::quad8 or
-            distype == DRT::Element::DiscretizationType::quad9 or
-            distype == DRT::Element::DiscretizationType::hex8 or
-            distype == DRT::Element::DiscretizationType::hex20 or
-            distype == DRT::Element::DiscretizationType::hex27)
+        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
+            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
+            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::DiscretizationType::tri3 or
-                 distype == DRT::Element::DiscretizationType::tri6 or
-                 distype == DRT::Element::DiscretizationType::tet4 or
-                 distype == DRT::Element::DiscretizationType::tet10)
+        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
+                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::DiscretizationType::pyramid5)
+        else if (distype == CORE::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -656,7 +646,7 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (curr position) rauch 08/14|
      *----------------------------------------------------------------------*/
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     void GlobalToCurrentLocal(DRT::Element& ele,  // element (input)
         const double* targetdisp,
         double* xgl,  // global position (input)

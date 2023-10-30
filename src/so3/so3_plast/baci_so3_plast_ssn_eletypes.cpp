@@ -27,7 +27,7 @@ DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance() { r
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -42,8 +42,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(id, owner));
 
     return ele;
   }
@@ -58,7 +58,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(id, owner));
   return ele;
 
 }  // Create()
@@ -94,8 +94,8 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>*>(
-        dis.lColElement(i));
+    auto* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_Plast* failed");
     // initialise all quantities
     actele->InitJacobianMapping();
@@ -126,7 +126,7 @@ DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -141,8 +141,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -155,8 +155,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
 *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner));
   return ele;
 }  // Create()
 
@@ -193,8 +193,8 @@ int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>*>(
-        dis.lColElement(i));
+    auto* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -224,7 +224,7 @@ DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -239,8 +239,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -253,8 +253,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
 *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }  // Create()
 
@@ -286,8 +286,8 @@ int DRT::ELEMENTS::So_hex27PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>*>(
-        dis.lColElement(i));
+    auto* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -317,7 +317,7 @@ DRT::ELEMENTS::So_tet4PlastType& DRT::ELEMENTS::So_tet4PlastType::Instance() { r
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -332,8 +332,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -347,7 +347,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }  // Create()
 
@@ -379,8 +379,8 @@ int DRT::ELEMENTS::So_tet4PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>*>(
-        dis.lColElement(i));
+    auto* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -412,7 +412,7 @@ DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -427,8 +427,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -441,8 +441,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(
 *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(id, owner));
   return ele;
 }  // Create()
 
@@ -473,8 +473,7 @@ int DRT::ELEMENTS::So_nurbs27PlastType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>*>(
-            dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();

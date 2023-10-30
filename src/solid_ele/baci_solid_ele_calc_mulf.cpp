@@ -21,14 +21,14 @@ based with MULF prestressing
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_nodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_dim<distype>, num_dim<distype>> EvaluateMulfDeformationGradientUpdate(
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
       const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -55,7 +55,7 @@ namespace
     return defgrd;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   DRT::ELEMENTS::SpatialMaterialMapping<distype> EvaluateMulfSpatialMaterialMapping(
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
       const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -81,7 +81,7 @@ namespace
 
 }  // namespace
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidEleCalcMulf<distype>::SolidEleCalcMulf()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
@@ -89,7 +89,7 @@ DRT::ELEMENTS::SolidEleCalcMulf<distype>::SolidEleCalcMulf()
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Pack(DRT::PackBuffer& data) const
 {
   data.AddtoPack(history_data_.size());
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Pack(DRT::PackBuffer& data) const
   }
 };
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Unpack(
   }
 };
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMa
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMassGEMM(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -219,14 +219,14 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMa
   dserror("GEMM not implemented for MULF prestressing");
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Update(const DRT::Element& ele,
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::UpdatePrestress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::UpdatePrestress(const DRT::Elemen
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateInternalEnergy(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -336,7 +336,7 @@ double DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateInternalEnergy(const D
   return intenergy;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateStress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateStress(const DRT::Elemen
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Setup(
     MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
 {
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Setup(
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::MaterialPostSetup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::MaterialPostSetup(
   solid_material.PostSetup(params, ele.Id());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::InitializeGaussPointDataOutput(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -424,7 +424,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::InitializeGaussPointDataOutput(
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateGaussPointDataOutput(const DRT::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -437,7 +437,7 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateGaussPointDataOutput(cons
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalcMulf<distype>::ResetToLastConverged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -445,24 +445,23 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex18>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::wedge6>;
 
 static_assert(DRT::ELEMENTS::IsPrestressUpdateable<
-                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
+                  DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>*>,
     "MULF calculation interface needs to be prestress updatable. Please carefully check the "
     "signature of UpdatePrestress(...)");
-static_assert(DRT::ELEMENTS::IsPackable<
-                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
+static_assert(DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>*>,
     "MULF calculation interface needs to be packable. Please carefully check the "
     "signature of Pack(...)");
-static_assert(DRT::ELEMENTS::IsUnpackable<
-                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
+static_assert(
+    DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>*>,
     "MULF calculation interface needs to be unpackable. Please carefully check the "
     "signature of Unpack(...)");

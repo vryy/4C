@@ -300,7 +300,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       Teuchos::RCP<DRT::Element> actele = curr->second;
 
       static const int probdim = DRT::Problem::Instance()->NDim();
-      const DRT::Element::DiscretizationType distype = actele->Shape();
+      const CORE::FE::CellType distype = actele->Shape();
       const int dim = CORE::DRT::UTILS::getDimension(distype);
       const bool isboundary = (dim != probdim);
       const int nen = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
@@ -374,28 +374,28 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
       if (isboundary) switch (distype)
         {
-          case DRT::Element::DiscretizationType::nurbs2:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs2>(
+          case CORE::FE::CellType::nurbs2:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs3:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs3>(
+          case CORE::FE::CellType::nurbs3:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs4:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs4>(
+          case CORE::FE::CellType::nurbs4:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs9:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs9>(
+          case CORE::FE::CellType::nurbs9:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs8:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs8>(
+          case CORE::FE::CellType::nurbs8:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs27:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs27>(
+          case CORE::FE::CellType::nurbs27:
+            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
@@ -406,28 +406,28 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       else
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::nurbs2:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs2>(
+          case CORE::FE::CellType::nurbs2:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs3:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs3>(
+          case CORE::FE::CellType::nurbs3:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs4:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs4>(
+          case CORE::FE::CellType::nurbs4:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs9:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs9>(
+          case CORE::FE::CellType::nurbs9:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs8:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs8>(
+          case CORE::FE::CellType::nurbs8:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::DiscretizationType::nurbs27:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs27>(
+          case CORE::FE::CellType::nurbs27:
+            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
@@ -499,7 +499,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> actele,
     const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -640,7 +640,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> actele,
     const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,

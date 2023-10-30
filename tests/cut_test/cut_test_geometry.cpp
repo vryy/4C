@@ -46,10 +46,10 @@ void test_geometry_schleifend1()
 
   CORE::LINALG::Matrix<3, 1> xsi;
 
-  // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::DiscretizationType::line2,
-  // DRT::Element::DiscretizationType::tri3,true> ci;
-  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::DiscretizationType::line2,
-      DRT::Element::DiscretizationType::tri3, true>
+  // GEO::CUT::KERNEL::DebugComputeIntersection<CORE::FE::CellType::line2,
+  // CORE::FE::CellType::tri3,true> ci;
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, CORE::FE::CellType::line2,
+      CORE::FE::CellType::tri3, true>
       ci(xsi);  // use cln
 
   if (ci(tri3, line))
@@ -88,10 +88,10 @@ void test_geometry_parallel1()
 
   CORE::LINALG::Matrix<3, 1> xsi;
 
-  // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::DiscretizationType::line2,
-  // DRT::Element::DiscretizationType::tri3,true> ci;
-  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::DiscretizationType::line2,
-      DRT::Element::DiscretizationType::tri3, true>
+  // GEO::CUT::KERNEL::DebugComputeIntersection<CORE::FE::CellType::line2,
+  // CORE::FE::CellType::tri3,true> ci;
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<3, CORE::FE::CellType::line2,
+      CORE::FE::CellType::tri3, true>
       ci(xsi);  // use cln
 
 
@@ -124,7 +124,7 @@ void test_geometry_distance()
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::DiscretizationType::tri3);
+      CORE::GEO::CUT::Position::Create(xyze, xyz, CORE::FE::CellType::tri3);
   if (pos->Compute())
   {
   }
@@ -153,7 +153,7 @@ void test_geometry_distance2()
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::DiscretizationType::quad4);
+      CORE::GEO::CUT::Position::Create(xyze, xyz, CORE::FE::CellType::quad4);
   if (pos->Compute())
   {
   }
@@ -183,7 +183,7 @@ void test_geometry_distance3()
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::Position::Create(xyze, xyz, DRT::Element::DiscretizationType::quad4);
+      CORE::GEO::CUT::Position::Create(xyze, xyz, CORE::FE::CellType::quad4);
   if (pos->Compute())
   {
   }

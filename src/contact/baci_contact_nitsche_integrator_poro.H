@@ -38,8 +38,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitschePoro(Teuchos::ParameterList& params,
-        DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
+    CoIntegratorNitschePoro(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    protected:
     /*!

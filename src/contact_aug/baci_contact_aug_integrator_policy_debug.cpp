@@ -25,8 +25,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac,
@@ -37,8 +36,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
@@ -56,8 +54,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
@@ -75,8 +72,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_WGap(
     MORTAR::MortarElement& sele) const
 {
@@ -101,8 +97,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_WGap(
     MORTAR::MortarElement& sele) const
 {
@@ -132,8 +127,7 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Deb
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac,
@@ -164,8 +158,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
@@ -221,8 +214,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
@@ -269,8 +261,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 const CONTACT::AUG::Deriv1stMap&
 CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDeriv1st(
     NodeDataContainer& data) const
@@ -281,8 +272,7 @@ CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDeriv2nd(
     NodeDataContainer& data) const
@@ -293,8 +283,7 @@ CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Kappa(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double jac, const double wgt) const
@@ -313,8 +302,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Kappa(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac, const double wgt) const
@@ -337,8 +325,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_GPN(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* gpn) const
@@ -360,8 +347,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_GPN(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& d_gpn) const
@@ -392,8 +378,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_WGap(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac) const
@@ -413,8 +398,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_WGap_Sl(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double wgt, const double jac) const
@@ -434,8 +418,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Gap_Sl(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
@@ -476,8 +459,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_WGap_Sl(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_gpn,
@@ -518,8 +500,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_WGap_Sl(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
@@ -667,8 +648,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_WGap(
     MORTAR::MortarElement& sele) const
 {
@@ -693,8 +673,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_WGap(
     MORTAR::MortarElement& sele) const
 {
@@ -724,8 +703,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_MXi(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* mxigp) const
@@ -750,8 +728,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_MXi(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& dmxigp) const
@@ -782,8 +759,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_MXi(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndVecMap& ddmxigp) const
@@ -820,8 +796,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::Debug_Deriv1st_Smooth_Unit_Normal(MORTAR::MortarElement& sele) const
 {
@@ -838,8 +813,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::Debug_Deriv2nd_Smooth_Unit_Normal(MORTAR::MortarElement& sele) const
 {
@@ -856,8 +830,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Jac(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac) const
@@ -884,8 +857,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_Jac(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndMap& ddjac) const
@@ -918,8 +890,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Jacobian(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
@@ -964,8 +935,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_Jacobian(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
@@ -1016,8 +986,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::Debug_Deriv1st_Non_Unit_Normal(MORTAR::MortarElement& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
@@ -1060,8 +1029,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::Debug_Deriv2nd_Non_Unit_Normal(MORTAR::MortarElement& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
@@ -1104,117 +1072,117 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 }
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::nurbs2>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::nurbs9>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::nurbs4>;
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
+    CORE::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
-    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
+    CORE::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
-    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
+    CORE::FE::CellType::nurbs2>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
-    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
+    CORE::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::nurbs9>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
-    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
+    CORE::FE::CellType::nurbs4>;

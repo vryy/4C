@@ -21,10 +21,9 @@ namespace DRT::ELEMENTS
   namespace DETAILS
   {
     using ImplementedSolidPoroDiscretizationTypes =
-        DRT::DiscretizationTypeList<DRT::Element::DiscretizationType::hex8,
-            DRT::Element::DiscretizationType::hex18, DRT::Element::DiscretizationType::hex20,
-            DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::tet4,
-            DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::pyramid5>;
+        DRT::DiscretizationTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
+            CORE::FE::CellType::hex20, CORE::FE::CellType::hex27, CORE::FE::CellType::tet4,
+            CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>;
     using PoroPressureBasedEvaluators =
         DRT::ApplyToBase<SolidPoroPressureBasedEleCalc, ImplementedSolidPoroDiscretizationTypes>;
 
@@ -40,7 +39,7 @@ namespace DRT::ELEMENTS
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(
       DRT::Element& ele, INPAR::PORO::PoroType porotype);
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype);
 }  // namespace DRT::ELEMENTS
 

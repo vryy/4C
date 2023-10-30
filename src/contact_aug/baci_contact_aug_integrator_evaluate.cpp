@@ -15,8 +15,8 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
@@ -36,8 +36,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv1st_Jacobian(MORTAR::MortarElement& ele,
     const double* xi, const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
@@ -67,8 +67,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorFull::Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
@@ -92,8 +92,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv_MXiGP(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const double* sxi, const double* mxi, const double alpha,
@@ -109,8 +109,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv1st_MXiGP(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const double* sxi, const double* mxi, const double alpha,
@@ -132,8 +132,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorFull::Deriv_MXiGP(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     const double* sxi, const double* mxi, const double alpha,
@@ -159,8 +159,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorFull::Get_Deriv2nd_AugA(MORTAR::MortarElement& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
@@ -189,8 +189,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kappa(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
@@ -219,8 +219,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kap
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv1st_Kappa(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     const Deriv1stMap& d_jac)
@@ -244,8 +244,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     double* gpn) const
@@ -271,8 +271,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal_DerivNormal(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
     Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
@@ -339,8 +339,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_AugA(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
@@ -361,8 +361,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Aug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv1st_AugA(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac, const Deriv1stMap& derivjac) const
@@ -390,8 +390,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv2nd_Kappa(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double wgt, const Deriv2ndMap& dd_jac) const
@@ -419,8 +419,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
@@ -452,8 +452,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype, class IntPolicy>
+template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGap(
     MORTAR::MortarElement& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wg, const double jac) const

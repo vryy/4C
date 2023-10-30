@@ -51,31 +51,31 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNod
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-DRT::Element::DiscretizationType
-LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType() const
+CORE::FE::CellType LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType()
+    const
 {
   switch (numnodes)
   {
     case 2:
     {
-      return ::DRT::Element::DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     }
     case 3:
     {
-      return ::DRT::Element::DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     }
     case 4:
     {
-      return ::DRT::Element::DiscretizationType::line4;
+      return CORE::FE::CellType::line4;
     }
     case 5:
     {
-      return ::DRT::Element::DiscretizationType::line5;
+      return CORE::FE::CellType::line5;
     }
     default:
     {
       dserror("only 2...5 nodes allowed here! got %d", numnodes);
-      return ::DRT::Element::DiscretizationType::max_distype;
+      return CORE::FE::CellType::max_distype;
     }
   }
 }

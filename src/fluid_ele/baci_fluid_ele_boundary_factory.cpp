@@ -20,53 +20,53 @@
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
     }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::line2>(problem);
+      return DefineProblemType<CORE::FE::CellType::line2>(problem);
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::line3>(problem);
+      return DefineProblemType<CORE::FE::CellType::line3>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs2>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs2>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs3>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs3>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs4>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs4>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
     default:
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
@@ -78,7 +78,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(
     std::string problem)
 {

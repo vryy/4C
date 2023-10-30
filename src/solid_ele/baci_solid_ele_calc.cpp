@@ -16,7 +16,7 @@
 #include <optional>
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
@@ -24,7 +24,7 @@ DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGEMM(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -219,14 +219,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -285,7 +285,7 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
   return intenergy;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& ele,
     MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -334,14 +334,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Setup(
     MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -355,7 +355,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(
   solid_material.PostSetup(params, ele.Id());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeGaussPointDataOutput(const DRT::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::InitializeGaussPointDataOutput(const 
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DRT::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -379,7 +379,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DR
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::ResetToLastConverged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -387,11 +387,11 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex18>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6>;

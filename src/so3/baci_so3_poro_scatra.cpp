@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(int id, int owner)
     : So3_Poro<so3_ele, distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
@@ -25,7 +25,7 @@ DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(int id, int ow
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(
     const DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>& old)
     : So3_Poro<so3_ele, distype>(old), impltype_(old.impltype_)
@@ -37,7 +37,7 @@ DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(
  |  Deep copy this instance and return pointer to it (public)           |
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>(*this);
@@ -47,7 +47,7 @@ DRT::Element* DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& dat
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Unpack(const std::vector<
 /*----------------------------------------------------------------------*
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Poro_Scatra ";
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Print(std::ostream& os) c
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -151,33 +151,33 @@ bool DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::UniqueParObjectId() const
 {
   int parobjectid(-1);
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       parobjectid = So_tet4PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       parobjectid = So_tet10PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       parobjectid = So_hex8PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       parobjectid = So_hex27PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       parobjectid = So_nurbs27PoroScatraType::Instance().UniqueParObjectId();
       break;
@@ -194,20 +194,20 @@ int DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::UniqueParObjectId() const
 /*----------------------------------------------------------------------*
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
+template <class so3_ele, CORE::FE::CellType distype>
 DRT::ElementType& DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return So_tet4PoroScatraType::Instance();
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
       return So_tet10PoroScatraType::Instance();
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       return So_hex8PoroScatraType::Instance();
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
       return So_hex27PoroScatraType::Instance();
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return So_nurbs27PoroScatraType::Instance();
     default:
       dserror("unknown element type!");
@@ -219,13 +219,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ElementType(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4,
-    DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10,
-    DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8,
-    DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27,
-    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
 template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
-    DRT::Element::DiscretizationType::nurbs27>;
+    CORE::FE::CellType::nurbs27>;

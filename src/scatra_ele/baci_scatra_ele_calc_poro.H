@@ -27,7 +27,7 @@ namespace DRT
     class ScaTraEleDiffManagerPoro;
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
     {
      protected:

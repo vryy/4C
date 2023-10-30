@@ -19,7 +19,7 @@
 #include "baci_nurbs_discret_nurbs_utils.H"
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -33,13 +33,13 @@ DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<di
   return singleton_owner.Instance(action);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
     : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(DRT::ELEMENTS::Fluid* e
   return result;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(Teuchos::ParameterList& params,
     const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<nen_, 1>& shapfct, const CORE::LINALG::Matrix<nen_, 1>* myporosity,
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(Teuchos::Parame
     porosity = shapfct.Dot(*myporosity);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(const double& dphidp,
     const double& dphidJ, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
     const CORE::LINALG::Matrix<nsd_, 1>& gradp, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(const d
   refgrad_porosity.Multiply(Base::xjm_, grad_porosity);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -420,7 +420,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(DRT::ELEMENTS::Fluid*
   return result;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(Teuchos::ParameterLis
   return 0;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
@@ -592,7 +592,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(Teuchos::ParameterList
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
@@ -1041,7 +1041,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::Par
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(const double& dphi_dp,
     const double& dphi_dpp, const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
     CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp)
@@ -1050,7 +1050,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(const doub
   dgradphi_dp.Clear();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(const double& dphi_dJ,
     const double& dphi_dJJ, const double& dphi_dJp,
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
@@ -1143,7 +1143,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(const do
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
     CORE::LINALG::Matrix<nen_, 1>& preforce,
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
       timefacfac, timefacfacpre, rhsfac);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
@@ -1168,7 +1168,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
       timefacfacpre, rhsfac, fac3);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeVolume(Teuchos::ParameterList& params,
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -1215,18 +1215,18 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeVolume(Teuchos::Parameter
   return 0;
 }
 
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::wedge15>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::nurbs27>;

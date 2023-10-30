@@ -27,55 +27,47 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
 {
   switch (ele->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::hex8>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::hex8>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::hex20>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::hex20>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::hex27>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::hex27>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::tet4>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::tet4>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::tet10>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::tet10>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::wedge6>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
     }
-      /*  case DRT::Element::DiscretizationType::wedge15:
+      /*  case CORE::FE::CellType::wedge15:
         {
           return
-        Ale3_Impl<DRT::Element::DiscretizationType::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
+        Ale3_Impl<CORE::FE::CellType::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
         }*/
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::pyramid5>::Instance(
+      return Ale3_Impl<CORE::FE::CellType::pyramid5>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::nurbs8>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      return Ale3_Impl<DRT::Element::DiscretizationType::nurbs27>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3_Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -84,7 +76,7 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -261,12 +253,11 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
     Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
-  if (distype == DRT::Element::DiscretizationType::nurbs8 or
-      distype == DRT::Element::DiscretizationType::nurbs27)
+  if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
   {
     dserror("not implemented!");
   }
@@ -336,7 +327,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
     const CORE::LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
 {
@@ -353,7 +344,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q, int node_r,
     int node_s, const CORE::LINALG::Matrix<3, 1>& sq, const double len_sq,
     const CORE::LINALG::Matrix<3, 1>& rp, const double len_rp, const CORE::LINALG::Matrix<3, 1>& qp,
@@ -662,7 +653,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
     int tet_3, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
     const CORE::LINALG::Matrix<3, iel>& xyze)
@@ -732,7 +723,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -741,7 +732,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -753,7 +744,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -775,7 +766,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -793,7 +784,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -923,7 +914,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
     CORE::LINALG::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
@@ -1056,7 +1047,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
   // and put edge nodes on the middle of the respective edge
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
 
       sys_mat(12, 0) = -0.5;
       sys_mat(12, 3) = -0.5;
@@ -1121,15 +1112,15 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_tet4(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       ale3_tors_spring_tet4(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       ale3_tors_spring_pyramid5(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
 
       for (int k = 0; k < 3; k++)
       {
@@ -1182,12 +1173,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_wedge6(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
       ale3_tors_spring_wedge6(sys_mat, xyze);
       break;
 
 
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
 
       for (int k = 0; k < 4; k++)
       {
@@ -1240,7 +1231,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
 
       for (int k = 0; k < 4; k++)
       {
@@ -1339,7 +1330,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
@@ -1358,7 +1349,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discretization& dis,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
     CORE::LINALG::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
@@ -1392,8 +1383,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
   std::vector<CORE::LINALG::SerialDenseVector> myknots;
   CORE::LINALG::Matrix<iel, 1> weights(iel);
 
-  if (distype == DRT::Element::DiscretizationType::nurbs8 ||
-      distype == DRT::Element::DiscretizationType::nurbs27)
+  if (distype == CORE::FE::CellType::nurbs8 || distype == CORE::FE::CellType::nurbs27)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
@@ -1433,8 +1423,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::DiscretizationType::nurbs8 &&
-        distype != DRT::Element::DiscretizationType::nurbs27)
+    if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
@@ -1582,7 +1571,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
     CORE::LINALG::SerialDenseMatrix& sys_mat_epetra, CORE::LINALG::SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
@@ -1629,8 +1618,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   CORE::LINALG::Matrix<iel, 1> weights(iel);
 
-  if (distype == DRT::Element::DiscretizationType::nurbs8 or
-      distype == DRT::Element::DiscretizationType::nurbs27)
+  if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
@@ -1675,8 +1663,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::DiscretizationType::nurbs8 &&
-        distype != DRT::Element::DiscretizationType::nurbs27)
+    if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
@@ -1739,27 +1726,27 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 inline CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-    case DRT::Element::DiscretizationType::nurbs8:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::nurbs8:
       return CORE::DRT::UTILS::GaussRule3D::hex_8point;
-    case DRT::Element::DiscretizationType::hex20:
-    case DRT::Element::DiscretizationType::hex27:
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs27:
       return CORE::DRT::UTILS::GaussRule3D::hex_27point;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return CORE::DRT::UTILS::GaussRule3D::tet_4point;
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
       return CORE::DRT::UTILS::GaussRule3D::tet_5point;
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
       return CORE::DRT::UTILS::GaussRule3D::wedge_6point;
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
       return CORE::DRT::UTILS::GaussRule3D::wedge_9point;
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
     default:
       dserror("unknown number of nodes for gaussrule initialization");

@@ -44,7 +44,7 @@ void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(int eid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    ::DRT::Element::DiscretizationType distype, const double* lsv, const bool lsv_only_plus_domain,
+    CORE::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
 {
   int numnode = nids.size();

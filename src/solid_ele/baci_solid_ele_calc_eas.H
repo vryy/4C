@@ -74,16 +74,16 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToDim;
   }  // namespace UTILS
 
   namespace ELEMENTS
   {
     /// struct for EAS matrices and vectors to be stored between iterations
-    template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+    template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
     struct EasIterationData
     {
       constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
@@ -104,7 +104,7 @@ namespace DRT
       CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
+    template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
     class SolidEleCalcEas
     {
      public:

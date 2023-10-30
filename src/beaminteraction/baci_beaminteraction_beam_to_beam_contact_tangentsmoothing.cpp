@@ -148,8 +148,7 @@ double BEAMINTERACTION::B3TANGENTSMOOTHING::GetEleLength(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDerivatives(
-    const int node, const int nnode, const double length,
-    const DRT::Element::DiscretizationType distype)
+    const int node, const int nnode, const double length, const CORE::FE::CellType distype)
 {
   CORE::LINALG::SerialDenseMatrix deriv1(1, nnode);
 

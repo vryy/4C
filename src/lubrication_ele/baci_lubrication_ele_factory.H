@@ -31,11 +31,11 @@ namespace DRT
       virtual ~LubricationFactory() = default;
       //! ProvideImpl
       static LubricationEleInterface* ProvideImpl(
-          DRT::Element::DiscretizationType distype, const std::string& disname);
+          CORE::FE::CellType distype, const std::string& disname);
 
      private:
       //! define LubricationEle instances dependent on problem
-      template <DRT::Element::DiscretizationType distype, int probdim>
+      template <CORE::FE::CellType distype, int probdim>
       static LubricationEleInterface* DefineProblemType(const std::string& disname);
 
 

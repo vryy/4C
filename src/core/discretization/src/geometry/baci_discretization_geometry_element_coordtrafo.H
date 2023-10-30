@@ -28,7 +28,7 @@ namespace CORE::GEO
   \param xsi                  (in)        : element coordinates
   \param x                    (out)       : position in physical coordinates (x, y, z)
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, class V, class M, unsigned probDim>
+  template <FE::CellType DISTYPE, class V, class M, unsigned probDim>
   static inline void elementToCurrentCoordinatesT(
       const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
   {
@@ -54,58 +54,58 @@ namespace CORE::GEO
   \param x                    (out)       : position in physical coordinates (x, y, z)
   */
   template <class V, class M, unsigned probDim>
-  static inline void elementToCurrentCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
+  static inline void elementToCurrentCoordinates(
+      const FE::CellType distype, const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::line2>(xyze, xsi, x);
+      case FE::CellType::line2:
+        elementToCurrentCoordinatesT<FE::CellType::line2>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::line3:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::line3>(xyze, xsi, x);
+      case FE::CellType::line3:
+        elementToCurrentCoordinatesT<FE::CellType::line3>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::tri3:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tri3>(xyze, xsi, x);
+      case FE::CellType::tri3:
+        elementToCurrentCoordinatesT<FE::CellType::tri3>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::tri6:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tri6>(xyze, xsi, x);
+      case FE::CellType::tri6:
+        elementToCurrentCoordinatesT<FE::CellType::tri6>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::quad4:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad4>(xyze, xsi, x);
+      case FE::CellType::quad4:
+        elementToCurrentCoordinatesT<FE::CellType::quad4>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::quad8:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad8>(xyze, xsi, x);
+      case FE::CellType::quad8:
+        elementToCurrentCoordinatesT<FE::CellType::quad8>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::quad9:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad9>(xyze, xsi, x);
+      case FE::CellType::quad9:
+        elementToCurrentCoordinatesT<FE::CellType::quad9>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::hex8:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex8>(xyze, xsi, x);
+      case FE::CellType::hex8:
+        elementToCurrentCoordinatesT<FE::CellType::hex8>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::hex20:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex20>(xyze, xsi, x);
+      case FE::CellType::hex20:
+        elementToCurrentCoordinatesT<FE::CellType::hex20>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::hex27:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex27>(xyze, xsi, x);
+      case FE::CellType::hex27:
+        elementToCurrentCoordinatesT<FE::CellType::hex27>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::tet4:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tet4>(xyze, xsi, x);
+      case FE::CellType::tet4:
+        elementToCurrentCoordinatesT<FE::CellType::tet4>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::tet10:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tet10>(xyze, xsi, x);
+      case FE::CellType::tet10:
+        elementToCurrentCoordinatesT<FE::CellType::tet10>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::wedge6:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::wedge6>(xyze, xsi, x);
+      case FE::CellType::wedge6:
+        elementToCurrentCoordinatesT<FE::CellType::wedge6>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::wedge15:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::wedge15>(xyze, xsi, x);
+      case FE::CellType::wedge15:
+        elementToCurrentCoordinatesT<FE::CellType::wedge15>(xyze, xsi, x);
         break;
-      case ::DRT::Element::DiscretizationType::pyramid5:
-        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::pyramid5>(xyze, xsi, x);
+      case FE::CellType::pyramid5:
+        elementToCurrentCoordinatesT<FE::CellType::pyramid5>(xyze, xsi, x);
         break;
       default:
-        std::cout << DistypeToString(distype) << std::endl;
+        std::cout << ::DRT::DistypeToString(distype) << std::endl;
         dserror("add your 3D distype to this switch!");
         break;
     }
@@ -118,46 +118,46 @@ namespace CORE::GEO
   \param distype               (in)   shape of the element
   \return  true if point lies in the element, false otherwise
   */
-  template <::DRT::Element::DiscretizationType distype, class V>
+  template <FE::CellType distype, class V>
   static inline void startingValueCurrentToElementCoords(V& xsi)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::hex8:
-      case ::DRT::Element::DiscretizationType::hex20:
-      case ::DRT::Element::DiscretizationType::hex27:
+      case FE::CellType::hex8:
+      case FE::CellType::hex20:
+      case FE::CellType::hex27:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
-      case ::DRT::Element::DiscretizationType::tet10:
+      case FE::CellType::tet4:
+      case FE::CellType::tet10:
       {
         xsi.PutScalar(0.3);
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
-      case ::DRT::Element::DiscretizationType::quad8:
-      case ::DRT::Element::DiscretizationType::quad9:
+      case FE::CellType::quad4:
+      case FE::CellType::quad8:
+      case FE::CellType::quad9:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
-      case ::DRT::Element::DiscretizationType::tri6:
+      case FE::CellType::tri3:
+      case FE::CellType::tri6:
       {
         xsi.PutScalar(0.3);
         break;
       }
-      case ::DRT::Element::DiscretizationType::line2:
-      case ::DRT::Element::DiscretizationType::line3:
+      case FE::CellType::line2:
+      case FE::CellType::line3:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
-      case ::DRT::Element::DiscretizationType::wedge15:
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case FE::CellType::wedge6:
+      case FE::CellType::wedge15:
+      case FE::CellType::pyramid5:
       {
         xsi.Clear();
         break;
@@ -178,16 +178,16 @@ namespace CORE::GEO
   \return  true if point lies in the element, false otherwise (ATTENTION: this is just an
   approximation and can be incorrect)
   */
-  template <::DRT::Element::DiscretizationType distype, class M1, class V3>
+  template <FE::CellType distype, class M1, class V3>
   static inline bool FastInitialGuess(const M1& xyze,  ///< nodal position array
       const V3& x,                                     ///< (x,y,z)
       CORE::LINALG::Matrix<3, 1>& xsi)                 ///< initial guess for xsi
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::hex8:
-      case ::DRT::Element::DiscretizationType::hex20:
-      case ::DRT::Element::DiscretizationType::hex27:
+      case FE::CellType::hex8:
+      case FE::CellType::hex20:
+      case FE::CellType::hex27:
       {
         // split hex element into 5 tetrahedra in order to obtain a good initial guess
         static CORE::LINALG::Matrix<4, 4> A_tet;
@@ -449,34 +449,34 @@ namespace CORE::GEO
         return false;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
-      case ::DRT::Element::DiscretizationType::tet10:
+      case FE::CellType::tet4:
+      case FE::CellType::tet10:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::DiscretizationType::quad4:
-      case ::DRT::Element::DiscretizationType::quad8:
-      case ::DRT::Element::DiscretizationType::quad9:
+      case FE::CellType::quad4:
+      case FE::CellType::quad8:
+      case FE::CellType::quad9:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
-      case ::DRT::Element::DiscretizationType::tri6:
+      case FE::CellType::tri3:
+      case FE::CellType::tri6:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::DiscretizationType::line2:
-      case ::DRT::Element::DiscretizationType::line3:
+      case FE::CellType::line2:
+      case FE::CellType::line3:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
-      case ::DRT::Element::DiscretizationType::wedge15:
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case FE::CellType::wedge6:
+      case FE::CellType::wedge15:
+      case FE::CellType::pyramid5:
       {
         dserror("no fast initial guess implemented");
         break;
@@ -496,19 +496,18 @@ namespace CORE::GEO
   \return  true if point lies in the element, false otherwise
   */
   template <class V>
-  bool checkPositionWithinElementParameterSpace(
-      const V& eleCoord, const ::DRT::Element::DiscretizationType distype)
+  bool checkPositionWithinElementParameterSpace(const V& eleCoord, const FE::CellType distype)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::hex8:
-      case ::DRT::Element::DiscretizationType::hex20:
-      case ::DRT::Element::DiscretizationType::hex27:
-      case ::DRT::Element::DiscretizationType::quad4:
-      case ::DRT::Element::DiscretizationType::quad8:
-      case ::DRT::Element::DiscretizationType::quad9:
-      case ::DRT::Element::DiscretizationType::line2:
-      case ::DRT::Element::DiscretizationType::line3:
+      case FE::CellType::hex8:
+      case FE::CellType::hex20:
+      case FE::CellType::hex27:
+      case FE::CellType::quad4:
+      case FE::CellType::quad8:
+      case FE::CellType::quad9:
+      case FE::CellType::line2:
+      case FE::CellType::line3:
       {
         for (int i = 0; i < CORE::DRT::UTILS::getDimension(distype); i++)
           if (eleCoord(i) > (1.0 + CORE::GEO::TOL7) || eleCoord(i) < (-1) * (1.0 + CORE::GEO::TOL7))
@@ -516,8 +515,8 @@ namespace CORE::GEO
 
         break;
       }
-      case ::DRT::Element::DiscretizationType::tri3:
-      case ::DRT::Element::DiscretizationType::tri6:
+      case FE::CellType::tri3:
+      case FE::CellType::tri6:
       {
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
@@ -527,8 +526,8 @@ namespace CORE::GEO
           return false;
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
-      case ::DRT::Element::DiscretizationType::tet10:
+      case FE::CellType::tet4:
+      case FE::CellType::tet10:
       {
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
@@ -541,8 +540,8 @@ namespace CORE::GEO
           return false;                            // TODO check tolerance
         break;
       }
-      case ::DRT::Element::DiscretizationType::wedge6:
-      case ::DRT::Element::DiscretizationType::wedge15:
+      case FE::CellType::wedge6:
+      case FE::CellType::wedge15:
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
           return false;
@@ -552,7 +551,7 @@ namespace CORE::GEO
         if (eleCoord(2) > (1.0 + CORE::GEO::TOL7) || eleCoord(2) < (-1) * (1.0 + CORE::GEO::TOL7))
           return false;
         break;
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case FE::CellType::pyramid5:
         if (eleCoord(2) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // t = 0 ... 1
           return false;
@@ -577,7 +576,7 @@ namespace CORE::GEO
   \tparam dim   dimension of the problem
 
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, int dim, class M1, class V, class M2>
+  template <FE::CellType DISTYPE, int dim, class M1, class V, class M2>
   static inline void updateAForNWE(M1& A,  ///< system matrix
       const V& xsi,                        ///< vector of element coordinates
       const M2& xyze                       ///< nodal position array (3,numNodes)
@@ -599,7 +598,7 @@ namespace CORE::GEO
          computation whether a node in current coordinates lies within an element
 
   */
-  template <::DRT::Element::DiscretizationType DISTYPE,  ///< shape of the element
+  template <FE::CellType DISTYPE,  ///< shape of the element
       int dim, class V1, class V2, class V3, class M1>
   static inline void updateRHSForNWE(V1& b,  ///< right-hand-sid
       const V2& xsi,                         ///< vector of element coordinates
@@ -630,7 +629,7 @@ namespace CORE::GEO
   \param xsi                  (inout)     : node in element coordinates
   \param fastinitguess        (in)        : if true, fast (but approximate) initial guess is used
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M1, class V3>
+  template <FE::CellType DISTYPE, class M1, class V3>
   static inline bool currentToVolumeElementCoordinatesT(const M1& xyze,  ///< nodal position array
       const V3& x,                                                       ///< (x,y,z)
       CORE::LINALG::Matrix<3, 1>& xsi,                                   ///< (r,s,t)
@@ -754,55 +753,47 @@ namespace CORE::GEO
    *
    *  \note If \c fastinitguess == TRUE this is just an approximation and can be incorrect */
   template <class M1, class V3>
-  bool currentToVolumeElementCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M1& xyze, const V3& x, CORE::LINALG::Matrix<3, 1>& xsi, bool fastinitguess = false)
+  bool currentToVolumeElementCoordinates(const FE::CellType distype, const M1& xyze, const V3& x,
+      CORE::LINALG::Matrix<3, 1>& xsi, bool fastinitguess = false)
   {
     bool nodeWithinElement = false;
 
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::hex8:
+      case FE::CellType::hex8:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex8>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::hex8>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::hex20:
+      case FE::CellType::hex20:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex20>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::hex20>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::hex27:
+      case FE::CellType::hex27:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex27>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::hex27>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::tet4:
+      case FE::CellType::tet4:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::tet4>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::tet4>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::tet10:
+      case FE::CellType::tet10:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::tet10>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::tet10>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::wedge6:
+      case FE::CellType::wedge6:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::wedge6>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::wedge6>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::wedge15:
+      case FE::CellType::wedge15:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::wedge15>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::wedge15>(xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::DiscretizationType::pyramid5:
+      case FE::CellType::pyramid5:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::pyramid5>(
-                xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<FE::CellType::pyramid5>(xyze, x, xsi, fastinitguess);
         break;
       default:
-        std::cout << DistypeToString(distype) << std::endl;
+        std::cout << ::DRT::DistypeToString(distype) << std::endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
         break;
@@ -818,7 +809,7 @@ namespace CORE::GEO
   \param xsi                  (in) :  node in element coordinates (r, s)
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  template <FE::CellType DISTYPE, class M>
   static inline void updateJacobianForMap3To2(CORE::LINALG::Matrix<3, 2>& Jacobi,
       const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
@@ -844,7 +835,7 @@ namespace CORE::GEO
   \param x                    (in) :  node in physical coordinates
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  template <FE::CellType DISTYPE, class M>
   static inline void updateFForMap3To2(CORE::LINALG::Matrix<3, 1>& F,
       const CORE::LINALG::Matrix<2, 1>& xsi, const CORE::LINALG::Matrix<3, 1>& x,
       const M& xyze_surfaceElement)
@@ -871,7 +862,7 @@ namespace CORE::GEO
   \param xsi                  (in) :  node in element coordinates (r, s)
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  template <FE::CellType DISTYPE, class M>
   static void updateAForMap3To2(CORE::LINALG::Matrix<2, 2>& A,
       const CORE::LINALG::Matrix<3, 2>& Jacobi, const CORE::LINALG::Matrix<3, 1>& F,
       const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
@@ -905,7 +896,7 @@ namespace CORE::GEO
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r,s)
    */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  template <FE::CellType DISTYPE, class M>
   static void currentToSurfaceElementCoordinatesT(const M& xyze_surfaceElement,
       const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<2, 1>& eleCoord)
   {
@@ -962,30 +953,30 @@ namespace CORE::GEO
   \param eleCoord                 (in) :  element coordinates (r)
    */
   template <class M>
-  static void CurrentToSurfaceElementCoordinates(const ::DRT::Element::DiscretizationType distype,
+  static void CurrentToSurfaceElementCoordinates(const FE::CellType distype,
       const M& xyze_surfaceElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
       CORE::LINALG::Matrix<2, 1>& eleCoord)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::quad4:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad4>(
+      case FE::CellType::quad4:
+        currentToSurfaceElementCoordinatesT<FE::CellType::quad4>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::DiscretizationType::quad8:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad8>(
+      case FE::CellType::quad8:
+        currentToSurfaceElementCoordinatesT<FE::CellType::quad8>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::DiscretizationType::quad9:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad9>(
+      case FE::CellType::quad9:
+        currentToSurfaceElementCoordinatesT<FE::CellType::quad9>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::DiscretizationType::tri3:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::tri3>(
+      case FE::CellType::tri3:
+        currentToSurfaceElementCoordinatesT<FE::CellType::tri3>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::DiscretizationType::tri6:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::tri6>(
+      case FE::CellType::tri6:
+        currentToSurfaceElementCoordinatesT<FE::CellType::tri6>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
       default:
@@ -1001,7 +992,7 @@ namespace CORE::GEO
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r)
    */
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
+  template <FE::CellType DISTYPE, class M>
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
       const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<1, 1>& eleCoord)
   {
@@ -1078,18 +1069,17 @@ namespace CORE::GEO
   line element
   */
   template <class M>
-  static void CurrentToLineElementCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze_lineElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
-      CORE::LINALG::Matrix<1, 1>& eleCoord)
+  static void CurrentToLineElementCoordinates(const FE::CellType distype, const M& xyze_lineElement,
+      const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<1, 1>& eleCoord)
   {
     switch (distype)
     {
-      case ::DRT::Element::DiscretizationType::line2:
-        currentToLineElementCoordinatesT<::DRT::Element::DiscretizationType::line2>(
+      case FE::CellType::line2:
+        currentToLineElementCoordinatesT<FE::CellType::line2>(
             xyze_lineElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::DiscretizationType::line3:
-        currentToLineElementCoordinatesT<::DRT::Element::DiscretizationType::line3>(
+      case FE::CellType::line3:
+        currentToLineElementCoordinatesT<FE::CellType::line3>(
             xyze_lineElement, physCoord, eleCoord);
         break;
       default:
@@ -1105,7 +1095,7 @@ namespace CORE::GEO
   \param x (out) : global coordinates of the point
   \param xsi (in) : local element coordinates of the point (parameter space)
   */
-  template <::DRT::Element::DiscretizationType DISTYPE>
+  template <CORE::FE::CellType DISTYPE>
   static bool ComputeLocalCoordinates(
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,

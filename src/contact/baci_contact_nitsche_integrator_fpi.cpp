@@ -16,8 +16,8 @@
 #include "baci_xfem_xfluid_contact_communicator.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegratorNitscheFpi::CoIntegratorNitscheFpi(Teuchos::ParameterList& params,
-    DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
+CONTACT::CoIntegratorNitscheFpi::CoIntegratorNitscheFpi(
+    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : CoIntegratorNitschePoro(params, eletype, comm), ele_contact_state_(-2)
 {
   if (imortar_.isParameter("XFluid_Contact_Comm"))

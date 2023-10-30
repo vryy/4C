@@ -1808,37 +1808,33 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 {
   bool node_within_Space_Time_Side = false;
 
-  DRT::Element::DiscretizationType side_distype = side->Shape();
+  CORE::FE::CellType side_distype = side->Shape();
 
   bool successful_check = false;
 
   switch (side_distype)
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::tri3,
-          DRT::Element::DiscretizationType::wedge6>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::tri3, CORE::FE::CellType::wedge6>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad4,
-          DRT::Element::DiscretizationType::hex8>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad8,
-          DRT::Element::DiscretizationType::hex16>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad8, CORE::FE::CellType::hex16>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad9,
-          DRT::Element::DiscretizationType::hex18>(
+      successful_check = WithinSpaceTimeSide<CORE::FE::CellType::quad9, CORE::FE::CellType::hex18>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
@@ -1855,8 +1851,8 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 // -------------------------------------------------------------------
 // check if the node is within the space time side
 // -------------------------------------------------------------------
-template <DRT::Element::DiscretizationType side_distype,
-    DRT::Element::DiscretizationType space_time_distype>
+template <CORE::FE::CellType side_distype,
+    CORE::FE::CellType space_time_distype>
 bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     bool& within_space_time_side,  /// within the space time side
     DRT::Element* side, const int coup_sid,
@@ -2044,7 +2040,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 // -------------------------------------------------------------------
 // check the volume of the space time side, distorted space-time side ?
 // -------------------------------------------------------------------
-template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
+template <CORE::FE::CellType space_time_distype, const int numnode_space_time>
 bool XFEM::XFluidTimeInt::CheckSTSideVolume(
     const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st)
 {
@@ -2287,7 +2283,7 @@ void XFEM::XFluidTimeInt::Output()
       for (size_t j = 0; j < nds_methods.size(); j++)
       {
         IO::GMSH::cellWithScalarToStream(
-            DRT::Element::DiscretizationType::point1, (int)nds_methods[j], pos, gmshfilecontent);
+            CORE::FE::CellType::point1, (int)nds_methods[j], pos, gmshfilecontent);
       }
     }
     gmshfilecontent << "};\n";

@@ -146,9 +146,9 @@ void DRT::ELEMENTS::Rigidsphere::Print(std::ostream& os) const { return; }
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Rigidsphere::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Rigidsphere::Shape() const
 {
-  return (DRT::Element::DiscretizationType::point1);
+  return (CORE::FE::CellType::point1);
 }
 
 /*----------------------------------------------------------------------*

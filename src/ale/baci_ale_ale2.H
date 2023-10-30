@@ -101,7 +101,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -271,7 +271,7 @@ namespace DRT
       //! @name Other
 
       /// set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       //@}
 
@@ -540,7 +540,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id

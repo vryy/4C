@@ -32,10 +32,8 @@ DRT::ELEMENTS::So_hex8ThermoType& DRT::ELEMENTS::So_hex8ThermoType::Instance() {
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex8ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8,
-      DRT::Element::DiscretizationType::hex8>* object =
-      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
-          -1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -50,9 +48,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
 {
   if (eletype == "SOLIDH8THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8,
-            DRT::Element::DiscretizationType::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -66,8 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
-          id, owner));
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 
 }  // Create()
@@ -100,15 +96,14 @@ int DRT::ELEMENTS::So_hex8ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8,
-            DRT::Element::DiscretizationType::hex8>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_thermo* failed");
     // initialise all quantities
     actele->So_hex8::InitJacobianMapping();
     // as an alternative we can call: So_hex8Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8,
-        DRT::Element::DiscretizationType::hex8>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -138,9 +133,8 @@ DRT::ELEMENTS::So_hex8fbarThermoType& DRT::ELEMENTS::So_hex8fbarThermoType::Inst
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::DiscretizationType::hex8>*
-      object = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-          DRT::Element::DiscretizationType::hex8>(-1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -155,9 +149,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarThermoType::Create(
 {
   if (eletype == "SOLIDH8FBARTHERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-            DRT::Element::DiscretizationType::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -171,9 +165,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarThermoType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarThermoType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-          DRT::Element::DiscretizationType::hex8>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>(
+          id, owner));
   return ele;
 }  // Create()
 
@@ -210,16 +204,17 @@ int DRT::ELEMENTS::So_hex8fbarThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::DiscretizationType::hex8>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-            DRT::Element::DiscretizationType::hex8>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* actele =
+        dynamic_cast<
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8fbar_thermo* failed");
 
     // initialise all quantities
     actele->So_hex8fbar::InitJacobianMapping();
     // as an alternative we can call: So_hex8fbarType::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-        DRT::Element::DiscretizationType::hex8>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>::InitJacobianMapping(
+        dis);
   }
 
   return 0;
@@ -246,10 +241,8 @@ DRT::ELEMENTS::So_tet4ThermoType& DRT::ELEMENTS::So_tet4ThermoType::Instance() {
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_tet4ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4,
-      DRT::Element::DiscretizationType::tet4>* object =
-      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
-          -1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -264,9 +257,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(
 {
   if (eletype == "SOLIDT4THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4,
-            DRT::Element::DiscretizationType::tet4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -280,8 +272,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
-          id, owner));
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }  // Create()
 
@@ -313,15 +304,14 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4,
-            DRT::Element::DiscretizationType::tet4>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_thermo* failed");
 
     actele->So_tet4::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet4,
-        DRT::Element::DiscretizationType::tet4>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -350,9 +340,8 @@ DRT::ELEMENTS::So_tet10ThermoType& DRT::ELEMENTS::So_tet10ThermoType::Instance()
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_tet10ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>*
-      object = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10,
-          DRT::Element::DiscretizationType::tet10>(-1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -367,9 +356,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(
 {
   if (eletype == "SOLIDT10THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10,
-            DRT::Element::DiscretizationType::tet10>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -382,9 +371,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10,
-          DRT::Element::DiscretizationType::tet10>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(id, owner));
   return ele;
 }  // Create()
 
@@ -416,15 +404,16 @@ int DRT::ELEMENTS::So_tet10ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10,
-            DRT::Element::DiscretizationType::tet10>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>* actele =
+        dynamic_cast<
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_thermo* failed");
 
     actele->So_tet10::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet10,
-        DRT::Element::DiscretizationType::tet10>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>::InitJacobianMapping(
+        dis);
   }
 
   return 0;
@@ -453,9 +442,8 @@ DRT::ELEMENTS::So_hex27ThermoType& DRT::ELEMENTS::So_hex27ThermoType::Instance()
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex27ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>*
-      object = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27,
-          DRT::Element::DiscretizationType::hex27>(-1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -470,9 +458,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(
 {
   if (eletype == "SOLIDH27THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27,
-            DRT::Element::DiscretizationType::hex27>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -485,9 +473,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27,
-          DRT::Element::DiscretizationType::hex27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }  // Create ()
 
@@ -519,15 +506,16 @@ int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27,
-            DRT::Element::DiscretizationType::hex27>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>* actele =
+        dynamic_cast<
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_thermo* failed");
 
     actele->So_hex27::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex27,
-        DRT::Element::DiscretizationType::hex27>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>::InitJacobianMapping(
+        dis);
   }
 
   return 0;
@@ -556,9 +544,8 @@ DRT::ELEMENTS::So_hex20ThermoType& DRT::ELEMENTS::So_hex20ThermoType::Instance()
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex20ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::DiscretizationType::hex20>*
-      object = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20,
-          DRT::Element::DiscretizationType::hex20>(-1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -573,9 +560,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(
 {
   if (eletype == "SOLIDH20THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20,
-            DRT::Element::DiscretizationType::hex20>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -588,9 +575,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20,
-          DRT::Element::DiscretizationType::hex20>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>(id, owner));
   return ele;
 }  // Create ()
 
@@ -622,15 +608,16 @@ int DRT::ELEMENTS::So_hex20ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::DiscretizationType::hex20>*
-        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20,
-            DRT::Element::DiscretizationType::hex20>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>* actele =
+        dynamic_cast<
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>*>(
+            dis.lColElement(i));
     if (!actele) dserror("cast to So_hex20_thermo* failed");
 
     actele->So_hex20::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex20,
-        DRT::Element::DiscretizationType::hex20>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>::InitJacobianMapping(
+        dis);
   }
 
   return 0;
@@ -660,10 +647,9 @@ DRT::ELEMENTS::So_nurbs27ThermoType& DRT::ELEMENTS::So_nurbs27ThermoType::Instan
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27ThermoType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-      DRT::Element::DiscretizationType::nurbs27>* object =
-      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-          DRT::Element::DiscretizationType::nurbs27>(-1, -1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>* object =
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -680,7 +666,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-            DRT::Element::DiscretizationType::nurbs27>(id, owner));
+            CORE::FE::CellType::nurbs27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -694,9 +680,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-          DRT::Element::DiscretizationType::nurbs27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(
+          id, owner));
   return ele;
 }  // Create ()
 
@@ -729,16 +715,15 @@ int DRT::ELEMENTS::So_nurbs27ThermoType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-        DRT::Element::DiscretizationType::nurbs27>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-            DRT::Element::DiscretizationType::nurbs27>*>(dis.lColElement(i));
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>*
+        actele = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
+            CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex20_thermo* failed");
 
     actele->So_nurbs27::InitJacobianMapping(dis);
     // as an alternative we can call: So_hex27Type::Initialize(dis);
     actele->So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-        DRT::Element::DiscretizationType::nurbs27>::InitJacobianMapping(dis);
+        CORE::FE::CellType::nurbs27>::InitJacobianMapping(dis);
   }
 
   return 0;

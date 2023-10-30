@@ -1282,8 +1282,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::hex20>(
-        shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex20>(shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1509,8 +1508,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(
-        shapefcts[igp], r, s, t, DRT::Element::DiscretizationType::hex20);
+    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return shapefcts;
 }
@@ -1533,8 +1531,7 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(
-        derivs[igp], r, s, t, DRT::Element::DiscretizationType::hex20);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::hex20);
   }
   return derivs;
 }
@@ -1590,9 +1587,8 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_SOH20, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, DRT::Element::DiscretizationType::hex20);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(
-          deriv, r, s, t, DRT::Element::DiscretizationType::hex20);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, CORE::FE::CellType::hex20);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::hex20);
       for (int inode = 0; inode < NUMNOD_SOH20; ++inode)
       {
         f(inode, igp) = funct(inode);

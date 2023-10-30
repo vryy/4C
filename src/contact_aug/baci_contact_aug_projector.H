@@ -30,24 +30,22 @@ namespace CONTACT
       ProjectorBase(){};
 
      private:
-      static ProjectorBase* Get2D(DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
-
-      template <DRT::Element::DiscretizationType ref_type>
       static ProjectorBase* Get2D(
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
 
-      static ProjectorBase* Get3D(DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+      template <CORE::FE::CellType ref_type>
+      static ProjectorBase* Get2D(CORE::FE::CellType tar_type, const bool debug = false);
 
-      template <DRT::Element::DiscretizationType ref_type>
       static ProjectorBase* Get3D(
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
+
+      template <CORE::FE::CellType ref_type>
+      static ProjectorBase* Get3D(CORE::FE::CellType tar_type, const bool debug = false);
 
      public:
       /// access the singleton pointer of the projector object
-      static ProjectorBase* Get(const unsigned probdim, DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+      static ProjectorBase* Get(const unsigned probdim, CORE::FE::CellType ref_type,
+          CORE::FE::CellType tar_type, const bool debug = false);
 
       virtual ~ProjectorBase() = default;
 
@@ -79,8 +77,8 @@ namespace CONTACT
     };  // class ProjectorBase
 
     /*--------------------------------------------------------------------------*/
-    template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
-        DRT::Element::DiscretizationType tar_type>
+    template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
+        CORE::FE::CellType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
       static const unsigned REF_DIM = CORE::DRT::UTILS::DisTypeToDim<ref_type>::dim;
@@ -156,7 +154,7 @@ namespace CONTACT
        *  \return FALSE, if the shape function evaluation failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      template <DRT::Element::DiscretizationType type,
+      template <CORE::FE::CellType type,
           unsigned numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
       bool GetGlobalPosition(MORTAR::MortarElement& ele,
           const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,

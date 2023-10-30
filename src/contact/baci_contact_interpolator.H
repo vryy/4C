@@ -219,7 +219,7 @@ namespace NTS
   /*!
   \author farah
   */
-  template <DRT::Element::DiscretizationType distypeM>
+  template <CORE::FE::CellType distypeM>
   class MTInterpolatorCalc : public MTInterpolator
   {
    public:

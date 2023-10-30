@@ -41,23 +41,23 @@ namespace GEOMETRYPAIR
   /**
    * \brief This structure "converts" a DRT face element type to the underlying volume element.
    */
-  template <DRT::Element::DiscretizationType discretization>
+  template <CORE::FE::CellType discretization>
   struct FaceDiscretizationTypeToVolumeElement
   {
     using volume_type_ = void;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad4>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad4>
   {
     using volume_type_ = t_hex8;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad8>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad8>
   {
     using volume_type_ = t_hex20;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad9>
+  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad9>
   {
     using volume_type_ = t_hex27;
   };

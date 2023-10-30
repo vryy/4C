@@ -22,33 +22,33 @@ DRT::ELEMENTS::ElemagIntFaceImplInterface* DRT::ELEMENTS::ElemagIntFaceImplInter
 {
   switch (ele->Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad4>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad8>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad9>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::tri3>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::tri6>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::tri6>::Instance();
     }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::line2>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
-      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::line3>::Instance();
+      return ElemagIntFaceImpl<CORE::FE::CellType::line3>::Instance();
     }
     default:
       dserror(
@@ -58,7 +58,7 @@ DRT::ELEMENTS::ElemagIntFaceImplInterface* DRT::ELEMENTS::ElemagIntFaceImplInter
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagIntFaceImpl<distype>* DRT::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -75,7 +75,7 @@ DRT::ELEMENTS::ElemagIntFaceImpl<distype>* DRT::ELEMENTS::ElemagIntFaceImpl<dist
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
 {
   return;
@@ -84,7 +84,7 @@ DRT::ELEMENTS::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
     DRT::ELEMENTS::ElemagIntFace* intface,                  // internal face element
     std::vector<int>& nds_master,                           // nodal dofset w.r.t. master element
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::AssembleInternalFacesUsingNeighb
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagIntFaceImpl<distype>::EvaluateInternalFaces(
     DRT::ELEMENTS::ElemagIntFace* intface,   // internal face element
     Teuchos::ParameterList& params,          // parameter list

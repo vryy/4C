@@ -153,10 +153,7 @@ DRT::Element* DRT::ELEMENTS::So_hex20::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex20::Shape() const
-{
-  return DRT::Element::DiscretizationType::hex20;
-}
+CORE::FE::CellType DRT::ELEMENTS::So_hex20::Shape() const { return CORE::FE::CellType::hex20; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

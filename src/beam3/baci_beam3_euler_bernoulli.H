@@ -174,7 +174,7 @@ namespace DRT::ELEMENTS
     DRT::Element* Clone() const override;
 
     //! \brief Get shape type of element
-    DiscretizationType Shape() const override;
+    CORE::FE::CellType Shape() const override;
 
     /*!
     \brief Return unique ParObject id

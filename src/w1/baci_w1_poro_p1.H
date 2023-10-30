@@ -24,7 +24,7 @@ namespace DRT
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_PoroP1 : public Wall1_Poro<distype>
     {
       using Base = DRT::ELEMENTS::Wall1_Poro<distype>;

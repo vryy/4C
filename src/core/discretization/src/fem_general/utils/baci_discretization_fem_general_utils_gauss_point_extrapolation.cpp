@@ -20,64 +20,58 @@
 
 namespace
 {
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_tet_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tet_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 4) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 10) return DRT::Element::DiscretizationType::tet4;
-    return DRT::Element::DiscretizationType::tet10;
+    if (numgp < 4) return CORE::FE::CellType::point1;
+    if (numgp < 10) return CORE::FE::CellType::tet4;
+    return CORE::FE::CellType::tet10;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_hex_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_hex_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 8) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 20) return DRT::Element::DiscretizationType::hex8;
-    if (numgp < 27) return DRT::Element::DiscretizationType::hex20;
-    return DRT::Element::DiscretizationType::hex27;
+    if (numgp < 8) return CORE::FE::CellType::point1;
+    if (numgp < 20) return CORE::FE::CellType::hex8;
+    if (numgp < 27) return CORE::FE::CellType::hex20;
+    return CORE::FE::CellType::hex27;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_quad_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_quad_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 4) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 8) return DRT::Element::DiscretizationType::quad4;
-    if (numgp < 9) return DRT::Element::DiscretizationType::quad8;
-    return DRT::Element::DiscretizationType::quad9;
+    if (numgp < 4) return CORE::FE::CellType::point1;
+    if (numgp < 8) return CORE::FE::CellType::quad4;
+    if (numgp < 9) return CORE::FE::CellType::quad8;
+    return CORE::FE::CellType::quad9;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_tri_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tri_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 3) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 6) return DRT::Element::DiscretizationType::tri3;
-    return DRT::Element::DiscretizationType::tri6;
+    if (numgp < 3) return CORE::FE::CellType::point1;
+    if (numgp < 6) return CORE::FE::CellType::tri3;
+    return CORE::FE::CellType::tri6;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_wedge_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_wedge_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 6) return DRT::Element::DiscretizationType::point1;
-    if (numgp < 15) return DRT::Element::DiscretizationType::wedge6;
-    return DRT::Element::DiscretizationType::wedge15;
+    if (numgp < 6) return CORE::FE::CellType::point1;
+    if (numgp < 15) return CORE::FE::CellType::wedge6;
+    return CORE::FE::CellType::wedge15;
   }
 
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_pyramid_v<distype>, bool> = true>
-  inline DRT::Element::DiscretizationType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_pyramid_v<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
-    if (numgp < 5) return DRT::Element::DiscretizationType::point1;
-    return DRT::Element::DiscretizationType::pyramid5;
+    if (numgp < 5) return CORE::FE::CellType::point1;
+    return CORE::FE::CellType::pyramid5;
   }
 
-  template <DRT::Element::DiscretizationType distype, class GaussIntegration>
+  template <CORE::FE::CellType distype, class GaussIntegration>
   CORE::LINALG::SerialDenseMatrix EvaluateBaseShapeFunctionsAtGaussPoints(
-      const DRT::Element::DiscretizationType base_distype, const GaussIntegration& intpoints)
+      const CORE::FE::CellType base_distype, const GaussIntegration& intpoints)
   {
     constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
@@ -160,10 +154,9 @@ namespace
     return matrix_gp_to_base;
   }
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix EvaluateProjectionGaussPointsToDistype(
-      const CORE::LINALG::SerialDenseMatrix& matrix_gp_to_base,
-      DRT::Element::DiscretizationType base_distype)
+      const CORE::LINALG::SerialDenseMatrix& matrix_gp_to_base, CORE::FE::CellType base_distype)
   {
     if (base_distype == distype)
     {
@@ -242,7 +235,7 @@ namespace
 }  // namespace
 
 
-template <DRT::Element::DiscretizationType distype, class GaussIntegration>
+template <CORE::FE::CellType distype, class GaussIntegration>
 CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix(
     const GaussIntegration& intpoints)
 {
@@ -250,7 +243,7 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtr
 
   if (extrapolation_matrix_cache.find(intpoints.NumPoints()) == extrapolation_matrix_cache.end())
   {
-    ::DRT::Element::DiscretizationType base_distype =
+    CORE::FE::CellType base_distype =
         GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
 
     dsassert(CORE::DRT::UTILS::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
@@ -278,8 +271,8 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtr
 // extrapolation matrix holds the shapefunction-values of the HEX-element, evaluated at the
 // pyramid-nodes.
 template <>
-CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<
-    DRT::Element::DiscretizationType::pyramid5>(
+CORE::LINALG::SerialDenseMatrix
+CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<CORE::FE::CellType::pyramid5>(
     const ::CORE::DRT::UTILS::IntegrationPoints3D& intpoints)
 {
   if (intpoints.NumPoints() != 8)
@@ -340,7 +333,7 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtr
   return extrapolation_matrix;
 }
 
-template <DRT::Element::DiscretizationType distype, class GaussIntegration>
+template <CORE::FE::CellType distype, class GaussIntegration>
 void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const GaussIntegration& integration)
@@ -353,131 +346,108 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
   AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);
 }
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex8, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex8, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex8,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::GaussIntegration& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex18,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex18,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::IntegrationPoints3D& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex20,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex20,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::IntegrationPoints3D& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet4,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet4,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tet10,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::GaussIntegration& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge6,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge6,
+    ::CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge15,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::wedge15,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex18, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::GaussIntegration& integration);
+    CORE::FE::CellType::pyramid5, CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex18, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::IntegrationPoints3D& integration);
+    CORE::FE::CellType::pyramid5, CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex20, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::GaussIntegration& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex20, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad4,
+    CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex27, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::hex27, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad8,
+    CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tet4, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::GaussIntegration& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tet4, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::quad9,
+    CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tet10, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tet10, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri3,
+    CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::wedge6, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::GaussIntegration& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::wedge6, ::CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::wedge15, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::GaussIntegration& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::wedge15, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::pyramid5, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const CORE::DRT::UTILS::GaussIntegration& integration);
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::pyramid5, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::quad4, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::quad8, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::quad9, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tri3, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
-
-template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
-    ::DRT::Element::DiscretizationType::tri6, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
-    Epetra_MultiVector& global_data, bool nodal_average,
-    const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::tri6,
+    CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);

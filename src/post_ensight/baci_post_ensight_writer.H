@@ -66,9 +66,9 @@ const int subhex18map[4][8] = {{0, 4, 8, 7, 9, 13, 17, 16}, {4, 1, 5, 8, 13, 10,
 class EnsightWriter : public PostWriterBase
 {
  public:
-  typedef std::map<DRT::Element::DiscretizationType, int> NumElePerDisType;
+  typedef std::map<CORE::FE::CellType, int> NumElePerDisType;
 
-  typedef std::map<DRT::Element::DiscretizationType, std::vector<int>> EleGidPerDisType;
+  typedef std::map<CORE::FE::CellType, std::vector<int>> EleGidPerDisType;
 
   //! constructor, does nothing (SetField must be called before usage)
   EnsightWriter(PostField* field, const std::string& name);
@@ -211,7 +211,7 @@ class EnsightWriter : public PostWriterBase
     cells) is computed from the local patch numbering and
     the patch offset.                              (gammi)
 
-    \param DRT::Element::DiscretizationType (i)          the nurbs discretisation type
+    \param CORE::FE::CellType (i)          the nurbs discretisation type
     \param int                              (i)          global element id
     \param std::ofstream                    (used for o) direct print to file
     \param std::vector<int>                 (o)          remember node values for parallel IO
@@ -219,9 +219,9 @@ class EnsightWriter : public PostWriterBase
     \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
-  void WriteNurbsCell(const DRT::Element::DiscretizationType distype, const int gid,
-      std::ofstream& geofile, std::vector<int>& nodevector,
-      const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const;
+  void WriteNurbsCell(const CORE::FE::CellType distype, const int gid, std::ofstream& geofile,
+      std::vector<int>& nodevector, const Teuchos::RCP<DRT::Discretization> dis,
+      const Teuchos::RCP<Epetra_Map>& proc0map) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
@@ -231,7 +231,7 @@ class EnsightWriter : public PostWriterBase
     the node connectivity for one hex8 cell to the vector
     of cell nodes                                 (gammi)
 
-    \param DRT::Element::DiscretizationType (i/o)        the vector to which the node
+    \param CORE::FE::CellType (i/o)        the vector to which the node
                                                          connectivity is appended to
     \param int                              (i)          0: left      1: right (which hex to
     generate) \param int                              (i)          0: front     1: rear  (which hex
@@ -361,7 +361,7 @@ class EnsightWriter : public PostWriterBase
    */
   NumElePerDisType GetNumElePerDisType(const Teuchos::RCP<DRT::Discretization> dis) const;
 
-  std::string GetEnsightString(const DRT::Element::DiscretizationType distype) const;
+  std::string GetEnsightString(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief if files become to big, this routine switches to a new file
@@ -375,10 +375,10 @@ class EnsightWriter : public PostWriterBase
       const std::string filename  ///< constant part of the filename
   ) const;
 
-  int GetNumEleOutput(const DRT::Element::DiscretizationType distype, const int numele) const;
+  int GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const;
 
   //! number of subelements (equals 1 if no element splitting has to be done)
-  int GetNumSubEle(const DRT::Element::DiscretizationType distype) const;
+  int GetNumSubEle(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief store, which elements are belonging to each present distype
@@ -428,7 +428,7 @@ class EnsightWriter : public PostWriterBase
   std::map<std::string, std::vector<std::ofstream::pos_type>> resultfilepos_;
 
   //! maps a distype to the corresponding Ensight cell type
-  std::map<DRT::Element::DiscretizationType, std::string> distype2ensightstring_;
+  std::map<CORE::FE::CellType, std::string> distype2ensightstring_;
 
   //! maximum file size
   static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff;  // 2GB

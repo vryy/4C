@@ -31,7 +31,7 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                            seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -46,7 +46,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   InvalidEleData();
-  if (distype == DRT::Element::DiscretizationType::nurbs27) GetNurbsEleInfo(&discretization);
+  if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo(&discretization);
 
   dsassert(kintype_ == INPAR::STR::kinem_nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
@@ -550,7 +550,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
                   *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
                       quantity_name);
 
-              if (distype == DRT::Element::DiscretizationType::hex8)
+              if (distype == CORE::FE::CellType::hex8)
               {
                 if (quantity_size == 1)
                 {
@@ -605,7 +605,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::CalculateBop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
     const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
@@ -677,7 +677,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalculateBop(
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -783,7 +783,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
  | initialise Jacobian                                      seitz 07/13 |
  | is called once in Initialize() in so3_ssn_plast_eletypes.cpp         |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::InitJacobianMapping()
 {
   return;
@@ -793,7 +793,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  | internal force, stiffness and mass for f-bar elements    seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
@@ -1056,7 +1056,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
 /*----------------------------------------------------------------------*
  | coupling term k_dT in monolithic TSI                     seitz 06/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::nln_kdT_tsi(
     CORE::LINALG::Matrix<numdofperelement_, nen_>* k_dT, Teuchos::ParameterList& params)
 {
@@ -1086,7 +1086,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_kdT_tsi(
 /*----------------------------------------------------------------------*
  |  condense plastic degrees of freedom                     seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 template <int spintype>
 void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, const CORE::LINALG::Matrix<nsd_, nsd_>& deltaLp,
@@ -1713,7 +1713,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   return;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::BuildDeltaLp(const int gp)
 {
   // current plastic flow increment
@@ -1740,7 +1740,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::BuildDeltaLp(const int gp)
 /*----------------------------------------------------------------------*
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticityAndEAS(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
     const CORE::LINALG::Matrix<nen_, 1>* res_T)
@@ -1792,7 +1792,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticityAndEAS(
 /*----------------------------------------------------------------------*
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
     const CORE::LINALG::Matrix<nen_, 1>* res_T)
@@ -1889,7 +1889,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
 /*----------------------------------------------------------------------*
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 template <int spintype>
 void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp, const double* res_t)
@@ -1977,7 +1977,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
       dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, Owner());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::ReduceEasStep(
     const double new_step_length, const double old_step_length)
 {
@@ -1991,7 +1991,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReduceEasStep(
       alpha_eas_inc_->values(), alpha_eas_->values(), new_step_length, Owner());
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::ReducePlasticityStep(
     const double new_step_length, const double old_step_length, const int gp)
 {
@@ -2006,7 +2006,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReducePlasticityStep(
 /*----------------------------------------------------------------------*
  |  update plastic deformation for nonlinear kinematics     seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType spintype)
 {
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
@@ -2047,7 +2047,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
 /*----------------------------------------------------------------------*
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
     std::vector<double>& disp,       // current displacements
     std::vector<double>& temp,       // current temperatuere
@@ -2109,7 +2109,7 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
   return energy;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
@@ -2123,7 +2123,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
-  if (distype == DRT::Element::DiscretizationType::nurbs27) GetNurbsEleInfo();
+  if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo();
 
   if (fbar_ || eastype_ != soh8p_easnone)
     dserror("cauchy stress not available for fbar or eas elements");
@@ -2276,7 +2276,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    if (distype == DRT::Element::DiscretizationType::nurbs27)
+    if (distype == CORE::FE::CellType::nurbs27)
     {
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
           SetShapeFunction(), SetDerivShapeFunction(), deriv2, xi, Knots(), Weights(), distype);
@@ -2375,7 +2375,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   InvalidGpData();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
@@ -2389,8 +2389,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
     CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
-  if (distype != DRT::Element::DiscretizationType::hex8 || numgpt_ != 8)
-    dserror("only for hex8 with 8 gp");
+  if (distype != CORE::FE::CellType::hex8 || numgpt_ != 8) dserror("only for hex8 with 8 gp");
   if (Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
     dserror("only PlasticElastHyper materials here");
   if ((int)cauchy_.size() != numgpt_ || (int)cauchy_deriv_.size() != numgpt_)
@@ -2486,7 +2485,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
@@ -2526,7 +2525,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::OutputStrains(const int gp,
     const INPAR::STR::StrainType iostrain,                 // strain output option
     CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain  // strains at GP
@@ -2592,7 +2591,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::OutputStrains(const int gp,
   // end of strain output **************************
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::OutputStress(const int gp,
     const INPAR::STR::StressType iostress,                 // strain output option
     CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress  // strains at GP
@@ -2645,7 +2644,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::OutputStress(const int gp,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::Kinematics(const int gp)
 {
   // compute Jacobian matrix and determinant
@@ -2704,7 +2703,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Kinematics(const int gp)
     BuildDeltaLp(gp);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::IntegrateMassMatrix(
     const int gp, CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& mass)
 {
@@ -2725,7 +2724,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateMassMatrix(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::IntegrateStiffMatrix(const int gp,
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
     CORE::LINALG::SerialDenseMatrix& Kda)
@@ -2842,7 +2841,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateStiffMatrix(const int gp,
     }  // ---------------------------------------------------------------- EAS
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::IntegrateForce(
     const int gp, CORE::LINALG::Matrix<numdofperelement_, 1>& force)
 {
@@ -2852,7 +2851,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateForce(
     force.MultiplyTN(DetJ() * wgt_[gp], Bop(), PK2(), 1.0);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
     const int gp, CORE::LINALG::SerialDenseVector& dHda)
 {
@@ -3131,7 +3130,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp,
     const std::vector<double>& disp, const CORE::LINALG::Matrix<nsd_, 1>& xi,
     const CORE::LINALG::Matrix<nsd_, 1>& n, double& q, CORE::LINALG::SerialDenseMatrix* dq_dT,
@@ -3282,7 +3281,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis)
 {
   if (!IsNurbsElement()) return;
@@ -3296,8 +3295,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis
 }
 
 // template functions
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::CondensePlasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3307,8 +3305,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::CondensePlasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3318,8 +3315,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::CondensePlasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3329,8 +3325,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>::CondensePlast
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::CondensePlasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3340,8 +3335,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>::CondensePlast
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>::CondensePlasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3351,8 +3345,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>::CondensePlasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3362,8 +3355,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>::CondensePlasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3373,8 +3365,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>::CondensePla
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void
-DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>::CondensePlasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3384,7 +3375,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>::CondensePla
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::HeatFlux(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::HeatFlux(
     const std::vector<double>&, const std::vector<double>&, const CORE::LINALG::Matrix<nsd_, 1>&,
     const CORE::LINALG::Matrix<nsd_, 1>&, double&, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::Matrix<nsd_, 1>*,
@@ -3392,21 +3383,21 @@ template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseMatrix*);
 
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>::HeatFlux(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>::HeatFlux(
     const std::vector<double>&, const std::vector<double>&, const CORE::LINALG::Matrix<nsd_, 1>&,
     const CORE::LINALG::Matrix<nsd_, 1>&, double&, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::Matrix<nsd_, 1>*,
     CORE::LINALG::Matrix<nsd_, 1>*, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseMatrix*);
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>::HeatFlux(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>::HeatFlux(
     const std::vector<double>&, const std::vector<double>&, const CORE::LINALG::Matrix<nsd_, 1>&,
     const CORE::LINALG::Matrix<nsd_, 1>&, double&, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::Matrix<nsd_, 1>*,
     CORE::LINALG::Matrix<nsd_, 1>*, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseMatrix*);
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::nurbs27>::HeatFlux(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>::HeatFlux(
     const std::vector<double>&, const std::vector<double>&, const CORE::LINALG::Matrix<nsd_, 1>&,
     const CORE::LINALG::Matrix<nsd_, 1>&, double&, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::Matrix<nsd_, 1>*,

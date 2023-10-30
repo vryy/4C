@@ -108,12 +108,12 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override { return distype_; };
+      CORE::FE::CellType Shape() const override { return distype_; };
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
+      virtual void SetDisType(CORE::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -368,8 +368,8 @@ namespace DRT
 
      protected:
       //! discretization type
-      DRT::Element::DiscretizationType distype_;
-      DRT::Element::DiscretizationType facedis_;
+      CORE::FE::CellType distype_;
+      CORE::FE::CellType facedis_;
 
       /// stores the degree of the element
       unsigned char degree_;
@@ -481,7 +481,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -761,7 +761,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element

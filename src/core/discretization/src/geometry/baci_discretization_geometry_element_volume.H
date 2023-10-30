@@ -19,7 +19,7 @@
 namespace CORE::GEO
 {
   //! calculates the length of an element in given configuration
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
@@ -57,7 +57,7 @@ namespace CORE::GEO
   }
 
   //! calculates the area of an element in given configuration
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
@@ -100,7 +100,7 @@ namespace CORE::GEO
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <::DRT::Element::DiscretizationType distype, class matrixtype>
+  template <CORE::FE::CellType distype, class matrixtype>
   double ElementVolumeT(const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
@@ -151,9 +151,9 @@ namespace CORE::GEO
    *                         (row = dim, col = number of nodes)
    */
   template <class matrixtype>
-  double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
+  double ElementLength(const CORE::FE::CellType& distype, const matrixtype& xyze)
   {
-    if (distype != ::DRT::Element::DiscretizationType::line2 or xyze.numCols() != 2)
+    if (distype != CORE::FE::CellType::line2 or xyze.numCols() != 2)
       dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
@@ -169,26 +169,26 @@ namespace CORE::GEO
   /** \brief calculates the area of a surface element in given configuration
    */
   template <class matrixtype>
-  double ElementArea(const ::DRT::Element::DiscretizationType distype, const matrixtype& xyze)
+  double ElementArea(const CORE::FE::CellType distype, const matrixtype& xyze)
   {
     switch (distype)
     {
       // --- 2-D boundary elements
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
         return ElementLength(distype, xyze);
-      case ::DRT::Element::DiscretizationType::line3:
-        return ElementLengthT<::DRT::Element::DiscretizationType::line3>(xyze);
+      case CORE::FE::CellType::line3:
+        return ElementLengthT<CORE::FE::CellType::line3>(xyze);
       // --- 3-D boundary elements
-      case ::DRT::Element::DiscretizationType::tri3:
-        return ElementAreaT<::DRT::Element::DiscretizationType::tri3>(xyze);
-      case ::DRT::Element::DiscretizationType::tri6:
-        return ElementAreaT<::DRT::Element::DiscretizationType::tri6>(xyze);
-      case ::DRT::Element::DiscretizationType::quad4:
-        return ElementAreaT<::DRT::Element::DiscretizationType::quad4>(xyze);
-      case ::DRT::Element::DiscretizationType::quad8:
-        return ElementAreaT<::DRT::Element::DiscretizationType::quad8>(xyze);
-      case ::DRT::Element::DiscretizationType::quad9:
-        return ElementAreaT<::DRT::Element::DiscretizationType::quad9>(xyze);
+      case CORE::FE::CellType::tri3:
+        return ElementAreaT<CORE::FE::CellType::tri3>(xyze);
+      case CORE::FE::CellType::tri6:
+        return ElementAreaT<CORE::FE::CellType::tri6>(xyze);
+      case CORE::FE::CellType::quad4:
+        return ElementAreaT<CORE::FE::CellType::quad4>(xyze);
+      case CORE::FE::CellType::quad8:
+        return ElementAreaT<CORE::FE::CellType::quad8>(xyze);
+      case CORE::FE::CellType::quad9:
+        return ElementAreaT<CORE::FE::CellType::quad9>(xyze);
       default:
         dserror("Unsupported surface element type!");
         exit(EXIT_FAILURE);
@@ -199,36 +199,36 @@ namespace CORE::GEO
 
   //! calculates the volume of an element in given configuration          u.may
   template <class matrixtype>
-  double ElementVolume(const ::DRT::Element::DiscretizationType distype,
+  double ElementVolume(const CORE::FE::CellType distype,
       const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)
     {
       // --- 1-D elements -----------------------------------------------------
-      case ::DRT::Element::DiscretizationType::line2:
+      case CORE::FE::CellType::line2:
         return ElementLength(distype, xyze);
       // --- 2-D elements -----------------------------------------------------
-      case ::DRT::Element::DiscretizationType::quad4:
-      case ::DRT::Element::DiscretizationType::tri3:
+      case CORE::FE::CellType::quad4:
+      case CORE::FE::CellType::tri3:
         return ElementArea(distype, xyze);
       // --- 3-D elements -----------------------------------------------------
-      case ::DRT::Element::DiscretizationType::hex8:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::hex8>(xyze);
-      case ::DRT::Element::DiscretizationType::hex20:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::hex20>(xyze);
-      case ::DRT::Element::DiscretizationType::hex27:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::hex27>(xyze);
-      case ::DRT::Element::DiscretizationType::tet4:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::tet4>(xyze);
-      case ::DRT::Element::DiscretizationType::tet10:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::tet10>(xyze);
-      case ::DRT::Element::DiscretizationType::wedge6:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::wedge6>(xyze);
-      case ::DRT::Element::DiscretizationType::wedge15:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::wedge15>(xyze);
-      case ::DRT::Element::DiscretizationType::pyramid5:
-        return ElementVolumeT<::DRT::Element::DiscretizationType::pyramid5>(xyze);
+      case CORE::FE::CellType::hex8:
+        return ElementVolumeT<CORE::FE::CellType::hex8>(xyze);
+      case CORE::FE::CellType::hex20:
+        return ElementVolumeT<CORE::FE::CellType::hex20>(xyze);
+      case CORE::FE::CellType::hex27:
+        return ElementVolumeT<CORE::FE::CellType::hex27>(xyze);
+      case CORE::FE::CellType::tet4:
+        return ElementVolumeT<CORE::FE::CellType::tet4>(xyze);
+      case CORE::FE::CellType::tet10:
+        return ElementVolumeT<CORE::FE::CellType::tet10>(xyze);
+      case CORE::FE::CellType::wedge6:
+        return ElementVolumeT<CORE::FE::CellType::wedge6>(xyze);
+      case CORE::FE::CellType::wedge15:
+        return ElementVolumeT<CORE::FE::CellType::wedge15>(xyze);
+      case CORE::FE::CellType::pyramid5:
+        return ElementVolumeT<CORE::FE::CellType::pyramid5>(xyze);
       default:
         dserror("add you distype here");
     }

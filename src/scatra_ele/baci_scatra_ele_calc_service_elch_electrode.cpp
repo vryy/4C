@@ -18,7 +18,7 @@ within electrodes
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
@@ -61,7 +61,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchElementParameter(
     DRT::Element* ele  //!< current element
 )
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchEleme
 /*----------------------------------------------------------------------*
  | get conductivity                                          fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivity(
     const enum INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
     double& sigma_all,                      //!< conductivity of electrolyte solution
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivit
 /*----------------------------------------------------------------------*
  | calculate weighted current density                        fang 07/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurrent(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurre
 /*----------------------------------------------------------------------*
  | calculate electrode state of charge and C rate            fang 01/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElectrodeSOCAndCRate(
     const DRT::Element* const& ele,             //!< the element we are dealing with
     const DRT::Discretization& discretization,  //!< discretization
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
 /*---------------------------------------------------------------------*
  | calculate weighted mass flux (no reactive flux so far)   fang 02/15 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
 /*----------------------------------------------------------------------------------------*
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele,                 //!< element
     Teuchos::ParameterList& params,          //!< parameter list
@@ -308,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalErrorCompar
 /*------------------------------------------------------------------------------*
  | set internal variables for electrodes                             fang 02/15 |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::SetInternalVar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -331,42 +331,31 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line2,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::line3,
-    1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad4,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad4,
-    3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::quad9,
-    2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::nurbs9,
-    2>;
+// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex8, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::hex27,
-    3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::tet10,
-    3>;
+// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet10, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::pyramid5,
-    3>;
+// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::pyramid5, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::DiscretizationType::nurbs27>;
+// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs27>;

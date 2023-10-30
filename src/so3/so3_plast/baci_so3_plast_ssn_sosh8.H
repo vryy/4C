@@ -51,7 +51,7 @@ namespace DRT
       std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
-    class So_sh8Plast : public virtual So3_Plast<DRT::Element::DiscretizationType::hex8>
+    class So_sh8Plast : public virtual So3_Plast<CORE::FE::CellType::hex8>
     {
      public:
       //! @name Friends
@@ -203,7 +203,7 @@ namespace DRT
 
       void InvalidGpData() override
       {
-        So3_Plast<DRT::Element::DiscretizationType::hex8>::InvalidGpData();
+        So3_Plast<CORE::FE::CellType::hex8>::InvalidGpData();
         jac_refe_.first = false;
         jac_curr_.first = false;
         TinvT_.first = false;
@@ -211,7 +211,7 @@ namespace DRT
 
       void InvalidEleData()
       {
-        So3_Plast<DRT::Element::DiscretizationType::hex8>::InvalidEleData();
+        So3_Plast<CORE::FE::CellType::hex8>::InvalidEleData();
         B_ans_loc_.first = false;
       }
 

@@ -22,7 +22,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class MembraneScatra : public Membrane<distype>
     {
      public:
@@ -63,19 +63,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return MembraneScatra_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return MembraneScatra_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return MembraneScatra_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return MembraneScatra_quad9Type::Instance().UniqueParObjectId();
           }
@@ -122,22 +122,22 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return MembraneScatra_tri3Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return MembraneScatra_tri6Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return MembraneScatra_quad4Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return MembraneScatra_quad9Type::Instance();
           }
@@ -227,7 +227,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DRT::Element::DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       //! @{
       //! scalar transport implementation type (physics)

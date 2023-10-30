@@ -28,7 +28,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::ScaTraEleCalcHDGCardiacMonodomain(const int numdofpernode, const int numscal,
     const std::string& disname)
@@ -42,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 /*----------------------------------------------------------------------*
  | singleton access method                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*
 DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname, bool create)
@@ -77,7 +77,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsAll(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
@@ -147,15 +147,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterials(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
-  if (distype == DRT::Element::DiscretizationType::tet4 or
-      distype == DRT::Element::DiscretizationType::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
     PrepareMaterialsTet(ele, material, k, difftensor);
   else
     PrepareMaterialsAll(ele, material, k, difftensor);
@@ -166,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsTet(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
@@ -239,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -258,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                      hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyocard(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
@@ -288,8 +287,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
   int nqpoints;
 
-  if (distype == DRT::Element::DiscretizationType::tet4 or
-      distype == DRT::Element::DiscretizationType::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
   {
     int deg = 0;
     if (this->shapes_->degree_ == 1)
@@ -413,7 +411,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 /*----------------------------------------------------------------------*
  |  Material Time Update                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpdateMaterial(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -462,7 +460,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
 /*----------------------------------------------------------------------*
  |  Get Material Internal State for Restart              hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMaterialInternalState(
     const DRT::Element* ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
@@ -503,7 +501,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
 /*----------------------------------------------------------------------*
  |  Set Material Internal State after Restart            hoermann 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMaterialInternalState(
     const DRT::Element* ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
@@ -540,13 +538,12 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
 /*----------------------------------------------------------------------*
  |  Project Material Field                               hoermann 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialField(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
-  if (distype == DRT::Element::DiscretizationType::tet4 or
-      distype == DRT::Element::DiscretizationType::tet10)
+  if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
     return ProjectMaterialFieldTet(ele);
   else
     return ProjectMaterialFieldAll(ele);
@@ -556,7 +553,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 /*----------------------------------------------------------------------*
  |  Project Material Field                               hoermann 12/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldAll(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -653,7 +650,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 /*----------------------------------------------------------------------*
  |  Project Material Field for Tet                       hoermann 01/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
+template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldTet(
     const DRT::Element* ele  //!< the element we are dealing with
 )
@@ -784,44 +781,34 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 // template classes
 // 1D elements
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,1>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,1>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,2>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,2>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,3>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line2,3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line3,1>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::line3,1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tri3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::quad4, 3>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad4, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::nurbs9, 2>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex8, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::tet10, 3>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::tet10, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
-    DRT::Element::DiscretizationType::pyramid5, 3>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::nurbs27>;
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::nurbs27>;

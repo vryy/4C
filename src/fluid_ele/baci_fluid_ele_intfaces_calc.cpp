@@ -29,33 +29,33 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
 {
   switch (ele->Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad4>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::quad4>::Instance();
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad8>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::quad8>::Instance();
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad9>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::quad9>::Instance();
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::tri3>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::tri3>::Instance();
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::tri6>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::tri6>::Instance();
     }
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::line2>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::line2>::Instance();
     }
-    case DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
-      return FluidIntFaceImpl<DRT::Element::DiscretizationType::line3>::Instance();
+      return FluidIntFaceImpl<CORE::FE::CellType::line3>::Instance();
     }
     default:
       dserror(
@@ -65,7 +65,7 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
   return nullptr;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -82,7 +82,7 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
@@ -96,7 +96,7 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
     DRT::ELEMENTS::FluidIntFace* intface,      ///< internal face element
     Teuchos::RCP<MAT::Material>& material,     ///< material for face stabilization
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 /*----------------------------------------------------------------------*
  |  Evaluate internal faces (public)                        schott 01/12|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
     DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
     Teuchos::RCP<MAT::Material>& material,   ///< material associated with the faces

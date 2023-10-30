@@ -24,7 +24,7 @@ namespace DRT
   {
     /// Electromagnetic element implementation
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagEleCalc : public ElemagEleInterface
     {
      public:

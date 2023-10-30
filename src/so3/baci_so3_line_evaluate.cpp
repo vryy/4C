@@ -93,7 +93,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
   CORE::LINALG::SerialDenseVector shapefcts(numnode);
   CORE::LINALG::SerialDenseMatrix deriv(1, numnode);
-  const DRT::Element::DiscretizationType shape = Shape();
+  const CORE::FE::CellType shape = Shape();
 
   // integration
   for (int gp = 0; gp < intpoints.nquad; ++gp)

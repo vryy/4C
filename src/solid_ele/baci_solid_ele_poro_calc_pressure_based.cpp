@@ -14,21 +14,21 @@ implementation
 
 #include <optional>
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::SolidPoroPressureBasedEleCalc()
     : gauss_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrixPoro<distype>()))
 {
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::PoroSetup(
     MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef)
 {
   porostructmat.PoroSetup(gauss_integration_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearForceStiffness(
     const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
     const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
       });
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
     const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
     const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
       });
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -237,15 +237,10 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::DiscretizationType::hex8>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
-    DRT::Element::DiscretizationType::hex18>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
-    DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
-    DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
-    DRT::Element::DiscretizationType::tet10>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
-    DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex18>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::pyramid5>;

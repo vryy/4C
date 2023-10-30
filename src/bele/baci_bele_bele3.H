@@ -95,7 +95,7 @@ namespace DRT
       explicit Bele3(const Bele3& old);
 
       DRT::Element* Clone() const override;
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
         if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
@@ -175,18 +175,18 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const DRT::Element::DiscretizationType distype) const
+      bool isHigherOrderElement(const CORE::FE::CellType distype) const
       {
         bool hoel = true;
         switch (distype)
         {
-          case DiscretizationType::quad4:
-          case DiscretizationType::quad8:
-          case DiscretizationType::quad9:
-          case DiscretizationType::tri6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::tri6:
             hoel = true;
             break;
-          case DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             hoel = false;
             break;
           default:
@@ -313,7 +313,7 @@ namespace DRT
       Bele3Line(const Bele3Line& old);
 
       DRT::Element* Clone() const override;
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
       int UniqueParObjectId() const override
       {
         return Bele3LineType::Instance().UniqueParObjectId();
@@ -385,7 +385,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       //! integrate shape functions over a line
       void IntegrateShapeFunction(Teuchos::ParameterList& params,

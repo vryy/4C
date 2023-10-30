@@ -30,7 +30,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 {
   TEUCHOS_FUNC_TIME_MONITOR(AUG::CONTACT_FUNC_NAME);
 
-  const DRT::Element::DiscretizationType slavetype = sele.Shape();
+  const CORE::FE::CellType slavetype = sele.Shape();
 
   const unsigned msize = meles.size();
   const unsigned numGP = wrapper.nGP();
@@ -65,7 +65,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
       double* mxi = found_mxi[m].A();
       double& projalpha = found_alpha[m];
 
-      const DRT::Element::DiscretizationType mastertype = meles[m]->Shape();
+      const CORE::FE::CellType mastertype = meles[m]->Shape();
       // project Gauss point onto master element
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
       CONTACT::AUG::ProjectorBase* proj_ptr = nullptr;
@@ -201,23 +201,23 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::INTEGRATOR::WithinBounds(
-    const double* mxi, const DRT::Element::DiscretizationType type, const double tol)
+    const double* mxi, const CORE::FE::CellType type, const double tol)
 {
   switch (type)
   {
-    case DRT::Element::DiscretizationType::quad4:
-    case DRT::Element::DiscretizationType::quad8:
-    case DRT::Element::DiscretizationType::quad9:
-    case DRT::Element::DiscretizationType::nurbs4:
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
         return false;
 
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       if (mxi[0] < -tol or mxi[1] < -tol or mxi[0] > 1.0 + tol or mxi[1] > 1.0 + tol or
           mxi[0] + mxi[1] > 1.0 + 2 * tol)
@@ -225,10 +225,10 @@ bool CONTACT::INTEGRATOR::WithinBounds(
 
       break;
     }
-    case DRT::Element::DiscretizationType::line2:
-    case DRT::Element::DiscretizationType::line3:
-    case DRT::Element::DiscretizationType::nurbs2:
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::nurbs2:
+    case CORE::FE::CellType::nurbs3:
     {
       if ((mxi[0] < -1.0 - tol) or (mxi[0] > 1.0 + tol)) return false;
 
@@ -301,58 +301,51 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
     const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal)
 {
-  const DRT::Element::DiscretizationType slavetype = sele.Shape();
+  const CORE::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::DiscretizationType::line2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::line2> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::DiscretizationType::nurbs2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs2> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::DiscretizationType::nurbs3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs3> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, DRT::Element::DiscretizationType::quad4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::quad4> slave_policy;
 
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, DRT::Element::DiscretizationType::tri3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::tri3> slave_policy;
 
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, DRT::Element::DiscretizationType::nurbs4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs4> slave_policy;
 
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, DRT::Element::DiscretizationType::nurbs9>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs9> slave_policy;
 
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
     }
@@ -377,7 +370,7 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 
   Deriv1stVecMap d_non_unit_normal;
 
-  DRT::Element::DiscretizationType eletype = DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
     MORTAR::MortarElement& mo_ele = *adj_ele_n.ele_;
@@ -402,104 +395,90 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slavetype,
     const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset)
 {
   switch (slavetype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::line2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::line2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::quad4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::quad4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::tri3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::tri3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs9>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs9>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
@@ -519,49 +498,42 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     const double* xi, MORTAR::MortarElement& sele, Deriv1stVecMap& d_non_unit_normal)
 {
-  const DRT::Element::DiscretizationType slavetype = sele.Shape();
+  const CORE::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::line2>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::line2>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs2>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs2>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs3>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs3>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::quad4>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::quad4>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::tri3>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::tri3>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs4>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs4>(sele, xi, d_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      Deriv1st_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs9>(
-          sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs9>(sele, xi, d_non_unit_normal);
       break;
     }
     default:
@@ -575,7 +547,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype>
+template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
@@ -619,7 +591,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 
   Deriv2ndVecMap dd_non_unit_normal(3, Deriv2ndMap());
 
-  DRT::Element::DiscretizationType eletype = DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
     MORTAR::MortarElement& mo_ele = *adj_ele_n.ele_;
@@ -654,49 +626,42 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     const double* xi, MORTAR::MortarElement& sele, Deriv2ndVecMap& dd_non_unit_normal)
 {
-  const DRT::Element::DiscretizationType slavetype = sele.Shape();
+  const CORE::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::line2>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::line2>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs2>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs2>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs3>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs3>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::quad4>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::quad4>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::tri3>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::tri3>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs4>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs4>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      Deriv2nd_NonUnitSlaveNormal<DRT::Element::DiscretizationType::nurbs9>(
-          sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs9>(sele, xi, dd_non_unit_normal);
       break;
     }
     default:
@@ -710,7 +675,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType slavetype>
+template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
@@ -735,105 +700,91 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
+void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slavetype,
     const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
     const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal)
 {
   switch (slavetype)
   {
-    case DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::line2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::line2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs2>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs2>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::quad4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::quad4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::tri3>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::tri3>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs4>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs4>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      const unsigned eledim =
-          CORE::DRT::UTILS::DisTypeToDim<DRT::Element::DiscretizationType::nurbs9>::dim;
+      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::DiscretizationType::nurbs9>
-          slave_policy;
+      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 

@@ -21,8 +21,8 @@ namespace DRT
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHCS_buildCouplingMatrices(
           const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
@@ -80,8 +80,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHVS_buildCouplingMatrices(
           const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
@@ -215,8 +215,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MH_Traction_Consistency_Term(
           const CORE::LINALG::Matrix<slave_nen_, 1>&
               funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
@@ -254,8 +254,8 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+          unsigned int slave_numdof>
       void
       HybridLMCoupling<distype, slave_distype, slave_numdof>::HybridLM_buildFinalCouplingMatrices(
           CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>&
@@ -449,161 +449,161 @@ namespace DRT
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-// DRT::Element::DiscretizationType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-// DRT::Element::DiscretizationType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 3>;
 
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::dis_none, 3>;
 
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex8,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex20,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::hex27,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet4,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::tet10,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge6,
-    DRT::Element::DiscretizationType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-// DRT::Element::DiscretizationType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-// DRT::Element::DiscretizationType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::DiscretizationType::wedge15,
-    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
+    CORE::FE::CellType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+// CORE::FE::CellType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
+    CORE::FE::CellType::quad9, 4>;

@@ -26,7 +26,7 @@ namespace DRT
     class ScaTraEleInternalVariableManagerLsReinit;
     class ScaTraEleParameterLsReinit;
 
-    template <DRT::Element::DiscretizationType distype, unsigned probDim>
+    template <CORE::FE::CellType distype, unsigned probDim>
     class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype, probDim>
     {
      private:
@@ -185,7 +185,7 @@ namespace DRT
       );
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
-      template <DRT::Element::DiscretizationType celldistype>
+      template <CORE::FE::CellType celldistype>
       void CalcPenaltyTerm(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,                   //!< element vector to calculate
           const CORE::GEO::BoundaryIntCell& cell                   //!< interface cell
@@ -460,17 +460,17 @@ namespace DRT
 
 namespace SCATRA
 {
-  template <DRT::Element::DiscretizationType CELLDISTYPE>
+  template <CORE::FE::CellType CELLDISTYPE>
   struct CellTypeToOptGaussRule
   {
   };
   template <>
-  struct CellTypeToOptGaussRule<DRT::Element::DiscretizationType::quad4>
+  struct CellTypeToOptGaussRule<CORE::FE::CellType::quad4>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_36point;
   };
   template <>
-  struct CellTypeToOptGaussRule<DRT::Element::DiscretizationType::tri3>
+  struct CellTypeToOptGaussRule<CORE::FE::CellType::tri3>
   {
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
   };

@@ -106,15 +106,15 @@ int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
 
 // get optimal gaussrule for discretization type
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
-    const DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -125,16 +125,15 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::Artery::isHigherOrderElement(
-    const DRT::Element::DiscretizationType distype) const
+bool DRT::ELEMENTS::Artery::isHigherOrderElement(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       hoel = true;
       break;
-    case DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       hoel = false;
       break;
     default:

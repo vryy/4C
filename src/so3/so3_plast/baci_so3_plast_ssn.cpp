@@ -25,7 +25,7 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
     : So_base(id, owner),
       fbar_(false),
@@ -51,7 +51,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
       tsi_(false),
       is_nitsche_contact_(false)
 {
-  if (distype == DRT::Element::DiscretizationType::nurbs27)
+  if (distype == CORE::FE::CellType::nurbs27)
     SetNurbsElement() = true;
   else
     SetNurbsElement() = false;
@@ -62,11 +62,11 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<distype>& old)
     : So_base(old)
 {
-  if (distype == DRT::Element::DiscretizationType::nurbs27)
+  if (distype == CORE::FE::CellType::nurbs27)
     SetNurbsElement() = true;
   else
     SetNurbsElement() = false;
@@ -78,7 +78,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<dist
  | deep copy this instance of Solid3 and return pointer to  seitz 07/13 |
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3_Plast<distype>(*this);
@@ -87,125 +87,125 @@ DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::shapefunct_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::deriv_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::invJ_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detJ_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::defgrd_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::defgrd_mod_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::rcg_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::delta_Lp_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_>>
     DRT::ELEMENTS::So3_Plast<distype>::bop_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::pk2_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
     DRT::ELEMENTS::So3_Plast<distype>::cmat_;
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xrefe_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xcurr_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xcurr_rate_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::etemp_;
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_0_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_0_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_0_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::rcg_vec_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::f_bar_fac_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::htensor_;
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
     DRT::ELEMENTS::So3_Plast<distype>::T0invT_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::jac_0_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::det_jac_0_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::SerialDenseMatrix> DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::weights_;
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::pair<bool, std::vector<CORE::LINALG::SerialDenseVector>>
     DRT::ELEMENTS::So3_Plast<distype>::knots_;
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::tet4:
-    case DRT::Element::DiscretizationType::hex8:
-    case DRT::Element::DiscretizationType::hex18:
-    case DRT::Element::DiscretizationType::hex27:
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs27:
       return 0;
       break;
     default:
@@ -218,18 +218,18 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-    case DRT::Element::DiscretizationType::hex18:
-    case DRT::Element::DiscretizationType::hex27:
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs27:
       return 6;
       break;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return 4;
       break;
     default:
@@ -242,18 +242,18 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-    case DRT::Element::DiscretizationType::hex18:
-    case DRT::Element::DiscretizationType::hex27:
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs27:
       return 12;
       break;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return 6;
       break;
     default:
@@ -266,7 +266,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines()
 {
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
@@ -276,7 +276,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Surfaces()
 {
   return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
@@ -286,7 +286,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Surfa
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
 {
   os << "So3_Plast ";
@@ -493,7 +493,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -530,7 +530,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // quadrature
   if (linedef->HaveNamed("NUMGP"))
   {
-    if (distype != DRT::Element::DiscretizationType::hex8)
+    if (distype != CORE::FE::CellType::hex8)
       dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
     if (DRT::Problem::Instance()->GetProblemType() == ProblemType::tsi)
       dserror("You may not choose the Gauss point number in TSI problems");
@@ -635,7 +635,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // EAS
   if (linedef->HaveNamed("EAS"))
   {
-    if (distype != DRT::Element::DiscretizationType::hex8)
+    if (distype != CORE::FE::CellType::hex8)
       dserror("EAS in so3 plast currently only for HEX8 elements");
 
     linedef->ExtractString("EAS", buffer);
@@ -677,23 +677,23 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       return So_hex8PlastType::Instance().UniqueParObjectId();
       break;
     }  // hex8
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
       return So_hex27PlastType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return So_tet4PlastType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return So_nurbs27PlastType::Instance().UniqueParObjectId();
       break;
     default:
@@ -709,23 +709,23 @@ int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       return So_hex8PlastType::Instance();
       break;
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
       return So_hex27PlastType::Instance();
       break;
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return So_tet4PlastType::Instance();
       break;
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return So_nurbs27PlastType::Instance();
       break;
     default:
@@ -741,7 +741,7 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
 /*----------------------------------------------------------------------*
  | return names of visualization data (public)              seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string, int>& names)
 {
   DRT::Element::VisNames(names);
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string, int>& nam
 /*----------------------------------------------------------------------*
  | return visualization data (public)                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -766,7 +766,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::ve
 /*----------------------------------------------------------------------*
  | read relevant parameters from paramter list              seitz 01/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
     Teuchos::RCP<Teuchos::ParameterList> plparams)
 {
@@ -819,13 +819,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 template <unsigned int num_cols>
 void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
-  if (distype != DRT::Element::DiscretizationType::hex8)
-    dserror("soh8_expol called from non-hex8 element");
+  if (distype != CORE::FE::CellType::hex8) dserror("soh8_expol called from non-hex8 element");
 
   // static variables, that are the same for every element
   static CORE::LINALG::Matrix<nen_, numgpt_post> expolOperator;
@@ -900,17 +899,17 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
   return;
 }
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
 {
   // get plastic hyperelastic material

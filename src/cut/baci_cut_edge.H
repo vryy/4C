@@ -36,7 +36,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 08/16 */
       static Teuchos::RCP<Edge> Create(
-          ::DRT::Element::DiscretizationType edgetype, const std::vector<Node*>& nodes);
+          CORE::FE::CellType edgetype, const std::vector<Node*>& nodes);
 
       /** \brief Create a new concrete edge object
        *
@@ -71,7 +71,7 @@ namespace CORE::GEO
 
       virtual unsigned NumNodes() const = 0;
 
-      virtual ::DRT::Element::DiscretizationType Shape() const = 0;
+      virtual CORE::FE::CellType Shape() const = 0;
 
       /*! \brief Add the side to the list of sides cut by this edge */
       void Register(Side* side)
@@ -281,7 +281,7 @@ namespace CORE::GEO
     };  // class Edge
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
+    template <unsigned probDim, CORE::FE::CellType edgeType,
         unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
         unsigned numNodesEdge =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
@@ -301,7 +301,7 @@ namespace CORE::GEO
       unsigned ProbDim() const override { return probDim; }
 
       /// get the shape of this edge element
-      ::DRT::Element::DiscretizationType Shape() const override { return edgeType; }
+      CORE::FE::CellType Shape() const override { return edgeType; }
 
       /*! \brief Get the coordinates of the nodes of the side */
       void Coordinates(double* xyze) override
@@ -394,7 +394,7 @@ namespace CORE::GEO
 
      private:
       Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> IntersectionPtr(
-          const ::DRT::Element::DiscretizationType& sidetype) const;
+          const CORE::FE::CellType& sidetype) const;
 
     };  // class ConcreteEdge
 
@@ -409,11 +409,11 @@ namespace CORE::GEO
       virtual ~EdgeFactory() = default;
 
       /// create the concrete edge object
-      Teuchos::RCP<Edge> CreateEdge(const ::DRT::Element::DiscretizationType& edgetype,
-          const std::vector<Node*>& nodes) const;
+      Teuchos::RCP<Edge> CreateEdge(
+          const CORE::FE::CellType& edgetype, const std::vector<Node*>& nodes) const;
 
      private:
-      template <::DRT::Element::DiscretizationType edgetype>
+      template <CORE::FE::CellType edgetype>
       Edge* CreateConcreteEdge(const std::vector<Node*>& nodes, int probdim) const
       {
         Edge* e = nullptr;

@@ -25,7 +25,7 @@ namespace DRT
      *  \return minimal value.
      *
      *  \author hiermeier \date 09/18 */
-    template <DRT::Element::DiscretizationType type, unsigned numnode, unsigned numdim>
+    template <CORE::FE::CellType type, unsigned numnode, unsigned numdim>
     double GetMinimalJacDeterminantAtNodes(const CORE::LINALG::Matrix<numdim, numnode>& xcurr)
     {
       // check input

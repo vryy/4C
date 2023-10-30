@@ -30,15 +30,15 @@ namespace DRT
 {
   namespace UTILS
   {
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToNumNodePerEle;
-    template <DRT::Element::DiscretizationType>
+    template <CORE::FE::CellType>
     struct DisTypeToDim;
   }  // namespace UTILS
 
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Shell7pEleCalc : public Shell7pEleCalcInterface, public SHELL::Serializable
     {
      public:

@@ -47,13 +47,13 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    template <DRT::Element::DiscretizationType distype2>
+    template <CORE::FE::CellType distype2>
     class MembraneLine;
 
     /*!
     \brief A C++ wrapper for the membrane element
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Membrane : public DRT::Element
     {
      public:
@@ -62,7 +62,7 @@ namespace DRT
       friend class Membrane_tri6Type;
       friend class Membrane_quad4Type;
       friend class Membrane_quad9Type;
-      template <DRT::Element::DiscretizationType distype2>
+      template <CORE::FE::CellType distype2>
       friend class MembraneLine;
 
       //@}
@@ -112,7 +112,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -146,19 +146,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return Membrane_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return Membrane_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return Membrane_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return Membrane_quad9Type::Instance().UniqueParObjectId();
           }
@@ -235,22 +235,22 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
           {
             return Membrane_tri3Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::tri6:
+          case CORE::FE::CellType::tri6:
           {
             return Membrane_tri6Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
           {
             return Membrane_quad4Type::Instance();
           }
           break;
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
           {
             return Membrane_quad9Type::Instance();
           }
@@ -576,7 +576,7 @@ namespace DRT
           the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
     */
-    template <DRT::Element::DiscretizationType distype2>
+    template <CORE::FE::CellType distype2>
     class MembraneLine : public DRT::FaceElement
     {
      public:
@@ -633,11 +633,11 @@ namespace DRT
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::line2:
           {
             return Membrane_line2Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::line3:
           {
             return Membrane_line3Type::Instance().UniqueParObjectId();
           }
@@ -674,7 +674,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -721,11 +721,11 @@ namespace DRT
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::DiscretizationType::line2:
+          case CORE::FE::CellType::line2:
           {
             return Membrane_line2Type::Instance();
           }
-          case DRT::Element::DiscretizationType::line3:
+          case CORE::FE::CellType::line3:
           {
             return Membrane_line3Type::Instance();
           }

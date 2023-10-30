@@ -17,7 +17,7 @@ transport within electrochemical substances
  | element matrix and right-hand side vector contributions arising from thermal source terms in
  discrete thermo residuals   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
@@ -43,7 +43,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
  | provide element matrix with linearizations of source terms in discrete thermo residuals w.r.t.
  scatra dofs   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatSourceOD(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatSourceOD(
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ExtractElementAndNodeValues(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ExtractElementAndNodeValues(
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 11/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(
     const int numdofpernode, const int numscal, const std::string& disname)
     : econcnp_(true), epotnp_(true)
@@ -106,23 +106,23 @@ DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::line2>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::line2>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleSTIElch<DRT::Element::DiscretizationType::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::pyramid5>;
+// template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::nurbs27>;

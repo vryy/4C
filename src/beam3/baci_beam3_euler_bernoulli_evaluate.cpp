@@ -447,7 +447,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       const double wgt = gausspoints.qwgt[numgp];
 
       // Get DiscretizationType of beam element
-      const DRT::Element::DiscretizationType distype = Shape();
+      const CORE::FE::CellType distype = Shape();
 
       // Clear matrix for shape functions
       N_i.Clear();
@@ -537,7 +537,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       const double xi = BEAM3EBDISCRETELINENEUMANN;
 
       // Get DiscretizationType of beam element
-      const DRT::Element::DiscretizationType distype = Shape();
+      const CORE::FE::CellType distype = Shape();
 
       // Clear matrix for shape functions
       N_i.Clear();
@@ -692,7 +692,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         CORE::DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
     // Get DiscretizationType of beam element
-    const DRT::Element::DiscretizationType distype = Shape();
+    const CORE::FE::CellType distype = Shape();
 
     // update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
     for (int node = 0; node < nnode; node++)
@@ -900,7 +900,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       }
 
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1125,7 +1125,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         CORE::DRT::UTILS::IntegrationPoints1D(mygaussruleeb);
 
     // Get DiscretizationType of beam element
-    const DRT::Element::DiscretizationType distype = Shape();
+    const CORE::FE::CellType distype = Shape();
 
     // unshift node positions, i.e. manipulate element displacement vector
     // as if there where no periodic boundary conditions
@@ -1497,7 +1497,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       // calculate quantities necessary for ANS approach
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -2229,7 +2229,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
 
   CORE::LINALG::Matrix<3, 1> r_s(true);
   CORE::LINALG::Matrix<1, 4> N_i_x(true);
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   // First get shape functions
   CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
 
@@ -2253,7 +2253,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
   }
 
   CORE::LINALG::Matrix<1, 3> L_i(true);
-  CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi, CORE::FE::CellType::line3);
   double epsilon = 0.0;
   for (int i = 0; i < ANSVALUES; i++) epsilon += L_i(i) * epsilon_cp(i);
 

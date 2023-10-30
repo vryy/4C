@@ -25,7 +25,7 @@ namespace DRT
     class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleCalcElchElectrodeSTIThermo : public ScaTraEleCalcElchElectrode<distype>,
                                                 public ScaTraEleSTIThermo<distype>
     {

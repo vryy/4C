@@ -25,7 +25,7 @@ namespace DRT
   namespace ELEMENTS
   {
     //! Scatra HDG element implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcHDG : public ScaTraEleInterface
     {

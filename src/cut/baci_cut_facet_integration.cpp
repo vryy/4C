@@ -174,16 +174,14 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
 #ifdef LOCAL
     switch (elem1_->Shape())
     {
-      case ::DRT::Element::DiscretizationType::hex8:
+      case CORE::FE::CellType::hex8:
       {
-        elecen =
-            CORE::DRT::UTILS::getLocalCenterPosition<3>(::DRT::Element::DiscretizationType::hex8);
+        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::hex8);
         break;
       }
-      case ::DRT::Element::DiscretizationType::tet4:
+      case CORE::FE::CellType::tet4:
       {
-        elecen =
-            CORE::DRT::UTILS::getLocalCenterPosition<3>(::DRT::Element::DiscretizationType::tet4);
+        elecen = CORE::DRT::UTILS::getLocalCenterPosition<3>(CORE::FE::CellType::tet4);
         break;
       }
       default:
@@ -610,23 +608,23 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
 
       switch (bcell->Shape())
       {
-        case ::DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::DiscretizationType::tri3>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::DiscretizationType::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
-        case ::DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::DiscretizationType::quad4>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::DiscretizationType::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
@@ -1069,23 +1067,23 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
 
       switch (bcell->Shape())
       {
-        case ::DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::DiscretizationType::tri3>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::DiscretizationType::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
-        case ::DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<::DRT::Element::DiscretizationType::quad4>(
+          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<::DRT::Element::DiscretizationType::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }

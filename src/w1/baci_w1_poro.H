@@ -33,7 +33,7 @@ namespace DRT
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
 
     */
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class Wall1_Poro : public Wall1
     {
      public:
@@ -95,15 +95,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::nurbs4:
+          case CORE::FE::CellType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::DiscretizationType::nurbs9:
+          case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type");
@@ -145,15 +145,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance();
-          case DRT::Element::DiscretizationType::quad4:
+          case CORE::FE::CellType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance();
-          case DRT::Element::DiscretizationType::quad9:
+          case CORE::FE::CellType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance();
-          case DRT::Element::DiscretizationType::nurbs4:
+          case CORE::FE::CellType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance();
-          case DRT::Element::DiscretizationType::nurbs9:
+          case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance();
           default:
             dserror("unknown element type");

@@ -23,7 +23,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond : public ScaTraEleUtilsElchElectrode<distype>
     {
       //! abbreviations

@@ -20,11 +20,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchScl;
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleUtilsElchScl;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     class ScaTraEleCalcElchScl : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {

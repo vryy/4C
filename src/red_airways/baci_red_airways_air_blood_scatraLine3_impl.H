@@ -85,7 +85,7 @@ namespace DRT
       \date 6/13
     */
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class RedAirBloodScatraLine3Impl : public RedAirBloodScatraLine3ImplInterface
     {
      public:

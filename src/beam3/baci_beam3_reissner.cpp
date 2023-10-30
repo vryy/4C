@@ -390,22 +390,22 @@ void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3r::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
 {
   int numnodes = NumNode();
   switch (numnodes)
   {
     case 2:
-      return DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
       break;
     case 3:
-      return DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
       break;
     case 4:
-      return DiscretizationType::line4;
+      return CORE::FE::CellType::line4;
       break;
     case 5:
-      return DiscretizationType::line5;
+      return CORE::FE::CellType::line5;
       break;
     default:
       dserror("Only Line2, Line3, Line4 and Line5 elements are implemented.");
@@ -565,7 +565,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
 CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     const IntegrationPurpose intpurpose) const
 {
-  const DRT::Element::DiscretizationType distype = this->Shape();
+  const CORE::FE::CellType distype = this->Shape();
 
   switch (intpurpose)
   {
@@ -575,28 +575,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case DiscretizationType::line4:
+        case CORE::FE::CellType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case DiscretizationType::line5:
+        case CORE::FE::CellType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -619,28 +619,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case DiscretizationType::line4:
+        case CORE::FE::CellType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case DiscretizationType::line5:
+        case CORE::FE::CellType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -661,19 +661,19 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case DiscretizationType::line4:
+        case CORE::FE::CellType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case DiscretizationType::line5:
+        case CORE::FE::CellType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
@@ -699,22 +699,22 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case DiscretizationType::line2:
+        case CORE::FE::CellType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case DiscretizationType::line3:
+        case CORE::FE::CellType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case DiscretizationType::line4:
+        case CORE::FE::CellType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case DiscretizationType::line5:
+        case CORE::FE::CellType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
@@ -792,7 +792,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
             new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
     // Get DiscretizationType
-    DRT::Element::DiscretizationType distype = Shape();
+    CORE::FE::CellType distype = Shape();
 
     /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
      * the vectors store individual shape functions, NOT an assembled matrix of shape functions) */

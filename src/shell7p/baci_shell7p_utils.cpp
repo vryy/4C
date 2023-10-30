@@ -662,14 +662,13 @@ void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_mat
 }
 
 
-void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
-    const DRT::Element::DiscretizationType& distype, DRT::INPUT::LineDefinition* linedef,
-    STR::ELEMENTS::ShellLockingTypes& locking_types)
+void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
+    DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
@@ -683,7 +682,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
@@ -712,16 +711,15 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(DRT::INPUT::LineDe
   return material;
 }
 
-int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(
-    const DRT::Element::DiscretizationType& distype)
+int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& distype)
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       return 2;
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
       return 6;
     }

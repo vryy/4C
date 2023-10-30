@@ -208,10 +208,7 @@ DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const
-{
-  return DRT::Element::DiscretizationType::hex8;
-}
+CORE::FE::CellType DRT::ELEMENTS::So_hex8::Shape() const { return CORE::FE::CellType::hex8; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -396,7 +393,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const DRT::Element::DiscretizationType distype = Shape();
+  const CORE::FE::CellType distype = Shape();
   CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
@@ -433,7 +430,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
 // Compute nodal fibers and call post setup routine of the materials
 void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex8>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex8>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -447,7 +444,7 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex8>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex8>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

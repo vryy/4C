@@ -57,14 +57,14 @@ DRT::Element* DRT::ELEMENTS::Bele3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3Line::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::Bele3Line::Shape() const
 {
   switch (NumNode())
   {
     case 2:
-      return DiscretizationType::line2;
+      return CORE::FE::CellType::line2;
     case 3:
-      return DiscretizationType::line3;
+      return CORE::FE::CellType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;

@@ -28,70 +28,70 @@
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex8>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex8>(problem);
     }
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex20>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex20>(problem);
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::hex27>(problem);
+      return DefineProblemType<CORE::FE::CellType::hex27>(problem);
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tet4>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet4>(problem);
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tet10>(problem);
+      return DefineProblemType<CORE::FE::CellType::tet10>(problem);
     }
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::wedge6>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge6>(problem);
     }
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::wedge15>(problem);
+      return DefineProblemType<CORE::FE::CellType::wedge15>(problem);
     }
-    case DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::pyramid5>(problem);
+      return DefineProblemType<CORE::FE::CellType::pyramid5>(problem);
     }
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
+      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
+      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
     }
     // Nurbs support
-    case DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
-    case DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
-      return DefineProblemType<DRT::Element::DiscretizationType::nurbs27>(problem);
+      return DefineProblemType<CORE::FE::CellType::nurbs27>(problem);
     }
     // no 1D elements
     default:
@@ -104,7 +104,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(
     std::string problem)
 {
@@ -126,11 +126,11 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   {
     // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
-    if (distype == DRT::Element::DiscretizationType::hex8)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::hex8,
+    if (distype == CORE::FE::CellType::hex8)
+      return DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
           DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else if (distype == DRT::Element::DiscretizationType::tet4)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::tet4,
+    else if (distype == CORE::FE::CellType::tet4)
+      return DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
           DRT::ELEMENTS::Fluid::xwall>::Instance();
     else
       dserror("only hex8 and tet4 elements compiled for xwall");
@@ -146,44 +146,44 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
-    DRT::Element::DiscretizationType distype, std::string problem)
+    CORE::FE::CellType distype, std::string problem)
 {
   if (problem != "xfem") dserror("Call ProvideImplXFEM just for xfem problems!");
 
   switch (distype)
   {
     // only 3D elements
-    case DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex8>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::hex8>(problem);
     }
-    case DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex20>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::hex20>(problem);
     }
-    case DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex27>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::hex27>(problem);
     }
-    case DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::tet4>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::tet4>(problem);
     }
-    case DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::tet10>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::tet10>(problem);
     }
-    case DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::wedge6>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::wedge6>(problem);
     }
-    case DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::wedge15>(problem);
+      return DefineProblemTypeXFEM<CORE::FE::CellType::wedge15>(problem);
     }
-      //    case DRT::Element::DiscretizationType::pyramid5:
+      //    case CORE::FE::CellType::pyramid5:
       //    {
-      //      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::pyramid5>(problem);
+      //      return DefineProblemTypeXFEM<CORE::FE::CellType::pyramid5>(problem);
       //    }
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",
@@ -197,7 +197,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
  |  special implementation of DefineProblemTypeX for XFEM problems          |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(
     std::string problem)
 {

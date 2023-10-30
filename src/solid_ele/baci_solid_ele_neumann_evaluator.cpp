@@ -21,36 +21,36 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 {
   switch (element.Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::hex8>(
+    case CORE::FE::CellType::hex8:
+      return EvaluateNeumann<CORE::FE::CellType::hex8>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::hex27>(
+    case CORE::FE::CellType::hex27:
+      return EvaluateNeumann<CORE::FE::CellType::hex27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::hex20:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::hex20>(
+    case CORE::FE::CellType::hex20:
+      return EvaluateNeumann<CORE::FE::CellType::hex20>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::hex18:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::hex18>(
+    case CORE::FE::CellType::hex18:
+      return EvaluateNeumann<CORE::FE::CellType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::pyramid5:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::pyramid5>(
+    case CORE::FE::CellType::pyramid5:
+      return EvaluateNeumann<CORE::FE::CellType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::wedge6:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::wedge6>(
+    case CORE::FE::CellType::wedge6:
+      return EvaluateNeumann<CORE::FE::CellType::wedge6>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::tet4:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::tet4>(
+    case CORE::FE::CellType::tet4:
+      return EvaluateNeumann<CORE::FE::CellType::tet4>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::DiscretizationType::tet10:
-      return EvaluateNeumann<DRT::Element::DiscretizationType::tet10>(
+    case CORE::FE::CellType::tet10:
+      return EvaluateNeumann<CORE::FE::CellType::tet10>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,

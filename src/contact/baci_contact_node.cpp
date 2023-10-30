@@ -860,7 +860,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   {
     CoElement* cele = dynamic_cast<CoElement*>(adjeles[surfele]);
 
-    if (cele->Shape() == DRT::Element::DiscretizationType::quad4)
+    if (cele->Shape() == CORE::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -923,7 +923,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
 
           // create line ele:
           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(new MORTAR::MortarElement(
-              j, cele->Owner(), DRT::Element::DiscretizationType::line2, 2, nodeIds, false));
+              j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
           std::array<DRT ::Node*, 2> nodes = {

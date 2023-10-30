@@ -216,8 +216,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // get adjacent elements for this node
     const DRT::Element* const* adjelements = ptToNode->Elements();
 
-    const DRT::Element::DiscretizationType DISTYPE =
-        adjelements[0]->Shape();  // DRT::Element::DiscretizationType::hex8;
+    const CORE::FE::CellType DISTYPE = adjelements[0]->Shape();  // CORE::FE::CellType::hex8;
 
     for (int iele = 0; iele < ptToNode->NumElement(); iele++)
     {
@@ -288,16 +287,16 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
 
     // FOR OTHER TYPES OF ELEMENT THAN HEX -> One needs to change DoMeanValueAveraging - code as
     // well.
-    if (DISTYPE == DRT::Element::DiscretizationType::hex8)
+    if (DISTYPE == CORE::FE::CellType::hex8)
     {
       node_gradphi_smoothed =
-          DoMeanValueAveragingOfElementGradientNode<nsd, DRT::Element::DiscretizationType::hex8>(
+          DoMeanValueAveragingOfElementGradientNode<nsd, CORE::FE::CellType::hex8>(
               discret, elements, phinp_col, nodegid, scatra_dofid);
     }
-    else if (DISTYPE == DRT::Element::DiscretizationType::hex27)
+    else if (DISTYPE == CORE::FE::CellType::hex27)
     {
       node_gradphi_smoothed =
-          DoMeanValueAveragingOfElementGradientNode<nsd, DRT::Element::DiscretizationType::hex27>(
+          DoMeanValueAveragingOfElementGradientNode<nsd, CORE::FE::CellType::hex27>(
               discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else
@@ -341,7 +340,7 @@ template Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAt
 
 
 
-template <const int dim, DRT::Element::DiscretizationType DISTYPE>
+template <const int dim, CORE::FE::CellType DISTYPE>
 CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode(
     Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid)
@@ -474,12 +473,12 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
 }
 
 // Templates for Mean value averaging -- For now only HEX-type elements allowed!
-template CORE::LINALG::Matrix<3, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<
-    3, DRT::Element::DiscretizationType::hex8>(Teuchos::RCP<DRT::Discretization> discret,
-    std::vector<const DRT::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
-    const int nodegid, const int scatra_dofid);
+template CORE::LINALG::Matrix<3, 1>
+SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<3, CORE::FE::CellType::hex8>(
+    Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
+    Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 
-template CORE::LINALG::Matrix<3, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<
-    3, DRT::Element::DiscretizationType::hex27>(Teuchos::RCP<DRT::Discretization> discret,
-    std::vector<const DRT::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
-    const int nodegid, const int scatra_dofid);
+template CORE::LINALG::Matrix<3, 1>
+SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<3, CORE::FE::CellType::hex27>(
+    Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
+    Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);

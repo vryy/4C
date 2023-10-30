@@ -184,7 +184,7 @@ void DRT::ELEMENTS::FluidType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : DRT::Element(id, owner), is_ale_(false)
 {
-  distype_ = DRT::Element::DiscretizationType::dis_none;
+  distype_ = CORE::FE::CellType::dis_none;
   tds_ = Teuchos::null;
   return;
 }
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
   // is_ale_
   is_ale_ = ExtractInt(position, data);
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   // time-dependent subgrid scales
   bool is_tds = ExtractInt(position, data);

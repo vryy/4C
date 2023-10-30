@@ -31,7 +31,7 @@ namespace
    * @param residual (in) : Residual displacement increment
    * @param alpha_inc (out) : Enhanced strains scalar increment
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void EvaluateAlphaIncrement(DRT::ELEMENTS::ShellEASIterationData& old_eas_data, const int& neas,
       const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix& delta_alpha)
   {
@@ -64,7 +64,7 @@ namespace
    * @param eas_data (in/out) : An object holding the EAS data
    * @param integration_factor (in) : Integration factor
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void IntegrateEAS(const DRT::ELEMENTS::SHELL::StressEnhanced& stress_enh,
       const CORE::LINALG::SerialDenseMatrix& M, const CORE::LINALG::SerialDenseMatrix& Bop,
       DRT::ELEMENTS::ShellEASIterationData& eas_data, const double& integration_factor,
@@ -91,7 +91,7 @@ namespace
 }  // namespace
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
     : DRT::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
@@ -101,7 +101,7 @@ DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(DRT::Element& ele,
     MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(DRT::Element& ele,
   solid_material.Setup(intpoints_midsurface_.NumPoints(), linedef);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.sdc);
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(DRT::PackBuffer& data) cons
   DRT::ELEMENTS::Shell7p::AddtoPack(data, cur_thickness_);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -169,7 +169,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Unpack(
   DRT::ParObject::ExtractfromPack(position, data, cur_thickness_);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::MaterialPostSetup(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
@@ -180,14 +180,14 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::MaterialPostSetup(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::ResetToLastConverged(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateInternalEnergy(DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -315,7 +315,7 @@ double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateInternalEnergy(DRT::E
 }
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::Element& ele,
     MAT::So3Material& solid_material, const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
     const DRT::Discretization& discretization,
@@ -454,7 +454,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::El
   SHELL::Serialize(strain_data, serialized_strain_data);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessMass(
     DRT::Element& ele, MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -696,7 +696,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessM
 
 
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& interface_ptr)
@@ -751,7 +751,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
   old_step_length_ = step_length;
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -869,7 +869,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
   solid_material.Update();
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::VisData(
     const std::string& name, std::vector<double>& data)
 {
@@ -886,8 +886,8 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::VisData(
 }  // VisData()
 
 // template classes
-template class DRT::ELEMENTS::Shell7pEleCalcEas<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::Shell7pEleCalcEas<DRT::Element::DiscretizationType::quad8>;
-template class DRT::ELEMENTS::Shell7pEleCalcEas<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::Shell7pEleCalcEas<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::Shell7pEleCalcEas<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::quad8>;
+template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::tri6>;

@@ -27,7 +27,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
    *
    * @return CORE::LINALG::SerialDenseMatrix : Transformation matrix T0inv
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix EvaluateT0inv(
       const CORE::LINALG::Matrix<DRT::ELEMENTS::SHELL::DETAIL::num_dim,
           DRT::ELEMENTS::SHELL::DETAIL::num_dim>& akov,
@@ -162,7 +162,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @return CORE::LINALG::SerialDenseMatrix : Enhanced strains shape function matrix in parameter
    * space M
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix EvaluateEASShapeFunctionsParameterSpace(
       const std::array<double, 2>& xi_gp, const STR::ELEMENTS::ShellLockingTypes& locking_types)
   {
@@ -610,7 +610,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param strain (in) : Strains
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   void UpdateCurrentMetricsEAS(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g,
       const CORE::LINALG::SerialDenseVector& strain, const double& zeta)
   {
@@ -656,7 +656,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * metric tensors evaluated at the element center
    * @return CORE::LINALG::SerialDenseMatrix : EAS shapefunction matrix M
    */
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix MapEasShapeFunctionsToGaussPoint(const int& neas,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& metrics_centroid_reference,
@@ -675,7 +675,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
 
 
   // Evaluates M_gp by setting up M and mapping M to M_gp via T0^{-T}
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   CORE::LINALG::SerialDenseMatrix EvaluateEasShapeFunctions(const std::array<double, 2>& xi_gp,
       const STR::ELEMENTS::ShellLockingTypes& locking_types,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,

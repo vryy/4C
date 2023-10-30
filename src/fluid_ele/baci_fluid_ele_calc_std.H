@@ -19,7 +19,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class FluidEleCalcStd : public FluidEleCalc<distype>
     {
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;

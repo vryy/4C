@@ -109,7 +109,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -251,23 +251,23 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const DRT::Element::DiscretizationType distype) const
+      bool isHigherOrderElement(const CORE::FE::CellType distype) const
       {
         bool hoel = true;
         switch (distype)
         {
-          case DiscretizationType::hex8:
-          case DiscretizationType::hex20:
-          case DiscretizationType::hex27:
-          case DiscretizationType::tet10:
-          case DiscretizationType::wedge15:
-          case DiscretizationType::nurbs8:
-          case DiscretizationType::nurbs27:
+          case CORE::FE::CellType::hex8:
+          case CORE::FE::CellType::hex20:
+          case CORE::FE::CellType::hex27:
+          case CORE::FE::CellType::tet10:
+          case CORE::FE::CellType::wedge15:
+          case CORE::FE::CellType::nurbs8:
+          case CORE::FE::CellType::nurbs27:
             hoel = true;
             break;
-          case DiscretizationType::tet4:
-          case DiscretizationType::wedge6:
-          case DiscretizationType::pyramid5:  //!!!TODO:  wedge und pyramid have 2nd
+          case CORE::FE::CellType::tet4:
+          case CORE::FE::CellType::wedge6:
+          case CORE::FE::CellType::pyramid5:  //!!!TODO:  wedge und pyramid have 2nd
                                               //! derivatives!!!!!!!!!!!!!!!!!!!!!!!!
             hoel = false;
             break;
@@ -282,7 +282,7 @@ namespace DRT
       Vele3& operator=(const Vele3& old);
 
       //! set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype) const;
+      CORE::DRT::UTILS::GaussRule3D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Bele3
 
@@ -339,7 +339,7 @@ namespace DRT
       explicit Vele3Surface(const Vele3Surface& old);
 
       DRT::Element* Clone() const override;
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
         if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
@@ -401,18 +401,18 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const DRT::Element::DiscretizationType distype) const
+      bool isHigherOrderElement(const CORE::FE::CellType distype) const
       {
         bool hoel = true;
         switch (distype)
         {
-          case DiscretizationType::quad4:
-          case DiscretizationType::quad8:
-          case DiscretizationType::quad9:
-          case DiscretizationType::tri6:
+          case CORE::FE::CellType::quad4:
+          case CORE::FE::CellType::quad8:
+          case CORE::FE::CellType::quad9:
+          case CORE::FE::CellType::tri6:
             hoel = true;
             break;
-          case DiscretizationType::tri3:
+          case CORE::FE::CellType::tri3:
             hoel = false;
             break;
           default:
@@ -426,7 +426,7 @@ namespace DRT
       Vele3Surface& operator=(const Vele3Surface& old);
 
       //! set number of gauss points to element shape default
-      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
+      CORE::DRT::UTILS::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Vele3Surface
 
@@ -496,7 +496,7 @@ namespace DRT
       Vele3Line(const Vele3Line& old);
 
       DRT::Element* Clone() const override;
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
       int UniqueParObjectId() const override
       {
         return Vele3LineType::Instance().UniqueParObjectId();
@@ -553,7 +553,7 @@ namespace DRT
       Vele3Line& operator=(const Vele3Line& old);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
     };  // class Vele3Line
 

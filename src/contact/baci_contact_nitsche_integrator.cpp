@@ -399,7 +399,7 @@ void CONTACT::CoIntegratorNitsche::GPTSForces(MORTAR::MortarElement& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype, int dim>
+template <CORE::FE::CellType parentdistype, int dim>
 void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wgt,
     const double* gpcoord, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtrafo)
@@ -425,31 +425,31 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::MortarElement& moEle, double* boundar
     const double wgt, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtravo_slave)
 {
-  DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
+  CORE::FE::CellType distype = moEle.ParentElement()->Shape();
   switch (distype)
   {
-    case DRT::Element::DiscretizationType::hex8:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::hex8, dim>(
+    case CORE::FE::CellType::hex8:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::DiscretizationType::tet4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::tet4, dim>(
+    case CORE::FE::CellType::tet4:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::DiscretizationType::quad4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::quad4, dim>(
+    case CORE::FE::CellType::quad4:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::DiscretizationType::quad9:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::quad9, dim>(
+    case CORE::FE::CellType::quad9:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::DiscretizationType::tri3:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::tri3, dim>(
+    case CORE::FE::CellType::tri3:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::DiscretizationType::nurbs27:
-      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::nurbs27, dim>(
+    case CORE::FE::CellType::nurbs27:
+      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:

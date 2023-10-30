@@ -51,14 +51,14 @@ namespace STR::ELEMENTS
 
 namespace DRT::ELEMENTS::SHELL::DETAIL
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int num_node =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   inline static constexpr int num_dim = 3;
   inline static constexpr int node_dof = 6;
   inline static constexpr int num_internal_variables = 12;
 
-  template <DRT::Element::DiscretizationType distype>
+  template <CORE::FE::CellType distype>
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
 }  // namespace DRT::ELEMENTS::SHELL::DETAIL
 
@@ -151,10 +151,10 @@ namespace STR::UTILS::SHELL
   {
     int ReadAndSetElementMaterial(DRT::INPUT::LineDefinition* linedef);
 
-    void ReadAndSetLockingTypes(const DRT::Element::DiscretizationType& distype,
+    void ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
         DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types);
 
-    int ReadAndSetNumANS(const DRT::Element::DiscretizationType& distype);
+    int ReadAndSetNumANS(const CORE::FE::CellType& distype);
 
   }  // namespace READELEMENT
 

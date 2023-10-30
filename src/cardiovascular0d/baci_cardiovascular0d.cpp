@@ -351,26 +351,26 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      DRT::Element::DiscretizationType shape = element->Shape();
+      CORE::FE::CellType shape = element->Shape();
       // type of gaussian integration
       switch (shape)
       {
-        case DRT::Element::DiscretizationType::tri3:
+        case CORE::FE::CellType::tri3:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point;
           break;
-        case DRT::Element::DiscretizationType::tri6:
+        case CORE::FE::CellType::tri6:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_6point;
           break;
-        case DRT::Element::DiscretizationType::quad4:
+        case CORE::FE::CellType::quad4:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_4point;
           break;
-        case DRT::Element::DiscretizationType::quad8:
+        case CORE::FE::CellType::quad8:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
-        case DRT::Element::DiscretizationType::quad9:
+        case CORE::FE::CellType::quad9:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
-        case DRT::Element::DiscretizationType::nurbs9:
+        case CORE::FE::CellType::nurbs9:
           gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
           break;
         default:

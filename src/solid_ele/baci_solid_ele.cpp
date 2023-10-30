@@ -245,7 +245,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
@@ -290,7 +290,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("EAS"))
   {
-    if (Shape() == DRT::Element::DiscretizationType::hex8)
+    if (Shape() == CORE::FE::CellType::hex8)
     {
       STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
     }

@@ -107,7 +107,7 @@ namespace DRT
     //!  \author dano
     //!  \date 09/09
     //!
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class TemperImpl : public TemperImplInterface
     {
      public:

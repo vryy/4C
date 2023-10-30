@@ -131,7 +131,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::line2)
+        if (element->Shape() == CORE::FE::CellType::line2)
         {
           if (element->IsSlave())
           {
@@ -160,7 +160,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 2D quadratic case (3noded line elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::line3)
+        if (element->Shape() == CORE::FE::CellType::line3)
         {
           if (element->IsSlave())
           {
@@ -195,7 +195,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D linear case (3noded triangular elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::tri3)
+        if (element->Shape() == CORE::FE::CellType::tri3)
         {
           if (element->IsSlave())
           {
@@ -232,7 +232,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::quad4)
+        if (element->Shape() == CORE::FE::CellType::quad4)
         {
           if (element->IsSlave())
           {
@@ -271,7 +271,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D quadratic case (6noded triangular elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::tri6)
+        if (element->Shape() == CORE::FE::CellType::tri6)
         {
           if (element->IsSlave())
           {
@@ -322,7 +322,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::quad8)
+        if (element->Shape() == CORE::FE::CellType::quad8)
         {
           if (element->IsSlave())
           {
@@ -457,7 +457,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
-        if (element->Shape() == DRT::Element::DiscretizationType::quad9)
+        if (element->Shape() == CORE::FE::CellType::quad9)
         {
           if (element->IsSlave())
           {

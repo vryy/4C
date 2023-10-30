@@ -2168,7 +2168,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
   N_etaeta.Clear();
 
   // Get discretization type
-  const DRT::Element::DiscretizationType distype = element1_->Shape();
+  const CORE::FE::CellType distype = element1_->Shape();
 
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i(true);
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i_eta(true);

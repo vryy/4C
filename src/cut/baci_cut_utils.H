@@ -136,7 +136,7 @@ namespace CORE::GEO
      *
      *  \date 07/16
      *  \author hiermeier */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
+    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -253,7 +253,7 @@ namespace CORE::GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, typename valtype,
+    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -379,8 +379,7 @@ namespace CORE::GEO
      *  \param unit_normal (in) : scale the normal to unit length
      *
      *  \author hiermeier \date 12/16 */
-    template <unsigned probdim, ::DRT::Element::DiscretizationType distype, class T1, class T2,
-        class T3,
+    template <unsigned probdim, CORE::FE::CellType distype, class T1, class T2, class T3,
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
@@ -439,21 +438,21 @@ namespace CORE::GEO
      *
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, class T1, class T2, class T3>
-    void EvalNormalVectors(::DRT::Element::DiscretizationType distype, const T1& xyze,
-        const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
+    void EvalNormalVectors(CORE::FE::CellType distype, const T1& xyze, const T2& rst,
+        T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
     {
       switch (distype)
       {
-        case ::DRT::Element::DiscretizationType::line2:
-          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::line2>(
+        case CORE::FE::CellType::line2:
+          EvalNormalVectors<probdim, CORE::FE::CellType::line2>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::DiscretizationType::tri3:
-          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::tri3>(
+        case CORE::FE::CellType::tri3:
+          EvalNormalVectors<probdim, CORE::FE::CellType::tri3>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::DiscretizationType::quad4:
-          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::quad4>(
+        case CORE::FE::CellType::quad4:
+          EvalNormalVectors<probdim, CORE::FE::CellType::quad4>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:

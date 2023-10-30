@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Wall1_Poro_Scatra(int id, int owner)
     : DRT::ELEMENTS::Wall1_Poro<distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
@@ -26,7 +26,7 @@ DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Wall1_Poro_Scatra(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Wall1_Poro_Scatra(
     const DRT::ELEMENTS::Wall1_Poro_Scatra<distype>& old)
     : DRT::ELEMENTS::Wall1_Poro<distype>(old), impltype_(old.impltype_)
@@ -38,7 +38,7 @@ DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Wall1_Poro_Scatra(
  |  Deep copy this instance and return pointer to it (public)           |
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 DRT::Element* DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Clone() const
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<distype>* newelement =
@@ -49,7 +49,7 @@ DRT::Element* DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Pack(DRT::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Unpack(const std::vector<char>& 
 /*----------------------------------------------------------------------*
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro_Scatra ";
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
 {
@@ -154,8 +154,8 @@ bool DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::ReadElement(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs9>;

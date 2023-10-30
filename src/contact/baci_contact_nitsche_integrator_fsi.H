@@ -37,8 +37,8 @@ namespace CONTACT
      and corresponding weights.
 
      */
-    CoIntegratorNitscheFsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
-        const Epetra_Comm& comm);
+    CoIntegratorNitscheFsi(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
     //! @name Derived functions
     //! @{
 

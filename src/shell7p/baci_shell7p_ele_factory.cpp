@@ -20,32 +20,32 @@ DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
 {
   switch (ele.Shape())
   {
-    case DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
-      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad4>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad4>(eletech);
     }
-    case DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
     {
-      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad8>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad8>(eletech);
     }
-    case DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
     {
-      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad9>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::quad9>(eletech);
     }
-    case DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
-      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::tri3>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::tri3>(eletech);
     }
-    case DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
-      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::tri6>(eletech);
+      return DefineCalculationInterfaceType<CORE::FE::CellType::tri6>(eletech);
     }
     default:
       dserror("unknown distype provided");
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
     const std::set<INPAR::STR::EleTech>& eletech)
@@ -62,8 +62,8 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
       {
         case INPAR::STR::EleTech::eas:
         {
-          if constexpr ((distype != DRT::Element::DiscretizationType::quad4) &&
-                        (distype != DRT::Element::DiscretizationType::quad9))
+          if constexpr ((distype != CORE::FE::CellType::quad4) &&
+                        (distype != CORE::FE::CellType::quad9))
           {
             dserror("EAS is only implemented for quad4 and quad9 elements.");
           }

@@ -68,7 +68,7 @@ namespace DRT
     };  // class ElemagBoundaryImplInterface
 
 
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ElemagBoundaryImpl : public ElemagBoundaryImplInterface
     {
      public:

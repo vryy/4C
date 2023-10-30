@@ -21,7 +21,7 @@ namespace DRT
     class ScaTraEleDiffManagerSTIThermo;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
+    template <CORE::FE::CellType distype>
     class ScaTraEleSTIThermo
     {
      public:

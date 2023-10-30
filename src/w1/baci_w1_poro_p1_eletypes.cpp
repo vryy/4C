@@ -28,7 +28,7 @@ DRT::ELEMENTS::WallQuad4PoroP1Type& DRT::ELEMENTS::WallQuad4PoroP1Type::Instance
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -38,8 +38,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
 {
   if (eletype == "WALLQ4POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -47,8 +47,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -86,9 +86,8 @@ int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>*>(
-            dis.lColElement(i));
+    DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>* actele =
+        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }
@@ -108,7 +107,7 @@ DRT::ELEMENTS::WallQuad9PoroP1Type& DRT::ELEMENTS::WallQuad9PoroP1Type::Instance
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>(-1, -1);
+  auto* object = new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -118,8 +117,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
 {
   if (eletype == "WALLQ9POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -127,8 +126,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
@@ -166,9 +165,8 @@ int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>*>(
-            dis.lColElement(i));
+    DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>* actele =
+        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }
@@ -188,8 +186,8 @@ DRT::ELEMENTS::WallTri3PoroP1Type& DRT::ELEMENTS::WallTri3PoroP1Type::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::WallTri3PoroP1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>* object =
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>(-1, -1);
+  DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>* object =
+      new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -199,8 +197,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
 {
   if (eletype == "WALLT3POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -208,8 +206,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
@@ -247,9 +245,8 @@ int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>* actele =
-        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>*>(
-            dis.lColElement(i));
+    DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>* actele =
+        dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>*>(dis.lColElement(i));
     if (!actele) dserror("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }

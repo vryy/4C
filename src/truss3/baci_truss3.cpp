@@ -129,10 +129,7 @@ DRT::Element* DRT::ELEMENTS::Truss3::Clone() const
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Truss3::Shape() const
-{
-  return DRT::Element::DiscretizationType::line2;
-}
+CORE::FE::CellType DRT::ELEMENTS::Truss3::Shape() const { return CORE::FE::CellType::line2; }
 
 
 /*----------------------------------------------------------------------*

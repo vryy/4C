@@ -11,85 +11,85 @@
 #include "baci_utils_exceptions.H"
 
 
-int CORE::DRT::UTILS::getNumberOfElementNodes(const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
 {
   int numnodes = 0;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::dis_none:
+    case CORE::FE::CellType::dis_none:
       return 0;
       break;
-    case ::DRT::Element::DiscretizationType::point1:
+    case CORE::FE::CellType::point1:
       return 1;
       break;
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line2:
       return 2;
       break;
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
       return 3;
       break;
-    case ::DRT::Element::DiscretizationType::line4:
+    case CORE::FE::CellType::line4:
       return 4;
       break;
-    case ::DRT::Element::DiscretizationType::line5:
+    case CORE::FE::CellType::line5:
       return 5;
       break;
-    case ::DRT::Element::DiscretizationType::line6:
+    case CORE::FE::CellType::line6:
       return 6;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
       return 3;
       break;
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
       return 6;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
       return 4;
       break;
-    case ::DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad8:
       return 8;
       break;
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad9:
       return 9;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs2:
+    case CORE::FE::CellType::nurbs2:
       return 2;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs3:
+    case CORE::FE::CellType::nurbs3:
       return 3;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
       return 4;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return 9;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return 27;
       break;
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
       return 8;
       break;
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
       return 20;
       break;
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
       return 27;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
       return 4;
       break;
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
       return 10;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
       return 6;
       break;
-    case ::DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
       return 15;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       return 5;
       break;
     default:
@@ -101,36 +101,35 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const ::DRT::Element::Discretizati
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementCornerNodes(
-    const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementCornerNodes(const CORE::FE::CellType& distype)
 {
   int numCornerNodes = 0;
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       numCornerNodes = 8;
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad4:
     {
       numCornerNodes = 4;
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri6:
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::tri3:
     {
       numCornerNodes = 3;
       break;
     }
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
     {
       numCornerNodes = 2;
       break;
@@ -144,17 +143,17 @@ int CORE::DRT::UTILS::getNumberOfElementCornerNodes(
 
 
 std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
   {
     // For 1D elements the faces are the veritices of the element
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
-    case ::DRT::Element::DiscretizationType::line4:
-    case ::DRT::Element::DiscretizationType::line5:
-    case ::DRT::Element::DiscretizationType::line6:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::line4:
+    case CORE::FE::CellType::line5:
+    case CORE::FE::CellType::line6:
     {
       const int nFace = 2;
       const int nCornerNode = 0;
@@ -162,18 +161,18 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
       break;
     }
     // For 2D elements the faces are the sides of the element
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       const int nFace = 3;
       const int nCornerNode = 2;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad6:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad6:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       const int nFace = 4;
       const int nCornerNode = 2;
@@ -181,17 +180,17 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
       break;
     }
     // For 3D elements the faces are the "faces" of the element
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
     {
       const int nFace = 4;
       const int nCornerNode = 3;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       const int nFace = 6;
       const int nCornerNode = 4;
@@ -207,17 +206,17 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
 
 
 std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
   {
     // For 1D elements the faces are the veritices of the element
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
-    case ::DRT::Element::DiscretizationType::line4:
-    case ::DRT::Element::DiscretizationType::line5:
-    case ::DRT::Element::DiscretizationType::line6:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::line4:
+    case CORE::FE::CellType::line5:
+    case CORE::FE::CellType::line6:
     {
       const int nFace = 2;
       const int nInternalNode = 1;
@@ -225,29 +224,29 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
       break;
     }
     // For 2D elements the faces are the sides of the element
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       const int nFace = 3;
       const int nInternalNode = 0;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nInternalNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       const int nFace = 3;
       const int nInternalNode = 1;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nInternalNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       const int nFace = 4;
       const int nInternalNode = 0;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nInternalNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       const int nFace = 4;
       const int nInternalNode = 1;
@@ -255,23 +254,23 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
       break;
     }
     // For 3D elements the faces are the "faces" of the element
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
     {
       const int nFace = 4;
       const int nInternalNode = 0;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nInternalNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
     {
       const int nFace = 6;
       const int nInternalNode = 0;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nInternalNode);
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       const int nFace = 6;
       const int nInternalNode = 1;
@@ -286,45 +285,45 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementLines(const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementLines(const CORE::FE::CellType& distype)
 {
   int numLines = 0;
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex18:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
-    case ::DRT::Element::DiscretizationType::nurbs8:
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs27:
       numLines = 12;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
-    case ::DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
       numLines = 9;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
       numLines = 8;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       numLines = 6;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       numLines = 4;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
       numLines = 4;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
       numLines = 3;
       break;
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
       numLines = 1;
       break;
     default:
@@ -335,42 +334,42 @@ int CORE::DRT::UTILS::getNumberOfElementLines(const ::DRT::Element::Discretizati
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementSurfaces(const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementSurfaces(const CORE::FE::CellType& distype)
 {
   int numSurf = 0;
   switch (distype)
   {
     // 3D
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex18:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
-    case ::DRT::Element::DiscretizationType::nurbs8:
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs27:
       numSurf = 6;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
-    case ::DRT::Element::DiscretizationType::wedge15:
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
+    case CORE::FE::CellType::pyramid5:
       numSurf = 5;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       numSurf = 4;
       break;
     // 2D
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
-    case ::DRT::Element::DiscretizationType::nurbs4:
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
       numSurf = 1;
       break;
     // 1D
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
       numSurf = 0;
       break;
     default:
@@ -381,33 +380,33 @@ int CORE::DRT::UTILS::getNumberOfElementSurfaces(const ::DRT::Element::Discretiz
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementVolumes(const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementVolumes(const CORE::FE::CellType& distype)
 {
   int numVol = 0;
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex18:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
-    case ::DRT::Element::DiscretizationType::wedge6:
-    case ::DRT::Element::DiscretizationType::wedge15:
-    case ::DRT::Element::DiscretizationType::pyramid5:
-    case ::DRT::Element::DiscretizationType::nurbs8:
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
+    case CORE::FE::CellType::pyramid5:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs27:
       numVol = 1;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
-    case ::DRT::Element::DiscretizationType::nurbs4:
-    case ::DRT::Element::DiscretizationType::nurbs9:
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
       return numVol = 0;
       break;
     default:
@@ -418,7 +417,7 @@ int CORE::DRT::UTILS::getNumberOfElementVolumes(const ::DRT::Element::Discretiza
 }
 
 
-int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::DiscretizationType& distype)
+int CORE::DRT::UTILS::getNumberOfElementFaces(const CORE::FE::CellType& distype)
 {
   const int dim = getDimension(distype);
   if (dim == 3)
@@ -434,84 +433,81 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::Discretizati
 }
 
 
-::DRT::Element::DiscretizationType CORE::DRT::UTILS::getEleFaceShapeType(
-    const ::DRT::Element::DiscretizationType& distype, const unsigned int face)
+CORE::FE::CellType CORE::DRT::UTILS::getEleFaceShapeType(
+    const CORE::FE::CellType& distype, const unsigned int face)
 {
-  ::DRT::Element::DiscretizationType type = ::DRT::Element::DiscretizationType::dis_none;
+  CORE::FE::CellType type = CORE::FE::CellType::dis_none;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::line2>::shape;
+    case CORE::FE::CellType::line2:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::line2>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::line3:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::line3>::shape;
+    case CORE::FE::CellType::line3:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::line3>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs2:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs2>::shape;
+    case CORE::FE::CellType::nurbs2:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs2>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs3:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs3>::shape;
+    case CORE::FE::CellType::nurbs3:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs3>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad4>::shape;
+    case CORE::FE::CellType::quad4:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::quad4>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::quad8:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad8>::shape;
+    case CORE::FE::CellType::quad8:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::quad8>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::quad9:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad9>::shape;
+    case CORE::FE::CellType::quad9:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::quad9>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tri3>::shape;
+    case CORE::FE::CellType::tri3:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::tri3>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::tri6:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tri6>::shape;
+    case CORE::FE::CellType::tri6:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::tri6>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs4>::shape;
+    case CORE::FE::CellType::nurbs4:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs4>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs9>::shape;
+    case CORE::FE::CellType::nurbs9:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs9>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::hex8:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex8>::shape;
+    case CORE::FE::CellType::hex8:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::hex8>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::hex18:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex18>::shape;
+    case CORE::FE::CellType::hex18:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::hex18>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs8:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs8>::shape;
+    case CORE::FE::CellType::nurbs8:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs8>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::hex20:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex20>::shape;
+    case CORE::FE::CellType::hex20:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::hex20>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::hex27:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex27>::shape;
+    case CORE::FE::CellType::hex27:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::hex27>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs27:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs27>::shape;
+    case CORE::FE::CellType::nurbs27:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::nurbs27>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tet4>::shape;
+    case CORE::FE::CellType::tet4:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::tet4>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::tet10:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tet10>::shape;
+    case CORE::FE::CellType::tet10:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::tet10>::shape;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
-      type = face < 3 ? ::DRT::Element::DiscretizationType::quad4
-                      : ::DRT::Element::DiscretizationType::tri3;
+    case CORE::FE::CellType::wedge6:
+      type = face < 3 ? CORE::FE::CellType::quad4 : CORE::FE::CellType::tri3;
       break;
-    case ::DRT::Element::DiscretizationType::wedge15:
-      type = face < 3 ? ::DRT::Element::DiscretizationType::quad8
-                      : ::DRT::Element::DiscretizationType::tri6;
+    case CORE::FE::CellType::wedge15:
+      type = face < 3 ? CORE::FE::CellType::quad8 : CORE::FE::CellType::tri6;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      type = face == 0 ? ::DRT::Element::DiscretizationType::quad4
-                       : ::DRT::Element::DiscretizationType::tri3;
+    case CORE::FE::CellType::pyramid5:
+      type = face == 0 ? CORE::FE::CellType::quad4 : CORE::FE::CellType::tri3;
       break;
-    case ::DRT::Element::DiscretizationType::point1:
-      type = DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::point1>::shape;
+    case CORE::FE::CellType::point1:
+      type = DisTypeToFaceShapeType<CORE::FE::CellType::point1>::shape;
       break;
     default:
       dserror(
@@ -523,7 +519,7 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const ::DRT::Element::Discretizati
 
 
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   const int nsd = getDimension(distype);
 
@@ -547,13 +543,13 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingFaces(
 
 
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       const int nSurf = 6;
       const int nNode = 4;
@@ -565,7 +561,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex16:
+    case CORE::FE::CellType::hex16:
     {
       const int nSurf_8 = 2;
       const int nSurf_6 = 4;
@@ -585,7 +581,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex18:
+    case CORE::FE::CellType::hex18:
     {
       const int nSurf_9 = 2;
       const int nSurf_6 = 4;
@@ -605,7 +601,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex20:
+    case CORE::FE::CellType::hex20:
     {
       const int nSurf = 6;
       const int nNode = 8;
@@ -617,7 +613,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex27:
     {
       const int nSurf = 6;
       const int nNode = 9;
@@ -629,7 +625,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       const int nSurf = 4;
       const int nNode = 3;
@@ -641,7 +637,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       const int nSurf = 4;
       const int nNode = 6;
@@ -653,7 +649,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
       // quad surfaces
       const int nqSurf = 3;
@@ -677,7 +673,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
       // quad surfaces
       const int nqSurf = 3;
@@ -701,7 +697,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       // quad surfaces
       const int nqSurf = 1;
@@ -725,7 +721,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::nurbs8:
+    case CORE::FE::CellType::nurbs8:
     {
       // nurbs 4 surfaces --- valid only on interpolated boundaries
       const int nSurf = 6;
@@ -738,7 +734,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       // nurbs 9 surfaces --- valid only on interpolated boundaries
       const int nSurf = 6;
@@ -761,13 +757,13 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
 
 
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
+    case CORE::FE::CellType::hex8:
     {
       const int nLine = 12;
       const int nNode = 2;
@@ -780,8 +776,8 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       const int nLine = 12;
       const int nNode = 3;
@@ -794,7 +790,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
     {
       const int nLine = 12;
       const int nNode = 3;
@@ -807,7 +803,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
+    case CORE::FE::CellType::tet4:
     {
       const int nLine = 6;
       const int nNode = 2;
@@ -820,7 +816,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet10:
     {
       const int nLine = 6;
       const int nNode = 3;
@@ -833,7 +829,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::wedge6:
+    case CORE::FE::CellType::wedge6:
     {
       const int nLine = 9;
       const int nNode = 2;
@@ -846,7 +842,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::wedge15:
+    case CORE::FE::CellType::wedge15:
     {
       const int nLine = 9;
       const int nNode = 3;
@@ -859,8 +855,8 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::quad8:
     {
       const int nLine = 4;
       const int nNode = 3;
@@ -873,7 +869,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
     {
       const int nLine = 4;
       const int nNode = 3;
@@ -886,7 +882,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad4:
+    case CORE::FE::CellType::quad4:
     {
       const int nLine = 4;
       const int nNode = 2;
@@ -899,7 +895,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::nurbs4:
+    case CORE::FE::CellType::nurbs4:
     {
       const int nLine = 4;
       const int nNode = 2;
@@ -912,7 +908,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       const int nLine = 3;
       const int nNode = 3;
@@ -925,7 +921,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri3:
+    case CORE::FE::CellType::tri3:
     {
       const int nLine = 3;
       const int nNode = 2;
@@ -938,7 +934,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::pyramid5:
+    case CORE::FE::CellType::pyramid5:
     {
       const int nLine = 8;
       const int nNode = 2;
@@ -951,7 +947,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex16:
+    case CORE::FE::CellType::hex16:
     {
       const int nLine_quad = 8;
       const int nNode_quad = 3;
@@ -972,7 +968,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex18:
+    case CORE::FE::CellType::hex18:
     {
       const int nLine_quad = 8;
       const int nNode_quad = 3;
@@ -1003,16 +999,15 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
 
 
 std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(
-    const ::DRT::Element::DiscretizationType& distype)
+    const CORE::FE::CellType& distype)
 {
   int nLine;
   int nSurf;
 
   std::vector<std::vector<int>> map;
 
-  if (distype == ::DRT::Element::DiscretizationType::hex8 ||
-      distype == ::DRT::Element::DiscretizationType::hex20 ||
-      distype == ::DRT::Element::DiscretizationType::hex27)
+  if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex20 ||
+      distype == CORE::FE::CellType::hex27)
   {
     nLine = 12;
     nSurf = 2;
@@ -1023,8 +1018,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfac
       for (int j = 0; j < nSurf; j++) map[i][j] = eleNodeNumbering_hex27_lines_surfaces[i][j];
     }
   }
-  else if (distype == ::DRT::Element::DiscretizationType::tet4 ||
-           distype == ::DRT::Element::DiscretizationType::tet10)
+  else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
   {
     nLine = 6;
     nSurf = 2;
@@ -1045,7 +1039,7 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfac
 
 
 CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
-    const ::DRT::Element::DiscretizationType distype)
+    const CORE::FE::CellType distype)
 {
   const int nNode = getNumberOfElementNodes(distype);
   const int dim = getDimension(distype);
@@ -1053,10 +1047,10 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs9:
     {
       for (int inode = 0; inode < nNode; inode++)
       {
@@ -1065,8 +1059,8 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       for (int inode = 0; inode < nNode; inode++)
       {
@@ -1075,9 +1069,9 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       for (int inode = 0; inode < nNode; inode++)
       {
@@ -1086,8 +1080,8 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
     {
       for (int inode = 0; inode < nNode; inode++)
       {
@@ -1096,8 +1090,8 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
       }
       break;
     }
-    case ::DRT::Element::DiscretizationType::line3:
-    case ::DRT::Element::DiscretizationType::line2:
+    case CORE::FE::CellType::line3:
+    case CORE::FE::CellType::line2:
     {
       for (int inode = 0; inode < nNode; inode++)
       {
@@ -1117,7 +1111,7 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
 
 template <int probdim>
 CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
-    const int nodeId, const ::DRT::Element::DiscretizationType distype)
+    const int nodeId, const CORE::FE::CellType distype)
 {
   dsassert(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
 
@@ -1126,48 +1120,48 @@ CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
+    case CORE::FE::CellType::nurbs9:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_quad9_nodes_reference[nodeId][isd];
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri3:
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri3:
+    case CORE::FE::CellType::tri6:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_tri6_nodes_reference[nodeId][isd];
       break;
     }
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_hex27_nodes_reference[nodeId][isd];
 
       break;
     }
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_tet10_nodes_reference[nodeId][isd];
 
       break;
     }
-    case ::DRT::Element::DiscretizationType::line2:
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line2:
+    case CORE::FE::CellType::line3:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_line3_nodes_reference[nodeId][isd];
 
       break;
     }
-    case ::DRT::Element::DiscretizationType::line4:
+    case CORE::FE::CellType::line4:
     {
       for (int isd = 0; isd < dim; isd++)
         coord(isd) = eleNodeNumbering_line4_nodes_reference[nodeId][isd];
@@ -1184,11 +1178,11 @@ CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
 
 
 void CORE::DRT::UTILS::getCornerNodeIndices(
-    int& index1, int& index2, const int& hoindex, const ::DRT::Element::DiscretizationType distype)
+    int& index1, int& index2, const int& hoindex, const CORE::FE::CellType distype)
 {
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line3:
+    case CORE::FE::CellType::line3:
     {
       if (hoindex == 2)
       {
@@ -1199,7 +1193,7 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
         dserror("no valid line3 edge found");
       break;
     }
-    case ::DRT::Element::DiscretizationType::tri6:
+    case CORE::FE::CellType::tri6:
     {
       if (hoindex == 3)
       {
@@ -1220,8 +1214,8 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
         dserror("no valid tri6 edge found");
       break;
     }
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
     {
       if (hoindex == 4)
       {
@@ -1254,83 +1248,83 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
 }
 
 
-int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType distype)
+int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
 {
   int dim = 0;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim;
+    case CORE::FE::CellType::line2:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::line3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line3>::dim;
+    case CORE::FE::CellType::line3:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line3>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::line4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line4>::dim;
+    case CORE::FE::CellType::line4:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line4>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs2:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs2>::dim;
+    case CORE::FE::CellType::nurbs2:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs3>::dim;
+    case CORE::FE::CellType::nurbs3:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim;
+    case CORE::FE::CellType::quad4:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::quad8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad8>::dim;
+    case CORE::FE::CellType::quad8:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::quad9:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad9>::dim;
+    case CORE::FE::CellType::quad9:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim;
+    case CORE::FE::CellType::tri3:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::tri6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri6>::dim;
+    case CORE::FE::CellType::tri6:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs4>::dim;
+    case CORE::FE::CellType::nurbs4:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs9>::dim;
+    case CORE::FE::CellType::nurbs9:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::hex8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex8>::dim;
+    case CORE::FE::CellType::hex8:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs8>::dim;
+    case CORE::FE::CellType::nurbs8:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs8>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::hex18:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex18>::dim;
+    case CORE::FE::CellType::hex18:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::hex20:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex20>::dim;
+    case CORE::FE::CellType::hex20:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::hex27:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex27>::dim;
+    case CORE::FE::CellType::hex27:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs27:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs27>::dim;
+    case CORE::FE::CellType::nurbs27:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs27>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet4>::dim;
+    case CORE::FE::CellType::tet4:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::tet10:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tet10>::dim;
+    case CORE::FE::CellType::tet10:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge6>::dim;
+    case CORE::FE::CellType::wedge6:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::wedge15:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::wedge15>::dim;
+    case CORE::FE::CellType::wedge15:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::pyramid5>::dim;
+    case CORE::FE::CellType::pyramid5:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim;
       break;
-    case ::DRT::Element::DiscretizationType::point1:
-      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::point1>::dim;
+    case CORE::FE::CellType::point1:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::point1>::dim;
       break;
     default:
       dserror(
@@ -1340,62 +1334,62 @@ int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType dist
 }
 
 
-int CORE::DRT::UTILS::getOrder(const ::DRT::Element::DiscretizationType distype)
+int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
 {
   int order = 0;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::line2>::order;
+    case CORE::FE::CellType::line2:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::line2>::order;
       break;
-    case ::DRT::Element::DiscretizationType::line3:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::line3>::order;
+    case CORE::FE::CellType::line3:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::line3>::order;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs2:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs2>::order;
+    case CORE::FE::CellType::nurbs2:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>::order;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs3:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs3>::order;
+    case CORE::FE::CellType::nurbs3:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs3>::order;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad4>::order;
+    case CORE::FE::CellType::quad4:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::quad4>::order;
       break;
-    case ::DRT::Element::DiscretizationType::quad8:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad8>::order;
+    case CORE::FE::CellType::quad8:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::quad8>::order;
       break;
-    case ::DRT::Element::DiscretizationType::quad9:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad9>::order;
+    case CORE::FE::CellType::quad9:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::quad9>::order;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tri3>::order;
+    case CORE::FE::CellType::tri3:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::tri3>::order;
       break;
-    case ::DRT::Element::DiscretizationType::tri6:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tri6>::order;
+    case CORE::FE::CellType::tri6:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::tri6>::order;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs4>::order;
+    case CORE::FE::CellType::nurbs4:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs4>::order;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs9>::order;
+    case CORE::FE::CellType::nurbs9:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs9>::order;
       break;
-    case ::DRT::Element::DiscretizationType::hex8:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex8>::order;
+    case CORE::FE::CellType::hex8:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::hex8>::order;
       break;
-    case ::DRT::Element::DiscretizationType::hex20:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex20>::order;
+    case CORE::FE::CellType::hex20:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::hex20>::order;
       break;
-    case ::DRT::Element::DiscretizationType::hex27:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex27>::order;
+    case CORE::FE::CellType::hex27:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::hex27>::order;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tet4>::order;
+    case CORE::FE::CellType::tet4:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::tet4>::order;
       break;
-    case ::DRT::Element::DiscretizationType::tet10:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tet10>::order;
+    case CORE::FE::CellType::tet10:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::tet10>::order;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      order = DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::pyramid5>::order;
+    case CORE::FE::CellType::pyramid5:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>::order;
       break;
     default:
       dserror(
@@ -1405,68 +1399,68 @@ int CORE::DRT::UTILS::getOrder(const ::DRT::Element::DiscretizationType distype)
 }
 
 
-int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype)
+int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
 {
   int degree = 0;
 
   switch (distype)
   {
-    case ::DRT::Element::DiscretizationType::line2:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::line2>::degree;
+    case CORE::FE::CellType::line2:
+      degree = DisTypeToDegree<CORE::FE::CellType::line2>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::line3:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::line3>::degree;
+    case CORE::FE::CellType::line3:
+      degree = DisTypeToDegree<CORE::FE::CellType::line3>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs2:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs2>::degree;
+    case CORE::FE::CellType::nurbs2:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs2>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs3:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs3>::degree;
+    case CORE::FE::CellType::nurbs3:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs3>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::quad4>::degree;
+    case CORE::FE::CellType::quad4:
+      degree = DisTypeToDegree<CORE::FE::CellType::quad4>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::quad8:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::quad8>::degree;
+    case CORE::FE::CellType::quad8:
+      degree = DisTypeToDegree<CORE::FE::CellType::quad8>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::quad9:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::quad9>::degree;
+    case CORE::FE::CellType::quad9:
+      degree = DisTypeToDegree<CORE::FE::CellType::quad9>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::tri3:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::tri3>::degree;
+    case CORE::FE::CellType::tri3:
+      degree = DisTypeToDegree<CORE::FE::CellType::tri3>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::tri6:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::tri6>::degree;
+    case CORE::FE::CellType::tri6:
+      degree = DisTypeToDegree<CORE::FE::CellType::tri6>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs4:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs4>::degree;
+    case CORE::FE::CellType::nurbs4:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs4>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs9>::degree;
+    case CORE::FE::CellType::nurbs9:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs9>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::hex8:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::hex8>::degree;
+    case CORE::FE::CellType::hex8:
+      degree = DisTypeToDegree<CORE::FE::CellType::hex8>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::hex20:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::hex20>::degree;
+    case CORE::FE::CellType::hex20:
+      degree = DisTypeToDegree<CORE::FE::CellType::hex20>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::hex27:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::hex27>::degree;
+    case CORE::FE::CellType::hex27:
+      degree = DisTypeToDegree<CORE::FE::CellType::hex27>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::tet4>::degree;
+    case CORE::FE::CellType::tet4:
+      degree = DisTypeToDegree<CORE::FE::CellType::tet4>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::tet10:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::tet10>::degree;
+    case CORE::FE::CellType::tet10:
+      degree = DisTypeToDegree<CORE::FE::CellType::tet10>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::pyramid5:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::pyramid5>::degree;
+    case CORE::FE::CellType::pyramid5:
+      degree = DisTypeToDegree<CORE::FE::CellType::pyramid5>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::wedge6:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::wedge6>::degree;
+    case CORE::FE::CellType::wedge6:
+      degree = DisTypeToDegree<CORE::FE::CellType::wedge6>::degree;
       break;
-    case ::DRT::Element::DiscretizationType::wedge15:
-      degree = DisTypeToDegree<::DRT::Element::DiscretizationType::wedge15>::degree;
+    case CORE::FE::CellType::wedge15:
+      degree = DisTypeToDegree<CORE::FE::CellType::wedge15>::degree;
       break;
     default:
       dserror(
@@ -1477,8 +1471,8 @@ int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype
 }
 
 
-::DRT::Element::DiscretizationType CORE::DRT::UTILS::getShapeOfBoundaryElement(
-    const int nen, const ::DRT::Element::DiscretizationType parentshape)
+CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
+    const int nen, const CORE::FE::CellType parentshape)
 {
   switch (nen)  // number of nodes for the boundary element
   {
@@ -1486,132 +1480,126 @@ int CORE::DRT::UTILS::getDegree(const ::DRT::Element::DiscretizationType distype
 
     // FluidBoundary element: line2
     case 2:
-      if (parentshape == ::DRT::Element::DiscretizationType::quad4 ||
-          parentshape == ::DRT::Element::DiscretizationType::tri3)
-        return ::DRT::Element::DiscretizationType::line2;
-      else if (parentshape == ::DRT::Element::DiscretizationType::nurbs4)
-        return ::DRT::Element::DiscretizationType::nurbs2;
+      if (parentshape == CORE::FE::CellType::quad4 || parentshape == CORE::FE::CellType::tri3)
+        return CORE::FE::CellType::line2;
+      else if (parentshape == CORE::FE::CellType::nurbs4)
+        return CORE::FE::CellType::nurbs2;
       // 1D line element in a 3D volume
-      else if (parentshape == ::DRT::Element::DiscretizationType::hex8 ||
-               parentshape == ::DRT::Element::DiscretizationType::tet4 ||
-               parentshape == ::DRT::Element::DiscretizationType::wedge6 ||
-               parentshape == ::DRT::Element::DiscretizationType::pyramid5)
-        return ::DRT::Element::DiscretizationType::line2;
+      else if (parentshape == CORE::FE::CellType::hex8 || parentshape == CORE::FE::CellType::tet4 ||
+               parentshape == CORE::FE::CellType::wedge6 ||
+               parentshape == CORE::FE::CellType::pyramid5)
+        return CORE::FE::CellType::line2;
       // 1D line element in a 3D volume
-      else if (parentshape == ::DRT::Element::DiscretizationType::nurbs8)
-        return ::DRT::Element::DiscretizationType::nurbs2;
+      else if (parentshape == CORE::FE::CellType::nurbs8)
+        return CORE::FE::CellType::nurbs2;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
 
     // FluidBoundary element: line3
     case 3:
-      if ((parentshape == ::DRT::Element::DiscretizationType::quad8) ||
-          (parentshape == ::DRT::Element::DiscretizationType::quad9 ||
-              parentshape == ::DRT::Element::DiscretizationType::tri6))
-        return ::DRT::Element::DiscretizationType::line3;
-      else if (parentshape == ::DRT::Element::DiscretizationType::nurbs9)
-        return ::DRT::Element::DiscretizationType::nurbs3;
+      if ((parentshape == CORE::FE::CellType::quad8) ||
+          (parentshape == CORE::FE::CellType::quad9 || parentshape == CORE::FE::CellType::tri6))
+        return CORE::FE::CellType::line3;
+      else if (parentshape == CORE::FE::CellType::nurbs9)
+        return CORE::FE::CellType::nurbs3;
       // 1D line element in a 3D volume
-      else if (parentshape == ::DRT::Element::DiscretizationType::hex20 ||
-               parentshape == ::DRT::Element::DiscretizationType::hex27 ||
-               parentshape == ::DRT::Element::DiscretizationType::tet10 ||
-               parentshape == ::DRT::Element::DiscretizationType::wedge15)
-        return ::DRT::Element::DiscretizationType::line3;
+      else if (parentshape == CORE::FE::CellType::hex20 ||
+               parentshape == CORE::FE::CellType::hex27 ||
+               parentshape == CORE::FE::CellType::tet10 ||
+               parentshape == CORE::FE::CellType::wedge15)
+        return CORE::FE::CellType::line3;
 
       // FluidBoundary element: tri3 (surface)
-      else if (parentshape == ::DRT::Element::DiscretizationType::tet4 ||
-               parentshape == ::DRT::Element::DiscretizationType::wedge6 ||
-               parentshape == ::DRT::Element::DiscretizationType::pyramid5)
-        return ::DRT::Element::DiscretizationType::tri3;
+      else if (parentshape == CORE::FE::CellType::tet4 ||
+               parentshape == CORE::FE::CellType::wedge6 ||
+               parentshape == CORE::FE::CellType::pyramid5)
+        return CORE::FE::CellType::tri3;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad4
     case 4:
-      if (parentshape == ::DRT::Element::DiscretizationType::hex8 ||
-          parentshape == ::DRT::Element::DiscretizationType::wedge6 ||
-          parentshape == ::DRT::Element::DiscretizationType::pyramid5)
-        return ::DRT::Element::DiscretizationType::quad4;
-      else if (parentshape == ::DRT::Element::DiscretizationType::nurbs8)
-        return ::DRT::Element::DiscretizationType::nurbs4;
+      if (parentshape == CORE::FE::CellType::hex8 || parentshape == CORE::FE::CellType::wedge6 ||
+          parentshape == CORE::FE::CellType::pyramid5)
+        return CORE::FE::CellType::quad4;
+      else if (parentshape == CORE::FE::CellType::nurbs8)
+        return CORE::FE::CellType::nurbs4;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
 
     // FluidBoundary element: tri6
     case 6:
-      if (parentshape == ::DRT::Element::DiscretizationType::tet10 ||
-          parentshape == ::DRT::Element::DiscretizationType::wedge15)
-        return ::DRT::Element::DiscretizationType::tri6;
+      if (parentshape == CORE::FE::CellType::tet10 || parentshape == CORE::FE::CellType::wedge15)
+        return CORE::FE::CellType::tri6;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad8
     case 8:
-      if (parentshape == ::DRT::Element::DiscretizationType::hex20 ||
-          parentshape == ::DRT::Element::DiscretizationType::wedge15)
-        return ::DRT::Element::DiscretizationType::quad8;
+      if (parentshape == CORE::FE::CellType::hex20 || parentshape == CORE::FE::CellType::wedge15)
+        return CORE::FE::CellType::quad8;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad9
     case 9:
-      if (parentshape == ::DRT::Element::DiscretizationType::hex27)
-        return ::DRT::Element::DiscretizationType::quad9;
-      else if (parentshape == ::DRT::Element::DiscretizationType::nurbs27)
-        return ::DRT::Element::DiscretizationType::nurbs9;
+      if (parentshape == CORE::FE::CellType::hex27)
+        return CORE::FE::CellType::quad9;
+      else if (parentshape == CORE::FE::CellType::nurbs27)
+        return CORE::FE::CellType::nurbs9;
       else
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, DistypeToString(parentshape).c_str());
+            nen, ::DRT::DistypeToString(parentshape).c_str());
     default:
       dserror("unexpected number of nodes %d for boundary element", nen);
   }
-  return ::DRT::Element::DiscretizationType::dis_none;
+  return CORE::FE::CellType::dis_none;
 }
 
 
 int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-    const ::DRT::Element::DiscretizationType parent_distype, const int faceId, const int faceNodeId)
+    const CORE::FE::CellType parent_distype, const int faceId, const int faceNodeId)
 {
   switch (parent_distype)
   {
-    case ::DRT::Element::DiscretizationType::hex8:
-    case ::DRT::Element::DiscretizationType::hex16:
-    case ::DRT::Element::DiscretizationType::hex18:
-    case ::DRT::Element::DiscretizationType::hex20:
-    case ::DRT::Element::DiscretizationType::hex27:
+    case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex16:
+    case CORE::FE::CellType::hex18:
+    case CORE::FE::CellType::hex20:
+    case CORE::FE::CellType::hex27:
       return eleNodeNumbering_hex27_surfaces[faceId][faceNodeId];
       break;
-    case ::DRT::Element::DiscretizationType::tet4:
-    case ::DRT::Element::DiscretizationType::tet10:
+    case CORE::FE::CellType::tet4:
+    case CORE::FE::CellType::tet10:
       return eleNodeNumbering_tet10_surfaces[faceId][faceNodeId];
       break;
-    case ::DRT::Element::DiscretizationType::quad4:
-    case ::DRT::Element::DiscretizationType::quad6:
-    case ::DRT::Element::DiscretizationType::quad8:
-    case ::DRT::Element::DiscretizationType::quad9:
+    case CORE::FE::CellType::quad4:
+    case CORE::FE::CellType::quad6:
+    case CORE::FE::CellType::quad8:
+    case CORE::FE::CellType::quad9:
       return eleNodeNumbering_quad9_lines[faceId][faceNodeId];
       break;
-    case ::DRT::Element::DiscretizationType::nurbs9:
+    case CORE::FE::CellType::nurbs9:
       return eleNodeNumbering_nurbs9_lines[faceId][faceNodeId];
       break;
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs27:
       return eleNodeNumbering_nurbs27_surfaces[faceId][faceNodeId];
       break;
     default:
@@ -1621,16 +1609,16 @@ int CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
 }
 
 
-bool CORE::DRT::UTILS::IsNurbsDisType(const ::DRT::Element::DiscretizationType dis_type)
+bool CORE::DRT::UTILS::IsNurbsDisType(const CORE::FE::CellType dis_type)
 {
   switch (dis_type)
   {
-    case ::DRT::Element::DiscretizationType::nurbs2:
-    case ::DRT::Element::DiscretizationType::nurbs3:
-    case ::DRT::Element::DiscretizationType::nurbs4:
-    case ::DRT::Element::DiscretizationType::nurbs9:
-    case ::DRT::Element::DiscretizationType::nurbs8:
-    case ::DRT::Element::DiscretizationType::nurbs27:
+    case CORE::FE::CellType::nurbs2:
+    case CORE::FE::CellType::nurbs3:
+    case CORE::FE::CellType::nurbs4:
+    case CORE::FE::CellType::nurbs9:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs27:
       return true;
     default:
       return false;
@@ -1639,4 +1627,4 @@ bool CORE::DRT::UTILS::IsNurbsDisType(const ::DRT::Element::DiscretizationType d
 
 
 template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::GetNodeCoordinates<3>(
-    const int nodeId, const ::DRT::Element::DiscretizationType distype);
+    const int nodeId, const CORE::FE::CellType distype);

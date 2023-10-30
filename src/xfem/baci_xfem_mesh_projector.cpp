@@ -47,14 +47,14 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
   // (not the best choice)
   switch (sourcedis_->lRowElement(0)->Shape())
   {
-    case DRT::Element::DiscretizationType::hex8:
-      FindSearchRadius<DRT::Element::DiscretizationType::hex8>();
+    case CORE::FE::CellType::hex8:
+      FindSearchRadius<CORE::FE::CellType::hex8>();
       break;
-    case DRT::Element::DiscretizationType::hex20:
-      FindSearchRadius<DRT::Element::DiscretizationType::hex20>();
+    case CORE::FE::CellType::hex20:
+      FindSearchRadius<CORE::FE::CellType::hex20>();
       break;
-    case DRT::Element::DiscretizationType::hex27:
-      FindSearchRadius<DRT::Element::DiscretizationType::hex27>();
+    case CORE::FE::CellType::hex27:
+      FindSearchRadius<CORE::FE::CellType::hex27>();
       break;
     default:
       searchradius_ = searchradius_fac_;  // avoid a
@@ -85,7 +85,7 @@ void XFEM::MeshProjector::SetSourcePositionVector(Teuchos::RCP<const Epetra_Vect
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void XFEM::MeshProjector::FindSearchRadius()
 {
   DRT::Element* actele = sourcedis_->lRowElement(0);
@@ -321,7 +321,7 @@ void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
   Project(projection_nodeToDof, target_statevecs, targetdisp);
 }
 
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
     const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
@@ -425,17 +425,17 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
         // determine values for target fluid node
         switch (pele->Shape())
         {
-          case DRT::Element::DiscretizationType::hex8:
-            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex8>(
-                pele, node_xyz, interpolatedvec);
+          case CORE::FE::CellType::hex8:
+            insideelement =
+                CheckPositionAndProject<CORE::FE::CellType::hex8>(pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::DiscretizationType::hex20:
-            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex20>(
-                pele, node_xyz, interpolatedvec);
+          case CORE::FE::CellType::hex20:
+            insideelement =
+                CheckPositionAndProject<CORE::FE::CellType::hex20>(pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::DiscretizationType::hex27:
-            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex27>(
-                pele, node_xyz, interpolatedvec);
+          case CORE::FE::CellType::hex27:
+            insideelement =
+                CheckPositionAndProject<CORE::FE::CellType::hex27>(pele, node_xyz, interpolatedvec);
             break;
           default:
             dserror("Unsupported element shape %s!", DRT::DistypeToString(pele->Shape()).c_str());

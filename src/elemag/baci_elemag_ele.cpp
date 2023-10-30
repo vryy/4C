@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
 DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
     : DRT::Element(id, owner), degree_(1), completepol_(true)
 {
-  distype_ = DRT::Element::DiscretizationType::dis_none;
+  distype_ = CORE::FE::CellType::dis_none;
 }
 
 
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   int val = 0;
   ExtractfromPack(position, data, val);
   dsassert(val >= 0 && val < 255, "Degree out of range");
@@ -339,7 +339,7 @@ DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  |                                                             (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagBoundary::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
 {
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
@@ -384,7 +384,7 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -535,7 +535,7 @@ DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
  |                                                             (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagIntFace::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return CORE::DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());

@@ -96,7 +96,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override;
+      CORE::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -247,7 +247,7 @@ namespace DRT
       // variables
 
       //! discretization type
-      DRT::Element::DiscretizationType distype_;
+      CORE::FE::CellType distype_;
 
       //! numdofpernode
       int numdofpernode_;
@@ -408,12 +408,12 @@ namespace DRT
       //@{
 
       //! Templated version: parent and surface discretization type
-      template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+      template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       double EstimateNitscheTraceMaxEigenvalueCombined(std::vector<double>& parent_disp);
 
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
-      template <DRT::Element::DiscretizationType dt_vol>
+      template <CORE::FE::CellType dt_vol>
       void TraceEstimateVolMatrix(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
@@ -424,7 +424,7 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& vol);
 
       //! the surface stiffness matrix
-      template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+      template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       void TraceEstimateSurfMatrix(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
@@ -435,7 +435,7 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& surf);
 
       //! evaluate the kinematics
-      template <DRT::Element::DiscretizationType dt_vol>
+      template <CORE::FE::CellType dt_vol>
       void Strains(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
@@ -450,7 +450,7 @@ namespace DRT
 
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
-      template <DRT::Element::DiscretizationType dt_vol>
+      template <CORE::FE::CellType dt_vol>
       void SubspaceProjector(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
@@ -464,12 +464,12 @@ namespace DRT
 
 
       //! Templated version: parent and surface discretization type
-      template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+      template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       double EstimateNitscheTraceMaxEigenvalueTSI(std::vector<double>& parent_disp);
 
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
-      template <DRT::Element::DiscretizationType dt_vol>
+      template <CORE::FE::CellType dt_vol>
       void TraceEstimateVolMatrixTSI(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
@@ -479,7 +479,7 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& vol);
 
       //! the surface stiffness matrix
-      template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
+      template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       void TraceEstimateSurfMatrixTSI(
           const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
@@ -490,7 +490,7 @@ namespace DRT
 
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
-      template <DRT::Element::DiscretizationType dt_vol>
+      template <CORE::FE::CellType dt_vol>
       void SubspaceProjectorScalar(
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement - 1>& proj);

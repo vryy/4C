@@ -162,7 +162,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       iseas_(false),
       eastype_(eas_vague),
       structale_(false),
-      distype_(DRT::Element::DiscretizationType::dis_none)
+      distype_(CORE::FE::CellType::dis_none)
 {
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale) structale_ = true;
   return;
@@ -204,7 +204,7 @@ DRT::Element* DRT::ELEMENTS::Wall1::Clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
+CORE::FE::CellType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
 
 
 /*----------------------------------------------------------------------*
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // structale_
   structale_ = ExtractInt(position, data);
   // distype_
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
+  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // data
   std::vector<char> tmp(0);
   ExtractfromPack(position, data, tmp);

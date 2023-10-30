@@ -38,8 +38,8 @@ namespace CONTACT
      *                     mortar contact element for element based integration
      * @param[in] comm     contact interface communicator
      */
-    CoIntegratorNitscheSsiElch(Teuchos::ParameterList& params,
-        DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
+    CoIntegratorNitscheSsiElch(
+        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
 
    private:
     //! data bundle of current element
@@ -119,7 +119,7 @@ namespace CONTACT
      * @param[out] d_detF_dd             derivative of the determinant of the deformation gradient
      *                                   w.r.t. displacement
      */
-    template <DRT::Element::DiscretizationType distype, int dim>
+    template <CORE::FE::CellType distype, int dim>
     void CalculateSpatialDerivativeOfDetF(double detF,
         const ElementDataBundle<dim>& electrode_quantities,
         CORE::GEN::pairedvector<int, double>& d_detF_dd);

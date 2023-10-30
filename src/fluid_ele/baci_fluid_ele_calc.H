@@ -19,7 +19,7 @@
 // forward declarations
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype, int numdofpernode,
+  template <CORE::FE::CellType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
   class RotationallySymmetricPeriodicBC;
 
@@ -73,7 +73,7 @@ namespace DRT
       \date 07/07
     */
 
-    template <DRT::Element::DiscretizationType distype,
+    template <CORE::FE::CellType distype,
         DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
     class FluidEleCalc : public FluidEleInterface
     {
@@ -1618,7 +1618,7 @@ namespace DRT
       // protected:
       // static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;
     };
-    // template<DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType
+    // template<CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType
     // enrtype = DRT::ELEMENTS::Fluid::none>
     // std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* >
     // FluidEleCalc<distype>::instances_;

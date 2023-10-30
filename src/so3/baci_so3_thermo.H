@@ -35,7 +35,7 @@ namespace DRT
     //!
     //! A structural 3 dimensional solid displacement element for large deformations
     //! and with small and large strains
-    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    template <class so3_ele, CORE::FE::CellType distype>
     class So3_Thermo : public so3_ele
     {
       //! @name Friends

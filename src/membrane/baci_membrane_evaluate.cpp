@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public) fbraeu 06/16 |
  *-----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -620,7 +620,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                            // current displacements
     CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
@@ -1163,7 +1163,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                fb 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::VisNames(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
@@ -1180,7 +1180,7 @@ void DRT::ELEMENTS::Membrane<distype>::VisNames(std::map<std::string, int>& name
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -1205,7 +1205,7 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
 /*----------------------------------------------------------------------*
  |  get reference and current configuration                fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<double>& disp,
     CORE::LINALG::Matrix<numnod_, noddof_>& xrefe, CORE::LINALG::Matrix<numnod_, noddof_>& xcurr)
 {
@@ -1233,7 +1233,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
  |  introduce an orthonormal base in the undeformed configuration at current Gauss point   fbraeu
  06/16 |
  *------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
     const CORE::LINALG::Matrix<numnod_, noddof_>& xrefe,
     const CORE::LINALG::Matrix<numnod_, noddof_>& xcurr,
@@ -1351,7 +1351,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of 2nd PK stresses to Cauchy stresses at gp                           fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
     const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
@@ -1375,7 +1375,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of Green-Lagrange to Euler-Almansi strains at gp                      fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
     const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
@@ -1401,7 +1401,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
 /*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
     const CORE::LINALG::Matrix<noddof_, 1>& dXds1, const CORE::LINALG::Matrix<noddof_, 1>& dXds2,
     const CORE::LINALG::Matrix<noddof_, 1>& dxds1, const CORE::LINALG::Matrix<noddof_, 1>& dxds2,
@@ -1437,7 +1437,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
 /*-------------------------------------------------------------------------------------------------*
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
     THR::DisTypeToNumGaussPoints<distype>::nquad>
 DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
@@ -1482,7 +1482,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
 {
@@ -1564,7 +1564,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
   return;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
