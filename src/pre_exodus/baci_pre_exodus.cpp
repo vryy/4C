@@ -291,7 +291,7 @@ int main(int argc, char** argv)
                   << std::endl;
       {
         std::stringstream tmp;
-        DRT::UTILS::FunctionManager functionmanager;
+        CORE::UTILS::FunctionManager functionmanager;
         DRT::INPUT::Lines flines = functionmanager.ValidFunctionLines();
         flines.Print(tmp);
         std::string tmpstring = tmp.str();

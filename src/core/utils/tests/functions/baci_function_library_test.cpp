@@ -9,9 +9,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_function.H"
-#include "baci_lib_function_library.H"
 #include "baci_utils_cubic_spline_interpolation.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_library.H"
 
 #include <fstream>
 
@@ -26,7 +26,7 @@ namespace
       SetupTemplateCSVFile(csv_template_file_name);
 
       cubic_spline_from_csv_ =
-          Teuchos::rcp(new DRT::UTILS::CubicSplineFromCSV(csv_template_file_name));
+          Teuchos::rcp(new CORE::UTILS::CubicSplineFromCSV(csv_template_file_name));
     }
 
     void SetupTemplateCSVFile(const std::string& csv_template_file_name) const
@@ -41,7 +41,7 @@ namespace
       test_csv_file << "0.45,4.10" << '\n';
     }
 
-    Teuchos::RCP<DRT::UTILS::FunctionOfScalar> cubic_spline_from_csv_;
+    Teuchos::RCP<CORE::UTILS::FunctionOfScalar> cubic_spline_from_csv_;
   };
 
   TEST_F(CubicSplineFromCSVTest, TestEvaluate)

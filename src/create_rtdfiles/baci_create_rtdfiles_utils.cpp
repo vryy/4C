@@ -647,7 +647,7 @@ namespace DRT
       {
         WriteLinktarget(stream, "functionreference");
         WriteHeader(stream, 0, "Functions reference");
-        const auto lines = DRT::UTILS::FunctionManager().ValidFunctionLines();
+        const auto lines = CORE::UTILS::FunctionManager().ValidFunctionLines();
         std::string sectionDescription = lines.Description();
         WriteParagraph(stream, sectionDescription);
         std::stringstream functionStream;

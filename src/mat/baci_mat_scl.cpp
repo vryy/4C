@@ -10,9 +10,9 @@ species
 /*----------------------------------------------------------------------------*/
 #include "baci_mat_scl.H"
 
-#include "baci_lib_function_of_scalar.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_of_scalar.H"
 
 #include <vector>
 
@@ -132,7 +132,7 @@ double MAT::Scl::ComputeTransferenceNumber(const double cint) const
   else
   {
     return DRT::Problem::Instance()
-        ->FunctionById<DRT::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .Evaluate(cint);
   }
 }
@@ -148,7 +148,7 @@ double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
   else
   {
     return DRT::Problem::Instance()
-        ->FunctionById<DRT::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .EvaluateDerivative(cint, 1);
   }
 }

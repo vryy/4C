@@ -8,7 +8,6 @@ equations
 #include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
 
 #include "baci_inpar_material.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_parobject.H"
 #include "baci_mat_par_bundle.H"
@@ -16,6 +15,7 @@ equations
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_utils_function_of_time.H"
 
 #include <algorithm>
 #include <cstdlib>
@@ -319,7 +319,7 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateInitialD
   }
 
   return DRT::Problem::Instance()
-      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+      ->FunctionById<CORE::UTILS::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);
 }

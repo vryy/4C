@@ -17,7 +17,6 @@
 #include "baci_inpar_volmortar.H"
 #include "baci_io_control.H"
 #include "baci_io_inputreader.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
@@ -33,6 +32,7 @@
 #include "baci_ssi_resulttest.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 #include "baci_ssi_utils.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ void SSI::SSIBase::Setup()
 
       temperature_vector_->PutScalar(
           DRT::Problem::Instance()
-              ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+              ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
               .Evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
@@ -574,7 +574,7 @@ void SSI::SSIBase::EvaluateAndSetTemperatureField()
     // evaluate temperature at current time and put to scalar
     const double temperature =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
             .Evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 

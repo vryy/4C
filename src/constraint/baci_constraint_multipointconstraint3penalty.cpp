@@ -12,13 +12,13 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_transparent.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
 
@@ -411,7 +411,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
 
 

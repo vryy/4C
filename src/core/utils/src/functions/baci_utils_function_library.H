@@ -10,25 +10,22 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LIB_FUNCTION_LIBRARY_H
-#define BACI_LIB_FUNCTION_LIBRARY_H
+#ifndef BACI_UTILS_FUNCTION_LIBRARY_H
+#define BACI_UTILS_FUNCTION_LIBRARY_H
 
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_scalar.H"
-
-namespace DRT::UTILS
-{
-  class FunctionManager;
-}
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_scalar.H"
 
 namespace CORE::UTILS
 {
   class CubicSplineInterpolation;
-}
-namespace DRT::UTILS
+  class FunctionManager;
+}  // namespace CORE::UTILS
+
+namespace CORE::UTILS
 {
   /// add valid function lines
-  void AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_manager);
+  void AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager);
 
   /**
    * @brief special implementation of a 1D polynomial function
@@ -106,6 +103,6 @@ namespace DRT::UTILS
    private:
     std::unique_ptr<CORE::UTILS::CubicSplineInterpolation> cubic_spline_;
   };
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif

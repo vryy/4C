@@ -15,12 +15,12 @@
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 
 
-#include "baci_lib_function.H"
 #include "baci_poromultiphase_scatra_function_parameters.H"
+#include "baci_utils_function.H"
 
 #include <Sacado.hpp>
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   class FunctionManager;
 }
@@ -32,7 +32,7 @@ namespace POROMULTIPHASESCATRA
    * FunctionOfAnything in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
    */
   template <int dim>
-  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::FunctionOfAnything
+  class PoroMultiPhaseScaTraFunction : public CORE::UTILS::FunctionOfAnything
   {
    public:
     PoroMultiPhaseScaTraFunction();
@@ -67,7 +67,7 @@ namespace POROMULTIPHASESCATRA
   };
 
   /// Attach poro-specific functions to the @p function_manager.
-  void AddValidPoroFunctions(DRT::UTILS::FunctionManager& function_manager);
+  void AddValidPoroFunctions(CORE::UTILS::FunctionManager& function_manager);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:

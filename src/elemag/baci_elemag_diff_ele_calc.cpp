@@ -17,11 +17,11 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electromagnetic.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
@@ -1292,7 +1292,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
     CORE::LINALG::SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
@@ -1309,7 +1309,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = DRT::Problem::Instance()
-               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                .Evaluate(xyz.A(), t, d % numComp);
 
   return;
@@ -1324,7 +1324,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
     CORE::LINALG::SerialDenseMatrix& v) const
 {
   int numComp = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
@@ -1341,7 +1341,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   for (int d = 0; d < v.numRows(); ++d)
   {
     std::vector<double> deriv = DRT::Problem::Instance()
-                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                                     .EvaluateSpatialDerivative(xyz.A(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
@@ -1358,7 +1358,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
     CORE::LINALG::SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
@@ -1375,10 +1375,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = (DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .Evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
                DRT::Problem::Instance()
-                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .Evaluate(xyz.A(), t - (0.5 * dt), d % numComp)) /
            dt;
 

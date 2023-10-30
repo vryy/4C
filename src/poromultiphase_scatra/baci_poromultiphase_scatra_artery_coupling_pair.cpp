@@ -14,7 +14,6 @@
 #include "baci_discretization_geometry_coordinate_system_utils.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_get_functionofanything.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_cnst_1d_art.H"
@@ -22,6 +21,7 @@
 #include "baci_porofluidmultiphase_ele_parameter.H"
 #include "baci_poromultiphase_scatra_artery_coupling_defines.H"
 #include "baci_utils_fad.H"
+#include "baci_utils_get_functionofanything.H"
 
 #include <Epetra_MultiVector.h>
 
@@ -2319,7 +2319,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::EvaluateFunctionAndDeriv(const DRT::UTILS::FunctionOfAnything& funct,
+    dim>::EvaluateFunctionAndDeriv(const CORE::UTILS::FunctionOfAnything& funct,
     const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
     const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
     std::vector<double>& contderivs)
@@ -3561,7 +3561,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::FillFunctionVector(std::vector<const DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
+    dim>::FillFunctionVector(std::vector<const CORE::UTILS::FunctionOfAnything*>& my_funct_vec,
     const std::vector<int>& funct_vec, const std::vector<int>& scale_vec)
 {
   for (unsigned int i = 0; i < funct_vec.size(); i++)
@@ -3580,7 +3580,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::InitializeFunction(const DRT::UTILS::FunctionOfAnything& funct)
+    dim>::InitializeFunction(const CORE::UTILS::FunctionOfAnything& funct)
 {
   // safety check
   if (funct.NumberComponents() != 1) dserror("expected only one component for coupling function!");

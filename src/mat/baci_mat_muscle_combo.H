@@ -11,13 +11,13 @@ active strain approach) with variable time-dependent activation
 #ifndef BACI_MAT_MUSCLE_COMBO_H
 #define BACI_MAT_MUSCLE_COMBO_H
 
-#include "baci_lib_function.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -190,7 +190,7 @@ namespace MAT
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
 
     /// Activation function
-    const DRT::UTILS::FunctionOfSpaceTime* activationFunction_;
+    const CORE::UTILS::FunctionOfSpaceTime* activationFunction_;
   };  // end class Muscle_Combo
 
 }  // end namespace MAT

@@ -3,10 +3,10 @@
 \level 0
 */
 
-#include "baci_lib_function_of_time.H"
+#include "baci_utils_function_of_time.H"
 
 #include "baci_io_linedefinition.H"
-#include "baci_lib_symbolic_expression.H"
+#include "baci_utils_symbolic_expression.H"
 
 namespace
 {
@@ -73,7 +73,7 @@ namespace
   }
 }  // namespace
 
-DRT::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
+CORE::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -82,13 +82,13 @@ DRT::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new DRT::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new CORE::UTILS::SymbolicExpression<ValueType>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
-double DRT::UTILS::SymbolicFunctionOfTime::Evaluate(
+double CORE::UTILS::SymbolicFunctionOfTime::Evaluate(
     const double time, const std::size_t component) const
 {
   std::map<std::string, ValueType> variable_values;
@@ -103,7 +103,7 @@ double DRT::UTILS::SymbolicFunctionOfTime::Evaluate(
   return expr_[component]->Value(variable_values);
 }
 
-double DRT::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
+double CORE::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
     const double time, const std::size_t component) const
 {
   std::map<std::string, FirstDerivativeType> variable_values;
@@ -143,8 +143,8 @@ double DRT::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
   return f_dt;
 }
 
-Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
+    const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -184,7 +184,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const ::DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -201,14 +201,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfTime> DRT::UTILS::TryCreateFunctionOfTime(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const ::DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
     ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
 
     const auto variable = std::invoke(
-        [&line]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
+        [&line]() -> Teuchos::RCP<CORE::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;

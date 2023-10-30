@@ -11,10 +11,10 @@
 
 #include "baci_constraint_penalty.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
 
@@ -222,7 +222,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params
       double curvefac = 1.0;
       if (curvenum >= 0)
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                 time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);

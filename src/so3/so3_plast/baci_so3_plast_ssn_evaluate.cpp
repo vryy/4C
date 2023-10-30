@@ -11,7 +11,6 @@
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_fourieriso.H"
@@ -23,6 +22,7 @@
 #include "baci_so3_ssn_plast_fwd.hpp"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -764,7 +764,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
           (functnum > 0) ? DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                .Evaluate(xrefegp.A(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;

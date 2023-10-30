@@ -9,7 +9,6 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
@@ -23,6 +22,7 @@
 #include "baci_so3_poro.H"
 #include "baci_so3_poro_eletypes.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       }
       const double* coordgpref = xrefe.data();
       double functfac =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(num).Evaluate(
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(num).Evaluate(
               coordgpref, time, 0);
       params.set<double>("scalar", functfac);
     }

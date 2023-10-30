@@ -12,7 +12,6 @@
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_lib_utils_discret.H"
@@ -21,6 +20,7 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -209,7 +209,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
               if (tmp_funct && (*tmp_funct)[j] > 0)
               {
                 return DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
                     .Evaluate(time);
               }
               else
@@ -392,7 +392,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         if (curvenum >= 0)
         {
           curvefac =
-              Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+              Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
                   time);
         }
 

@@ -10,15 +10,15 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_lib_function_library.H"
+#include "baci_utils_function_library.H"
 
 #include "baci_io_control.H"
 #include "baci_io_csv_reader.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_cubic_spline_interpolation.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_manager.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -28,7 +28,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 namespace
 {
 
-  Teuchos::RCP<DRT::UTILS::FunctionOfScalar> CreateLibraryFunctionScalar(
+  Teuchos::RCP<CORE::UTILS::FunctionOfScalar> CreateLibraryFunctionScalar(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -40,7 +40,7 @@ namespace
       std::vector<double> coefficients;
       function_lin_def.ExtractDoubleVector("COEFF", coefficients);
 
-      return Teuchos::rcp(new DRT::UTILS::FastPolynomialFunction(std::move(coefficients)));
+      return Teuchos::rcp(new CORE::UTILS::FastPolynomialFunction(std::move(coefficients)));
     }
     else if (function_lin_def.HaveNamed("CUBIC_SPLINE_FROM_CSV"))
     {
@@ -56,7 +56,7 @@ namespace
           DRT::Problem::Instance()->OutputControlFile()->InputFileName();
       const auto csv_file_path = input_file_path.replace_filename(csv_file);
 
-      return Teuchos::rcp(new DRT::UTILS::CubicSplineFromCSV(csv_file_path.string()));
+      return Teuchos::rcp(new CORE::UTILS::CubicSplineFromCSV(csv_file_path.string()));
     }
     else
       return {Teuchos::null};
@@ -66,9 +66,9 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_manager)
+void CORE::UTILS::AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace DRT::INPUT;
+  using namespace ::DRT::INPUT;
 
   LineDefinition fastpolynomial_funct =
       LineDefinition::Builder()
@@ -87,24 +87,24 @@ void DRT::UTILS::AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_
 
 
 
-DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
+CORE::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
     : mypoly_(std::move(coefficients))
 {
 }
 
-double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
+double CORE::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 {
   return mypoly_.Evaluate(argument);
 }
 
-double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(
+double CORE::UTILS::FastPolynomialFunction::EvaluateDerivative(
     const double argument, const int deriv_order) const
 {
   return mypoly_.EvaluateDerivative(argument, deriv_order);
 }
 
 
-DRT::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
+CORE::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
   auto vector_of_csv_columns = IO::ReadCsv(2, csv_file);
 
@@ -113,13 +113,13 @@ DRT::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 }
 
 
-double DRT::UTILS::CubicSplineFromCSV::Evaluate(const double scalar) const
+double CORE::UTILS::CubicSplineFromCSV::Evaluate(const double scalar) const
 {
   return cubic_spline_->Evaluate(scalar);
 }
 
 
-double DRT::UTILS::CubicSplineFromCSV::EvaluateDerivative(
+double CORE::UTILS::CubicSplineFromCSV::EvaluateDerivative(
     const double scalar, const int deriv_order) const
 {
   return cubic_spline_->EvaluateDerivative(scalar, deriv_order);

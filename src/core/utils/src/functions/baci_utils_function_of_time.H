@@ -3,15 +3,15 @@
 \level 0
 */
 
-#ifndef BACI_LIB_FUNCTION_OF_TIME_H
-#define BACI_LIB_FUNCTION_OF_TIME_H
+#ifndef BACI_UTILS_FUNCTION_OF_TIME_H
+#define BACI_UTILS_FUNCTION_OF_TIME_H
 
 #include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_lib_function_manager.H"
-#include "baci_lib_functionvariables.H"
-#include "baci_lib_symbolic_expression.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function_manager.H"
+#include "baci_utils_functionvariables.H"
+#include "baci_utils_symbolic_expression.H"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /*!
    * \brief interface for time-dependent functions.
@@ -75,7 +75,7 @@ namespace DRT::UTILS
     using FirstDerivativeType = Sacado::Fad::DFad<double>;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<ValueType>>> expr_;
 
 
     //! vector of the function variables and all their definitions
@@ -84,8 +84,8 @@ namespace DRT::UTILS
 
   //! create a vector function of time from multiple expressions
   Teuchos::RCP<FunctionOfTime> TryCreateFunctionOfTime(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+      const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
 
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif

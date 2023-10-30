@@ -10,11 +10,11 @@
 #include "baci_scatra_ele_boundary_calc_elch.H"
 
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |
@@ -155,7 +155,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
   if (curvenum >= 0)
   {
     const double curvefac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
   }
@@ -257,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
     if (curvenum >= 0)
     {
       const double curvefac =
-          DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
       // adjust potential at metal side accordingly
       pot0 *= curvefac;

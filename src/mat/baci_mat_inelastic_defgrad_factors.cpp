@@ -9,13 +9,13 @@
 
 #include "baci_mat_inelastic_defgrad_factors.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_electrode.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+#include "baci_utils_function_of_time.H"
 
 #include <utility>
 
@@ -1134,7 +1134,7 @@ MAT::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(MAT::PAR::Parameter* p
 void MAT::InelasticDefgradTimeFunct::PreEvaluate(Teuchos::ParameterList& params, int gp)
 {
   // evaluate function value for current time step.
-  auto& funct = DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(
+  auto& funct = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(
       Parameter()->FunctNum() - 1);
   const double time = params.get<double>("total time");
   funct_value_ = funct.Evaluate(time);

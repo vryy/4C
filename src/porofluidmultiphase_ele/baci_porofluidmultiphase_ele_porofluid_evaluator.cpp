@@ -9,10 +9,10 @@
 
 #include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
 
-#include "baci_lib_get_functionofanything.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
+#include "baci_utils_get_functionofanything.H"
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
@@ -2955,7 +2955,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline const DRT::UTILS::FunctionOfAnything&
+inline const CORE::UTILS::FunctionOfAnything&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
   const auto& funct = DRT::UTILS::GetFunctionOfAnything(functnum);

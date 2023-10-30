@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_FUNCTIONVARIABLES_H
-#define BACI_LIB_FUNCTIONVARIABLES_H
+#ifndef BACI_UTILS_FUNCTIONVARIABLES_H
+#define BACI_UTILS_FUNCTIONVARIABLES_H
 
-#include "baci_lib_symbolic_expression.H"
+#include "baci_utils_symbolic_expression.H"
 
 #include <Sacado.hpp>
 
@@ -28,7 +28,7 @@ struct periodicstruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /// class that defines the main properties of a time dependent variable
   class FunctionVariable
@@ -75,7 +75,7 @@ namespace DRT::UTILS
 
    private:
     /// parsed function
-    Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>> timefunction_;
+    Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>> timefunction_;
   };
 
 
@@ -138,7 +138,7 @@ namespace DRT::UTILS
     const std::vector<double> times_;
 
     /// vector of parsed functions
-    std::vector<Teuchos::RCP<DRT::UTILS::SymbolicExpression<double>>> timefunction_;
+    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>> timefunction_;
 
 
     /// flag for periodic repetition
@@ -219,6 +219,6 @@ namespace DRT::UTILS
     std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
   };
 
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 #endif

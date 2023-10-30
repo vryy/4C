@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_SYMBOLIC_EXPRESSION_H
-#define BACI_LIB_SYMBOLIC_EXPRESSION_H
+#ifndef BACI_UTILS_SYMBOLIC_EXPRESSION_H
+#define BACI_UTILS_SYMBOLIC_EXPRESSION_H
 
 #include "baci_utils_exceptions.H"
 
@@ -23,7 +23,7 @@
 #include <string>
 
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   // forward declaration
   namespace SYMBOLICEXPRESSIONDETAILS
@@ -135,17 +135,17 @@ namespace DRT::UTILS
 
    private:
     //! Parser for the symbolic expression evaluation
-    std::unique_ptr<DRT::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>> parser_for_value_;
+    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>> parser_for_value_;
 
     //! Parser for the symbolic expression first derivative evaluation
-    std::unique_ptr<DRT::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>
+    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>
         parser_for_firstderivative_;
 
     //! Parser for the symbolic expression second derivative evaluation
-    std::unique_ptr<DRT::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>
+    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>
         parser_for_secondderivative_;
   };
 
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
-#endif  // LIB_SYMBOLIC_EXPRESSION_H
+#endif

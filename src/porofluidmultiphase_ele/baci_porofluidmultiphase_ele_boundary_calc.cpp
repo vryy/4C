@@ -11,10 +11,10 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"  // for curves and functions
 #include "baci_porofluidmultiphase_ele_action.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
+#include "baci_utils_function.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
@@ -220,7 +220,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, dof);
         }
         else

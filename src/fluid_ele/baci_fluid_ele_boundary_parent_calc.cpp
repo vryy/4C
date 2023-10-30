@@ -17,8 +17,6 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_ele.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -35,6 +33,8 @@
 #include "baci_mat_tempdepwater.H"
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -535,7 +535,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+            time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
   // time-curve factor
@@ -2207,7 +2208,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
           functionfac(idim) = DRT::Problem::Instance()
-                                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                   .Evaluate(coordgp.A(), time, idim);
         }
         else
@@ -4893,7 +4894,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             {
               // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) = DRT::Problem::Instance()
-                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                      .Evaluate(coordgp.A(), time, dim);
             }
             else
@@ -5266,7 +5267,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                    .Evaluate(coordgp.A(), time, dim);
           }
           else

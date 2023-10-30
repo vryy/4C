@@ -10,7 +10,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -18,6 +17,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_line.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 
 /*-----------------------------------------------------------------------*
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
 

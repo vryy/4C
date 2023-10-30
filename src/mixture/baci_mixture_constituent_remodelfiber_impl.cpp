@@ -7,7 +7,6 @@ equations
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_constituent_remodelfiber_impl.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_bundle.H"
@@ -17,6 +16,7 @@ equations
 #include "baci_mixture_constituent_remodelfiber_material_exponential.H"
 #include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_utils_function_of_time.H"
 
 #include <algorithm>
 #include <cstdlib>
@@ -324,7 +324,7 @@ double MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateDepositionStretch(
   }
 
   return DRT::Problem::Instance()
-      ->FunctionById<DRT::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
+      ->FunctionById<CORE::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);
 }
 void MIXTURE::MixtureConstituent_RemodelFiberImpl::UpdateHomeostaticValues(

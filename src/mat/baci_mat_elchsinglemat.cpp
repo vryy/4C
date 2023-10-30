@@ -9,9 +9,9 @@ electric potential as degrees of freedom
 /*----------------------------------------------------------------------*/
 #include "baci_mat_elchsinglemat.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_of_time.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -256,7 +256,7 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
   else
   {
     diffusionCoefficient = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                               ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                    DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                .Evaluate(concentration);
   }
@@ -284,7 +284,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double t
   {
     temperatureDependentScaleFactor =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfTime>(functionNumber - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(functionNumber - 1)
             .Evaluate(temperature);
   }
   else
@@ -326,7 +326,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
   else
   {
     diffusion_coeff_conc_deriv = (DRT::Problem::Instance()
-                                      ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                      ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                           DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                       .EvaluateDerivative(concentration));
   }
@@ -376,7 +376,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const dou
   {
     temperatureDependentScaleFactorDeriv =
         DRT::Problem::Instance()
-            ->FunctionById<DRT::UTILS::FunctionOfTime>(functionNumber - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(functionNumber - 1)
             .EvaluateDerivative(temperature);
   }
   else
@@ -427,7 +427,7 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
   else
   {
     conductivity = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(
                            ConductivityConcentrationDependenceFunctNum() - 1)
                        .Evaluate(concentration);
   }
@@ -461,7 +461,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   else
   {
     conductivity_conc_deriv = (DRT::Problem::Instance()
-                                   ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                   ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                        ConductivityConcentrationDependenceFunctNum() - 1)
                                    .EvaluateDerivative(concentration));
   }

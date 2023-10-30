@@ -11,7 +11,6 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_list.H"
@@ -21,6 +20,7 @@
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -533,7 +533,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, dof);
         }
         else
@@ -2548,7 +2548,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       for (int i = 0; i < pnsd; i++) coordgp3D[i] = coordgp(i);
 
       functfac = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                      .Evaluate(coordgp3D.data(), time, 0);
     }
     else

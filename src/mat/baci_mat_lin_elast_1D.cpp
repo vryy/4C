@@ -11,9 +11,9 @@ quantity (e.g. concentration)
 
 #include "baci_mat_lin_elast_1D.H"
 
-#include "baci_lib_function_library.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_library.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

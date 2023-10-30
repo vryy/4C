@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_symbolic_expression.H"
 #include "baci_unittest_utils_assertions_test.H"
+#include "baci_utils_symbolic_expression.H"
 
 
 namespace
@@ -45,25 +45,25 @@ namespace
 
   TEST(SymbolicExpressionTest, TestNoVariables)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression("2.0");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression("2.0");
 
     EXPECT_DOUBLE_EQ(symbolicexpression.Value({}), 2.0);
   }
 
   TEST(SymbolicExpressionTest, TestValue)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*x");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*x");
 
     EXPECT_DOUBLE_EQ(symbolicexpression.Value({{"x", 2.0}}), 4.0);
   }
 
   TEST(SymbolicExpressionTest, TestFirstDeriv)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_bilin(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_bilin(
         "2*Variable1*Constant1*Variable2");
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx(
         "2*Variable1*Variable1*Constant1*Variable2*Variable2");
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_pow2(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_pow2(
         "2*Variable1^2*Constant1*Variable2^2");
     std::map<std::string, double> constants{{"Constant1", 2.0}};
 
@@ -91,19 +91,20 @@ namespace
 
   TEST(SymbolicExpressionTest, TestValidFunctionsAndOperators)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_sincostan(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_sincostan(
         "2*cos(x) * sin(x) * tan(x) + cosh(x) * sinh(x) * tanh(x) + asin(1.0) * acos(0.5) * "
         "atan(1.0) ");
 
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_logexp(" log(exp(1)) * log10(y) - x");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_logexp(
+        " log(exp(1)) * log10(y) - x");
 
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_sqrtheavisidefabs(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_sqrtheavisidefabs(
         "sqrt(4) + heaviside(3.0) + fabs(2.3) / 1^1");
 
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_atan2("atan2(2,4)");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_atan2("atan2(2,4)");
 
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xpow2("x^2");
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx("x * x");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_xpow2("x^2");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx("x * x");
 
     EXPECT_NEAR(
         symbolicexpression_sincostan.Value({{"x", 0.2}, {"y", 0.4}}), 1.4114033869288349, 1.0e-14);
@@ -120,14 +121,14 @@ namespace
 
   TEST(SymbolicExpressionTest, TestValidLiterals)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*pi * 1.0e-3  + 3.0E-4 * x");
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*pi * 1.0e-3  + 3.0E-4 * x");
 
     EXPECT_NEAR(symbolicexpression.Value({{"x", 1.0}}), 0.0065831853071795865, 1.0e-14);
   }
 
   TEST(SymbolicExpressionTest, EvaluateWithMissingVariableThrows)
   {
-    DRT::UTILS::SymbolicExpression<double> symbolicexpression(
+    CORE::UTILS::SymbolicExpression<double> symbolicexpression(
         "2*Variable1*Constant1*Variable2*Variable3");
 
     EXPECT_ANY_THROW(symbolicexpression.Value({{"Variable1", 1.0}, {"Constant1", 1.0}}));
@@ -136,7 +137,7 @@ namespace
   TEST(SymbolicExpressionTest, InvalidOperatorThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        DRT::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), std::runtime_error,
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), std::runtime_error,
         "unexpected token 7");
   }
 
@@ -144,14 +145,14 @@ namespace
   TEST(SymbolicExpressionTest, MissingBracketsThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + 1"),
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + 1"),
         std::runtime_error, "')' expected");
   }
 
   TEST(SymbolicExpressionTest, IncompleteFunctionThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        DRT::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "),
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "),
         std::runtime_error, "unexpected token 1");
   }
 

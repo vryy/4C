@@ -27,7 +27,6 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_selector.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_lib_utils_gid_vector.H"
@@ -54,6 +53,7 @@
 #include "baci_scatra_turbulence_hit_initial_scalar_field.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 #include "baci_scatra_utils.H"
+#include "baci_utils_function.H"
 
 #include <unordered_set>
 #include <utility>
@@ -1219,7 +1219,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
         for (int index = 0; index < nsd_; ++index)
         {
-          double value = problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+          double value = problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
                              .Evaluate(lnode->X(), time_, index);
 
           // get global and local dof IDs
@@ -1697,7 +1697,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval =
-              problem_->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+              problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                   .Evaluate(lnode->X(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");

@@ -10,11 +10,11 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_nurbs_discret.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -328,7 +328,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                            .Evaluate(actnode->X(), time, onesetj);
         }
 
@@ -530,7 +530,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
         funct_num = (*funct)[onesetj];
         if (funct_num > 0)
           functimederivfac = DRT::Problem::Instance()
-                                 ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                                  .EvaluateTimeDerivative(actnode->X(), time, deg, onesetj);
       }
 

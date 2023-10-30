@@ -8,7 +8,7 @@
 #ifndef BACI_MODULE_REGISTRY_CALLBACKS_H
 #define BACI_MODULE_REGISTRY_CALLBACKS_H
 
-#include "baci_lib_function_manager.H"
+#include "baci_utils_function_manager.H"
 
 #include <functional>
 
@@ -36,7 +36,7 @@ namespace BACI
      * Allow the module to attach any custom Function to the @p function_manager object. Inside this
      * callback, a module should call `FunctionManager::AddFunctionDefinition`.
      */
-    std::function<void(DRT::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
+    std::function<void(CORE::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
   };
 
 }  // namespace BACI

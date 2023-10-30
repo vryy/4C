@@ -9,7 +9,6 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -22,6 +21,7 @@
 #include "baci_membrane.H"
 #include "baci_membrane_service.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -504,7 +504,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
       functfacs[i] = DRT::Problem::Instance()
-                         ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                          .Evaluate(time);
   }
 

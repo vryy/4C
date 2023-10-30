@@ -7,10 +7,10 @@
 
 #include "baci_shell7p_ele_neumann_evaluator.H"
 
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_shell7p_ele_calc_lib.H"
+#include "baci_utils_function.H"
 
 void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -236,7 +236,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         function_scale_factors[dim] =
             (function_number > 0)
                 ? DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
                       .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                 : 1.0;
       }

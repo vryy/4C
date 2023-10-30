@@ -19,7 +19,6 @@
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_inpar_material.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_arrhenius_pv.H"
 #include "baci_mat_carreauyasuda.H"
@@ -36,6 +35,7 @@
 #include "baci_mat_tempdepwater.H"
 #include "baci_mat_yoghurt.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -451,11 +451,11 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           {
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, idim);
             if (fldparatimint_->IsNewOSTImplementation())
               functfacn = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
           else
@@ -490,11 +490,11 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           {
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()
-                           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, idim);
             if (fldparatimint_->IsNewOSTImplementation())
               functfacn = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
           else

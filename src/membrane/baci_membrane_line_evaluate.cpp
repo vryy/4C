@@ -9,10 +9,10 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_membrane.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_function.H"
 
 
 /*----------------------------------------------------------------------*
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
 
               // evaluate function at current gauss point
               functfac = DRT::Problem::Instance()
-                             ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
 

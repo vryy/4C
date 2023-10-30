@@ -15,12 +15,12 @@
 #include "baci_io.H"
 #include "baci_io_pstream.H"  // has to go before io.H
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_truss3.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <iostream>
 #include <utility>
@@ -239,20 +239,20 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] *
                         DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
                             .Evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
                         DRT::Problem::Instance()
-                            ->FunctionById<DRT::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
+                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
                             .Evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * DRT::Problem::Instance()
-                                              ->FunctionById<DRT::UTILS::FunctionOfTime>(
+                                              ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
                                               .Evaluate(total_time)
                   : (*disploffset)[dof];
@@ -270,11 +270,11 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
             force_disp =
                 DRT::Problem::Instance()
-                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
                     .Evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (DRT::Problem::Instance()
-                                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
                                     .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
           }

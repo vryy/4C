@@ -16,7 +16,6 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_air_0d_O2_saturation.H"
@@ -25,6 +24,7 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_red_airways_evaluation_data.h"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

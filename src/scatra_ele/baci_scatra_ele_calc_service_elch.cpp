@@ -10,8 +10,7 @@
 
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_discret.H"  // for time curve in body force
-#include "baci_lib_function_of_time.H"
+#include "baci_lib_discret.H"        // for time curve in body force
 #include "baci_lib_globalproblem.H"  // consistency check of formulation and material
 #include "baci_lib_utils.H"
 #include "baci_mat_elchmat.H"
@@ -23,6 +22,7 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch.H"
+#include "baci_utils_function_of_time.H"
 
 
 /*----------------------------------------------------------------------*
@@ -408,7 +408,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   if (functnum >= 0)
   {
     const double functfac =
-        DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(functnum).Evaluate(time);
+        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
+            time);
 
     // adjust potential at metal side accordingly
     pot0 *= functfac;

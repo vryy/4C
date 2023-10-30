@@ -12,8 +12,8 @@
 #ifndef BACI_MAT_MUSCLE_UTILS_H
 #define BACI_MAT_MUSCLE_UTILS_H
 
-#include "baci_lib_function.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_function.H"
 
 #include <vector>
 
@@ -269,7 +269,7 @@ namespace MAT
        * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
        */
       double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-          const DRT::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+          const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
           const CORE::LINALG::Matrix<1, 3> &x);
 
       /*!

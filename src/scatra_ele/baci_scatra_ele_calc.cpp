@@ -14,7 +14,6 @@
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electrode.H"
@@ -27,6 +26,7 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_turbulence.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -837,7 +837,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
         const double functfac =
             (functnum > 0)
                 ? DRT::Problem::Instance()
-                      ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                       .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), idof)
                 : 1.0;
         (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * functfac;
@@ -2064,7 +2064,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
     {
       current[d] +=
           funct_(jnode) * DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functno - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functno - 1)
                               .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), d);
     }
   }

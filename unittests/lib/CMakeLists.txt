@@ -5,12 +5,9 @@ set(SOURCE_LIST
     baci_demangle_test.cpp
     baci_discretization_nodal_coordinates_test.cpp
     baci_domainreader_test.cpp
-    baci_function_library_test.cpp
-    baci_functionvariables_test.cpp
     baci_gridgenerator_test.cpp
     baci_inputreader_test.cpp
     baci_linedefinition_test.cpp
-    baci_symbolic_expression_test.cpp
     baci_utils_reference_configuration_test.cpp
     )
 

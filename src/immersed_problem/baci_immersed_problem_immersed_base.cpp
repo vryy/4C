@@ -12,8 +12,8 @@
 #include "baci_adapter_fld_wrapper.H"
 #include "baci_adapter_str_fsiwrapper_immersed.H"
 #include "baci_io_control.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_utils_function_of_time.H"
 
 
 
@@ -465,9 +465,9 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum >= 0 && usetime)
-          curvefac =
-              DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                  time);
+          curvefac = DRT::Problem::Instance()
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                         .Evaluate(time);
 
         // Get ConditionID of current condition if defined and write value in parameterlist
         const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");

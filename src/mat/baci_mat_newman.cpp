@@ -12,9 +12,9 @@ species
 
 #include "baci_mat_newman.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_utils_function_of_time.H"
 
 #include <vector>
 
@@ -140,7 +140,7 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
     trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
     trans = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                 .Evaluate(cint);
 
   return trans;
@@ -158,7 +158,7 @@ double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
     firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
     firstderiv = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;
@@ -177,7 +177,7 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     therm = 1.0;
   else
     therm = DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                 .Evaluate(cint);
 
   return therm;
@@ -197,7 +197,7 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
     firstderiv = 0.0;
   else
     firstderiv = DRT::Problem::Instance()
-                     ->FunctionById<DRT::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;

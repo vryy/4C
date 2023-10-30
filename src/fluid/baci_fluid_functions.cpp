@@ -59,7 +59,7 @@ namespace
   }
 
 
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
+  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
       const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -366,12 +366,12 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
 
-void FLD::AddValidFluidFunctions(DRT::UTILS::FunctionManager& function_manager)
+void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
   auto beltrami =
       DRT::INPUT::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();

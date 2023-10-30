@@ -15,7 +15,6 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_io_control.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_serialdensevector.H"
@@ -24,6 +23,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
@@ -600,7 +600,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
       {
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
       }
 
@@ -750,11 +750,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
       {
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
-                               ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
 
         functfac = DRT::Problem::Instance()
-                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                        .Evaluate(position.values(), time, rr);
       }
 

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_lib_function.H"
 #include "baci_mat_stvenantkirchhoff.H"
+#include "baci_utils_function.H"
 
 #ifndef BACI_STRUCTURE_NEW_FUNCTIONS_H
 #define BACI_STRUCTURE_NEW_FUNCTIONS_H
@@ -18,20 +18,20 @@
 namespace DRT
 {
   class Discretization;
-  namespace UTILS
-  {
-    class FunctionManager;
-  }
 }  // namespace DRT
+namespace CORE::UTILS
+{
+  class FunctionManager;
+}
 
 
 namespace STR
 {
   /// add valid structure-specific function lines
-  void AddValidStructureFunctions(DRT::UTILS::FunctionManager& function_manager);
+  void AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureFunction : public CORE::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
@@ -48,7 +48,7 @@ namespace STR
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIStructureForceFunction : public DRT::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureForceFunction : public CORE::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);

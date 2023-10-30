@@ -12,7 +12,6 @@
 #include "baci_structure_new_integrator.H"
 
 #include "baci_io_pstream.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_solver_nonlin_nox_aux.H"
@@ -26,6 +25,7 @@
 #include "baci_structure_new_timint_noxinterface.H"
 #include "baci_utils_epetra_exceptions.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_Vector.h>
 
@@ -131,7 +131,7 @@ void STR::Integrator::SetInitialDisplacement(
           // evaluate component k of spatial function
           const double initialval =
               DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                   .Evaluate(lnode->X(), GlobalState().GetTimeN(), d);
 
           const int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);

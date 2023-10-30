@@ -15,8 +15,8 @@ boundary of the actual domain
 
 #include "baci_coupling_matchingoctree.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_function_of_time.H"
 
 
 
@@ -214,7 +214,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curve_).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -733,7 +733,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curve_).Evaluate(
+            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else

@@ -16,13 +16,13 @@
 #include "baci_inpar_lubrication.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lubrication_ele_action.H"
 #include "baci_lubrication_ele_calc_utils.H"
 #include "baci_lubrication_ele_parameter.H"
 #include "baci_mat_lubrication_mat.H"
+#include "baci_utils_function.H"
 #include "baci_utils_singleton_owner.H"
 
 
@@ -1345,12 +1345,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
         gradpre.Multiply(derxy_, eprenp_);
 
         pre_exact = DRT::Problem::Instance()
-                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                         .Evaluate(position, t, 0);
 
         std::vector<double> gradpre_exact_vec =
             DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
 
         if (gradpre_exact_vec.size())

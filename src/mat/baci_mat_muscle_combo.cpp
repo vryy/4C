@@ -151,7 +151,7 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
       {
         params_ = static_cast<MAT::PAR::Muscle_Combo*>(mat);
         activationFunction_ =
-            &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+            &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                 params_->actFunctId_ - 1);
       }
       else
@@ -171,7 +171,7 @@ void MAT::Muscle_Combo::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 
-  activationFunction_ = &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+  activationFunction_ = &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
       params_->actFunctId_ - 1);
 }
 

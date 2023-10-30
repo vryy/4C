@@ -12,7 +12,6 @@
 #include "baci_coupling_volmortar_shape.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_scatra_mat_multiscale.H"
@@ -22,6 +21,7 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_turbulence.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -2035,12 +2035,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
           gradphi.Multiply(derxy_, ephinp_[k]);
 
           phi_exact = DRT::Problem::Instance()
-                          ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                           .Evaluate(position, t, k);
 
           std::vector<double> gradphi_exact_vec =
               DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                   .EvaluateSpatialDerivative(position, t, k);
 
           if (gradphi_exact_vec.size())

@@ -19,8 +19,6 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_lib_function.H"
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -28,6 +26,8 @@
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -2135,7 +2135,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
       if (functnum > 0)
         functtimefac[i] = DRT::Problem::Instance()
-                              ->FunctionById<DRT::UTILS::FunctionOfTime>(functnum - 1)
+                              ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                               .Evaluate(time);
 
       load_vector_neumann(i) *= functtimefac[i];
@@ -2597,7 +2597,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
       {
         functionfac =
             DRT::Problem::Instance()
-                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
                 .Evaluate(X_ref.data(), time, idof);
       }
       else

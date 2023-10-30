@@ -17,19 +17,21 @@
 
 #include <vector>
 
-namespace CORE::LINALG
+namespace CORE
 {
-  class SerialDenseMatrix;
-  class SerialDenseVector;
-}  // namespace CORE::LINALG
+  namespace LINALG
+  {
+    class SerialDenseMatrix;
+    class SerialDenseVector;
+  }  // namespace LINALG
+  namespace UTILS
+  {
+    class FunctionOfAnything;
+  }
+}  // namespace CORE
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    // forward declaration
-    class FunctionOfAnything;
-  }  // namespace UTILS
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
@@ -2005,7 +2007,7 @@ namespace DRT
             ) override;
 
         //! cast to VarExp-function
-        [[nodiscard]] const DRT::UTILS::FunctionOfAnything& Function(int functnum) const;
+        [[nodiscard]] const CORE::UTILS::FunctionOfAnything& Function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;

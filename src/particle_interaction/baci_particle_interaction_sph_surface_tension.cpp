@@ -10,7 +10,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_surface_tension.H"
 
-#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_interface.H"
@@ -24,6 +23,7 @@
 #include "baci_particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_function_of_time.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -782,7 +782,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   double timefac = 1.0;
   if (timerampfct_ > 0)
     timefac = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfTime>(timerampfct_ - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 
   // iterate over fluid particle types
@@ -833,7 +833,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
   double timefac = 1.0;
   if (timerampfct_ > 0)
     timefac = DRT::Problem::Instance()
-                  ->FunctionById<DRT::UTILS::FunctionOfTime>(timerampfct_ - 1)
+                  ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
