@@ -8,8 +8,8 @@ set -e
 
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
-NPROCS=${NPROCS=4}
-#VERSION=""
+NPROCS=${NPROCS:=4}
+VERSION=cd1f2de822758156e2fc24a6cefeeb01dc83436d
 #CHECKSUM=""
 
 
@@ -19,7 +19,7 @@ CMAKE_COMMAND=cmake
 
 git clone https://github.com/trilinos/Trilinos.git
 cd Trilinos
-git checkout cd1f2de822758156e2fc24a6cefeeb01dc83436d
+git checkout $VERSION
 git apply ${SCRIPT_DIR}/trilinos_for_baci.patch && git apply ${SCRIPT_DIR}/trilinos_for_baci_output.patch
 cd .. && mkdir trilinos_build && cd trilinos_build
 
