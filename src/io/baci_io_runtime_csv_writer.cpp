@@ -176,8 +176,11 @@ namespace IO
         std::string word;
         std::getline(sline, word, ',');
 
-        // skip first line of restart file
-        if (word == "step") continue;
+        if (word == "step")
+        {
+          sectionpriorrestart << line << "\n";
+          continue;
+        }
 
         // get time step of current line
         const int timestep = std::stoi(word);
