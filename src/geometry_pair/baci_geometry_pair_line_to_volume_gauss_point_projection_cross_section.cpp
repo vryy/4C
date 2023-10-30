@@ -24,12 +24,12 @@ line.
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::Setup()
+GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
+    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const DRT::Element* element1,
+    const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+    : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {
-  // Call Setup on the base class.
-  GeometryPairLineToVolume<scalar_type, line, volume>::Setup();
-
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
   int line_element_id = this->Element1()->Id();
@@ -59,9 +59,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
         line_triad_interpolation) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Get the Gauss point projection tracker for this line element.
   std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
 
@@ -162,9 +159,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
     const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Only zero one segments are expected.
   if (segments.size() > 1)
     dserror(

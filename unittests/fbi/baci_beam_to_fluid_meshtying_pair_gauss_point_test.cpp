@@ -90,9 +90,8 @@ namespace
       std::vector<const DRT::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
-      pair.CreateGeometryPair(evaluation_data_);
+      pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.Init(intersection_params, pair_elements);
-      pair.CastGeometryPair()->Setup();
       pair.ele1posref_ = q_beam;
       pair.ele2posref_ = q_fluid;
 

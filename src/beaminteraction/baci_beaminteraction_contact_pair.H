@@ -331,13 +331,15 @@ namespace BEAMINTERACTION
      * Per default no geometry pair is created. The geometry pair has to be created before init is
      * called on the contact pair.
      *
+     * @param element1 Pointer to the first element
+     * @param element2 Pointer to the second element
+     *
      * @param geometry_evaluation_data_ptr (in) Geometry evaluation data for the geometry pair.
      */
-    virtual void CreateGeometryPair(
+    virtual void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
-      if (isinit_)
-        dserror("If a geometry pair is created, it has has to be done before Init is called.");
+      dserror("CreateGeometryPair has to be implemented in the derived class.");
     };
 
     /**

@@ -66,10 +66,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<9, 1, double> q_solid;
@@ -103,10 +101,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates and normals for the solid element.
     CORE::LINALG::Matrix<9, 1, double> q_solid;
@@ -141,10 +137,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<18, 1, double> q_solid;
@@ -178,10 +172,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates and normals for the solid element.
     CORE::LINALG::Matrix<18, 1, double> q_solid;
@@ -216,10 +208,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the normals on the solid element.
     // Define the coordinates for the solid element.
@@ -254,10 +244,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates and normals for the solid element.
     CORE::LINALG::Matrix<12, 1, double> q_solid(true);
@@ -292,10 +280,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<24, 1, double> q_solid;
@@ -329,10 +315,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<24, 1, double> q_solid;
@@ -367,10 +351,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<27, 1, double> q_solid;
@@ -404,10 +386,8 @@ namespace
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair(evaluation_data_);
+        pair(beam.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates and normals for the solid element.
     CORE::LINALG::Matrix<27, 1, double> q_solid;
@@ -447,10 +427,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<9, 1, double> q_solid;
@@ -499,10 +477,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<9, 1, double> q_solid;
@@ -552,10 +528,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<18, 1, double> q_solid;
@@ -604,10 +578,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<18, 1, double> q_solid;
@@ -656,10 +628,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<12, 1, double> q_solid;
@@ -708,10 +678,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<12, 1, double> q_solid;
@@ -761,10 +729,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<24, 1, double> q_solid;
@@ -813,10 +779,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<24, 1, double> q_solid;
@@ -866,10 +830,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<27, 1, double> q_solid;
@@ -918,10 +880,8 @@ namespace
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
-        pair(evaluation_data_);
+        pair(element_1.get(), nullptr, evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), nullptr);
-    pair.Setup();
 
     // Define the coordinates for the solid element.
     CORE::LINALG::Matrix<27, 1, double> q_solid;

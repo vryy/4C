@@ -80,7 +80,7 @@ namespace
       std::vector<const DRT::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
-      contact_pair.CreateGeometryPair(evaluation_data_);
+      contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       contact_pair.Init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
@@ -88,7 +88,6 @@ namespace
       CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
       CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
       CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
-      contact_pair.CastGeometryPair()->Setup();
       contact_pair.ele1posref_ = q_beam;
       contact_pair.ele2posref_ = q_solid;
       contact_pair.CastGeometryPair()->Evaluate(

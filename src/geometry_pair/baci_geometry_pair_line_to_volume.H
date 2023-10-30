@@ -65,21 +65,13 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolume(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
-        : GeometryPair(), line_to_3d_evaluation_data_(line_to_3d_evaluation_data){};
+    GeometryPairLineToVolume(const DRT::Element* element1, const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToVolume() override{};
-
-    /**
-     * \brief Initialize the pair.
-     * @param element1 Pointer to the first element.
-     * @param element2 Pointer to the second element.
-     */
-    void Init(const DRT::Element* element1, const DRT::Element* element2) override;
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before

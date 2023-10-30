@@ -47,19 +47,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjectionCrossSection(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
+    GeometryPairLineToVolumeGaussPointProjectionCrossSection(const DRT::Element* element1,
+        const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToVolumeGaussPointProjectionCrossSection() override{};
-
-    /**
-     * \brief Setup the projection tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief Try to project the points on the surface of the line to the volume.

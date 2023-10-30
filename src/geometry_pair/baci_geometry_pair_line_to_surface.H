@@ -65,23 +65,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface(const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
-            line_to_surface_evaluation_data)
-        : GeometryPair(),
-          line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
-          is_unit_test_(false){};
+    GeometryPairLineToSurface(const DRT::Element* element1, const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
+            line_to_surface_evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToSurface() override{};
-
-    /**
-     * \brief Initialize the pair.
-     * @param element1 Pointer to the first element.
-     * @param element2 Pointer to the second element.
-     */
-    void Init(const DRT::Element* element1, const DRT::Element* element2) override;
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
@@ -270,30 +261,10 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceFADWrapper(
+    GeometryPairLineToSurfaceFADWrapper(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>>& double_geometry_pair)
-        : base_class(double_geometry_pair->GetEvaluationData()),
+        : base_class(element1, element2, double_geometry_pair->GetEvaluationData()),
           geometry_pair_double_(double_geometry_pair){};
-
-    /**
-     * \brief Initialize the pair.
-     * @param element1 Pointer to the first element.
-     * @param element2 Pointer to the second element.
-     */
-    void Init(const DRT::Element* element1, const DRT::Element* element2) override
-    {
-      base_class::Init(element1, element2);
-      geometry_pair_double_->Init(element1, element2);
-    };
-
-    /**
-     * \brief Setup the pair.
-     */
-    void Setup() override
-    {
-      base_class::Setup();
-      geometry_pair_double_->Setup();
-    }
 
     /**
      * \brief Set the pointer to the second element.

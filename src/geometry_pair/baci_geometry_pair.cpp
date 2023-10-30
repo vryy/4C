@@ -9,34 +9,3 @@ problems.
 
 
 #include "baci_geometry_pair.H"
-
-
-/**
- *
- */
-GEOMETRYPAIR::GeometryPair::GeometryPair()
-    : isinit_(false), issetup_(false), element1_(nullptr), element2_(nullptr)
-{
-  // Empty constructor.
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::Init(const DRT::Element* element1, const DRT::Element* element2)
-{
-  element1_ = element1;
-  element2_ = element2;
-
-  isinit_ = true;
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::Setup()
-{
-  CheckInit();
-
-  issetup_ = true;
-}

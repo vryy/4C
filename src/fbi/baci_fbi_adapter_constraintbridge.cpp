@@ -68,7 +68,7 @@ void ADAPTER::FBIConstraintBridge::CreatePair(const std::vector<DRT::Element con
 
   // create the underlying geometrypair doing the integration (segment or gauss point projection
   // based)
-  newinteractionpair->CreateGeometryPair(GetGeometryData());
+  newinteractionpair->CreateGeometryPair(elements[0], elements[1], GetGeometryData());
   newinteractionpair->Init(GetParams(), elements);
   newinteractionpair->Setup();
 

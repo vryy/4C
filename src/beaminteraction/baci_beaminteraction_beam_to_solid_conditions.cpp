@@ -90,7 +90,7 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
   if (contact_pair != Teuchos::null)
   {
     // Create the geometry pair on the beam contact pair.
-    contact_pair->CreateGeometryPair(geometry_evaluation_data_);
+    contact_pair->CreateGeometryPair(ele_ptrs[0], ele_ptrs[1], geometry_evaluation_data_);
 
     // Add to the internal vector which keeps track of the created contact pairs.
     condition_contact_pairs_.push_back(contact_pair);

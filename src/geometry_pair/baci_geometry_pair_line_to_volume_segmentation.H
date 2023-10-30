@@ -42,19 +42,13 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeSegmentation(
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-        : GeometryPairLineToVolume<scalar_type, line, volume>(evaluation_data){};
+    GeometryPairLineToVolumeSegmentation(const DRT::Element* element1, const DRT::Element* element2,
+        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToVolumeSegmentation() override{};
-
-    /**
-     * \brief Setup the segment tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief This method performs the segmentation of the line with the volume.

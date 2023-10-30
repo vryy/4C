@@ -99,9 +99,7 @@ namespace
         {
           geometry_pairs.push_back(
               Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>(
-                  evaluation_data_)));
-          geometry_pairs.back()->Init(line.get(), volume.get());
-          geometry_pairs.back()->Setup();
+                  line.get(), volume.get(), evaluation_data_)));
         }
       }
       segments_vector.resize(geometry_pairs.size());

@@ -19,11 +19,13 @@
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>::Setup()
+GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line,
+    surface>::GeometryPairLineToSurfaceSegmentation(const DRT::Element* element1,
+    const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
+    : GeometryPairLineToSurface<scalar_type, line, surface>(
+          element1, element2, line_to_surface_evaluation_data)
 {
-  // Call Setup on the base class.
-  GeometryPairLineToSurface<scalar_type, line, surface>::Setup();
-
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
@@ -47,9 +49,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surf
     std::vector<LineSegment<scalar_type>>& segments,
     const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
-  // Check if the element is initialized.
-  this->CheckInitSetup();
-
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>>::Evaluate(
       this, q_line, q_surface, segments, nodal_normals);

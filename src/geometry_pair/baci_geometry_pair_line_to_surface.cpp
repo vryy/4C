@@ -23,12 +23,13 @@
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Init(
-    const DRT::Element* element1, const DRT::Element* element2)
+GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPairLineToSurface(
+    const DRT::Element* element1, const DRT::Element* element2,
+    const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
+    : GeometryPair(element1, element2),
+      line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
+      is_unit_test_(false)
 {
-  // Call init of base class.
-  GeometryPair::Init(element1, element2);
-
   // For the current implementation, the line element has to be on the same processor as the pair
   // object. This is because the tracking vector in LineTo3DEvaluationData is only local and we
   // need this vector for segmentation e.t.c.

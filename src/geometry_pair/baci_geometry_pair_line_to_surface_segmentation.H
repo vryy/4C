@@ -42,20 +42,15 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceSegmentation(
+    GeometryPairLineToSurfaceSegmentation(const DRT::Element* element1,
+        const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
-            line_to_surface_evaluation_data)
-        : GeometryPairLineToSurface<scalar_type, line, surface>(line_to_surface_evaluation_data){};
+            line_to_surface_evaluation_data);
 
     /**
      * \brief Destructor.
      */
     ~GeometryPairLineToSurfaceSegmentation() override{};
-
-    /**
-     * \brief Setup the segment tracker for this line element.
-     */
-    void Setup() override;
 
     /**
      * \brief This method performs the segmentation of the line with the surface (and its normal
