@@ -93,7 +93,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line2
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu_nonlinear.xml
 -----------------------------------------------------------------------MATERIALS

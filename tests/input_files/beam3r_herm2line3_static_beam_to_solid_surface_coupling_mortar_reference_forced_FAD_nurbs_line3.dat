@@ -74,7 +74,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line3
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 COUPLING_TYPE                         reference_configuration_forced_to_zero_fad
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 157 QUANTITY dispx VALUE -0.46994666390678214 TOLERANCE 1e-10

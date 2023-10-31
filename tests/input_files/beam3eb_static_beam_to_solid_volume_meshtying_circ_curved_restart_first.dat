@@ -90,7 +90,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_cross_section
 INTEGRATION_POINTS_CIRCUMFERENCE      24
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3eb_static_beam_to_solid_volume_meshtying_circ_curved.xml
 -----------------------------------------------------------------------MATERIALS

@@ -30,7 +30,7 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
     strategy_ = Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::LineTo3DStrategy>(
         input_parameter_list, "GEOMETRY_PAIR_STRATEGY");
 
-    n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEARCH_POINTS");
+    n_search_points_ = input_parameter_list.get<int>("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS");
 
     gauss_rule_ =
         INPAR::GEOMETRYPAIR::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));

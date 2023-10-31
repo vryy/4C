@@ -75,7 +75,7 @@ CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line2
 GAUSS_POINTS                          6
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 ---------------------------------------------------------BOUNDINGVOLUME STRATEGY
 WRITE_GEOMETRIC_SEARCH_VISUALIZATION  yes
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

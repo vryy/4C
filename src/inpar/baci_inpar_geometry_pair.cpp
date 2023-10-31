@@ -32,8 +32,8 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of search points for segmentation.
-  DRT::INPUT::IntParameter(
-      "GEOMETRY_PAIR_SEARCH_POINTS", 6, "Number of search points for segmentation", &list);
+  DRT::INPUT::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
+      "Number of search points for segmentation", &list);
 
   // Number of integration points on the line.
   DRT::INPUT::IntParameter(

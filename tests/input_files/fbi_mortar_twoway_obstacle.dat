@@ -19,7 +19,7 @@ PENALTY_PARAMETER                     10
 MESHTYING_DISCRETIZATION              mortar
 CONSTRAINT_STRATEGY                   penalty
 GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           5
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           5
 MORTAR_SHAPE_FUNCTION                 line3
 SEARCH_RADIUS                         0.2
 ---------------------------------FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT

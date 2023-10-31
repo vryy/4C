@@ -86,7 +86,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line3
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 ROTATIONAL_COUPLING                   yes
 ROTATIONAL_COUPLING_PENALTY_PARAMETER   1
 ROTATIONAL_COUPLING_SURFACE_TRIAD      surface_cross_section_director
