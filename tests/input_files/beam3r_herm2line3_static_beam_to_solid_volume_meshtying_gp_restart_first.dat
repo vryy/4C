@@ -71,7 +71,7 @@ PENALTY_PARAMETER                     0.0
 GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_to_segment
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3r_herm2line3_static_beam_to_solid_volume_meshtying_gp_restart.xml
 -----------------------------------------------------------------------MATERIALS

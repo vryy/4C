@@ -41,7 +41,7 @@ namespace GEOMETRYPAIR
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief This class contains static methods for common lint-to-xxx algorithms.
+   * \brief This class contains static methods for common line-to-xxx algorithms.
    *
    * This class contains common methods for line-to-3D (volume or surface with normal direction)
    * interactions.
@@ -135,7 +135,6 @@ namespace GEOMETRYPAIR
      * @param pair (in) Pointer to the pair object that is being evaluated.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_other (in) Degrees of freedom for the other geometry.
-     * @param gauss_points (in) Gauss points to project.
      * @param segment (in/out) Vector with found projection points.
      * @param optional_args (in) Optional - Normals on the nodes for surfaces.
      * @tparam optional_type Parameter packs template type for optional_args.
@@ -144,7 +143,6 @@ namespace GEOMETRYPAIR
     static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
         const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
         const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points,
         LineSegment<scalar_type>& segment, optional_type... optional_args);
 
     /**

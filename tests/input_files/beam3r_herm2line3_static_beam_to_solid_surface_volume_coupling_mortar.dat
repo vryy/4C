@@ -83,7 +83,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line4
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 --------------------------------BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
@@ -91,7 +91,7 @@ GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line3
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 COUPLING_TYPE                         reference_configuration_forced_to_zero
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 3.14059513657657163e-01 TOLERANCE 1e-10

@@ -40,6 +40,16 @@ namespace INPAR
     };
 
     /**
+     * Flag on what to do if not all Gauss points of a segment project
+     */
+    enum class NotAllGaussPointsProjectValidAction
+    {
+      fail,     // Raise an error
+      warning,  // Print a warning message to the terminal
+      proceed   // Continue the evaluation of the geometry pair
+    };
+
+    /**
      * Method to be used for normals in surface pairs.
      */
     enum class SurfaceNormals

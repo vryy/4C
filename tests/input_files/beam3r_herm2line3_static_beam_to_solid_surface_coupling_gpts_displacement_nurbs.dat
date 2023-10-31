@@ -73,7 +73,7 @@ PENALTY_PARAMETER                     50
 GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_to_segment
 GEOMETRY_PAIR_STRATEGY                segmentation
-GEOMETRY_PAIR_SEARCH_POINTS           2
+GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 COUPLING_TYPE                         displacement
 --------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 157 QUANTITY dispx VALUE -0.45968620542231875 TOLERANCE 1e-10
