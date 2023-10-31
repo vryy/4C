@@ -45,14 +45,14 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: e52cd178
+  BACI_DOCKER_DEPENDENCIES_HASH: 47a26ae9
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
 .compute-dependencies-hash: &compute-dependencies-hash
-# compute short hash from contents of folder dependencies and docker
-- COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -type f -exec sha1sum
-  {} \; | sort | sha1sum | cut -c -8`
+# compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
+- COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -not -wholename '*/trilinos_develop/*'
+  -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8`
 
 before_script:
 - git config --global --add safe.directory ${CI_PROJECT_DIR}
