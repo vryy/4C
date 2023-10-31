@@ -59,6 +59,15 @@ namespace GEOMETRYPAIR
     inline unsigned int GetNumberOfSearchPoints() const { return n_search_points_; }
 
     /**
+     * \brief Get the flaf on what to do if not all Gauss points of a segment project valid.
+     */
+    inline INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
+    GetNotAllGaussPointsProjectValidAction() const
+    {
+      return not_all_gauss_points_project_valid_action_;
+    }
+
+    /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
@@ -119,6 +128,10 @@ namespace GEOMETRYPAIR
 
     //! Number of points for segmentation search.
     unsigned int n_search_points_;
+
+    //! What to do if not all Gauss points of a segment project valid
+    INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
+        not_all_gauss_points_project_valid_action_;
 
     //! Segment tracking vector for segmentation. We use double in this case, because otherwise the
     //! class would have to be templated on the type of this tracker.
