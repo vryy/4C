@@ -12,12 +12,14 @@
 
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
 
+#include "baci_beam3_base.H"
 #include "baci_beam3_reissner.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
 #include "baci_geometry_pair_line_to_volume_segmentation_geometry_functions_test.H"
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_so3_hex27.H"
+#include "baci_unittest_utils_assertions_test.H"
 
 
 namespace
@@ -334,4 +336,122 @@ namespace
     }
   }
 
+  /**
+   * Test intersections between a he8 element and a single line element
+   */
+  TEST_F(GeometryPairLineToVolumeSegmentationTest, TestHex8WithLine)
+  {
+    // Definition of variables for this test case.
+    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
+        geometry_pairs;
+
+    // Get the geometry.
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+
+    // Vector with vector of segments for Evaluate.
+    std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
+
+    // Create and evaluate the geometry pairs.
+    CreateEvaluatePairs(
+        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+
+    // Check results.
+    {
+      // Two segments should be found.
+      EXPECT_EQ(segments_vector[0].size(), 2);
+
+      // Check the segment coordinates on the line.
+      EXPECT_NEAR(
+          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(-0.9435487116990338, segments_vector[0][0].GetEtaB(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(-0.03868932051359714, segments_vector[0][1].GetEtaA(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(0.9822380322126314, segments_vector[0][1].GetEtaB(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test that non valid projected Gauss points can be handled correctly
+   */
+  TEST_F(GeometryPairLineToVolumeSegmentationTest, TestNonValidGaussPointsHex8)
+  {
+    // Definition of variables for this test case.
+    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
+        geometry_pairs;
+
+    // Get the geometry.
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+
+    // We change the default settings here, to run into the case where the obtained segment has
+    // Gauss points that do not project valid
+    Teuchos::ParameterList line_to_volume_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
+    line_to_volume_params_list.set(
+        "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "proceed");
+    evaluation_data_ =
+        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+
+    // Vector with vector of segments for Evaluate.
+    std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
+
+    // Create and evaluate the geometry pairs.
+    CreateEvaluatePairs(
+        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+
+    // Check results.
+    {
+      EXPECT_EQ(segments_vector[0].size(), 1);
+      EXPECT_NEAR(
+          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      EXPECT_NEAR(0.9822380322126314, segments_vector[0][0].GetEtaB(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
+  /**
+   * Test that non valid projected Gauss points throw an error
+   */
+  TEST_F(GeometryPairLineToVolumeSegmentationTest, TestNonValidGaussPointsThrowHex8)
+  {
+    // Definition of variables for this test case.
+    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
+        geometry_pairs;
+
+    // Get the geometry.
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+
+    // We change the default settings here, to run into the case where the obtained segment has
+    // Gauss points that do not project valid
+    Teuchos::ParameterList line_to_volume_params_list;
+    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
+    evaluation_data_ =
+        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+
+    // Vector with vector of segments for Evaluate.
+    std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
+
+    // Create and evaluate the geometry pairs.
+    BACI_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
+                                       q_rot_line_elements, q_volume_elements, segments_vector),
+        std::runtime_error, "All Gauss points need to have a valid projection");
+  }
 }  // namespace

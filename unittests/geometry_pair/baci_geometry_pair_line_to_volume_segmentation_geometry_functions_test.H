@@ -613,6 +613,81 @@ namespace
     volume_elements.back()->BuildNodalPointers(nodes_map);
   }
 
+  /**
+   * \brief This example contains a unit cube with its center at the origin and a pre-curved line.
+   *
+   * For more details on the pre-curved line have a look at the script
+   * script/unittest_geometry_pair_line_to_volume.wls
+   */
+  void XtestCreateGeometrySingleHex8WithPreCurvedLine(
+      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
+      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
+      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
+  {
+    // Create the elements.
+    const std::vector<int> dummy_node_ids{0, 1};
+    line_elements.push_back(Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0)));
+    line_elements.back()->SetNodeIds(2, dummy_node_ids.data());
+    volume_elements.push_back(Teuchos::rcp(new DRT::ELEMENTS::So_hex8(1, 0)));
+
+    // Positional and tangent DOFs of the line(s).
+    q_line_elements.push_back(CORE::LINALG::Matrix<12, 1, double>());
+    q_line_elements.back()(0) = 0.485;
+    q_line_elements.back()(1) = 0.0;
+    q_line_elements.back()(2) = 0.0;
+
+    q_line_elements.back()(3) = 0.985329278164293;
+    q_line_elements.back()(4) = 0.1706640371965724;
+    q_line_elements.back()(5) = 0.0;
+
+    q_line_elements.back()(6) = 0.505;
+    q_line_elements.back()(7) = 0.5;
+    q_line_elements.back()(8) = 0.0;
+
+    q_line_elements.back()(9) = 0.985329278164293;
+    q_line_elements.back()(10) = 0.1706640371965724;
+    q_line_elements.back()(11) = 0.0;
+
+    // All nodes have 0 rotation (the middle node does not matter in this case)
+    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>(true));
+
+    // Positional DOFs of the solid(s).
+    q_volume_elements.push_back(CORE::LINALG::Matrix<24, 1, double>());
+    q_volume_elements.back()(0) = -0.5;
+    q_volume_elements.back()(1) = -0.5;
+    q_volume_elements.back()(2) = -0.5;
+
+    q_volume_elements.back()(3) = 0.5;
+    q_volume_elements.back()(4) = -0.5;
+    q_volume_elements.back()(5) = -0.5;
+
+    q_volume_elements.back()(6) = 0.5;
+    q_volume_elements.back()(7) = 0.5;
+    q_volume_elements.back()(8) = -0.5;
+
+    q_volume_elements.back()(9) = -0.5;
+    q_volume_elements.back()(10) = 0.5;
+    q_volume_elements.back()(11) = -0.5;
+
+    q_volume_elements.back()(12) = -0.5;
+    q_volume_elements.back()(13) = -0.5;
+    q_volume_elements.back()(14) = 0.5;
+
+    q_volume_elements.back()(15) = 0.5;
+    q_volume_elements.back()(16) = -0.5;
+    q_volume_elements.back()(17) = 0.5;
+
+    q_volume_elements.back()(18) = 0.5;
+    q_volume_elements.back()(19) = 0.5;
+    q_volume_elements.back()(20) = 0.5;
+
+    q_volume_elements.back()(21) = -0.5;
+    q_volume_elements.back()(22) = 0.5;
+    q_volume_elements.back()(23) = 0.5;
+  }
+
 }  // namespace
 
 

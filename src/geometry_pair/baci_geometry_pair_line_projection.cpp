@@ -139,9 +139,9 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     // Print a projection point
     auto print_projection_point = [&error_message](const auto& projection_point)
     {
-      error_message << "\n  line parameter coorindate: "
+      error_message << "\n  line parameter coordinate: "
                     << CORE::FADUTILS::CastToDouble(projection_point.GetEta());
-      error_message << "\n  other parameter coorindate: ";
+      error_message << "\n  other parameter coordinate: ";
       CORE::FADUTILS::CastToDouble(projection_point.GetXi()).Print(error_message);
       error_message << "  projection result: " << (int)projection_point.GetProjectionResult();
     };
