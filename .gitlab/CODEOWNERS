@@ -36,8 +36,6 @@
 
 /tests/                            @baci/team_testing
 
-/trilinos/                         @baci/team_infrastructure
-
 # Note: the code ownership of the respective unit test directories
 # can be overwritten by the specification based on the BACI source directories
 

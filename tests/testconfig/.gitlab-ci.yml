@@ -226,43 +226,6 @@ before_script:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
 
-# Trilinos-develop build job
-.buildtest_release_trilinos_develop:
-  stage: buildtest
-  variables:
-    BUILD_TARGETS: full
-  script:
-  - echo Build and test Trilinos develop branch
-  - cd $CI_PROJECT_DIR/..
-    # Delete old Trilinos
-  - rm -rf Trilinos
-    # Cloning the Trilinos-develop branch
-  - git clone -b develop https://github.com/trilinos/Trilinos.git
-  - cd Trilinos
-    # Delete old Trilinos build files
-  - rm -rf $CI_PROJECT_DIR/../Trilinos-develop-build
-  - mkdir $CI_PROJECT_DIR/../Trilinos-develop-build
-  - cd $CI_PROJECT_DIR/../Trilinos-develop-build
-    # Configure Trilinos and build it
-  - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
-  - make -j`nproc` install |& tee -a ../buildtest_release_trilinos_develop.log
-
-  - *clean-build-folder
-  - *build-and-test
-  - *check-no-warnings
-  after_script:
-  - *post-process-log-files
-    # Move the log file to the source folder, so it can be found by artifacts.
-  - mv ../buildtest_release_trilinos_develop.log buildtest_release_trilinos_develop.log
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - '*.log'
-    when: on_failure
-    expire_in: 1 week
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "4"
-
 # codeclimate job
 .codeclimate:
   stage: checkcode
@@ -483,18 +446,6 @@ imcs-buildtest_daily_debug_ubuntu20:
     CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
   tags:
   - imcs-nightly-debug-ubuntu20
-  needs: []
-
-imcs-buildtest_release_trilinos_develop:
-  extends: .buildtest_release_trilinos_develop
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-    TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
-    TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
-  tags:
-  - imcs-buildtest_release_trilinos_develop-ubuntu20
   needs: []
 
 # Docker---------------------------------------------------------------------------
