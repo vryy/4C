@@ -350,7 +350,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestHex8WithBeam(
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -391,7 +391,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestHex8WithBeam(
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has
@@ -435,7 +435,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestHex8WithBeam(
+    XtestCreateGeometrySingleHex8WithPreCurvedLine(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has

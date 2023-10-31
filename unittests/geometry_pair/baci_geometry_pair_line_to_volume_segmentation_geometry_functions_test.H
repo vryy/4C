@@ -619,7 +619,8 @@ namespace
    * For more details on the pre-curved line have a look at the script
    * script/unittest_geometry_pair_line_to_volume.wls
    */
-  void XtestHex8WithBeam(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
+  void XtestCreateGeometrySingleHex8WithPreCurvedLine(
+      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
