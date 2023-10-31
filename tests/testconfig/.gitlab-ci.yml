@@ -49,6 +49,11 @@ variables:
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
+  # Variables for Trilinos pipeline
+  # The default Trilinos commit ref the Trilinos pipeline is running on
+  TRILINOS_PIPELINE_COMMIT_REF: develop
+  BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS: baci-dependencies-trilinos:$TRILINOS_PIPELINE_COMMIT_REF
+
 .compute-dependencies-hash: &compute-dependencies-hash
 # compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
 - COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -not -wholename '*/trilinos_develop/*'
@@ -738,3 +743,56 @@ readthedocs:
   needs:
   - job: build-base-dependencies
     optional: true
+
+# The Trilinos pipeline with a specific commit ref runs via a schedule or when manually triggered
+build-base-dependencies-trilinos-develop:
+  stage: build-docker-images
+  tags:
+  - build-docker-image
+  image: docker:20.10.16
+  services:
+  - docker:20.10.16-dind
+  before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+  - echo "Generating BACI dependencies docker image with Trilinos version $TRILINOS_PIPELINE_COMMIT_REF"
+  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS"
+  - docker build --no-cache --build-arg NPROCS=`nproc` --build-arg TRILINOS_VERSION="$TRILINOS_PIPELINE_COMMIT_REF"
+    --tag $FULL_IMAGE_PATH --file docker/trilinos_develop/Dockerfile .
+  - docker push $FULL_IMAGE_PATH
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true
+
+buildtest_full_release_trilinos_develop:
+  extends: .buildtest_full
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
+  tags:
+  - buildtest
+  needs:
+  - job: build-base-dependencies-trilinos-develop
+    optional: true
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true
+
+buildtest_full_debug_trilinos_develop:
+  extends: .buildtest_daily_debug
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  variables:
+    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
+  tags:
+  - buildtest-debug
+  needs:
+  - job: build-base-dependencies-trilinos-develop
+    optional: true
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  interruptible: true
