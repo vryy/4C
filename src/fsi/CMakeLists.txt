@@ -5,7 +5,6 @@ set(_fsi_dependencies
     adapter
     ale
     binstrategy
-    comm
     constraint
     core
     fbi

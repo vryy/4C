@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
   // create default communicators
-  Teuchos::RCP<COMM_UTILS::Communicators> communicators = COMM_UTILS::CreateComm({});
+  Teuchos::RCP<CORE::COMM::Communicators> communicators = CORE::COMM::CreateComm({});
   DRT::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 

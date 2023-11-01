@@ -4,7 +4,6 @@ add_subdirectory(common)
 # List all test directories here
 add_subdirectory(beam3)
 add_subdirectory(beaminteraction)
-add_subdirectory(comm)
 add_subdirectory(contact_constitutivelaw)
 add_subdirectory(fbi)
 add_subdirectory(geometric_search)

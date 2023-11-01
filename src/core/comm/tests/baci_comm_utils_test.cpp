@@ -21,13 +21,13 @@
 
 namespace
 {
-  Teuchos::RCP<COMM_UTILS::Communicators> MockUpCommunicators()
+  Teuchos::RCP<CORE::COMM::Communicators> MockUpCommunicators()
   {
     // mock up for command line to create communicators
     std::vector<std::string> argv{
         "dummyEntryInputFile", "-nptype=separateDatFiles", "-ngroup=2", "-glayout=2,3"};
 
-    return COMM_UTILS::CreateComm(argv);
+    return CORE::COMM::CreateComm(argv);
   };
 
   /**
@@ -65,7 +65,7 @@ namespace
     void TearDown() override { IO::cout.close(); }
 
    public:
-    Teuchos::RCP<COMM_UTILS::Communicators> communicators_;
+    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 791;
     Teuchos::RCP<Epetra_Vector> epetraVector_;
   };
@@ -132,14 +132,14 @@ namespace
     void TearDown() override { IO::cout.close(); }
 
    public:
-    Teuchos::RCP<COMM_UTILS::Communicators> communicators_;
+    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 673;
     Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
   };
 
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
-    bool success = COMM_UTILS::AreDistributedVectorsIdentical(*communicators_, epetraVector_,  //
+    bool success = CORE::COMM::AreDistributedVectorsIdentical(*communicators_, epetraVector_,  //
         "epetraVector");
     EXPECT_EQ(success, true);
   }
@@ -152,13 +152,13 @@ namespace
     epetraVector_->ReplaceMyValues(1, &disturbedValue, &lastLocalIndex);
 
     EXPECT_THROW(
-        COMM_UTILS::AreDistributedVectorsIdentical(*communicators_, epetraVector_, "epetraVector"),
+        CORE::COMM::AreDistributedVectorsIdentical(*communicators_, epetraVector_, "epetraVector"),
         std::runtime_error);
   }
 
   TEST_F(SetupCompareParallelMatricesTest, PositiveTestCompareMatrices)
   {
-    bool success = COMM_UTILS::AreDistributedSparseMatricesIdentical(
+    bool success = CORE::COMM::AreDistributedSparseMatricesIdentical(
         *communicators_, epetraCrsMatrix_, "epetraCrsMatrix");
     EXPECT_EQ(success, true);
   }
@@ -172,7 +172,7 @@ namespace
     epetraCrsMatrix_->InsertMyValues(myLastLid[0], 1, &value[0], &myLastLid[0]);
     epetraCrsMatrix_->FillComplete(false);
 
-    EXPECT_THROW(COMM_UTILS::AreDistributedSparseMatricesIdentical(
+    EXPECT_THROW(CORE::COMM::AreDistributedSparseMatricesIdentical(
                      *communicators_, epetraCrsMatrix_, "epetraCrsMatrix"),
         std::runtime_error);
   }

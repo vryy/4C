@@ -480,7 +480,7 @@ const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> communicators)
+void DRT::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators)
 {
   if (communicators_ != Teuchos::null) dserror("Communicators were already set.");
   communicators_ = communicators;
@@ -488,7 +488,7 @@ void DRT::Problem::SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> comm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<COMM_UTILS::Communicators> DRT::Problem::GetCommunicators() const
+Teuchos::RCP<CORE::COMM::Communicators> DRT::Problem::GetCommunicators() const
 {
   if (communicators_ == Teuchos::null) dserror("No communicators allocated yet.");
   return communicators_;
@@ -2082,7 +2082,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // we read nodes and elements for the desired fields as specified above
     meshreader.ReadAndPartition();
 
-    NestedParallelismType npType = DRT::Problem::Instance()->GetCommunicators()->NpType();
+    CORE::COMM::NestedParallelismType npType =
+        DRT::Problem::Instance()->GetCommunicators()->NpType();
     // care for special applications
     switch (GetProblemType())
     {
@@ -2095,7 +2096,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
-        if (npType != copy_dat_file) ReadMicroFields(reader);
+        if (npType != CORE::COMM::NestedParallelismType::copy_dat_file) ReadMicroFields(reader);
         break;
       }
       case ProblemType::np_support:
@@ -2341,7 +2342,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // replace standard dofset inside micro discretization by independent dofset
         // to avoid inconsistent dof numbering in non-nested parallel settings with more than one
         // micro discretization
-        if (communicators_->NpType() == no_nested_parallelism)
+        if (communicators_->NpType() == CORE::COMM::NestedParallelismType::no_nested_parallelism)
           dis_micro->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret

@@ -940,8 +940,9 @@ namespace DRT
       // if we are in copydatafile mode use global comm instead of local comm
       // and only read in input file once instead of npgroup times
       DRT::Problem* problem = DRT::Problem::Instance();
-      NestedParallelismType npType = problem->GetCommunicators()->NpType();
-      if (npType == copy_dat_file) comm = problem->GetCommunicators()->GlobalComm();
+      CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
+      if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)
+        comm = problem->GetCommunicators()->GlobalComm();
 
       int arraysize = 0;
       if (comm->MyPID() == 0)

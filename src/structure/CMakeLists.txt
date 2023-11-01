@@ -6,7 +6,6 @@ set(_structure_dependencies
     beamcontact
     beaminteraction
     cardiovascular0d
-    comm
     constraint
     contact
     inpar

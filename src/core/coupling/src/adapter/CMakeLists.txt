@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(LIBS_ADAPTER_COUPLING
     # cmake-format: sortable
-    comm
     constraint
     core_coupling_volmortar
     core_linalg

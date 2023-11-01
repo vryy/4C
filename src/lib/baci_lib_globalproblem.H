@@ -32,7 +32,7 @@ namespace IO
   class ErrorFileControl;
 }  // namespace IO
 
-namespace COMM_UTILS
+namespace CORE::COMM
 {
   class Communicators;
 }
@@ -288,10 +288,10 @@ namespace DRT
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void SetCommunicators(Teuchos::RCP<COMM_UTILS::Communicators> communicators);
+    void SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators);
 
     /// return communicators
-    Teuchos::RCP<COMM_UTILS::Communicators> GetCommunicators() const;
+    Teuchos::RCP<CORE::COMM::Communicators> GetCommunicators() const;
 
     //@}
 
@@ -663,7 +663,7 @@ namespace DRT
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
     /// communicators
-    Teuchos::RCP<COMM_UTILS::Communicators> communicators_;
+    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
 
     /// @name File IO
 

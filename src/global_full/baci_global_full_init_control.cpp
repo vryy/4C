@@ -28,7 +28,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   int group = problem->GetCommunicators()->GroupId();
   int ngroups = problem->GetCommunicators()->NumGroups();
-  NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
   int restartgroup = 0;
   int myrank = lcomm->MyPID();
 
@@ -72,13 +72,13 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   // set input file name in each group
   switch (npType)
   {
-    case no_nested_parallelism:
+    case CORE::COMM::NestedParallelismType::no_nested_parallelism:
       infilename << inout[0];
       outfilekenner << inout[1];
       restartgroup = 0;
       break;
-    case every_group_read_dat_file:
-    case copy_dat_file:
+    case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
+    case CORE::COMM::NestedParallelismType::copy_dat_file:
     {
       if (inoutargs > 4)
         dserror(
@@ -101,7 +101,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       restartgroup = 0;
     }
     break;
-    case separate_dat_files:
+    case CORE::COMM::NestedParallelismType::separate_dat_files:
       if (inoutargs % ngroups != 0)
         dserror("Each group needs the same number of arguments for input/output.");
       inoutargs /= ngroups;
@@ -150,12 +150,12 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
 
       switch (npType)
       {
-        case no_nested_parallelism:
-        case separate_dat_files:
+        case CORE::COMM::NestedParallelismType::no_nested_parallelism:
+        case CORE::COMM::NestedParallelismType::separate_dat_files:
           // nothing to add to restartfilekenner
           break;
-        case every_group_read_dat_file:
-        case copy_dat_file:
+        case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
+        case CORE::COMM::NestedParallelismType::copy_dat_file:
         {
           // check whether restartfilekenner includes a dash and in case separate the number at the
           // end
@@ -186,7 +186,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   }
 
   // throw error in case restartfrom is given but no restart step is specified
-  if (restartfromIsGiven == true && restartIsGiven == false)
+  if (restartfromIsGiven && !restartIsGiven)
   {
     dserror("You need to specify a restart step when using restartfrom.");
   }
@@ -195,6 +195,4 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   inputfile_name = infilename.str();
   outputfile_kenner = outfilekenner.str();
   restartfile_kenner = restartfilekenner.str();
-
-  return;
 }

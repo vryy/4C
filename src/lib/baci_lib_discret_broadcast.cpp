@@ -31,7 +31,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
   // group to which discretizations are sent
   int tgroup = -1;
 
-  Teuchos::RCP<COMM_UTILS::Communicators> group = problem.GetCommunicators();
+  Teuchos::RCP<CORE::COMM::Communicators> group = problem.GetCommunicators();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
 
@@ -177,7 +177,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
  | distribute a discretization from one group to one other    gee 03/12 |
  *----------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
-    Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
     ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
@@ -462,7 +462,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-    Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
     ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();

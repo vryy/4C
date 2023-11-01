@@ -5,7 +5,6 @@ set(_binstrategy_dependencies
     beam3
     beaminteraction
     bele
-    comm
     fluid_ele
     inpar
     io

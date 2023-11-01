@@ -3,7 +3,6 @@ baci_auto_define_module()
 set(_elemag_dependencies
     # cmake-format: sortable
     adapter
-    comm
     core
     cut
     inpar

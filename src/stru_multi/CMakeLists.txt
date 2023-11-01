@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_stru_multi_dependencies
     # cmake-format: sortable
-    comm
     inpar
     io
     lib
