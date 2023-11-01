@@ -77,10 +77,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& dat
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  DRT::ParObject::ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(DRT::ParObject::ExtractInt(position, data));

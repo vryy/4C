@@ -72,3 +72,17 @@ void DRT::ParObject::ExtractfromPack(
   int size = dim * sizeof(char);
   ExtractfromPack(position, data, stuff.data(), size);
 }
+
+int CORE::COMM::ExtractAndAssertId(std::vector<char>::size_type& position,
+    const std::vector<char>& data, const int desired_type_id)
+{
+  int type_id = 0;
+  DRT::ParObject::ExtractfromPack(position, data, type_id);
+
+  std::string error_message = "Wrong instance type data. The extracted type id is " +
+                              std::to_string(type_id) + ", while the desired type id is " +
+                              std::to_string(desired_type_id);
+  dsassert(type_id == desired_type_id, error_message.c_str());
+
+  return type_id;
+}

@@ -14,6 +14,7 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_matelast_summand.H"
+
 namespace MAT
 {
   // Forward declaration

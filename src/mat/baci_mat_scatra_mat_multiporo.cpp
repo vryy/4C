@@ -80,13 +80,8 @@ void MAT::ScatraMatMultiPoroFluid::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -174,13 +169,8 @@ void MAT::ScatraMatMultiPoroVolFrac::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -263,13 +253,8 @@ void MAT::ScatraMatMultiPoroSolid::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
@@ -362,13 +347,8 @@ void MAT::ScatraMatMultiPoroTemperature::Pack(DRT::PackBuffer& data) const
 void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;

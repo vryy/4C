@@ -13,6 +13,7 @@
 #define BACI_MAT_ANISOTROPY_EXTENSION_DEFAULT_H
 
 #include "baci_mat_anisotropy_extension.H"
+
 namespace MAT
 {
   /*!
