@@ -191,12 +191,8 @@ template <typename T>
 void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  int type = 0;
-  this->ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   int matid;
   this->ExtractfromPack(position, data, matid);

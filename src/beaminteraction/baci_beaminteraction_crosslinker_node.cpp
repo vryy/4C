@@ -144,12 +144,6 @@ void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
   // add base class DRT::Node
   DRT::Node::Pack(data);
 
-  // add data_
-  //  bool hasdata = (cldata_!=Teuchos::null);
-  //  AddtoPack(data,hasdata);
-  //  if (hasdata)
-  //    cldata_->Pack(data);
-
   // add material
   bool hasmat = (mat_ != Teuchos::null);
   AddtoPack(data, hasmat);
@@ -165,26 +159,13 @@ void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
 void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   DRT::Node::Unpack(basedata);
-
-  //  // data_
-  //  bool hasdata = ExtractInt(position,data);
-  //  if (hasdata)
-  //  {
-  //    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
-  //    cldata_->Unpack(position,data);
-  //  }
-  //  else
-  //  {
-  //    cldata_ = Teuchos::null;
-  //  }
 
   // mat
   bool hasmat = ExtractInt(position, data);

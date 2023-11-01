@@ -167,12 +167,6 @@ void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class Element
   Element::Pack(data);
-  // Gaussrule
-  // AddtoPack(data,gaussrule_);
-  // data_
-  // vector<char> tmp(0);
-  // data_.Pack(tmp);
-  // AddtoPack(data,tmp);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -180,20 +174,13 @@ void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  // ExtractfromPack(position,data,gaussrule_);
-  // data_
-  // vector<char> tmp(0);
-  // ExtractfromPack(position,data,tmp);
-  // data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

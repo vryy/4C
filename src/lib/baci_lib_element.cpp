@@ -340,10 +340,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
 void DRT::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // id_
   ExtractfromPack(position, data, id_);
   // owner_
@@ -1228,10 +1227,9 @@ void DRT::FaceElement::Pack(DRT::PackBuffer& data) const
 void DRT::FaceElement::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
   // extract base class DRT::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);

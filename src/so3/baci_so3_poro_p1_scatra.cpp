@@ -76,10 +76,7 @@ void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Unpack(const std::vect
 {
   std::vector<char>::size_type position = 0;
 
-  // extract type
-  int type = 0;
-  so3_ele::ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(so3_ele::ExtractInt(position, data));

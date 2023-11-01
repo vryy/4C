@@ -83,8 +83,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) co
 
   // pack scalar transport impltype
   so3_ele::AddtoPack(data, impltype_);
-  // data_
-  // so3_ele::AddtoPack(data,data_);
 
   // detJ_
   so3_ele::AddtoPack(data, detJ_);
@@ -102,10 +100,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) co
 
   // add base class Element
   so3_ele::Pack(data);
-
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -116,18 +110,11 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  so3_ele::ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(so3_ele::ExtractInt(position, data));
-
-  // data_
-  // vector<char> tmp(0);
-  // so3_ele::ExtractfromPack(position,data,tmp);
-  // data_.Unpack(tmp);
 
   // detJ_
   so3_ele::ExtractfromPack(position, data, detJ_);
@@ -152,7 +139,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*

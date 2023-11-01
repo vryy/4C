@@ -81,13 +81,8 @@ void MAT::MurnaghanTaitFluid::Pack(DRT::PackBuffer& data) const
 void MAT::MurnaghanTaitFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror(
-        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
-        type, UniqueParObjectId());
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;

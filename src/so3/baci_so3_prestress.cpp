@@ -84,10 +84,8 @@ void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
 void DRT::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract isinit_
   isinit_ = ExtractInt(position, data);

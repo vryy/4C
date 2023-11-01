@@ -794,10 +794,7 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
 
   filled_ = false;
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract number of patches
   ExtractfromPack(position, data, npatches_);

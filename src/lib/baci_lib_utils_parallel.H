@@ -115,9 +115,6 @@ namespace DRT
     /*! \brief Fill processor local row and col vectors with element ids fitting the desired
     parallel distribution.
 
-    \author Andreas Rauch
-    \date   10/16
-
     \param dis_template        (i): template for parallel distribution
     \param dis_to_redistribute (i): discretization supposed to be distributed matching template
     \param row_id_vec_to_fill  (o): on exit this vector contains the matched element row gids
@@ -128,9 +125,6 @@ namespace DRT
 
     /*! \brief Fill processor local row and col vectors with node ids fitting the desired parallel
     distribution.
-
-    \author Andreas Rauch
-    \date   10/16
 
     \param dis_template        (i): template for parallel distribution
     \param dis_to_redistribute (i): discretization supposed to be distributed matching template
@@ -160,11 +154,9 @@ namespace DRT
      *
      *  \return the redistributed version of the non-redistributed map in accordance
      *  with the already redistributed reference map.
-     *
-     *  \author hiermeier \date 01/18 */
+     */
     Teuchos::RCP<Epetra_Map> RedistributeInAccordanceWithReference(
         const Epetra_Map& ref_red_map, const Epetra_Map& unred_map);
-
   }  // namespace UTILS
 }  // namespace DRT
 
