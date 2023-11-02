@@ -333,7 +333,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_hex<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
@@ -351,7 +351,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_tet<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
@@ -369,7 +369,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_pyramid<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
@@ -387,7 +387,7 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_wedge<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);

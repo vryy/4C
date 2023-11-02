@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
@@ -20,7 +21,7 @@
 
 namespace
 {
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tet_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_tet<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 4) return CORE::FE::CellType::point1;
@@ -28,7 +29,7 @@ namespace
     return CORE::FE::CellType::tet10;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_hex_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_hex<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 8) return CORE::FE::CellType::point1;
@@ -37,7 +38,7 @@ namespace
     return CORE::FE::CellType::hex27;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_quad_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_quad<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 4) return CORE::FE::CellType::point1;
@@ -46,7 +47,7 @@ namespace
     return CORE::FE::CellType::quad9;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_tri_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_tri<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 3) return CORE::FE::CellType::point1;
@@ -54,7 +55,7 @@ namespace
     return CORE::FE::CellType::tri6;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_wedge_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_wedge<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 6) return CORE::FE::CellType::point1;
@@ -62,7 +63,8 @@ namespace
     return CORE::FE::CellType::wedge15;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<DRT::is_pyramid_v<distype>, bool> = true>
+  template <CORE::FE::CellType distype,
+      std::enable_if_t<CORE::FE::is_pyramid<distype>, bool> = true>
   inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
   {
     if (numgp < 5) return CORE::FE::CellType::point1;

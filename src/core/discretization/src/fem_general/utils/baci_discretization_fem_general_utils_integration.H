@@ -9,6 +9,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 
+#include "baci_discretization_fem_general_cell_type.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 
@@ -76,7 +78,7 @@ namespace CORE::DRT::UTILS
    * @return GaussRule1D / GaussRule2D / GaussRule3D depending on the dimension of the
    * discretization
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_hex_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_hex<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -111,7 +113,7 @@ namespace CORE::DRT::UTILS
     return GaussRule3D::undefined;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_tet_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -134,7 +136,7 @@ namespace CORE::DRT::UTILS
     return GaussRule3D::undefined;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_wedge_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -153,7 +155,7 @@ namespace CORE::DRT::UTILS
     return GaussRule3D::undefined;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_pyramid_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -374,7 +376,7 @@ namespace CORE::DRT::UTILS
   };
 
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_quad_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_quad<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -413,7 +415,7 @@ namespace CORE::DRT::UTILS
     return GaussRule2D::undefined;
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_tri_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -478,7 +480,7 @@ namespace CORE::DRT::UTILS
     line_lobatto14point   ///< degree of precision: 25 (closed)
   };
 
-  template <CORE::FE::CellType distype, std::enable_if_t<::DRT::is_line_v<distype>, int> = 0>
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_line<distype>, int> = 0>
   GaussRule1D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
