@@ -21,12 +21,11 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-class DiscretizationRuntimeVtuWriter;
-
 namespace IO
 {
+  class DiscretizationVisualizationWriterMesh;
   class DiscretizationReader;
-}
+}  // namespace IO
 
 namespace PARTICLEWALL
 {
@@ -100,7 +99,7 @@ namespace PARTICLEWALL
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
 
     //! vtu writer object
-    std::unique_ptr<DiscretizationRuntimeVtuWriter> runtime_vtuwriter_;
+    std::unique_ptr<IO::DiscretizationVisualizationWriterMesh> runtime_vtuwriter_;
   };
 
 }  // namespace PARTICLEWALL

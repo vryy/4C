@@ -12,7 +12,7 @@
 
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
@@ -42,7 +42,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
   walldatastate_ = walldatastate;
 
   // construct the writer object
-  runtime_vtuwriter_ = std::make_unique<DiscretizationRuntimeVtuWriter>(
+  runtime_vtuwriter_ = std::make_unique<IO::DiscretizationVisualizationWriterMesh>(
       walldiscretization_, IO::VisualizationParametersFactory(
                                DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")));
 }

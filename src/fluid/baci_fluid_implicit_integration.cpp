@@ -50,7 +50,7 @@
 #include "baci_inpar_xfem.H"  //for enums only
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
