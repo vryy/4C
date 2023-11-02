@@ -52,26 +52,28 @@ RUN apt-get update && apt-get install -y \
 ARG NPROCS=12
 ENV NPROCS=$NPROCS \
     INSTALL_DIR="/opt/baci-dependencies"
+# Trilinos version: if unset the version defined in the install script is used
+ARG TRILINOS_VERSION
 RUN mkdir -p ${INSTALL_DIR}
 
 COPY dependencies /dependencies
 # Install cmake
 RUN /dependencies/current/cmake/install.sh /usr/local
 
-# Install SuiteSparse 5.4.0
+# Install SuiteSparse
 RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
-# Install superLU_dist 2.5
-RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
+# Install superLU_dist
+RUN /dependencies/trilinos_develop/superlu_dist/install.sh ${INSTALL_DIR}
 
-# Install qhull 2012.1
+# Install qhull
 RUN /dependencies/current/qhull/install.sh ${INSTALL_DIR}
 
- # Install CLN 1.3.4
+ # Install CLN
 RUN /dependencies/current/cln/install.sh ${INSTALL_DIR}
 
-# Install Trilinos 2022_Q1
-RUN /dependencies/current/trilinos/install.sh ${INSTALL_DIR}
+# Install Trilinos
+RUN /dependencies/trilinos_develop/trilinos/install.sh ${INSTALL_DIR} ${TRILINOS_VERSION}
 
 # Packages for testing
 # Installation directory for dependencies concerning testing
