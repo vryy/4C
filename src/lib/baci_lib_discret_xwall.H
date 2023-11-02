@@ -36,11 +36,7 @@ namespace DRT
     */
     DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~DiscretizationXWall() override = default;
 
     /*!
     \brief Get the gid of all dofs of a node.

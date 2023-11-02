@@ -54,11 +54,6 @@ namespace BEAMINTERACTION
           Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
 
       /**
-       * \brief Destructor.
-       */
-      ~PartitionedBeamInteractionAssemblyManagerIndirect() override = default;
-
-      /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
        * @param discret (in) Pointer to the disretization.
        * @param fe_sysvec (out) Global force vector.

@@ -51,10 +51,6 @@ namespace GEOMETRYPAIR
         const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeGaussPointProjectionCrossSection() override{};
 
     /**
      * \brief Try to project the points on the surface of the line to the volume.

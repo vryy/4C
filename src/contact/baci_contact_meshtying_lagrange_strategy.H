@@ -44,11 +44,7 @@ namespace CONTACT
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~MtLagrangeStrategy() override = default;
 
     /*!
     \brief Do mortar coupling in reference configuration

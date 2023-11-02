@@ -34,10 +34,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingParams();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceMeshtyingParams() override{};
 
     /**
      * \brief Initialize with the stuff coming from input file.

@@ -33,8 +33,6 @@ namespace CONTACT
       /// constructor
       BaseSlaveIntPolicy(){/* empty */};
 
-      /// destructor
-      ~BaseSlaveIntPolicy(){/* empty */};
 
       double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<3, 2>& tau,
@@ -112,8 +110,6 @@ namespace CONTACT
       /// constructor
       BaseIntPolicy(){/* empty */};
 
-      /// destructor
-      ~BaseIntPolicy(){/* empty */};
 
       void LMatrixInverse(const CORE::LINALG::Matrix<3, 2>& mtau,
           const CORE::LINALG::Matrix<probdim, 1>& snormal,
@@ -200,8 +196,6 @@ namespace CONTACT
       /// constructor
       IncompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~IncompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -288,8 +282,6 @@ namespace CONTACT
       /// constructor
       CompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~CompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -374,8 +366,6 @@ namespace CONTACT
       /// constructor
       DebugIncompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~DebugIncompleteIntPolicy(){/* empty */};
 
       void Get_Debug(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
@@ -415,8 +405,6 @@ namespace CONTACT
       /// constructor
       DebugCompleteIntPolicy(){/* empty */};
 
-      /// destructor
-      ~DebugCompleteIntPolicy(){/* empty */};
 
       void Get_Debug(MORTAR::MortarElement& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,

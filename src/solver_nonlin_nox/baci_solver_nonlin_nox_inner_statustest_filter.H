@@ -390,7 +390,6 @@ namespace NOX
                 : SOCBase(filter, user_type){/* empty */};
 
             SecondOrderCorrection() = delete;
-            ~SecondOrderCorrection() override{};
 
             /// compute the SOC step
             StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,

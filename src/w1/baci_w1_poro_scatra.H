@@ -50,11 +50,6 @@ namespace DRT
       */
       Wall1_Poro_Scatra(const Wall1_Poro_Scatra& old);
 
-      /*!
-      \brief Destructor
-      */
-      ~Wall1_Poro_Scatra() override{};
-
       //@}
 
       /*!

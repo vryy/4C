@@ -60,11 +60,6 @@ namespace MORTAR
         const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~BaseBinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -228,11 +223,6 @@ namespace MORTAR
     */
     BaseBinaryTree(DRT::Discretization& discret, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~BaseBinaryTree() override{};
 
     //! @name Evaluation methods
 

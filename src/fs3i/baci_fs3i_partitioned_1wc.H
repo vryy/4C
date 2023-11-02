@@ -26,8 +26,6 @@ namespace FS3I
    public:
     PartFS3I_1WC(const Epetra_Comm& comm);
 
-    ~PartFS3I_1WC() override{};
-
     void Init() override;
 
     void Setup() override;

@@ -69,10 +69,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurface() override{};
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before

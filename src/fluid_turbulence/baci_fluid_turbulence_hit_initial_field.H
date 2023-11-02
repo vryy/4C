@@ -94,8 +94,6 @@ namespace FLD
     HomIsoTurbInitialFieldHDG(
         FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
-    //! destructor
-    ~HomIsoTurbInitialFieldHDG() override { return; };
 
     //! calculate initial field
     void CalculateInitialField() override;

@@ -78,11 +78,7 @@ namespace CONTACT
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~MtAbstractStrategy() override = default;
 
     //! @name Access methods
 

@@ -47,10 +47,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPair2D3DBase() = default;
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidVolumeMeshtyingPair2D3DBase() override{};
 
     /**
      * \brief Create the geometry pair for this contact pair. We overload that function because this

@@ -41,10 +41,6 @@ namespace FBI
      */
     BeamToFluidMeshtyingParams();
 
-    /**
-     * \brief empty Destructor
-     */
-    ~BeamToFluidMeshtyingParams() override = default;
 
     /**
      * \brief Initialize with the stuff coming from input file

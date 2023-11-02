@@ -74,11 +74,6 @@ namespace MORTAR
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& sleafsmap,
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mleafsmap);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~BinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -196,11 +191,6 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
         INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~BinaryTree() override{};
 
     //! @name Query methods
 

@@ -39,10 +39,6 @@ namespace UTILS
      */
     MOR(Teuchos::RCP<DRT::Discretization> discr);
 
-    /*!
-        \brief Destructor
-     */
-    ~MOR() { return; };
 
     /*!
         \brief Read in binary matrix from file

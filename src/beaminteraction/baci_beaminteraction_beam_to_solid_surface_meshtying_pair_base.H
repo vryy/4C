@@ -62,10 +62,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairBase();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidSurfaceMeshtyingPairBase() override{};
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam

@@ -69,11 +69,6 @@ namespace UTILS
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~Constraint() { return; };
 
     /*!
      \brief Return if there are constraints

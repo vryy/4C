@@ -29,8 +29,6 @@ namespace ALE
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
-    ~Meshsliding() override { return; };
-
     //! Set up mesh sliding framework
     Teuchos::RCP<CORE::LINALG::SparseOperator> Setup(
         std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp) override;

@@ -47,10 +47,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurfaceSegmentation() override{};
 
     /**
      * \brief This method performs the segmentation of the line with the surface (and its normal

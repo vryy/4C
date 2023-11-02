@@ -22,8 +22,6 @@ namespace MAT
       //! constructor
       Soret(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~Soret() override { return; };
 
       //! create instance of Soret material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

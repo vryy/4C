@@ -411,11 +411,6 @@ namespace CONTACT
      */
     CONTACT::FriNode* Clone() const override;
 
-    /*!
-     \brief Destructor
-
-     */
-    ~FriNode() override = default;
 
     /*!
      \brief Return unique ParObject id

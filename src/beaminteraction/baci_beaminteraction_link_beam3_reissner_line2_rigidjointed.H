@@ -70,10 +70,7 @@ namespace BEAMINTERACTION
     */
     BeamLinkBeam3rLine2RigidJointed(const BeamLinkBeam3rLine2RigidJointed& old);
 
-    /*!
-    \brief Destructor
-    */
-    ~BeamLinkBeam3rLine2RigidJointed() override{};
+
 
     //! Setup [derived]
     void Setup(int matnum) override;

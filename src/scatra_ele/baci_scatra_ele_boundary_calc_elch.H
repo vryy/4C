@@ -37,8 +37,6 @@ namespace DRT
       //! singleton access method
       // not needed, since class is purely virtual
 
-      //! destructor
-      ~ScaTraEleBoundaryCalcElch() override { return; };
 
 
      protected:

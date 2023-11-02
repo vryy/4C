@@ -41,10 +41,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPair2D3DPlane() = default;
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidVolumeMeshtyingPair2D3DPlane() override{};
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop

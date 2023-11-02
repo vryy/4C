@@ -657,9 +657,7 @@ namespace CONTACT
       class EmptyAssemblePolicy
       {
        public:
-        EmptyAssemblePolicy(){/* empty */};
-
-        ~EmptyAssemblePolicy(){/* empty */};
+        EmptyAssemblePolicy() = default;
 
         inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
             const NodeDataContainer& augdata,
@@ -697,9 +695,7 @@ namespace CONTACT
       class CompleteAssemblePolicy : public IncompleteAssemblePolicy
       {
        public:
-        CompleteAssemblePolicy(){/* empty */};
-
-        ~CompleteAssemblePolicy(){/* empty */};
+        CompleteAssemblePolicy() = default;
 
         inline void Add_Var_A_Lin_GG(const double cn_awgap_ainv, const double awgap,
             const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const;

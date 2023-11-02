@@ -70,10 +70,7 @@ namespace BEAMINTERACTION
     */
     BeamLinkBeam3rLine2PinJointed(const BeamLinkBeam3rLine2PinJointed& old);
 
-    /*!
-    \brief Destructor
-    */
-    ~BeamLinkBeam3rLine2PinJointed() override{};
+
 
     //! Initialization [derived]
     void Init(int id, const std::vector<std::pair<int, int>>& eleids,

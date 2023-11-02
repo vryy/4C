@@ -119,8 +119,6 @@ namespace ALE
         Teuchos::RCP<IO::DiscretizationWriter> output  ///< output writing
     );
 
-    ~Ale() override{};
-
     /*!
      *  \brief Set initial displacement field
      *

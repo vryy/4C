@@ -1002,11 +1002,6 @@ namespace CONTACT
      */
     CONTACT::CoNode* Clone() const override;
 
-    /*!
-     \brief Destructor
-
-     */
-    ~CoNode() override = default;
 
     /*!
      \brief Return unique ParObject id

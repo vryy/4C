@@ -85,8 +85,6 @@ namespace CORE::GEO
 
       sorted_vector(const Myt_& x) : less_(x.less_), vec_(x.vec_) {}
 
-      ~sorted_vector() {}
-
       Myt_& operator=(const Myt_& x)
       {
         vec_.operator=(x.vec_);

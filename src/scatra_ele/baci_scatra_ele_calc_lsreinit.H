@@ -254,8 +254,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerLsReinit() override{};
-
       //! set the isotropic diffusion coefficient, which may be negative for elliptic
       //! reinitialization
       void SetIsotropicDiff(const double diff, const int k)
@@ -339,8 +337,6 @@ namespace DRT
       {
         return;
       }
-
-      ~ScaTraEleInternalVariableManagerLsReinit() override{};
 
       /** \brief compute and set internal variables
        *

@@ -37,11 +37,6 @@ namespace UTILS
         const std::string& conditionname          ///< Name of condition to create constraints from
     );
 
-    /*!
-        \brief Destructor
-
-     */
-    ~ConstraintPenalty() { return; };
 
     /// unused
     void Initialize(

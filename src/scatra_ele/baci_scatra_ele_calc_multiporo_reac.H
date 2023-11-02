@@ -404,8 +404,6 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleInternalVariableManagerMultiPoro() override{};
-
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void SetInternalVariablesMultiPoro(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions

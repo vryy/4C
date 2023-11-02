@@ -48,11 +48,6 @@ namespace UTILS
     SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis);
 
     /*!
-    \brief Destructor
-     */
-    ~SpringDashpotManager() { return; };
-
-    /*!
      \brief Return if there are spring dashpots
     */
     bool HaveSpringDashpot() const { return havespringdashpot_; };

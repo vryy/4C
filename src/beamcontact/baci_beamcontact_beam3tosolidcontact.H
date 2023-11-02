@@ -207,10 +207,7 @@ namespace CONTACT
     */
     Beam3tosolidcontact(const Beam3tosolidcontact& old);
 
-    /*!
-    \brief Destructor
-    */
-    ~Beam3tosolidcontact() override{};
+
     //@}
 
 

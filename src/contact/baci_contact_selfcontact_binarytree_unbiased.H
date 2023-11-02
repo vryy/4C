@@ -34,11 +34,6 @@ namespace CONTACT
     UnbiasedSelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~UnbiasedSelfBinaryTree() override{};
 
     /*!
     \brief Initialize the unbiased self binary tree

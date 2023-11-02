@@ -48,10 +48,6 @@ namespace GEOMETRYPAIR
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToSurfaceGaussPointProjection() override{};
 
     /**
      * \brief Try to project all Gauss points to the surface.

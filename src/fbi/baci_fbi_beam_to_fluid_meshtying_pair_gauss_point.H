@@ -38,11 +38,6 @@ namespace BEAMINTERACTION
 
    public:
     /**
-     * \brief Destructor.
-     */
-    ~BeamToFluidMeshtyingPairGaussPoint() override = default;
-
-    /**
      * \brief Evaluate this contact element pair.
      *
      * \params[inout] forcevec1 (out) Force vector on element 1.

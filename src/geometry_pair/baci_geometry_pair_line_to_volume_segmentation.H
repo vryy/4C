@@ -45,10 +45,6 @@ namespace GEOMETRYPAIR
     GeometryPairLineToVolumeSegmentation(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeSegmentation() override{};
 
     /**
      * \brief This method performs the segmentation of the line with the volume.

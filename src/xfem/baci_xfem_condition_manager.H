@@ -86,8 +86,6 @@ namespace XFEM
         const int step          ///< time step
     );
 
-    //! destructor
-    ~ConditionManager() { return; }
 
     // TODO: we need set private and public !!! this however causes moving functions in the header
     // file!

@@ -91,9 +91,6 @@ namespace STR
     \author rauch  */
     void Setup() override;
 
-    //! Destructor
-    ~TimIntExplEuler() override { ; };
-
     //@}
 
     //! @name Actions

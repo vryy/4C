@@ -59,10 +59,7 @@ namespace CONTACT
         const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
         Teuchos::ParameterList& beamcontactparams);
 
-    /*!
-    \brief Destructor
-    */
-    ~Beam3contact() override{};
+
     //@}
 
 

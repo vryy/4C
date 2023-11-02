@@ -88,9 +88,6 @@ namespace XFEM
         const bool xfluid_timint_check_sliding_on_surface  /// check sliding on surface?
     );
 
-    //! destructor
-    ~XFluidTimeInt() { return; }
-
     /// set and print reconstruction status for nodes
     void SetAndPrintStatus(const bool screenout);
 

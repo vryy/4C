@@ -299,8 +299,6 @@ namespace NOX
            public:
             Plot(const Teuchos::RCP<::CONTACT::AUG::Plot>& plot_ptr);
 
-            ~Plot() override{};
-
             void runPreIterate(const NOX::Solver::Generic& solver) override;
             void runPostIterate(const NOX::Solver::Generic& solver) override;
 

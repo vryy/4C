@@ -38,11 +38,6 @@ namespace WEAR
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~WearLagrangeStrategy() override{};
 
     /*!
     \brief Condense discr. wear and lm. for frictional contact

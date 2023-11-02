@@ -44,11 +44,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~MonoCoupledLagrangeStrategy() override{};
 
     // Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!

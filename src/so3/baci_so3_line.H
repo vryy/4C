@@ -116,12 +116,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~StructuralLine() override = default;
-
       //@}
 
       //! @name Acess methods

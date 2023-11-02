@@ -39,11 +39,6 @@ namespace LARGEROTATIONS
      *  \date 01/17 */
     TriadInterpolationLocalRotationVectors();
 
-    /** \brief Destructor
-     *
-     *  \author grill
-     *  \date 01/17 */
-    ~TriadInterpolationLocalRotationVectors() override{};
     //@}
 
     //! @name Accessors

@@ -121,14 +121,6 @@ namespace CORE::GEN
     }
 
     /**
-     *  The dtor only erases the elements, and note that if the
-     *  elements themselves are pointers, the pointed-to memory is
-     *  not touched in any way.  Managing the pointer is the user's
-     *  responsibility.
-     */
-    ~pairedvector() {}
-
-    /**
      *  Returns a read/write iterator that points to the first
      *  element in the %pairedvector.  Iteration is done in ordinary
      *  element order.

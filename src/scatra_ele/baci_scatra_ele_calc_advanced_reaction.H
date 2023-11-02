@@ -48,8 +48,6 @@ namespace DRT
       using my::nsd_;
 
      public:
-      ~ScaTraEleCalcAdvReac() override { return; };
-
       /// Singleton access method
       static ScaTraEleCalcAdvReac<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname  //!< creation/destruction indication

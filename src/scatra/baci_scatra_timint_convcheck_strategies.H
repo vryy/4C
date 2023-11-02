@@ -100,8 +100,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyStd() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -136,8 +134,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyStdMicroScale() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -168,8 +164,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyStdElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -200,8 +194,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyS2ILM() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -232,8 +224,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyS2ILMElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -264,8 +254,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyStdMacroScaleElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -301,8 +289,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyPoroMultiphaseScatra() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
@@ -334,8 +320,6 @@ namespace SCATRA
       return;
     };
 
-    //! destructor
-    ~ConvCheckStrategyPoroMultiphaseScatraArtMeshTying() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(

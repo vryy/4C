@@ -35,8 +35,6 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyFluidElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
-    //! destructor
-    ~MeshtyingStrategyFluidElch() override { return; };
 
     //! initialize meshtying objects
     void InitMeshtying() override;

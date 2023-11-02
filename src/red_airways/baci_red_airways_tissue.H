@@ -43,8 +43,6 @@ namespace AIRWAY
     /// Standard Constructor
     RedAirwayTissue(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    /// Destructor
-    ~RedAirwayTissue() override { return; };
 
     void ReadRestart(const int step) override;
 

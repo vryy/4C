@@ -46,8 +46,6 @@ namespace FS3I
    public:
     BiofilmFSI(const Epetra_Comm& comm);
 
-    ~BiofilmFSI() override{};
-
     void Init() override;
 
     void Setup() override;

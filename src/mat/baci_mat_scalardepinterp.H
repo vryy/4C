@@ -45,9 +45,6 @@ namespace MAT
       /// standard constructor
       ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ScalarDepInterp() override { ; };
-
       /// @name material parameters
       //@{
       /// elastic material number

@@ -58,9 +58,6 @@ namespace STR
     //! Copy constructor
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
-    //! Destructor
-    ~TimIntExpl() override { ; };
-
     /*! \brief Initialize this object
 
     Hand in all objects/parameters/etc. from outside.

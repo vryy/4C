@@ -67,11 +67,6 @@ namespace UTILS
         CORE::LINALG::Solver& solver,       ///< Solver to solve linear subproblem in iteration
         Teuchos::RCP<UTILS::MOR> mor        ///< model order reduction
     );
-    /*!
-        \brief Destructor
-
-     */
-    ~Cardiovascular0DManager() { return; };
 
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem

@@ -67,11 +67,7 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~CoPenaltyStrategy() override = default;
 
     //! @name Access methods
 

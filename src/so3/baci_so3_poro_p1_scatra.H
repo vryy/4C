@@ -54,12 +54,6 @@ namespace DRT
       */
       So3_Poro_P1_Scatra(const So3_Poro_P1_Scatra& old);
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So3_Poro_P1_Scatra() override = default;
-
       //@}
 
       //! @name Acess methods

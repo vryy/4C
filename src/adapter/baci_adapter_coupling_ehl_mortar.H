@@ -49,11 +49,6 @@ namespace ADAPTER
     */
     CouplingEhlMortar();
 
-    /*!
-    \brief Virtual destructor
-
-    */
-    ~CouplingEhlMortar() override{};
     //@}
 
 

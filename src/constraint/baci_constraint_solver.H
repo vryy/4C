@@ -46,10 +46,6 @@ namespace UTILS
         Teuchos::ParameterList param  ///< parameterlist containing solver parameters
     );
 
-    /*!
-        \brief Destructor
-     */
-    ~ConstraintSolver() { return; };
 
     /*!
       \brief Set it up

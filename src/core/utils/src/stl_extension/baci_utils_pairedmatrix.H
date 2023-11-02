@@ -96,14 +96,6 @@ namespace CORE::GEN
     }
 
     /**
-     *  The dtor only erases the elements, and note that if the
-     *  elements themselves are pointers, the pointed-to memory is
-     *  not touched in any way.  Managing the pointer is the user's
-     *  responsibility.
-     */
-    ~pairedmatrix() {}
-
-    /**
      * @brief  clear the %pairedmatrix content
      *
      *  Erases all elements in a %pairedmatrix. Note that this function only

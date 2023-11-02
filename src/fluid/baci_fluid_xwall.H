@@ -297,9 +297,6 @@ namespace FLD
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
         Teuchos::RCP<Epetra_Vector> gridv);
 
-    /// Destructor
-    ~XWallAleFSI() override { return; };
-
     void UpdateWDistWALE();
 
     // set element params for xwall EnrichmentType

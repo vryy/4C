@@ -47,10 +47,6 @@ namespace GEOMETRYPAIR
         const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
-    /**
-     * \brief Destructor.
-     */
-    ~GeometryPairLineToVolumeGaussPointProjection() override{};
 
     /**
      * \brief Try to project all Gauss points to the volume.

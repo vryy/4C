@@ -65,10 +65,6 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVolumeMeshtyingPairGaussPoint();
 
-    /**
-     * \brief Destructor.
-     */
-    ~BeamToSolidVolumeMeshtyingPairGaussPoint() override{};
 
     /**
      * \brief Evaluate this contact element pair.

@@ -40,8 +40,6 @@ namespace SCATRA
     //! constructor
     explicit HeterogeneousReactionStrategy(SCATRA::ScaTraTimIntImpl* scatratimint);
 
-    //! destructor
-    ~HeterogeneousReactionStrategy() override { return; };
 
     //! compute residual terms and their linearizations
     void EvaluateMeshtying() override;

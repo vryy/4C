@@ -50,12 +50,6 @@ namespace DRT
       NurbsDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
       /*!
-      \brief Destructor
-
-      */
-      ~NurbsDiscretization() override = default;
-
-      /*!
       \brief Set a knot vector
 
       Store a the knot vector in the discretization.

@@ -39,9 +39,6 @@ namespace SCATRA
     HomIsoTurbInitialScalarField(
         ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield);
 
-    //! destructor
-    ~HomIsoTurbInitialScalarField() { return; };
-
     //! calculate initial field
     void CalculateInitialField();
 
