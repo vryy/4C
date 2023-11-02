@@ -21,11 +21,13 @@ namespace DRT::ELEMENTS
 {
   namespace DETAILS
   {
-    using ImplementedSolidPoroCellTypes = CORE::FE::CellTypeList<CORE::FE::CellType::hex8,
-        CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
-        CORE::FE::CellType::tet4, CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>;
+    using ImplementedSolidPoroCellTypes =
+        std::integer_sequence<CORE::FE::CellType, CORE::FE::CellType::hex8,
+            CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
+            CORE::FE::CellType::tet4, CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>;
     using PoroPressureBasedEvaluators =
-        CORE::FE::ApplyToBase<SolidPoroPressureBasedEleCalc, ImplementedSolidPoroCellTypes>;
+        CORE::FE::apply_celltype_sequence<SolidPoroPressureBasedEleCalc,
+            ImplementedSolidPoroCellTypes>;
 
     using SolidPoroEvaluators = CORE::FE::Join<PoroPressureBasedEvaluators>;
   }  // namespace DETAILS
