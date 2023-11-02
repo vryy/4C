@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BACI_IO_DISCRETIZATION_RUNTIME_VTU_WRITER_H
-#define BACI_IO_DISCRETIZATION_RUNTIME_VTU_WRITER_H
+#ifndef BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_H
+#define BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_H
 
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */

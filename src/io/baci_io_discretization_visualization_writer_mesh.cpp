@@ -9,7 +9,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 /* headers */
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 
 #include "baci_beam3_base.H"
 #include "baci_io_control.H"
