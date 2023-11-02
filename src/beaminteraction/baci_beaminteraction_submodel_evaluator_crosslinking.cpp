@@ -24,7 +24,7 @@
 #include "baci_binstrategy_meshfree_multibin.H"
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_io.H"
-#include "baci_io_discretization_runtime_vtp_writer.H"
+#include "baci_io_discretization_visualization_writer_nodes.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -1123,7 +1123,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeVtpStruc
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtpWriter(
+  vtp_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(
       BinDiscretPtr(), GInOutput().GetRuntimeVtpOutputParams()->GetVisualizationParameters()));
 }
 
@@ -1137,7 +1137,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   // this section compiles and seems to do the job correctly :-)
 
   // initialize the writer object
-  vtp_writer_ptr_->SetGeometryFromParticleDiscretization();
+  vtp_writer_ptr_->SetGeometryFromDiscretization();
 
   // append all desired node and dof output data to the writer object's storage
   DRT::Discretization const& bindis = BinDiscret();
