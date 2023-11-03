@@ -140,7 +140,30 @@ namespace DRT
     */
     Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm);
 
+    /**
+     * Virtual destructor.
+     */
     virtual ~Discretization() = default;
+
+    /**
+     * The Discretization is a heavy object that should not be copied (accidentally).
+     */
+    Discretization(const DRT::Discretization&) = delete;
+
+    /**
+     * The Discretization is a heavy object that should not be copied (accidentally).
+     */
+    Discretization operator=(const Discretization&) = delete;
+
+    /**
+     * Moving a Discretization is not supported.
+     */
+    Discretization(DRT::Discretization&&) = delete;
+
+    /**
+     * Moving a Discretization is not supported.
+     */
+    Discretization operator=(Discretization&&) = delete;
 
     //! @name Query methods
 
@@ -2009,10 +2032,6 @@ namespace DRT
     virtual int AssignDegreesOfFreedom(int start);
 
    private:
-    // don't want = operator and copy constructor
-    Discretization operator=(const Discretization& old) = delete;
-    Discretization(const DRT::Discretization& old) = delete;
-
     /*!
     \brief Build noderowmap_ (Filled()==true NOT prerequisite)
 
