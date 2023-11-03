@@ -1,7 +1,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief Write visualization output for a discretization in vtk/vtu format at runtime
+\brief Write visualization output for a discretization, i.e., write the mesh and results on the mesh
+to disk
 
 \level 3
 
@@ -133,7 +134,7 @@ namespace IO
     int map_changed_allproc(0);
     discretization_->Comm().MaxAll(&map_changed, &map_changed_allproc, 1);
 
-    // reset geometry of runtime vtu writer
+    // reset geometry of visualization writer
     if (map_changed_allproc) SetGeometryFromDiscretization();
   }
 
@@ -162,8 +163,8 @@ namespace IO
     for (unsigned int iele = 0; iele < num_row_elements; ++iele)
       num_nodes += discretization_->lRowElement(iele)->NumNode();
 
-    std::vector<double> vtu_point_result_data;
-    vtu_point_result_data.reserve(result_num_dofs_per_node * num_nodes);
+    std::vector<double> point_result_data;
+    point_result_data.reserve(result_num_dofs_per_node * num_nodes);
 
     unsigned int pointcounter = 0;
 
@@ -182,19 +183,19 @@ namespace IO
       {
         pointcounter +=
             ele->AppendVisualizationDofBasedResultDataVector(*discretization_, result_data_dofbased,
-                result_num_dofs_per_node, read_result_data_from_dofindex, vtu_point_result_data);
+                result_num_dofs_per_node, read_result_data_from_dofindex, point_result_data);
       }
     }
 
     // sanity check
-    if (vtu_point_result_data.size() != result_num_dofs_per_node * pointcounter)
+    if (point_result_data.size() != result_num_dofs_per_node * pointcounter)
     {
       dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_dofs_per_node * pointcounter, vtu_point_result_data.size());
+          result_num_dofs_per_node * pointcounter, point_result_data.size());
     }
 
     visualization_manager_->GetVisualizationData().SetPointDataVector(
-        resultname, vtu_point_result_data, result_num_dofs_per_node);
+        resultname, point_result_data, result_num_dofs_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -228,8 +229,8 @@ namespace IO
     for (unsigned int iele = 0; iele < num_row_elements; ++iele)
       num_nodes += discretization_->lRowElement(iele)->NumNode();
 
-    std::vector<double> vtu_point_result_data;
-    vtu_point_result_data.reserve(result_num_components_per_node * num_nodes);
+    std::vector<double> point_result_data;
+    point_result_data.reserve(result_num_components_per_node * num_nodes);
 
     unsigned int pointcounter = 0;
 
@@ -258,7 +259,7 @@ namespace IO
           Epetra_Vector* column = (*result_data_nodebased)(icpn);
 
           if (lid > -1)
-            vtu_point_result_data.push_back((*column)[lid]);
+            point_result_data.push_back((*column)[lid]);
           else
             dserror("received illegal node local id: %d", lid);
         }
@@ -268,14 +269,14 @@ namespace IO
     }
 
     // sanity check
-    if (vtu_point_result_data.size() != result_num_components_per_node * pointcounter)
+    if (point_result_data.size() != result_num_components_per_node * pointcounter)
     {
       dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_components_per_node * pointcounter, vtu_point_result_data.size());
+          result_num_components_per_node * pointcounter, point_result_data.size());
     }
 
     visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
-        resultname, vtu_point_result_data, result_num_components_per_node);
+        resultname, point_result_data, result_num_components_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -305,8 +306,8 @@ namespace IO
     // count number of elements for each processor
     unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
 
-    std::vector<double> vtu_cell_result_data;
-    vtu_cell_result_data.reserve(result_num_components_per_element * num_row_elements);
+    std::vector<double> cell_result_data;
+    cell_result_data.reserve(result_num_components_per_element * num_row_elements);
 
     unsigned int cellcounter = 0;
 
@@ -325,21 +326,21 @@ namespace IO
       {
         Epetra_Vector* column = (*result_data_elementbased)(icpe);
 
-        vtu_cell_result_data.push_back((*column)[iele]);
+        cell_result_data.push_back((*column)[iele]);
       }
 
       ++cellcounter;
     }
 
     // sanity check
-    if (vtu_cell_result_data.size() != result_num_components_per_element * cellcounter)
+    if (cell_result_data.size() != result_num_components_per_element * cellcounter)
     {
       dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_components_per_element * cellcounter, vtu_cell_result_data.size());
+          result_num_components_per_element * cellcounter, cell_result_data.size());
     }
 
     visualization_manager_->GetVisualizationData().SetCellDataVector(
-        resultname, vtu_cell_result_data, result_num_components_per_element);
+        resultname, cell_result_data, result_num_components_per_element);
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -438,9 +439,9 @@ namespace IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::WriteToDisk(
-      const double visualziation_time, const int visualization_step)
+      const double visualization_time, const int visualization_step)
   {
-    visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
+    visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
 
   /*-----------------------------------------------------------------------------------------------*
