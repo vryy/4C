@@ -14,7 +14,7 @@
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
@@ -61,7 +61,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   {
     runtime_output_params_.Init(*fluid_runtime_output_list);
     runtime_output_params_.Setup();
-    runtime_output_writer_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter(
+    runtime_output_writer_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
         discret_, IO::VisualizationParametersFactory(
                       DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
   }

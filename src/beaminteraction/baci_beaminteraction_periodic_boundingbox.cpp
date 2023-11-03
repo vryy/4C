@@ -15,7 +15,8 @@
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_inpar_binningstrategy.H"
 #include "baci_io.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
+#include "baci_io_visualization_parameters.H"
 #include "baci_lib_dofset_independent.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_factory.H"
@@ -612,7 +613,7 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
-  vtu_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter(
+  vtu_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       boxdiscret_, IO::VisualizationParametersFactory(
                        ::DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
 }
