@@ -45,12 +45,13 @@ namespace IO
     // Todo assume 3D for now
     const unsigned int num_spatial_dimensions = 3;
 
-    // count number of nodes and number for each processor; output is completely independent of
-    // the number of processors involved
+    // count number of nodes; output is completely independent of the number of processors involved
     unsigned int num_row_elements = discretization_->NumMyRowElements();
     unsigned int num_nodes = 0;
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
-      num_nodes += discretization_->lRowElement(iele)->NumNode();
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
+    {
+      num_nodes += ele->NumNode();
+    }
 
     // do not need to store connectivity indices here because we create a
     // contiguous array by the order in which we fill the coordinates (otherwise
@@ -74,10 +75,8 @@ namespace IO
     unsigned int pointcounter = 0;
     unsigned int num_skipped_eles = 0;
 
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // Currently this method only works for elements which represent the same differential
       // equation. In structure problems, 1D beam and 3D solid elements are contained in the same
       // simulation but require fundamentally different output structures. Therefore, as long as 1D
@@ -156,25 +155,23 @@ namespace IO
           "discretization's dof col map.");
     }
 
-    // count number of nodes and number of elements for each processor
-    unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
-
+    // count number of nodes for this visualization
     unsigned int num_nodes = 0;
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
-      num_nodes += discretization_->lRowElement(iele)->NumNode();
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
+    {
+      num_nodes += ele->NumNode();
+    }
 
     std::vector<double> point_result_data;
     point_result_data.reserve(result_num_dofs_per_node * num_nodes);
 
     unsigned int pointcounter = 0;
 
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // check for beam element that potentially needs special treatment due to Hermite
       // interpolation
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
       // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
       if (beamele != nullptr)
@@ -222,22 +219,20 @@ namespace IO
           "discretization's node col map.");
     }
 
-    // count number of nodes and number of elements for each processor
-    unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
-
+    // count number of nodes
     unsigned int num_nodes = 0;
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
-      num_nodes += discretization_->lRowElement(iele)->NumNode();
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
+    {
+      num_nodes += ele->NumNode();
+    }
 
     std::vector<double> point_result_data;
     point_result_data.reserve(result_num_components_per_node * num_nodes);
 
     unsigned int pointcounter = 0;
 
-    for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // check for beam element that potentially needs special treatment due to Hermite
       // interpolation
       const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
@@ -352,10 +347,8 @@ namespace IO
     owner_of_row_elements.reserve(discretization_->NumMyRowElements());
 
     const int my_pid = discretization_->Comm().MyPID();
-    for (int iele = 0; iele < discretization_->NumMyRowElements(); ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // Since we do not output beam elements we filter them here.
       const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beamele != nullptr) continue;
@@ -376,10 +369,8 @@ namespace IO
     std::vector<double> gid_of_row_elements;
     gid_of_row_elements.reserve(discretization_->NumMyRowElements());
 
-    for (int iele = 0; iele < discretization_->NumMyRowElements(); ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // Since we do not output beam elements we filter them here.
       auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beamele != nullptr) continue;
@@ -404,22 +395,20 @@ namespace IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::AppendNodeGID(const std::string& resultname)
   {
-    // count number of nodes and number for each processor; output is completely independent of
-    // the number of processors involved
-    int num_row_elements = discretization_->NumMyRowElements();
+    // count number of nodes; output is completely independent of the number of processors involved
     int num_nodes = 0;
-    for (int iele = 0; iele < num_row_elements; ++iele)
-      num_nodes += discretization_->lRowElement(iele)->NumNode();
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
+    {
+      num_nodes += ele->NumNode();
+    }
 
     // Setup the vector with the GIDs of the nodes.
     std::vector<double> gid_of_nodes;
     gid_of_nodes.reserve(num_nodes);
 
     // Loop over each element and add the node GIDs.
-    for (int iele = 0; iele < num_row_elements; ++iele)
+    for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      const DRT::Element* ele = discretization_->lRowElement(iele);
-
       // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
       auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beamele != nullptr) continue;
@@ -461,9 +450,8 @@ namespace IO
     std::vector<int> my_ghost_elements;
     my_ghost_elements.clear();
     int count = 0;
-    for (int iele = 0; iele < discretization.NumMyColElements(); ++iele)
+    for (const DRT::Element* ele : discretization.MyColElementRange())
     {
-      const DRT::Element* ele = discretization.lColElement(iele);
       const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       const bool is_beam_element = beamele != nullptr;
       if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
@@ -484,9 +472,8 @@ namespace IO
     // Output the ghosting data of the elements owned by this proc.
     std::vector<double> ghosted_elements;
     ghosted_elements.reserve(count * n_proc);
-    for (int iele = 0; iele < discretization.NumMyRowElements(); ++iele)
+    for (const DRT::Element* ele : discretization.MyRowElementRange())
     {
-      const DRT::Element* ele = discretization.lRowElement(iele);
       const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       const bool is_beam_element = beamele != nullptr;
       if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))

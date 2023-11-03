@@ -52,12 +52,12 @@ namespace IO
 
 
     // loop over my nodes and collect the geometry/grid data, i.e. reference positions of nodes
-    for (unsigned int inode = 0; inode < num_row_nodes; ++inode)
+    for (const DRT::Node* node : discretization_->MyRowNodeRange())
     {
-      const DRT::Node* node = discretization_->lRowNode(inode);
-
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
+      {
         point_coordinates.push_back(node->X()[idim]);
+      }
     }
 
 
