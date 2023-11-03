@@ -37,9 +37,6 @@ namespace IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::SetGeometryFromDiscretization()
   {
-    // Note: this will only work for 'particle' discretizations that have nodes but no elements
-
-
     // Todo assume 3D for now
     const unsigned int num_spatial_dimensions = 3;
 
@@ -81,14 +78,14 @@ namespace IO
     /* the idea is to transform the given data to a 'point data vector' and append it to the
      * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
-    std::vector<double> vtp_point_result_data;
-    vtp_point_result_data.reserve(result_data_dofbased->MyLength());
+    std::vector<double> point_result_data;
+    point_result_data.reserve(result_data_dofbased->MyLength());
 
     for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
-      vtp_point_result_data.push_back((*result_data_dofbased)[lid]);
+      point_result_data.push_back((*result_data_dofbased)[lid]);
 
     visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
-        resultname, vtp_point_result_data, result_num_dofs_per_node);
+        resultname, point_result_data, result_num_dofs_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -112,27 +109,27 @@ namespace IO
           result_num_components_per_node, result_data_nodebased->NumVectors());
 
 
-    std::vector<double> vtp_point_result_data;
-    vtp_point_result_data.reserve(result_num_components_per_node * num_row_nodes);
+    std::vector<double> point_result_data;
+    point_result_data.reserve(result_num_components_per_node * num_row_nodes);
 
     for (unsigned int lid = 0; lid < num_row_nodes; ++lid)
     {
       for (unsigned int idf = 0; idf < result_num_components_per_node; ++idf)
       {
         Epetra_Vector* column = (*result_data_nodebased)(idf);
-        vtp_point_result_data.push_back((*column)[lid]);
+        point_result_data.push_back((*column)[lid]);
       }
     }
 
     visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
-        resultname, vtp_point_result_data, result_num_components_per_node);
+        resultname, point_result_data, result_num_components_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::WriteToDisk(
-      const double visualziation_time, const int visualization_step)
+      const double visualization_time, const int visualization_step)
   {
-    visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
+    visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
 }  // namespace IO
