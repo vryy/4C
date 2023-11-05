@@ -45,6 +45,11 @@ namespace SSTI
   class AssembleStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~AssembleStrategyBase() = default;
+
     AssembleStrategyBase(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! write 1.0 on main diagonal of slave side dofs

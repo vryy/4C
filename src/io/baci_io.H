@@ -32,7 +32,7 @@ class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
-class Epetra_BlockMapData;
+
 namespace LINALG
 {
   class SerialDenseMatrix;

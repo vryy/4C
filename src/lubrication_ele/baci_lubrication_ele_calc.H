@@ -75,8 +75,6 @@ namespace DRT
       LubricationEleCalc(const std::string& disname);
 
      public:
-      virtual ~LubricationEleCalc() = default;
-
       //! singleton access method
       static LubricationEleCalc<distype, probdim>* Instance(const std::string& disname);
 

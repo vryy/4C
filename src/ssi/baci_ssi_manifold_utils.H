@@ -329,6 +329,11 @@ namespace SSI
   class ManifoldMeshTyingStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ManifoldMeshTyingStrategyBase() = default;
+
     explicit ManifoldMeshTyingStrategyBase(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 

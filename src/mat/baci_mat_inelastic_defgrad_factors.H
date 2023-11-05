@@ -375,6 +375,11 @@ namespace MAT
   class InelasticDefgradFactors
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~InelasticDefgradFactors() = default;
+
     /// construct material with specific material params
     explicit InelasticDefgradFactors(MAT::PAR::Parameter* params);
 

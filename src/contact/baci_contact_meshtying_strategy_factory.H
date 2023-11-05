@@ -41,10 +41,7 @@ namespace MORTAR
     {
      public:
       //! constructor
-      FactoryMT(){};
-
-      //! destructor
-      virtual ~FactoryMT() = default;
+      FactoryMT() = default;
 
       //! derived
       void Setup() override;

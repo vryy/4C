@@ -46,6 +46,11 @@ namespace SSI
   class AssembleStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~AssembleStrategyBase() = default;
+
     //! constructor
     explicit AssembleStrategyBase(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);

@@ -1263,6 +1263,11 @@ namespace DRT
     class ScaTraEleReaManager
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~ScaTraEleReaManager() = default;
+
       ScaTraEleReaManager(int numscal)
           : include_me_(false),      // is reaction manager active?
             reacoeff_(numscal, 0.0)  // size of vector + initialized to zero

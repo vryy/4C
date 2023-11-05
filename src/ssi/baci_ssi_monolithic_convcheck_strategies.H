@@ -47,6 +47,11 @@ namespace SSI
   class SSIMono::ConvCheckStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ConvCheckStrategyBase() = default;
+
     ConvCheckStrategyBase(const Teuchos::ParameterList& global_time_parameters);
 
     //! Check, if Newton-Raphson has converged and print residuals and increments to screen

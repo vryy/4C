@@ -53,6 +53,11 @@ namespace MORTAR
     class Factory
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~Factory() = default;
+
       //! constructor
       Factory();
 

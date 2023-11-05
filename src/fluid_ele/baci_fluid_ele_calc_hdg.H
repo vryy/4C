@@ -261,7 +261,6 @@ namespace DRT
       virtual int EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec);
 
-      virtual ~FluidEleCalcHDG() = default;
       /// Singleton access method
       static FluidEleCalcHDG<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

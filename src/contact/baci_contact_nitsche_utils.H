@@ -28,6 +28,11 @@ namespace MORTAR
   class MortarElementNitscheContainer
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MortarElementNitscheContainer() = default;
+
     MortarElementNitscheContainer() = default;
 
     virtual void Clear() = 0;

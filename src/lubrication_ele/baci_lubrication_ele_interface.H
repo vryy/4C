@@ -34,8 +34,13 @@ namespace DRT
     class LubricationEleInterface
     {
      public:
-      /// Empty constructor
-      LubricationEleInterface() { return; };
+      /**
+       * Virtual destructor.
+       */
+      virtual ~LubricationEleInterface() = default;
+
+      /// Default constructor.
+      LubricationEleInterface() = default;
 
       /// Setup element evaluation
       virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;

@@ -59,6 +59,11 @@ namespace MAT
   class ScatraMultiScale
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ScatraMultiScale() = default;
+
     //! initialize multi-scale scalar transport material
     //! \param[in] ele_id         macro-scale element ID
     //! \param[in] gp_id          macro-scale Gauss point ID

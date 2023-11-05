@@ -56,11 +56,15 @@ namespace SCATRA
   class MeshtyingStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MeshtyingStrategyBase() = default;
+
     //! constructor
     explicit MeshtyingStrategyBase(SCATRA::ScaTraTimIntImpl* scatratimint)
         : convcheckstrategy_(Teuchos::null), scatratimint_(scatratimint)
     {
-      return;
     }
 
     /*!

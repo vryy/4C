@@ -50,6 +50,11 @@ namespace SSI
   class DBCHandlerBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~DBCHandlerBase() = default;
+
     //! constructor
     explicit DBCHandlerBase(bool is_scatra_manifold, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,

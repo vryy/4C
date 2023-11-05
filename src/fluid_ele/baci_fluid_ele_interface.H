@@ -61,8 +61,13 @@ namespace DRT
     class FluidEleInterface
     {
      public:
+      /**
+       * Virtual destructor.
+       */
+      virtual ~FluidEleInterface() = default;
+
       /// Empty constructor
-      FluidEleInterface() {}
+      FluidEleInterface() = default;
 
       /// Evaluate the element
       /*!

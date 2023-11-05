@@ -105,7 +105,7 @@ namespace DRT
        *\brief Print this Manager
        *
        */
-      virtual void Print() const;
+      void Print() const;
 
       /*!
        * \brief Get Epetra communicator

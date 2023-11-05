@@ -247,7 +247,6 @@ namespace DRT
         return;
       }
 
-      virtual ~FluidEleCalcHDGWeakComp() = default;
       /// Singleton access method
       static FluidEleCalcHDGWeakComp<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

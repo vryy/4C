@@ -246,8 +246,6 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleReaManagerLoma() = default;
-
       //! Set reaction / temperature term for rhs
       void SetReaTempRhs(const double reatemprhs, const int k)
       {

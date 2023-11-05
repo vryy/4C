@@ -41,6 +41,11 @@ namespace SSI
   class MeshtyingStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MeshtyingStrategyBase() = default;
+
     //! constructor
     explicit MeshtyingStrategyBase(bool is_scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
