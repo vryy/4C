@@ -35,10 +35,10 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
-namespace COMM_UTILS
+namespace CORE::COMM
 {
   class Communicators;
-}  // namespace COMM_UTILS
+}  // namespace CORE::COMM
 
 namespace CORE::LINALG
 {
@@ -2269,7 +2269,7 @@ namespace DRT
 
   //! distribute a discretization from one group to one other
   void NPDuplicateDiscretization(const int sgroup, const int rgroup,
-      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
       ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! distribute a discretization from one group to one other
@@ -2277,7 +2277,7 @@ namespace DRT
   //! that the parallel distribution is the same for all groups. Hence,
   //! a different braodcasting scheme is used
   void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-      Teuchos::RCP<COMM_UTILS::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
       ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
 }  // namespace DRT

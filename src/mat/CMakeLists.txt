@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_mat_dependencies
     # cmake-format: sortable
-    comm
     core
     fiber
     inpar

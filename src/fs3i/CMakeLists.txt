@@ -4,7 +4,6 @@ set(_fs3i_dependencies
     # cmake-format: sortable
     adapter
     ale
-    comm
     core
     fluid
     fluid_ele

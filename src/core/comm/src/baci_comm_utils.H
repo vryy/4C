@@ -1,47 +1,43 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
 \brief Helper class for everything that deals with communication, e.g.
        MPI, Epetra_Comm and further communicators
-
 \level 0
-
-
 */
 
-
-/*----------------------------------------------------------------------*
- | definitions                                              ghamm 01/12 |
- *----------------------------------------------------------------------*/
 
 #ifndef BACI_COMM_UTILS_H
 #define BACI_COMM_UTILS_H
 
 
-/*----------------------------------------------------------------------*
- | headers                                                  ghamm 01/12 |
- *----------------------------------------------------------------------*/
-#include "baci_lib_globalproblem_enums.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_DefaultMpiComm.hpp>
 
-/*----------------------------------------------------------------------*
- |                                                          ghamm 01/12 |
- *----------------------------------------------------------------------*/
-namespace COMM_UTILS
+namespace CORE::COMM
 {
   // forward declaration
   class Communicators;
 
+  /**
+   * The known types for nested parallelism.
+   */
+  enum class NestedParallelismType
+  {
+    copy_dat_file,
+    every_group_read_dat_file,
+    separate_dat_files,
+    no_nested_parallelism
+  };
+
   //! create a local and a global communicator for the problem
-  Teuchos::RCP<COMM_UTILS::Communicators> CreateComm(std::vector<std::string> argv);
+  Teuchos::RCP<Communicators> CreateComm(std::vector<std::string> argv);
 
   /*! \brief debug routine to compare vectors from different parallel baci runs
    *
-   * You can add COMM_UTILS::AreDistributedVectorsIdentical in your code which will lead to a
+   * You can add CORE::COMM::AreDistributedVectorsIdentical in your code which will lead to a
    * comparison of the given vector for different executables and/or configurations.
    * Command for using this feature: \n
    * mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release
@@ -60,12 +56,12 @@ namespace COMM_UTILS
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
-  bool AreDistributedVectorsIdentical(const COMM_UTILS::Communicators& communicators,
+  bool AreDistributedVectorsIdentical(const Communicators& communicators,
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 
   /*! \brief debug routine to compare sparse matrices from different parallel baci runs
    *
-   * You can add COMM_UTILS::AreDistributedSparseMatricesIdentical in your code which will lead to a
+   * You can add CORE::COMM::AreDistributedSparseMatricesIdentical in your code which will lead to a
    * comparison of the given sparse matrices for different executables and/or configurations.
    * Command for using this feature: \n
    * mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release
@@ -87,7 +83,7 @@ namespace COMM_UTILS
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
-  bool AreDistributedSparseMatricesIdentical(const COMM_UTILS::Communicators& communicators,
+  bool AreDistributedSparseMatricesIdentical(const Communicators& communicators,
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
@@ -175,9 +171,6 @@ namespace COMM_UTILS
   };
 
 
-}  // namespace COMM_UTILS
+}  // namespace CORE::COMM
 
-
-
-/*----------------------------------------------------------------------*/
-#endif  // COMM_UTILS_H
+#endif

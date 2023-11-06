@@ -132,7 +132,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     if (verbose_)
     {
       Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-          COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+          CORE::COMM::toTeuchosComm<int>(discret_->Comm());
       Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 

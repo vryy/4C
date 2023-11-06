@@ -65,19 +65,6 @@ enum class ProblemType
   tutorial,              // student's c++/baci tutorial
 };
 
-
-/*----------------------------------------------------------------------*/
-/* The known nptypes for nested parallelism                 ghamm 02/12 */
-/*----------------------------------------------------------------------*/
-typedef enum _NP_TYPE
-{
-  copy_dat_file,
-  every_group_read_dat_file,
-  separate_dat_files,
-  no_nested_parallelism
-} NestedParallelismType;
-
-
 /// Type of shape functions used in spatial discretization
 enum class ShapeFunctionType
 {

@@ -8,7 +8,6 @@ set(_structure_new_dependencies
     beaminteraction
     browniandyn
     cardiovascular0d
-    comm
     constraint
     constraint_framework
     contact

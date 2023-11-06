@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_matelast_dependencies
     # cmake-format: sortable
-    comm
     core
     inpar
     io

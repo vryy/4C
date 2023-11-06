@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_so3_dependencies
     # cmake-format: sortable
-    comm
     contact
     core
     fiber

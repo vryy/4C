@@ -157,7 +157,7 @@ void dyn_nlnstructural_drt()
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      COMM_UTILS::toTeuchosComm<int>(structdis->Comm());
+      CORE::COMM::toTeuchosComm<int>(structdis->Comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // time to go home...

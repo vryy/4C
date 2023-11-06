@@ -216,8 +216,8 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
-  Teuchos::RCP<COMM_UTILS::Communicators> communicators =
-      COMM_UTILS::CreateComm(std::vector<std::string>(argv, argv + argc));
+  Teuchos::RCP<CORE::COMM::Communicators> communicators =
+      CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));
   DRT::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> lcomm = communicators->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = communicators->GlobalComm();
