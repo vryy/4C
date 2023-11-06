@@ -18,46 +18,70 @@ An easy transformation is used by the following tool chain:
 
 The ascii files are written in restructuredText or markdown. 
 While restructuredText conversion is the native implementation of sphinx, markdown works well, too.
-Both can be converted to an html document and provided to <https://www.readthedocs.org>.
+Both can be converted to an html document and provided to https://www.readthedocs.org.
 
 Here, I'll give some hints, mainly for myself ;-)
+You'll find other useful information, e.g., in the `official documentation <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_;
+I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_. Otherwise, GIYF.
 
-- Headers are sorted automatically. Actually, it is not necessary to use specific header, 
+- You can emphasize text both in markdown and restructuredText by making it **bold** (using double aserisks before and after: ``**bold**``,
+  or print it in *italic* (using single asterisk before and after: ``*italic*``).
+
+- **Headers** are sorted automatically. Actually, it is not necessary to use specific header,
   since Sphinx sorts the header by itself. However, it's good practice to use a specific format. 
-  Mainly I use the following
+  In general one has to underline the title with the following characters
 
-  - Parts: ``#####`` with both overlines and underlines
+  - Parts: Both overlining and underlining the title with ``=======``
   - Sections: ``=====`` 
   - Subsections: ``------``
   - Subsubsections: ``~~~~~~~~``
 
-- In Markdown the headers are defined by the number of hashmarks in front of the Title.
+  .. note::
 
-  - Parts: ``# Part title``
-  - Sections: ``## Section title`` 
-  - Subsections: ``### Subsection title``
-  - Subsubsections: ``#### Subsubsection title``
+     The underlines (and the overlines) must be at least as long as the title itself.
+     A title (including the underline) has to be surrounded by a blank line.
 
-- While in restructuredText a paragraph has to be surrounded by a blank line, this is not the case for Markdown
+- **Lists** (as the one addressing the features of reStructuredText here) can be numbered or unsorted.
+  Any list must be surrounded by blank lines.
+  An unordered list with bullet points is created by dashs like this one::
 
-- Links to other headers can easily be included in restructuredText by ``:ref:`Descriptive link name <sectionname>```, e.g., :ref:`The BACI Workflow <baciworkflow>`.
+     Here, we'll start a list
+
+     - Point one
+     - Point two
+     - Point three
+
+     further text
+
+  A numbered list is created like the unordered ones, simply replace the asterisk with ``# .`` as used in the following.
+
+   #. A list within a list must be indented by three blanks.
+   #. Also, before and after the inserted list, blank lines are needed.
+
+- **Links to other headers** (internal links) can easily be included in restructuredText by ``:ref:`Descriptive link name <sectionname>```,
+  e.g., :ref:`The BACI Workflow <baciworkflow>`.
   The link target can be a section name, but also an explicit link target. 
   The latter is preferred, since there may be duplicate section names in the documentation. 
-  A link target must be entered by ``.. _targetname:``
+  A link target must be entered by ``.. _targetname:``, i.e., first two dots, then a blank followed by an underline,
+  then the name of the link target, and finally a colon.
+
   From my small experience it seems that the link to a section name does not contain spaces, 
   even if the section title does contain them 
   (However, I saw spaces in other documentations many times). 
   As an example, you'll find a link to the top of this page :ref:`here <writingdocumentation>`. 
   Links also work between pages, of course.
 
-- Links to other website are included  by, e.g., ``<http://www.readthedocs.org>`` (<http://www.readthedocs.org>), that is, no back quotes are needed if the website is printed directly.
-  If the link should show a different text, use back quotes and an underscore at the end, like this: ```ReadTheDocs <http://www.readthedocs.org>`_`` , which then looks like `ReadTheDocs <http://www.readthedocs.org>`_.
+- **Links to other websites** are included  by, e.g., ``http://www.readthedocs.org`` (<http://www.readthedocs.org>),
+  that is, you may simply type the website and it is recognized as a link.
+  If the link should show a different text, use back quotes and an underscore at the end,
+  like this: ```ReadTheDocs <http://www.readthedocs.org>`_`` , which then looks like `ReadTheDocs <http://www.readthedocs.org>`_.
+  Note that a blank is needed before the opening angle bracket.
 
-- References are given in ``references.rst``. 
+- **References** are given in ``references.rst``.
   You'll see how to prepare such a reference as soon as you open the file.
   The corresponding citation is created at any place by ``[referencename]_``, see, e.g., [Wall99]_.
 
-- Tables are often entered in a rather strict format like this
+- **Tables** are often entered in a rather strict format like this
 
   ::
 
@@ -82,7 +106,7 @@ Here, I'll give some hints, mainly for myself ;-)
        - Right col
 
 
-- Images can be entered in the following way:
+- **Images** can be entered in the following way:
 
   ::
 
@@ -94,7 +118,7 @@ Here, I'll give some hints, mainly for myself ;-)
         After one empty line, a figure caption is given (like this one). 
         Beware that the indentation must not change!
 
-  Note that figures cannot natively entered in markdown. However, there is a way to enter them anyway by declaring a restructuredText element within the markdown file:
+  Note that figures cannot natively be entered in markdown. However, there is a way to enter them anyway by declaring a restructuredText element within the markdown file:
 
   .. code-block:: markdown
 
@@ -110,8 +134,8 @@ Here, I'll give some hints, mainly for myself ;-)
 
   There may be other feature not included in markdown which can be entered in markdown by the exact same way.
 
-- Math can be inserted either within the text or as separate equations.
-  For inline math one may use the ``math`` rule like `` :math:`f(x) = x^2` ``. 
+- **Math** can be inserted either within the text or as separate equations.
+  For inline math one may use the ``math`` rule like ``:math:`f(x) = x^2```.
   Separate equations are writen as a directive ``.. math::``, for example:
 
   ::
@@ -126,7 +150,7 @@ Here, I'll give some hints, mainly for myself ;-)
 
      f(x) = \int_{\partial \Omega} \sigma_{ij}(\mathbf{x}) : \varepsilon_{ij}(\mathbf{x}) \mathrm{d} A
 
-
-- You can emphasize text both in markdown and restructuredText by making it **bold** (using double aserisks before and after: ``**bold**``, 
-  or print it in *italic* (using single asterisk before and after: ``*italic*``).
+- **Files for Download** should be included in the ``doc/readthedocs/files`` directory.
+  Within the text, you may use the sphinx ``:download:`` role, as shown :download:`here <files/testfile.pdf>`.
+  This link has been created by ``:download:`here <files/testfile.pdf>```.
 

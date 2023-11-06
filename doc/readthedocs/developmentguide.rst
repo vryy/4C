@@ -4,18 +4,13 @@
 Developer guide
 ================
 
-.. note::
-
-   Here, were could have the content of the current BACI Wiki. 
-   At this point, it is just a link to the `existing Wiki <https://gitlab.lrz.de/baci/baci/-/wikis/home>`_, 
-   which currently, however, is only visible if you have an account for the LRZ gitlab.
-
 .. toctree::
+    :maxdepth: 2
 
     bacisetup
-    materialdevelopment
-    codedesign
+    developer_runsimulation
+    bacitesting
+    codingguidelines
+    developer_addedinformation
+    development_parts
 
-..   code_commentation
-
-..   cppforbacists
