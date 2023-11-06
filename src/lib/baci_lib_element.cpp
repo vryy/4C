@@ -1137,9 +1137,8 @@ unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_box;
   CORE::LINALG::Matrix<3, 1, double> point;
@@ -1156,10 +1155,10 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
 
     for (unsigned int i_dir = 0; i_dir < 3; ++i_dir)
     {
-      const int lid = result_data_dofbased->Map().LID(nodedofs[i_dir]);
+      const int lid = result_data_dofbased.Map().LID(nodedofs[i_dir]);
 
       if (lid > -1)
-        point(i_dir) = node->X()[i_dir] + (*result_data_dofbased)[lid];
+        point(i_dir) = node->X()[i_dir] + result_data_dofbased[lid];
       else
         dserror("received illegal dof local id: %d", lid);
     }

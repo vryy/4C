@@ -10,9 +10,14 @@
 
 #include "baci_rebalance.H"
 
+#include "baci_discretization_geometric_search_bounding_volume.H"
+#include "baci_discretization_geometric_search_distributed_tree.H"
+#include "baci_discretization_geometric_search_params.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+#include <Epetra_FECrsGraph.h>
 #include <Isorropia_Epetra.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
@@ -312,4 +317,121 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   dis->Comm().Barrier();
 
   return graph;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
+    const ::DRT::Discretization& dis)
+{
+  // 1. Do a global geometric search
+  Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);
+  auto params = CORE::GEOMETRICSEARCH::GeometricSearchParams();
+
+  std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> bounding_boxes;
+  for (const auto* element : dis.MyRowElementRange())
+  {
+    bounding_boxes.emplace_back(
+        std::make_pair(element->Id(), element->GetBoundingVolume(dis, zero_vector, params)));
+  }
+
+  auto result = CORE::GEOMETRICSEARCH::GlobalCollisionSearch(
+      bounding_boxes, bounding_boxes, dis.Comm(), params.verbosity_);
+
+  // 2. Set up a multivector which will be populated with all ghosting information
+  const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
+  Epetra_MultiVector node_information(*dis.ElementRowMap(), n_nodes_per_element_max, true);
+
+  for (int rowele_i = 0; rowele_i < dis.NumMyRowElements(); ++rowele_i)
+  {
+    const auto* element = dis.lRowElement(rowele_i);
+    for (int i_node = 0; i_node < element->NumNode(); ++i_node)
+    {
+      const auto* node = element->Nodes()[i_node];
+      node_information.SumIntoMyValue(rowele_i, i_node, node->Id());
+    }
+    node_information.SumIntoMyValue(rowele_i, element->NumNode(), -1);
+  }
+
+  // 3. Get the connectivity information
+  std::set<int> my_colliding_primitives;
+  for (const auto& item : result)
+  {
+    my_colliding_primitives.insert(std::get<3>(item));
+  }
+  std::vector<int> my_colliding_primitives_vec;
+  for (const auto& item : my_colliding_primitives)
+  {
+    my_colliding_primitives_vec.emplace_back(item);
+  }
+  Epetra_Map my_colliding_primitives_map(
+      -1, my_colliding_primitives_vec.size(), my_colliding_primitives_vec.data(), 0, dis.Comm());
+  Epetra_MultiVector my_colliding_primitives_node_ids(
+      my_colliding_primitives_map, n_nodes_per_element_max, false);
+  CORE::LINALG::Export(node_information, my_colliding_primitives_node_ids);
+
+  // 4. Build and fill the graph with element internal connectivities
+  auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.NodeRowMap()), 40, false));
+
+  for (const auto* element : dis.MyRowElementRange())
+  {
+    for (int i_node = 0; i_node < element->NumNode(); ++i_node)
+    {
+      const auto* node_main = element->Nodes()[i_node];
+      int index_main = node_main->Id();
+      for (int j_node = 0; j_node < element->NumNode(); ++j_node)
+      {
+        const auto* node_inner = element->Nodes()[j_node];
+        int index = node_inner->Id();
+
+        int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &index);
+        if (err < 0)
+          dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
+              node_main->Id());
+      }
+    }
+  }
+
+  // 5. Fill the graph with the geometric close entries
+  for (const auto& [predicate_lid, predicate_gid, primitive_lid, primitive_gid, primitive_proc] :
+      result)
+  {
+    int predicate_lid2 = dis.ElementRowMap()->LID(predicate_gid);
+    if (predicate_lid2 < 0)
+      dserror("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
+          dis.Comm().MyPID());
+    if (predicate_lid != predicate_lid2)
+      dserror("The ids dont match from arborx and th discretization");
+    const auto* predicate = dis.gElement(predicate_gid);
+
+    int primitive_lid_in_map = my_colliding_primitives_map.LID(primitive_gid);
+    if (primitive_lid_in_map < 0) dserror("Could not find lid for gid %d", primitive_gid);
+
+    for (int i_node = 0; i_node < predicate->NumNode(); ++i_node)
+    {
+      const auto* node_main = predicate->Nodes()[i_node];
+      int index_main = node_main->Id();
+      for (int j_node = 0; j_node < n_nodes_per_element_max; ++j_node)
+      {
+        // Get indices for predicate nodes
+        int primitive_node_index =
+            (int)(my_colliding_primitives_node_ids.Pointers()[j_node][primitive_lid_in_map]);
+
+        if (primitive_node_index == -1)
+          break;
+        else
+        {
+          int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &primitive_node_index);
+          if (err < 0)
+            dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
+                node_main->Id());
+        }
+      }
+    }
+  }
+
+  my_graph->GlobalAssemble(true);
+  my_graph->OptimizeStorage();
+
+  return my_graph;
 }

@@ -334,15 +334,14 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
   this->LocationVector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*result_data_dofbased, mydisp, lm);
+  DRT::UTILS::ExtractMyValues(result_data_dofbased, mydisp, lm);
 
   // Add reference position.
   if (mydisp.size() != 3)
@@ -355,7 +354,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.
-  const double safety_factor = params->GetSphereBoundingVolumeScaling();
+  const double safety_factor = params.GetSphereBoundingVolumeScaling();
   const double radius = Radius();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 

@@ -20,6 +20,7 @@
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 
+#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <string>
@@ -117,11 +118,12 @@ void DRT::INPUT::MeshReader::Rebalance()
     int numnodes = static_cast<int>(element_readers_[i].GetUniqueNodes().size());
     comm_->Broadcast(&numnodes, 1, 0);
 
+    const auto discret = element_readers_[i].GetDis();
+
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] = CORE::REBALANCE::BuildGraph(
-          element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
+      graph_[i] = CORE::REBALANCE::BuildGraph(discret, element_readers_[i].GetRowElements());
     else
       graph_[i] = Teuchos::null;
 
@@ -138,26 +140,24 @@ void DRT::INPUT::MeshReader::Rebalance()
 
     Teuchos::RCP<Epetra_Map> rowmap, colmap;
 
-    switch (rebalanceMethod)
+    if (!graph_[i].is_null())
     {
-      case INPAR::REBALANCE::RebalanceType::hypergraph:
+      switch (rebalanceMethod)
       {
-        rebalanceParams->set("partitioning method", "HYPERGRAPH");
-        if (!graph_[i].is_null())
+        case INPAR::REBALANCE::RebalanceType::hypergraph:
         {
+          rebalanceParams->set("partitioning method", "HYPERGRAPH");
+
           // here we can reuse the graph, which was calculated before, this saves us some time
           std::tie(rowmap, colmap) =
               CORE::REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
+
+          break;
         }
-        else
-          rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-        break;
-      }
-      case INPAR::REBALANCE::RebalanceType::recursive_coordinate_bisection:
-      {
-        rebalanceParams->set("partitioning method", "RCB");
-        if (!graph_[i].is_null())
+        case INPAR::REBALANCE::RebalanceType::recursive_coordinate_bisection:
         {
+          rebalanceParams->set("partitioning method", "RCB");
+
           // here we can reuse the graph, which was calculated before, this saves us some time and
           // in addition calculate geometric information based on the coordinates of the
           // discretization
@@ -165,29 +165,49 @@ void DRT::INPUT::MeshReader::Rebalance()
               graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
           colmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
-          element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
-          Teuchos::RCP<Epetra_MultiVector> coordinates =
-              element_readers_[i].GetDis()->BuildNodeCoordinates();
+
+          discret->Redistribute(*rowmap, *colmap, false, false, false);
+
+          Teuchos::RCP<Epetra_MultiVector> coordinates = discret->BuildNodeCoordinates();
+
           std::tie(rowmap, colmap) = CORE::REBALANCE::RebalanceNodeMaps(
               graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
+
+          break;
         }
-        else
-          rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
-        break;
-      }
-      default:
-      {
-        dserror("Appropriate partitioning has to be set!");
-        break;
+        case INPAR::REBALANCE::RebalanceType::monolithic:
+        {
+          rebalanceParams->set("partitioning method", "HYPERGRAPH");
+
+          rowmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->RowMap().NumMyElements(),
+              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
+          colmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
+              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
+
+          discret->Redistribute(*rowmap, *colmap, true, true, false);
+
+          Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
+              CORE::REBALANCE::BuildMonolithicNodeGraph(*discret);
+
+          std::tie(rowmap, colmap) =
+              CORE::REBALANCE::RebalanceNodeMaps(enriched_graph, *rebalanceParams);
+
+          break;
+        }
+        default:
+          dserror("Appropriate partitioning has to be set!");
       }
     }
+    else
+    {
+      rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
+    }
 
-    element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
+    discret->Redistribute(*rowmap, *colmap, false, false, false);
 
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i].GetDis());
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

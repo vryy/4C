@@ -422,14 +422,13 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(CORE::LINALG::Matrix<3, 3>&
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
-    const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-    const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
+    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
-      discret, this, result_data_dofbased, element_posdofvec);
+      discret, this, Teuchos::rcpFromRef(result_data_dofbased), element_posdofvec);
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
   CORE::LINALG::Matrix<3, 1, double> point;
@@ -445,7 +444,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
   }
 
   // Add the radius times a safety factor.
-  const double safety_factor = params->GetBeamBoundingVolumeScaling();
+  const double safety_factor = params.GetBeamBoundingVolumeScaling();
   const double radius = GetCircularCrossSectionRadiusForInteractions();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 

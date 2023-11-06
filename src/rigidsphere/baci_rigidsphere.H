@@ -407,9 +407,8 @@ namespace DRT
        * @return bounding volume of the respective element
        */
       CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
-          const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-          const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params)
-          const override;
+          const Epetra_Vector& result_data_dofbased,
+          const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const override;
 
       //@}
 

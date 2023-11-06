@@ -40,11 +40,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
     {
       const double expterm = regfac * (expterm1 - expterm2);
 
-      // safety check
-      if (std::abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where
       // F = i0*expterm - i = 0
       // also true for this DRT::Condition::S2IKinetics, as regfac is equal to 1 in this case
@@ -66,11 +61,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
     case INPAR::S2I::RegularizationType::regularization_hein:
     {
       const double expterm = regfac * expterm1 - expterm2;
-
-      // safety check
-      if (std::abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
 
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where
       // F = i0*expterm - i = 0

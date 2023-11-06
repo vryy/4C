@@ -34,6 +34,7 @@ baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact 2 3
 if(BACI_WITH_ARBORX)
     baci_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume 2 3)
     vtk_test(beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume-vtk-beam-interaction-geometric-search beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume 2 xxx-beam-interaction-geometric-search.pvd ref/beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume-vtk/beam-interaction-geometric-search.pvd 1e-06 0.0 1.0)
+    baci_test(beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning 3 "")
 endif(BACI_WITH_ARBORX)
 
 # The following two test cases have to be run back-to-back.

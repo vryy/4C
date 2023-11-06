@@ -202,11 +202,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
       const double expterm2 = exp(-alphac * frt * eta);
       const double expterm = expterm1 - expterm2;
 
-      // safety check
-      if (std::abs(expterm) > 1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
-
       // core residual term
       const double residual_timefacrhsfac =
           pseudo_contact_fac * timefacrhsfac * i0 * expterm * (eta + peltier);
@@ -257,11 +252,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
       const double expterm1 = std::exp(alphaa * frt * eta);
       const double expterm2 = std::exp(-alphac * frt * eta);
       const double expterm = expterm1 - expterm2;
-
-      // safety check
-      if (std::abs(expterm) > 1.0e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-            expterm);
 
       // core residual term associated with Butler-Volmer mass flux density
       const double j_mass = j0 * expterm;
@@ -495,14 +485,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
           const double expterm2 = std::exp(-alphac * frt * eta);
           const double expterm = expterm1 - expterm2;
 
-          // safety check
-          if (std::abs(expterm) > 1.e5)
-          {
-            dserror(
-                "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-                expterm);
-          }
-
           // core linearizations w.r.t. master-side and slave-side concentrations and electric
           // potentials
           const double dres_dc_slave =
@@ -593,14 +575,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
             const double expterm1 = std::exp(alphaa * frt * eta);
             const double expterm2 = std::exp(-alphac * frt * eta);
             const double expterm = expterm1 - expterm2;
-
-            // safety check
-            if (std::abs(expterm) > 1.0e5)
-            {
-              dserror(
-                  "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-                  expterm);
-            }
 
             // core linearization associated with Butler-Volmer mass flux density
             const double dj_dsqrtdetg_timefacwgt =
