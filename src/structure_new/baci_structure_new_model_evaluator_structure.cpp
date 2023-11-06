@@ -16,7 +16,7 @@
 #include "baci_beam3_discretization_runtime_vtu_writer.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_io.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_pstream.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
@@ -590,7 +590,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
   CheckInit();
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true);
-  vtu_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter(
+  vtu_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       discretization, GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters()));
 
   if (GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput() !=

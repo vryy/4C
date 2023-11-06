@@ -18,7 +18,10 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-class DiscretizationRuntimeVtuWriter;
+namespace IO
+{
+  class DiscretizationVisualizationWriterMesh;
+}
 class BeamDiscretizationRuntimeVtuWriter;
 
 namespace CORE::LINALG
@@ -516,7 +519,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
 
       //! structure discretization runtime vtu writer
-      Teuchos::RCP<DiscretizationRuntimeVtuWriter> vtu_writer_ptr_;
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
       //! beam discretization runtime vtu writer
       Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer_ptr_;

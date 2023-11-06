@@ -40,9 +40,8 @@ namespace DRT
 namespace IO
 {
   class DiscretizationWriter;
-}
-
-class DiscretizationRuntimeVtuWriter;
+  class DiscretizationVisualizationWriterMesh;
+}  // namespace IO
 
 namespace FLD
 {
@@ -718,7 +717,7 @@ namespace FLD
 
 
     /// runtime output writer
-    Teuchos::RCP<DiscretizationRuntimeVtuWriter> runtime_output_writer_;
+    Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
 
     /// runtime output parameter
     DRT::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;

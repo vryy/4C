@@ -20,7 +20,10 @@
 
 
 // forward declaration
-class DiscretizationRuntimeVtpWriter;
+namespace IO
+{
+  class DiscretizationVisualizationWriterNodes;
+}
 
 namespace MAT
 {
@@ -497,7 +500,7 @@ namespace BEAMINTERACTION
       std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>> doublebondcl_;
 
       //! linker, i.e. crosslinker molecule discretization runtime vtp writer
-      Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterNodes> vtp_writer_ptr_;
 
       //! current linker displacement
       Teuchos::RCP<Epetra_Vector> linker_disnp_;

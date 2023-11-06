@@ -2,8 +2,7 @@
 /*! \file
 
 \brief Contains a baci-specific implementation of a bounding
-       volume defined by it's lower left and upper right
-       corner.
+       volume defined as k-DOP (discrete oriented polytope).
 
 \level 3
 
@@ -13,12 +12,12 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
+#include "baci_linalg_fixedsizematrix.H"
+
 #ifdef BACI_WITH_ARBORX
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif
-
-#include "baci_linalg_fixedsizematrix.H"
 
 #ifdef BACI_WITH_ARBORX
 namespace ArborX::Details

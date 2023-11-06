@@ -18,7 +18,10 @@
 
 
 // forward declaration
-class DiscretizationRuntimeVtuWriter;
+namespace IO
+{
+  class DiscretizationVisualizationWriterMesh;
+}
 class Epetra_Vector;
 namespace DRT
 {
@@ -282,7 +285,7 @@ namespace CORE::GEO
       double edgelength_[3];
 
       //! bounding box discretization runtime vtu writer
-      Teuchos::RCP<DiscretizationRuntimeVtuWriter> vtu_writer_ptr_;
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
     };
 
   }  // namespace MESHFREE

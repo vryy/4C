@@ -1,24 +1,25 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Contains a brute force search implementation based on
-       bounding boxes.
+\brief Contains a local bounding volume hierarchy search implementation
+       based on bounding volumes.
 
 \level 3
 
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_H
-#define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_H
+#ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_H
+#define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_H
 
-#include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_io_pstream.H"
 
 #include <vector>
 
 namespace CORE::GEOMETRICSEARCH
 {
+  struct BoundingVolume;
+
   /*! \brief Finds all primitives meeting the predicates and record results in {indices, offsets}.
    *
    * (From ArborX documentation)

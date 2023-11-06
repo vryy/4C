@@ -16,7 +16,7 @@
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_io_control.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
@@ -504,7 +504,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 {
   constexpr bool is_beam = true;
-  IO::AppendElementGhostingInformation(discretization_, visualization_manager_, is_beam);
+  IO::AppendElementGhostingInformation(*discretization_, *visualization_manager_, is_beam);
 }
 
 /*-----------------------------------------------------------------------------------------------*
