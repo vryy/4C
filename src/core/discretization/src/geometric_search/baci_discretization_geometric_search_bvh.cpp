@@ -1,14 +1,19 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Contains a brute force search implementation based on
-       bounding boxes.
+\brief Contains a local bounding volume hierarchy search implementation
+       based on bounding volumes.
 
 \level 3
 
 */
 /*-----------------------------------------------------------*/
 
+#include "baci_discretization_geometric_search_bvh.H"
+
+#include "baci_discretization_geometric_search_access_traits.H"
+#include "baci_discretization_geometric_search_bounding_volume.H"
+#include "baci_discretization_geometric_search_utils.H"
 #include "baci_io_pstream.H"
 
 #include <Epetra_MpiComm.h>
@@ -16,55 +21,6 @@
 
 #ifdef BACI_WITH_ARBORX
 #include <ArborX.hpp>
-#endif
-
-#include "baci_discretization_geometric_search.H"
-#include "baci_discretization_geometric_search_utils.H"
-
-#ifdef BACI_WITH_ARBORX
-namespace ArborX
-{
-  template <>
-  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
-      PrimitivesTag>
-  {
-    using memory_space = Kokkos::HostSpace;
-
-    static std::size_t size(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
-    {
-      return vector.size();
-    }
-
-    static auto get(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
-        std::size_t i)
-    {
-      return ArborX::Box{vector[i].second.bounding_volume_};
-    }
-  };
-
-  template <>
-  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
-      PredicatesTag>
-  {
-    using memory_space = Kokkos::HostSpace;
-
-    static std::size_t size(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
-    {
-      return vector.size();
-    }
-
-    static auto get(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
-        std::size_t i)
-    {
-      return intersects(vector[i].second.bounding_volume_);
-    }
-  };
-}  // namespace ArborX
-
 #endif
 
 namespace CORE::GEOMETRICSEARCH

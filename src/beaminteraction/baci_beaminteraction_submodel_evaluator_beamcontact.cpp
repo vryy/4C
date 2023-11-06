@@ -29,7 +29,7 @@
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "baci_binstrategy.H"
-#include "baci_discretization_geometric_search.H"
+#include "baci_discretization_geometric_search_bvh.H"
 #include "baci_discretization_geometric_search_params.H"
 #include "baci_discretization_geometric_search_visualization.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
