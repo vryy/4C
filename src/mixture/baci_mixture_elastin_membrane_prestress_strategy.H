@@ -38,6 +38,11 @@ namespace MIXTURE
   class ElastinMembranePrestressStrategy
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ElastinMembranePrestressStrategy() = default;
+
     /*!
      * \brief Evaluates the fraction of the elastin membrane contribution to the total elastin
      * response to ensure equilibrium in the reference configuration
@@ -63,6 +68,11 @@ namespace MIXTURE
   class ElastinMembraneEvaluation
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ElastinMembraneEvaluation() = default;
+
     /*!
      * \brief Evaluates the 2D membrane stress
      *

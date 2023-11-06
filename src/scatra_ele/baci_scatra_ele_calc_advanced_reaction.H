@@ -147,8 +147,6 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleReaManagerAdvReac() = default;
-
       //! @name set routines
 
       //! Clear everything and resize to length numscal

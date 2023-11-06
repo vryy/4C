@@ -29,11 +29,6 @@ namespace WEAR
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
     /*!
-    \brief Destructor
-
-    */
-    virtual ~WearInterface() = default;
-    /*!
     \brief Assemble second mortar D matrix for both-sided wear
 
     */

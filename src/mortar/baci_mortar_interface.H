@@ -547,6 +547,11 @@ namespace MORTAR
     MortarInterface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr);
 
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~MortarInterface() = default;
+
     /** \brief Create a new Mortar interface object
      *
      *  This method creates first a new interface data object and subsequently

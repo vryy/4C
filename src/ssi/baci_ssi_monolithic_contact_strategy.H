@@ -36,6 +36,11 @@ namespace SSI
   class ContactStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ContactStrategyBase() = default;
+
     //! constructor
     explicit ContactStrategyBase(
         Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,

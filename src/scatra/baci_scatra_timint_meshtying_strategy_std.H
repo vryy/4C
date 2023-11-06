@@ -35,9 +35,6 @@ namespace SCATRA
     //! constructor
     explicit MeshtyingStrategyStd(SCATRA::ScaTraTimIntImpl* scatratimint);
 
-    //! destructor
-    virtual ~MeshtyingStrategyStd() = default;
-
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;
 

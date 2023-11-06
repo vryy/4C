@@ -59,7 +59,12 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class BlockedMatrix
   {
    public:
-    BlockedMatrix() {}
+    /**
+     * Virtual destructor.
+     */
+    virtual ~BlockedMatrix() = default;
+
+    BlockedMatrix() = default;
     BlockedMatrix(int rows, int cols)
         : matrices_(rows * cols, Teuchos::null), rows_(rows), cols_(cols)
     {

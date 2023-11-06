@@ -208,8 +208,6 @@ namespace CONTACT
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
           bool selfcontact);
 
-      //! Destructor
-      virtual ~Interface() = default;
       //! @name Accessors
       //! @{
 

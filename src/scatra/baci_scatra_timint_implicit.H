@@ -1520,6 +1520,11 @@ namespace SCATRA
     //! Standard Constructor
     ScalarHandler() : numdofpernode_(), equalnumdof_(true), issetup_(false){};
 
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ScalarHandler() = default;
+
     //! set up scalar handler
     virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
 
@@ -1579,6 +1584,11 @@ namespace SCATRA
   class OutputScalarsStrategyBase
   {
    public:
+    /**
+     * Virtual destructor.
+     */
+    virtual ~OutputScalarsStrategyBase() = default;
+
     //! initialize time integration
     void Init(const ScaTraTimIntImpl* const scatratimint);
 

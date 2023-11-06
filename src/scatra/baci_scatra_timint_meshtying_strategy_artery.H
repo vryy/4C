@@ -52,9 +52,6 @@ namespace SCATRA
         SCATRA::ScaTraTimIntImpl* scatratimint  //!< scalar transport time integrator
     );
 
-    //! destructor
-    virtual ~MeshtyingStrategyArtery() = default;
-
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;
 

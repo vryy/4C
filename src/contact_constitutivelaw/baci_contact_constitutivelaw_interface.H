@@ -48,13 +48,6 @@ namespace CONTACT
         const Teuchos::ParameterList& icontact, bool selfcontact,
         const int contactconstitutivelawid);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~ConstitutivelawInterface() = default;
-
-
     /**
      * \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal
      * quantities using the Macauley bracket

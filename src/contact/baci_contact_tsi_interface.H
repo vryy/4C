@@ -26,13 +26,6 @@ namespace CONTACT
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~CoTSIInterface() = default;
-
-
     enum LinDM_X_mode
     {
       LinDM_Diss,

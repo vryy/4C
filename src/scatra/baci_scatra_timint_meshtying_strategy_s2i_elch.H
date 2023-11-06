@@ -39,9 +39,6 @@ namespace SCATRA
             parameters  //!< input parameters for scatra-scatra interface coupling
     );
 
-    //! destructor
-    virtual ~MeshtyingStrategyS2IElch() = default;
-
     //! compute time step size
     void ComputeTimeStepSize(double& dt) final;
 
