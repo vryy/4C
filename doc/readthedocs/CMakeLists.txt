@@ -10,6 +10,7 @@ if(BACI_BUILD_READTHEDOCS)
   set(BACI_VENV_DIR ${CMAKE_SOURCE_DIR}/utilities/baci-python-venv)
   set(READTHEDOCS_SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/readthedocs)
   set(READTHEDOCS_CONFIG_DIR ${CMAKE_SOURCE_DIR}/doc/readthedocs-config)
+  set(READTHEDOCS_TPLDEPEND_DIR ${CMAKE_SOURCE_DIR}/dependencies/current)
   set(READTHEDOCS_CONFIG_IN ${READTHEDOCS_CONFIG_DIR}/conf.py.in)
   set(READTHEDOCS_OUT_DIR ${CMAKE_BINARY_DIR}/doc/readthedocs)
   set(READTHEDOCS_CONFIG_OUT ${READTHEDOCS_OUT_DIR}/conf.py)
@@ -35,8 +36,8 @@ if(BACI_BUILD_READTHEDOCS)
     COMMAND
       ${SPHINX_EXECUTABLE} -q -b html # -W turns warnings into errors!
       -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}" -i
-      "${CMAKE_SOURCE_DIR}/tests/framework-test" -o "${READTHEDOCS_HTML_DIR}" -c
-      "${READTHEDOCS_OUT_DIR}" -s "${CMAKE_BINARY_DIR}/doc/tmp"
+      "${CMAKE_SOURCE_DIR}/tests/framework-test" -i "${READTHEDOCS_TPLDEPEND_DIR}" -o
+      "${READTHEDOCS_HTML_DIR}" -c "${READTHEDOCS_OUT_DIR}" -s "${CMAKE_BINARY_DIR}/doc/tmp"
     DEPENDS create_rtd ${baciname}
     COMMENT "Build readthedocs documentation with Sphinx"
     )
