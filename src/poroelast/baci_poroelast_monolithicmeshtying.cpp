@@ -26,7 +26,10 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar);
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(::DRT::Problem::Instance()->NDim(),
+      ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   const int ndim = DRT::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof

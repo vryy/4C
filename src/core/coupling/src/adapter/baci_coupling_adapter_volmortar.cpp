@@ -18,7 +18,6 @@
 #include "baci_inpar_volmortar.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
@@ -48,7 +47,7 @@ CORE::ADAPTER::MortarVolCoupl::MortarVolCoupl()
 /*----------------------------------------------------------------------*
  |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::MortarVolCoupl::Init(
+void CORE::ADAPTER::MortarVolCoupl::Init(int spatial_dimension,
     Teuchos::RCP<::DRT::Discretization> dis1,  // masterdis - on Omega_1
     Teuchos::RCP<::DRT::Discretization> dis2,  // slavedis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
@@ -62,6 +61,8 @@ void CORE::ADAPTER::MortarVolCoupl::Init(
 
   // reset the setup flag
   issetup_ = false;
+
+  spatial_dimension_ = spatial_dimension;
 
   // set pointers to discretizations
   masterdis_ = dis1;
@@ -84,24 +85,15 @@ void CORE::ADAPTER::MortarVolCoupl::Init(
 
   // set flag
   isinit_ = true;
-
-  // bye
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  |  setup                                                    rauch 08/16|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::MortarVolCoupl::Setup()
+void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
 {
   CheckInit();
-
-  // get problem dimension (2D or 3D)
-  const int dim = ::DRT::Problem::Instance()->NDim();
-
-  // get volmortar params
-  const Teuchos::ParameterList& params = ::DRT::Problem::Instance()->VolmortarParams();
 
   // create material strategy
   if (materialstrategy_.is_null())
@@ -109,8 +101,8 @@ void CORE::ADAPTER::MortarVolCoupl::Setup()
 
   // create coupling instance
   Teuchos::RCP<CORE::VOLMORTAR::VolMortarCoupl> coupdis =
-      Teuchos::rcp(new CORE::VOLMORTAR::VolMortarCoupl(dim, masterdis_, slavedis_, coupleddof12_,
-          coupleddof21_, dofsets12_, dofsets21_, materialstrategy_));
+      Teuchos::rcp(new CORE::VOLMORTAR::VolMortarCoupl(spatial_dimension_, masterdis_, slavedis_,
+          coupleddof12_, coupleddof21_, dofsets12_, dofsets21_, materialstrategy_));
 
   //-----------------------
   // Evaluate volmortar coupling:
@@ -138,8 +130,6 @@ void CORE::ADAPTER::MortarVolCoupl::Setup()
 
   // validate flag issetup_
   issetup_ = true;
-
-  return;
 }
 
 
@@ -189,8 +179,6 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<::DRT::Discret
   // 4. auxiliary dofs 2
   dis1->FillComplete(true, false, false);
   dis2->FillComplete(true, false, false);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -200,20 +188,15 @@ void CORE::ADAPTER::MortarVolCoupl::AssignMaterials(Teuchos::RCP<::DRT::Discreti
     Teuchos::RCP<::DRT::Discretization> dis2,
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy)
 {
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
-  const int dim = ::DRT::Problem::Instance()->NDim();
-
   if (materialstrategy == Teuchos::null)
     materialstrategy = Teuchos::rcp(new CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy());
   // create coupling instance
   Teuchos::RCP<CORE::VOLMORTAR::VolMortarCoupl> coupdis =
       Teuchos::rcp(new CORE::VOLMORTAR::VolMortarCoupl(
-          dim, dis1, dis2, nullptr, nullptr, nullptr, nullptr, materialstrategy));
+          spatial_dimension_, dis1, dis2, nullptr, nullptr, nullptr, nullptr, materialstrategy));
 
   // assign materials from one discretization to the other
   coupdis->AssignMaterials();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

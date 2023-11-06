@@ -38,8 +38,11 @@
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar()
-    : CORE::ADAPTER::CouplingMortar(),
+ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
+    Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
+    ShapeFunctionType shape_function_type)
+    : CORE::ADAPTER::CouplingMortar(
+          spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
       issetup_(false),
       comm_(Teuchos::null),
       myrank_(-1),

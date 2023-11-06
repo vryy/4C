@@ -34,8 +34,14 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 /*----------------------------------------------------------------------*
  |  ctor                                                      ager 10/15|
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingPoroMortar::CouplingPoroMortar()
-    : CouplingNonLinMortar(), firstinit_(false), slavetype_(-1), mastertype_(-1)
+ADAPTER::CouplingPoroMortar::CouplingPoroMortar(int spatial_dimension,
+    Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
+    ShapeFunctionType shape_function_type)
+    : CouplingNonLinMortar(
+          spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
+      firstinit_(false),
+      slavetype_(-1),
+      mastertype_(-1)
 {
   // empty...
 }

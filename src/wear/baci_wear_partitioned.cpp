@@ -93,7 +93,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // init coupling
     Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
-        ->Init(DRT::Problem::Instance()->GetDis("ale"),
+        ->Init(ndim, DRT::Problem::Instance()->GetDis("ale"),
             DRT::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21, &dofset12,
             &dofset21, Teuchos::null, false);
 
@@ -101,7 +101,8 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     //    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Redistribute();
 
     // setup projection matrices
-    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
+    Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
+        ->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 
   // create interface coupling

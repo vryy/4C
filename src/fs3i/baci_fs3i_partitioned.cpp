@@ -371,9 +371,9 @@ Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObj
       Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
-  volume_coupling_object->Init(masterdis, slavedis);
+  volume_coupling_object->Init(DRT::Problem::Instance()->NDim(), masterdis, slavedis);
   volume_coupling_object->Redistribute();
-  volume_coupling_object->Setup();
+  volume_coupling_object->Setup(DRT::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;
 }

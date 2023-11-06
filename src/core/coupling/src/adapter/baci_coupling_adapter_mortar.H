@@ -12,10 +12,12 @@
 #define BACI_COUPLING_ADAPTER_MORTAR_H
 
 #include "baci_coupling_adapter_base.H"
+#include "baci_lib_globalproblem_enums.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
@@ -65,8 +67,9 @@ feel free to write your own tailored Setup() method.
   class CouplingMortar : public CORE::ADAPTER::CouplingBase
   {
    public:
-    /// empty constructor
-    CouplingMortar();
+    /// Construct the CouplingMortar with basic parameters.
+    CouplingMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
+        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
 
     /*! setup the machinery (generalized version)
      *
@@ -322,6 +325,17 @@ feel free to write your own tailored Setup() method.
     );
 
    protected:
+    //! Spatial dimension of problem
+    int spatial_dimension_;
+
+    //! Parameters for mortar coupling
+    Teuchos::ParameterList mortar_coupling_params_;
+    //! Parameters for contact dynamic
+    Teuchos::ParameterList contact_dynamic_params_;
+
+    //! Shape functions used in coupled discretizations
+    ShapeFunctionType shape_function_type_;
+
     /// Check for setup
     bool issetup_;
 

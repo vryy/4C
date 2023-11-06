@@ -84,12 +84,12 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
   std::pair<int, int> dofsets21(0, 0);
 
   // initialize coupling adapter
-  coupsa_->Init(StructureField()->Discretization(),
+  coupsa_->Init(ndim, StructureField()->Discretization(),
       fluidale->AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
       &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->Setup();
+  coupsa_->Setup(DRT::Problem::Instance()->VolmortarParams());
 }
 
 /*----------------------------------------------------------------------*/

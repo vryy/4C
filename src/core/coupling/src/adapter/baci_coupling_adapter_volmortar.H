@@ -18,6 +18,7 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------*
@@ -57,17 +58,18 @@ namespace CORE::ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(Teuchos::RCP<::DRT::Discretization> dis1, Teuchos::RCP<::DRT::Discretization> dis2,
-        std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
-        std::pair<int, int>* dofsets12 = nullptr, std::pair<int, int>* dofsets21 = nullptr,
+    void Init(int spatial_dimension, Teuchos::RCP<::DRT::Discretization> dis1,
+        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
+        std::pair<int, int>* dofsets21 = nullptr,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
         bool createauxdofs = true);
 
     /*!
-    \brief Setup this class
+    \brief Setup this class based on the @p params.
 
     */
-    void Setup();
+    void Setup(const Teuchos::ParameterList& params);
 
     /*!
     \brief Redistribute discretizations to meet needs of volmortar coupling
@@ -229,6 +231,8 @@ namespace CORE::ADAPTER
     std::pair<int, int>* dofsets12_;
     std::pair<int, int>* dofsets21_;
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+
+    int spatial_dimension_{};
   };
 }  // namespace CORE::ADAPTER
 

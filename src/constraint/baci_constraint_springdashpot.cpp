@@ -746,7 +746,10 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
 void UTILS::SpringDashpot::InitializeCurSurfNormal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar());
+  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(::DRT::Problem::Instance()->NDim(),
+      ::DRT::Problem::Instance()->MortarCouplingParams(),
+      ::DRT::Problem::Instance()->ContactDynamicParams(),
+      ::DRT::Problem::Instance()->SpatialApproximationType()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());
