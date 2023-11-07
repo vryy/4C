@@ -39,7 +39,6 @@
 #include "baci_structure_dyn_nln_drt.H"
 #include "baci_thermo_dyn.H"
 #include "baci_tsi_dyn.H"
-#include "baci_tutorial_dyn.H"
 #include "baci_wear_dyn.H"
 
 /*----------------------------------------------------------------------*
@@ -190,10 +189,6 @@ void ntacal()
 
     case ProblemType::elemag:
       electromagnetics_drt();
-      break;
-
-    case ProblemType::tutorial:
-      tutorial_drt();
       break;
 
     default:
