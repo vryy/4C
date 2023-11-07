@@ -121,12 +121,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, scatraparams,
+      problem->SolverParams(linsolvernumber), scatra_disname, true));
 
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
-  scatra_->Init(
-      globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   scatra_->ScaTraField()->SetNumberOfDofSetPressure(2);

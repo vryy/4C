@@ -777,20 +777,22 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   // create and initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
-  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,
+      SSI::UTILS::ModifyScaTraParams(scatraparams),
+      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
-  ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
+  ScaTraBaseAlgorithm()->Init();
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())
   {
-    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
-    ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
+    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+        *scatratimeparams,
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
-        "scatra_manifold", isAle);
+        "scatra_manifold", isAle));
+
+    ScaTraManifoldBaseAlgorithm()->Init();
   }
 
   // do checks if adaptive time stepping is activated

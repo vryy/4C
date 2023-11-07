@@ -36,9 +36,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Init(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& scatradyn,
-        const Teuchos::ParameterList& solverparams, const std::string& disname = "scatra",
-        const bool isale = false) override;
+    void Init() override;
 
     /// outer level time loop
     void TimeLoop() override;

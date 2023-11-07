@@ -41,8 +41,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     dserror("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra_->Init(*fieldparameters_, *fieldparameters_, solverparams_scatra);
+  scatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
+  scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   scatra_->Setup();
 
@@ -50,8 +51,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  thermo_->Init(*fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo");
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+      *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
+  thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   thermo_->Setup();
 

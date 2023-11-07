@@ -284,16 +284,18 @@ void FS3I::PartFS3I::Init()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
-  fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  fluidscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
-      problem->SolverParams(linsolver1number), "scatra1", true);
+  fluidscatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(fs3idyn, problem->ScalarTransportDynamicParams(),
+          problem->SolverParams(linsolver1number), "scatra1", true));
+  fluidscatra_->Init();
   fluidscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   fluidscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);
 
-  structscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  structscatra_->Init(fs3idyn, problem->ScalarTransportDynamicParams(),
-      problem->SolverParams(linsolver2number), "scatra2", true);
+  structscatra_ = Teuchos::rcp(
+      new ADAPTER::ScaTraBaseAlgorithm(fs3idyn, problem->ScalarTransportDynamicParams(),
+          problem->SolverParams(linsolver2number), "scatra2", true));
+  structscatra_->Init();
   structscatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
   structscatra_->ScaTraField()->SetNumberOfDofSetWallShearStress(1);

@@ -47,16 +47,10 @@ XFLUIDLEVELSET::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFLUIDLEVELSET::Algorithm::Init(
-    const Teuchos::ParameterList& prbdyn,        ///< parameter list for global problem
-    const Teuchos::ParameterList& scatradyn,     ///< parameter list for scalar transport subproblem
-    const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
-    const std::string& disname,                  ///< name of scalar transport discretization
-    const bool isale                             ///< ALE flag
-)
+void XFLUIDLEVELSET::Algorithm::Init()
 {
   // call Setup() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init(prbdyn, scatradyn, solverparams, disname, isale);
+  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
 
 
   // TODO: Combine TWOPHASE and XFLUIDLEVELSET. Create a Parent class, TWOFLUIDCOUPLING or use the
@@ -85,8 +79,6 @@ void XFLUIDLEVELSET::Algorithm::Init(
   fsvelincnorm_.reserve(itmax_);
   fspressincnorm_.reserve(itmax_);
   fsphiincnorm_.reserve(itmax_);
-
-  return;
 }
 
 void XFLUIDLEVELSET::Algorithm::DoAlgorithmSpecificInit()

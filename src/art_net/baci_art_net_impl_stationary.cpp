@@ -135,13 +135,13 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
     if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
       dserror("set your velocity field to zero!");
-    // scatra problem
-    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+    // construct the scatra problem
+    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+        DRT::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false));
 
     // initialize the base algo.
-    // scatra time integrator is constructed and initialized inside.
-    scatra_->Init(globaltimeparams, myscatraparams,
-        DRT::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false);
+    // scatra time integrator is initialized inside.
+    scatra_->Init();
 
     // only now we must call Setup() on the scatra time integrator.
     // all objects relying on the parallel distribution are

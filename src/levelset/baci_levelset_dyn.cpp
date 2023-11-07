@@ -55,18 +55,6 @@ void levelset_dyn(int restart)
         "Other velocity fields than a field given by a function not yet supported for level-set "
         "problems");
 
-  // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
-  if (scatradis->AddDofSet(dofsetaux) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
-
-  // finalize discretization
-  scatradis->FillComplete();
-
-  // we directly use the elements from the scalar transport elements section
-  if (scatradis->NumGlobalNodes() == 0) dserror("No elements in the ---TRANSPORT ELEMENTS section");
-
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
@@ -76,12 +64,25 @@ void levelset_dyn(int restart)
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+          levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
+
+  // add proxy of velocity related degrees of freedom to scatra discretization
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+  if (scatradis->AddDofSet(dofsetaux) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+  scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);
+
+  // finalize discretization
+  scatradis->FillComplete();
+
+  // we directly use the elements from the scalar transport elements section
+  if (scatradis->NumGlobalNodes() == 0) dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
   // first we initialize the base algorithm
-  // time integrator is constructed and initialized inside.
-  scatrabase->Init(levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber));
-  scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  // time integrator is initialized inside.
+  scatrabase->Init();
 
   // only now we must call Setup() on the base algo.
   // all objects relying on the parallel distribution are

@@ -91,19 +91,20 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
   sdyn_micro->set("INITIALFIELD", initial_field_type);
   sdyn_micro->set("INITFUNCNO", elchparams_->sublist("SCL").get<int>("INITFUNCNO"));
 
-  micro_timint_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  micro_timint_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*sdyn_micro, *sdyn_micro,
+      problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false));
 
-  micro_timint_->Init(*sdyn_micro, *sdyn_micro,
-      problem->SolverParams(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false);
+  micro_timint_->Init();
 
   auto dofset_vel = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->Discretization()->AddDofSet(dofset_vel) != 1)
     dserror("unexpected number of dofsets in the scatra micro discretization");
+  MicroScaTraField()->SetNumberOfDofSetVelocity(1);
+
   MicroScaTraField()->Discretization()->FillComplete();
 
   RedistributeMicroDiscretization();
 
-  MicroScaTraField()->SetNumberOfDofSetVelocity(1);
   MicroScaTraField()->SetVelocityField();
 
   micro_timint_->Setup();
