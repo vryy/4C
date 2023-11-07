@@ -460,10 +460,10 @@ namespace MAT
     //! return visualization data
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
     //! purely elastic material (input via negative initial yield stress

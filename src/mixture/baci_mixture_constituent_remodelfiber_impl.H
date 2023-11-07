@@ -86,10 +86,10 @@ namespace MIXTURE
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
     [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:

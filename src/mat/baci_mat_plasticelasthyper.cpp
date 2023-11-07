@@ -2369,7 +2369,7 @@ bool MAT::PlasticElastHyper::VisData(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
+void MAT::PlasticElastHyper::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size["accumulated_plastic_strain"] = 1;  // scalar
@@ -2380,7 +2380,7 @@ void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-bool MAT::PlasticElastHyper::EvaluateVtkOutputData(
+bool MAT::PlasticElastHyper::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")

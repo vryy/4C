@@ -233,27 +233,25 @@ namespace MIXTURE
     }
 
     /*!
-     * \brief Register names of the internal data that should be saved during runtime vtk output
+     * \brief Register names of the internal data that should be saved during runtime output
      *
      * \param name_and_size [out] : unordered map of names of the data with the respective vector
      * size
      */
-    virtual void RegisterVtkOutputDataNames(
-        std::unordered_map<std::string, int>& names_and_size) const
+    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
     {
       // do nothing for simple mixture rules
     }
 
     /*!
-     * \brief Evaluate internal data for every Gauss point saved for output during runtime vtk
-     * output
+     * \brief Evaluate internal data for every Gauss point saved for output during runtime output
      *
      * \param name [in] : Name of the data to export
      * \param data [out] : NUMGPxNUMDATA Matrix holding the data
      *
      * \return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateVtkOutputData(
+    virtual bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
     {
       return false;

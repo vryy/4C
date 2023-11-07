@@ -296,23 +296,23 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-void MAT::Mixture::RegisterVtkOutputDataNames(
+void MAT::Mixture::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  mixture_rule_->RegisterVtkOutputDataNames(names_and_size);
+  mixture_rule_->RegisterOutputDataNames(names_and_size);
   for (const auto& constituent : *constituents_)
   {
-    constituent->RegisterVtkOutputDataNames(names_and_size);
+    constituent->RegisterOutputDataNames(names_and_size);
   }
 }
 
-bool MAT::Mixture::EvaluateVtkOutputData(
+bool MAT::Mixture::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
-  bool out = mixture_rule_->EvaluateVtkOutputData(name, data);
+  bool out = mixture_rule_->EvaluateOutputData(name, data);
   for (const auto& constituent : *constituents_)
   {
-    out = out || constituent->EvaluateVtkOutputData(name, data);
+    out = out || constituent->EvaluateOutputData(name, data);
   }
 
   return out;

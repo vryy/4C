@@ -219,7 +219,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   }
 }
 
-void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   if (prestressStrategy_ != nullptr)
@@ -228,7 +228,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
   }
 }
 
-bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (prestressStrategy_ != nullptr &&

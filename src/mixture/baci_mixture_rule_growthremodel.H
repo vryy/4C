@@ -120,10 +120,10 @@ namespace MIXTURE
     double GetConstituentInitialReferenceMassDensity(
         const MIXTURE::MixtureConstituent& constituent) const;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
