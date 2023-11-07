@@ -134,8 +134,8 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
     CORE::LINALG::SerialDenseVector X_A(nsd);
     CORE::LINALG::SerialDenseVector X_B(nsd);
 
-    std::copy(node_A->X(), node_A->X() + nsd, X_A.values());
-    std::copy(node_B->X(), node_B->X() + nsd, X_B.values());
+    std::copy(node_A->X().data(), node_A->X().data() + nsd, X_A.values());
+    std::copy(node_B->X().data(), node_B->X().data() + nsd, X_B.values());
 
     CORE::LINALG::SerialDenseVector diff(X_A);
     diff.scale(-1.0);
@@ -395,11 +395,13 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
     // get value
     if (func_no < 0)
-      value = FunctImplementation(func_no, lnode->X(), time);
+      value = FunctImplementation(func_no, lnode->X().data(), time);
     else if (func_no >= 1)
+    {
       value = DRT::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                  .Evaluate(lnode->X(), time, 0);
+                  .Evaluate(lnode->X().data(), time, 0);
+    }
     else
       dserror("invalid function no. to set level-set field!");
 

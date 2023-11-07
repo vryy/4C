@@ -84,11 +84,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   constexpr std::size_t spacedim = 3;
 
   // getting coordinates of current node
-  const double* x = node.X();
+  const auto& x = node.X();
 
   // getting pointer at current element
-  const DRT::ELEMENTS::Beam3eb* beam3eb =
-      dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
+  const auto* beam3eb = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
   if (!beam3eb) dserror("Cannot cast to Beam3eb");
 
   // Compute tangent vector with unit length from nodal coordinates.
@@ -97,8 +96,8 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   {
     const DRT::Node* firstnode = beam3eb->Nodes()[0];
     const DRT::Node* secondnode = beam3eb->Nodes()[1];
-    const double* xfirst = firstnode->X();
-    const double* xsecond = secondnode->X();
+    const auto& xfirst = firstnode->X();
+    const auto& xsecond = secondnode->X();
 
     for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
     tangent.Scale(1.0 / tangent.Norm2());

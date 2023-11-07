@@ -346,8 +346,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(
-        new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(), numcoupleddof, dofids, false));
+    Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
+        Teuchos::rcp(new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(), dofids, false));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
@@ -371,8 +371,8 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(
-        node->Id() + nodeoffset, node->X(), node->Owner(), numcoupleddof, dofids, true));
+    Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(
+        new MORTAR::MortarNode(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
 
     if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);

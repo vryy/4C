@@ -227,7 +227,7 @@ void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(DRT::Node** nodes,
 {
   for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (auto dim = 0; dim < probdim; ++dim) xrefe(i, dim) = x[dim];
   }
 }

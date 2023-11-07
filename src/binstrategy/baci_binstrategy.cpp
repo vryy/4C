@@ -694,7 +694,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
       nids[corner_i] = (bingid * numcorner) + corner_i;
       Teuchos::RCP<DRT::Node> newnode =
-          Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos.data(), myrank_));
+          Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
       visbindis_->AddNode(newnode);
     }
 
@@ -742,7 +742,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
         nids[corner_i] = (newelegid * numcorner) + corner_i;
         Teuchos::RCP<DRT::Node> newnode =
-            Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos.data(), myrank_));
+            Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
         visbindis_->AddNode(newnode);
       }
 
@@ -1513,7 +1513,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
 
     for (int iparticle = 0; iparticle < bindis_->lColElement(k)->NumNode(); ++iparticle)
     {
-      double const* pos = particles[iparticle]->X();
+      double const* pos = particles[iparticle]->X().data();
       std::array ijk = {-1, -1, -1};
       ConvertPosToijk(pos, ijk.data());
 

@@ -79,7 +79,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       for (int i = 0; i < numnod_; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe[0] += x[0] / numnod_;
         xrefe[1] += x[1] / numnod_;
         xrefe[2] += x[2] / numnod_;
@@ -566,7 +566,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelast(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -615,7 +615,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::NonlinearStiffnessPoroelastPress
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -899,7 +899,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelast(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -933,7 +933,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingPoroelastPressureBased(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1141,7 +1141,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::CouplingStressPoroelast(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];

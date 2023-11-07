@@ -695,7 +695,8 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       for (std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end();
            ++actnode)
       {
-        const CORE::LINALG::Matrix<3, 1> x((*actnode)->X(), false);  // pointer to nodal coordinates
+        const CORE::LINALG::Matrix<3, 1> x(
+            (*actnode)->X().data(), false);  // pointer to nodal coordinates
         const Epetra_BlockMap& rowdofmap = trueresidual->Map();
         const std::vector<int> dof = dis->Dof(*actnode);
 

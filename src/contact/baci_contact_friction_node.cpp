@@ -15,11 +15,11 @@ CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
 
 DRT::ParObject* CONTACT::FriNodeType::Create(const std::vector<char>& data)
 {
-  double x[3];
+  std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
 
   // TODO: friplus = true for all nodes!!! change this with pack/unpack
-  CONTACT::FriNode* node = new CONTACT::FriNode(0, x, 0, 0, dofs, false, false, true);
+  CONTACT::FriNode* node = new CONTACT::FriNode(0, x, 0, dofs, false, false, true);
   node->Unpack(data);
 
   return node;
@@ -228,11 +228,10 @@ void CONTACT::FriNodeWearDataContainer::Unpack(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             mgit 02/10|
  *----------------------------------------------------------------------*/
-CONTACT::FriNode::FriNode(int id, const double* coords, const int owner, const int numdof,
+CONTACT::FriNode::FriNode(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive, const bool friplus)
-    : CONTACT::CoNode(id, coords, owner, numdof, dofs, isslave, initactive), wear_(friplus)
+    : CONTACT::CoNode(id, coords, owner, dofs, isslave, initactive), wear_(friplus)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

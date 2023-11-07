@@ -462,8 +462,8 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
     for (unsigned i = 0; i < num_fnodes; ++i)
     {
       const DRT::Node& fnode = *fnodes[i];
-      std::copy(fnode.X(), fnode.X() + DIM, &xyze_ref(0, i));
-      std::copy(fnode.X(), fnode.X() + DIM, &xyze_curr(0, i));
+      std::copy(fnode.X().data(), fnode.X().data() + DIM, &xyze_ref(0, i));
+      std::copy(fnode.X().data(), fnode.X().data() + DIM, &xyze_curr(0, i));
 
       std::vector<int> ndofs;
       discret.Dof(&fnode, ndofs);

@@ -825,7 +825,7 @@ void XFEM::XFLUID_TIMEINT_BASE::packNode(DRT::PackBuffer& dataSend, DRT::Node& n
 {
   const int nsd = 3;
   DRT::ParObject::AddtoPack(dataSend, node.Id());
-  DRT::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X()));
+  DRT::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X().data()));
   DRT::ParObject::AddtoPack(dataSend, node.Owner());
 }  // end packNode
 
@@ -853,7 +853,7 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
   }
   else  // just id, coords and owner
   {
-    double coordinates[nsd];
+    std::vector<double> coordinates(nsd, 0.0);
     for (int dim = 0; dim < nsd; dim++) coordinates[dim] = coords(dim);
 
     DRT::Node newNode(id, coordinates, owner);
@@ -1237,7 +1237,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
 
   const int nsd = 3;
   CORE::LINALG::Matrix<nsd, 1> newNodeCoords(
-      data.node_.X());  // coords of endpoint of Lagrangian characteristics
+      data.node_.X().data());  // coords of endpoint of Lagrangian characteristics
   for (int i = 0; i < nsd; ++i) newNodeCoords(i) += data.dispnp_(i);
 
   // determine the smallest distance of node at t^(n+1) to the current side elements
@@ -1455,7 +1455,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
-      const double* x = nodes[i]->X();
+      const double* x = nodes[i]->X().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
@@ -1569,7 +1569,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
       CORE::LINALG::SerialDenseMatrix side_xyze_1(3, numnodes_1);
       for (int i = 0; i < numnodes_1; ++i)
       {
-        const double* x = nodes_1[i]->X();
+        const double* x = nodes_1[i]->X().data();
         std::copy(x, x + 3, &side_xyze_1(0, i));
       }
 
@@ -1590,7 +1590,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
         side_xyze_2.shape(3, numnodes_2);
         for (int i = 0; i < numnodes_2; ++i)
         {
-          const double* x = nodes_2[i]->X();
+          const double* x = nodes_2[i]->X().data();
           std::copy(x, x + 3, &side_xyze_2(0, i));
         }
         side_2->LocationVector(*boundarydis_, cutla_2, false);
@@ -1642,7 +1642,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
       CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
       for (int i = 0; i < numnodes; ++i)
       {
-        const double* x = nodes[i]->X();
+        const double* x = nodes[i]->X().data();
         std::copy(x, x + 3, &side_xyze(0, i));
       }
 
@@ -1659,7 +1659,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     // its point geometry
     CORE::LINALG::SerialDenseMatrix point_xyze(3, 1);
 
-    const double* x = node->X();
+    const double* x = node->X().data();
     std::copy(x, x + 3, &point_xyze(0, 0));
 
     std::vector<int> lm = boundarydis_->Dof(0, node);
@@ -2183,7 +2183,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
@@ -2335,7 +2335,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &side_xyze(0, i));
   }
 
@@ -2501,7 +2501,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X();
+    const double* x = nodes[i]->X().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
@@ -2667,7 +2667,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
   // its point geometry
   CORE::LINALG::SerialDenseMatrix point_xyze(3, 1);
 
-  const double* x = node->X();
+  const double* x = node->X().data();
   std::copy(x, x + 3, &point_xyze(0, 0));
 
   std::vector<int> lm = boundarydis_->Dof(0, node);
@@ -3265,8 +3265,8 @@ void XFEM::XFLUID_STD::exportStartData()
   // unpack received data
   while (posinData < dataRecv.size())
   {
-    std::array<double, nsd> coords = {0.0};
-    DRT::Node node(0, coords.data(), 0);  // initialize node
+    std::vector<double> coords(nsd, 0.0);
+    DRT::Node node(0, coords, 0);  // initialize node
     int nds_np = -1;
     CORE::LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
     std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x

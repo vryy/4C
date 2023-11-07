@@ -536,7 +536,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelast(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -580,7 +580,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelastPressureBase
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelast(std::vector<int>& lm,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1262,7 +1262,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelastPressureBased(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1731,7 +1731,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingStressPoroelast(
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];

@@ -3845,14 +3845,14 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
     for (int i = 0; i < 4; ++i)
     {
       double xi[2] = {pseudo_nodes_param_coords[i][0], pseudo_nodes_param_coords[i][1]};
-      double xspatial[3] = {0., 0., 0.};
+      std::vector<double> xspatial(dim_, 0.0);
       ele.EvaluateShape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
         for (int n = 0; n < ele.NumNode(); ++n)
           xspatial[dim] +=
               sval(n) * dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
       pseudo_nodes.push_back(
-          MORTAR::MortarNode(-1, xspatial, ele.Owner(), 3, empty_dofs, ele.IsSlave()));
+          MORTAR::MortarNode(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
     }
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));

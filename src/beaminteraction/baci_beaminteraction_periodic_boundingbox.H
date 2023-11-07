@@ -153,7 +153,7 @@ namespace CORE::GEO
       /*!
        \brief Get the outmost point of the boundingbox
        */
-      void UndeformedBoxCornerPointPosition(int i, double* x) const;
+      void UndeformedBoxCornerPointPosition(int i, std::vector<double>& x) const;
       CORE::LINALG::Matrix<3, 1> UndeformedBoxCornerPointPosition(int i) const;
       /*!
        \brief get reference position of corner point i

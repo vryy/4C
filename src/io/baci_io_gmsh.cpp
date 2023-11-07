@@ -11,7 +11,6 @@
 
 #include "baci_io_gmsh.H"
 
-#include "baci_discretization_geometry_intersection_service.H"
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
@@ -615,7 +614,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
   for (int i = 0; i < numnode; ++i)
   {
     const DRT::Node* node = nodes[i];
-    const double* x = node->X();
+    const auto& x = node->X();
     s << x[0] << ",";
     s << x[1] << ",";
     s << x[2];

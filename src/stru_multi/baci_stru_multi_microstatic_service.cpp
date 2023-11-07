@@ -117,7 +117,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
       if (!actnode) dserror("Cannot find global node %d", (*nodeids)[i]);
 
       // nodal coordinates
-      const double* x = actnode->X();
+      const auto& x = actnode->X();
 
       std::vector<int> dofs = discret_->Dof(actnode);
 

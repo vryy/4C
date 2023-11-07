@@ -18,7 +18,7 @@ DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 {
-  double dummycoord[6] = {999., 999., 999., 999., 999., 999.};
+  std::vector<double> dummycoord(3, 999.0);
   DRT::Node* object = new DRT::ImmersedNode(-1, dummycoord, -1);
   object->Unpack(data);
   return object;
@@ -28,7 +28,7 @@ DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           rauch 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner)
+DRT::ImmersedNode::ImmersedNode(const int id, const std::vector<double>& coords, const int owner)
     : DRT::Node(id, coords, owner),
       ismatched_(false),
       IsBoundaryImmersed_(false),

@@ -61,10 +61,10 @@ namespace DRT
     \brief Standard Constructor
 
     \param id     (in): A globally unique node id
-    \param coords (in): vector of nodal coordinates, length 3
+    \param coords (in): vector of nodal coordinates
     \param owner  (in): Owner of this node.
     */
-    Node(int id, const double* coords, const int owner, const bool iscosserat = false);
+    Node(int id, const std::vector<double>& coords, int owner);
 
     /*!
     \brief Copy Constructor
@@ -112,37 +112,37 @@ namespace DRT
     /*!
     \brief Return global id
     */
-    virtual inline int Id() const { return id_; }
+    inline int Id() const { return id_; }
 
     /*!
     \brief Return processor local col map id
     */
-    virtual inline int LID() const { return lid_; }
+    inline int LID() const { return lid_; }
 
     /*!
     \brief Return owner of this node
     */
-    virtual inline int Owner() const { return owner_; }
+    inline int Owner() const { return owner_; }
 
     /*!
-    \brief Return coordinates (length 3 or 6 for a Cosserat node)
+    \brief Return coordinates vector
     */
-    virtual inline const double* X() const { return x_.data(); }
+    inline const std::vector<double>& X() const { return x_; }
 
     /*!
     \brief return spatial dimension of node coordinates
     */
-    virtual inline int Dim() const { return x_.size(); }
+    inline int Dim() const { return x_.size(); }
 
     /*!
     \brief Return processor-local number of elements adjacent to this node
     */
-    virtual inline int NumElement() const { return element_.size(); }
+    inline int NumElement() const { return element_.size(); }
 
     /*!
     \brief Return ptr to vector of element ptrs
     */
-    virtual inline DRT::Element** Elements()
+    inline DRT::Element** Elements()
     {
       if (NumElement())
         return element_.data();
@@ -153,7 +153,7 @@ namespace DRT
     /*!
     \brief Return const ptr to vector of const element ptrs
     */
-    virtual inline const DRT::Element* const* Elements() const
+    inline const DRT::Element* const* Elements() const
     {
       if (NumElement())
         return (const DRT::Element* const*)(element_.data());
@@ -175,18 +175,14 @@ namespace DRT
       \brief Set processor local col id
       \param lid: processor local col id
      */
-    virtual inline void SetLID(int lid) { lid_ = lid; }
+    inline void SetLID(int lid) { lid_ = lid; }
 
     /*!
     \brief Set ownership
 
     \param owner: Proc owning this node
     */
-    virtual inline void SetOwner(const int owner)
-    {
-      owner_ = owner;
-      return;
-    }
+    inline void SetOwner(const int owner) { owner_ = owner; }
 
     /*!
     \brief Set a condition with a certain name
@@ -209,10 +205,9 @@ namespace DRT
              NOT be overwritten but stored twice in the element
 
     */
-    virtual void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
     {
       condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
-      return;
     }
 
     /*!
@@ -226,7 +221,7 @@ namespace DRT
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -240,26 +235,22 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual DRT::Condition* GetCondition(const std::string& name) const;
+    DRT::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node
     */
-    virtual void ClearConditions()
-    {
-      condition_.clear();
-      return;
-    }
+    void ClearConditions() { condition_.clear(); }
 
     /*!
     \brief Change reference position by adding input vector to position
     */
-    virtual void ChangePos(std::vector<double> nvector);
+    void ChangePos(std::vector<double> nvector);
 
     /*!
     \brief Change reference position by setting input vector to position
     */
-    virtual void SetPos(std::vector<double> nvector);
+    void SetPos(std::vector<double> nvector);
 
     //@}
 
@@ -278,11 +269,9 @@ namespace DRT
      *
      *  \param names (out): Owner is added to the key names
      */
-    virtual void VisOwner(std::map<std::string, int>& names)
+    void VisOwner(std::map<std::string, int>& names)
     {
       names.insert(std::pair<std::string, int>("Nodeowner", 1));
-      // names.insert(std::pair<string,int>("EleGId",1));
-      return;
     }
 
     /*! \brief Query data to be visualized using BINIO of a given name
@@ -306,23 +295,18 @@ namespace DRT
     \brief Clear vector of pointers to my elements
 
     */
-    virtual inline void ClearMyElementTopology()
-    {
-      element_.clear();
-      return;
-    }
+    inline void ClearMyElementTopology() { element_.clear(); }
 
     /*!
     \brief Add an element to my vector of pointers to elements
 
     Resizes the element ptr vector and adds ptr at the end of vector
     */
-    virtual inline void AddElementPtr(DRT::Element* eleptr)
+    inline void AddElementPtr(DRT::Element* eleptr)
     {
       const int size = element_.size();
       element_.resize(size + 1);
       element_[size] = eleptr;
-      return;
     }
 
    protected:
@@ -348,4 +332,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Node& node);
 
 
 
-#endif  // LIB_NODE_H
+#endif  // BACI_LIB_NODE_H

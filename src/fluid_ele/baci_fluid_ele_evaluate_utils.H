@@ -110,7 +110,7 @@ namespace FLD
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -512,7 +512,7 @@ namespace FLD
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -3118,7 +3118,7 @@ namespace FLD
     DRT::Node** nodes = Nodes();
     for (int inode=0; inode<iel; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0,inode) = x[0];
       xyze(1,inode) = x[1];
       xyze(2,inode) = x[2];

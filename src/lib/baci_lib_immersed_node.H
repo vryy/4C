@@ -56,7 +56,7 @@ namespace DRT
     \param coords (in): vector of nodal coordinates, length 3
     \param owner  (in): Owner of this node.
     */
-    ImmersedNode(int id, const double* coords, const int owner);
+    ImmersedNode(int id, const std::vector<double>& coords, const int owner);
 
     /*!
     \brief Copy Constructor
@@ -163,4 +163,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode
 
 
 
-#endif  // IMMERSED_PROBLEM_IMMERSED_NODE_H
+#endif  // BACI_LIB_IMMERSED_NODE_H

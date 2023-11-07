@@ -3580,7 +3580,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 
     for (int k = 0; k < NUMNOD_SOH8; ++k)
     {
-      const double* x = nodes[k]->X();
+      const auto& x = nodes[k]->X();
       xrefe(k, 0) = x[0];
       xrefe(k, 1) = x[1];
       xrefe(k, 2) = x[2];
@@ -3683,7 +3683,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
       // reset xcurr
       for (int k = 0; k < NUMNOD_SOH8; ++k)
       {
-        const double* x = nodes[k]->X();
+        const auto& x = nodes[k]->X();
         xrefe(k, 0) = x[0];
         xrefe(k, 1) = x[1];
         xrefe(k, 2) = x[2];
@@ -3764,7 +3764,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int d = 0; d < NUMDIM_SOH8; ++d)
     {
       xrefe(i, d) = x[d];

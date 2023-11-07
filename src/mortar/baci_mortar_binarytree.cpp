@@ -200,7 +200,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       {
         MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
         if (!mrtrnode) dserror("Null pointer!");
-        const double* posnode = mrtrnode->X();
+        const auto& posnode = mrtrnode->X();
 
         // split along chosen area
         // ax+by+cz< or > d = criterion

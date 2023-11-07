@@ -387,7 +387,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
       mydisp.clear();
       cutterdis->Dof(&node, lm);
 
-      CORE::LINALG::Matrix<3, 1> x(node.X());
+      CORE::LINALG::Matrix<3, 1> x(node.X().data());
 
       if (cutter_disp_col != Teuchos::null)
       {
@@ -491,7 +491,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
   {
     const ::DRT::Node& node = *nodes[i];
 
-    CORE::LINALG::Matrix<3, 1> x(node.X());
+    CORE::LINALG::Matrix<3, 1> x(node.X().data());
 
     if (back_mesh_->IsBackDisp())
     {
@@ -868,7 +868,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
       lm.clear();
       mydisp.clear();
 
-      CORE::LINALG::Matrix<3, 1> x(node.X());
+      CORE::LINALG::Matrix<3, 1> x(node.X().data());
 
       cutterdis->Dof(&node, lm);
 

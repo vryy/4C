@@ -850,7 +850,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // parent element
     for (int jnode = 0; jnode < piel; ++jnode)
     {
-      const double* jx = pele->Nodes()[jnode]->X();
+      const double* jx = pele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) =
             DRT::Problem::Instance()
@@ -861,7 +861,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // neighbor element
     for (int jnode = 0; jnode < niel; ++jnode)
     {
-      const double* jx = nele->Nodes()[jnode]->X();
+      const double* jx = nele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) =
             DRT::Problem::Instance()

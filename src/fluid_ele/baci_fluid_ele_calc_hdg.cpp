@@ -2536,7 +2536,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS:
   double centre_y = 0.;
   for (unsigned int i = 0; i < 4; ++i)
   {
-    const double* xyz = (ele->Nodes()[i])->X();
+    const auto& xyz = (ele->Nodes()[i])->X();
     centre_x += xyz[0];
     centre_y += xyz[1];
   }
@@ -2578,7 +2578,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS:
   double centre_y = 0.;
   for (unsigned int i = 0; i < 4; ++i)
   {
-    const double* xyz = (ele->Nodes()[i])->X();
+    const auto& xyz = (ele->Nodes()[i])->X();
     centre_x += xyz[0];
     centre_y += xyz[1];
   }

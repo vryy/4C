@@ -276,7 +276,7 @@ namespace DRT
         size_t j = (posid / nx) % ny;
         size_t k = posid / (nx * ny);
 
-        double coords[3];
+        std::vector<double> coords(3, 0.0);
         coords[0] = static_cast<double>(i) / (2 * inputData.interval_[0]) *
                         (inputData.top_corner_point_[0] - inputData.bottom_corner_point_[0]) +
                     inputData.bottom_corner_point_[0];

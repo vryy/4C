@@ -27,7 +27,7 @@ namespace DRT::ELEMENTS
                          so_tet10, so_weg6, sodisp, so_shw6, truss3, torsion3
     */
 
-    const double* x = node.X();
+    const auto& x = node.X();
 
     CORE::LINALG::SerialDenseMatrix nullspace(3, 6);
     // x-modes
@@ -71,7 +71,7 @@ namespace DRT::ELEMENTS
 
      */
 
-    const double* x = node.X();
+    const auto& x = node.X();
 
     CORE::LINALG::SerialDenseMatrix nullspace(2, 3);
     // x-modes

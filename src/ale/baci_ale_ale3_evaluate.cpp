@@ -268,7 +268,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   DRT::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];
@@ -932,7 +932,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
   DRT::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];
@@ -1596,7 +1596,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   DRT::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];

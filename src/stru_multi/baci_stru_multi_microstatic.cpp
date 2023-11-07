@@ -837,7 +837,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
       if (!actnode) dserror("Cannot find global node %d", (*nodeids)[j]);
 
       // nodal coordinates
-      const double* x = actnode->X();
+      const auto& x = actnode->X();
 
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient

@@ -1220,7 +1220,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
         for (int index = 0; index < nsd_; ++index)
         {
           double value = problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                             .Evaluate(lnode->X(), time_, index);
+                             .Evaluate(lnode->X().data(), time_, index);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1698,7 +1698,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           // evaluate component k of spatial function
           double initialval =
               problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X(), time_, k);
+                  .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -3122,7 +3122,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS")
-                               ? *node->X() * *node->X() * four_pi
+                               ? *node->X().data() * *node->X().data() * four_pi
                                : 1.0;
 
         // extract degrees of freedom from node

@@ -993,7 +993,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_GapN_
   for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
   {
     const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-    const int* sdof = snode.Dofs();
+    const auto& sdof = snode.Dofs();
 
     // variation of the slave position
     for (unsigned d = 0; d < probdim; ++d) deriv_gapn_sl(sdof[d]) += sval(k, 0) * gpn[d];
@@ -1010,8 +1010,8 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_GapN_
 {
   for (unsigned k = 0; k < MASTERNUMNODE; ++k)
   {
-    const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
-    const int* mdof = mnode.Dofs();
+    const auto& mnode = static_cast<const CoNode&>(*mnodes[k]);
+    const auto& mdof = mnode.Dofs();
 
     // (0) variation of the master position
     for (unsigned d = 0; d < probdim; ++d)
@@ -1302,8 +1302,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
-      const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-      const int* sdof = snode.Dofs();
+      const auto& snode = static_cast<const CoNode&>(*snodes[k]);
+      const auto& sdof = snode.Dofs();
 
       // variation of the slave position multiplied with the linearized
       // smooth normal
@@ -1333,8 +1333,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
         {
-          const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-          const int* sdof = snode.Dofs();
+          const auto& snode = static_cast<const CoNode&>(*snodes[k]);
+          const auto& sdof = snode.Dofs();
 
           CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(sdof[d], my::gp_id_) += sval(k, 0) * val;
@@ -1348,8 +1348,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
 
     for (unsigned k = 0; k < my::MASTERNUMNODE; ++k)
     {
-      const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
-      const int* mdof = mnode.Dofs();
+      const auto& mnode = static_cast<const CoNode&>(*mnodes[k]);
+      const auto& mdof = mnode.Dofs();
 
       for (unsigned d = 0; d < probdim; ++d)
       {
@@ -1386,7 +1386,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
     // varied smooth normal multiplied with the linearized master position
     for (unsigned d = 0; d < probdim; ++d)
     {
-      for (auto& d_n_unit_var : d_n_unit[d])
+      for (const auto& d_n_unit_var : d_n_unit[d])
       {
         CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_n_unit_var.first, my::gp_id_);
@@ -1397,8 +1397,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
         // smooth normal ( 1-st part )
         for (unsigned k = 0; k < my::MASTERNUMNODE; ++k)
         {
-          const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
-          const int* mdof = mnode.Dofs();
+          const auto& mnode = static_cast<const CoNode&>(*mnodes[k]);
+          const auto& mdof = mnode.Dofs();
 
           CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += val * mval(k, 0);
@@ -1411,7 +1411,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
         {
           const double val_1 = val * mtau(d, j);
 
-          for (auto& d_mxigp_j_lin : d_mxigp[j])
+          for (const auto& d_mxigp_j_lin : d_mxigp[j])
           {
             CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
@@ -1704,8 +1704,8 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
-      const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-      const int* sdof = snode.Dofs();
+      const auto& snode = static_cast<const CoNode&>(*snodes[k]);
+      const auto& sdof = snode.Dofs();
 
       // variation of the slave position multiplied with the linearized
       // smooth normal
@@ -1714,7 +1714,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
         CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(sdof[d], my::gp_id_);
 
-        for (auto& d_n_unit_lin : d_n_unit[d])
+        for (const auto& d_n_unit_lin : d_n_unit[d])
         {
           CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
@@ -1726,7 +1726,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     // varied smooth normal multiplied with the linearized slave position
     for (unsigned d = 0; d < probdim; ++d)
     {
-      for (auto& d_n_unit_var : d_n_unit[d])
+      for (const auto& d_n_unit_var : d_n_unit[d])
       {
         CORE::GEN::increaseCapacity(dd_wgap_sl);
         Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_n_unit_var.first, my::gp_id_);
@@ -1735,8 +1735,8 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
         {
-          const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-          const int* sdof = snode.Dofs();
+          const auto& snode = static_cast<const CoNode&>(*snodes[k]);
+          const auto& sdof = snode.Dofs();
 
           CORE::GEN::increaseCapacity(dd_wgap_sl_var);
           dd_wgap_sl_var.repetitive_access(sdof[d], my::gp_id_) += sval(k, 0) * val;
@@ -1749,8 +1749,8 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     Deriv2ndMap& dd_wgap_ma = cnode.AugData().GetDeriv2nd_WGapMa();
     for (unsigned k = 0; k < my::MASTERNUMNODE; ++k)
     {
-      const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
-      const int* mdof = mnode.Dofs();
+      const auto& mnode = static_cast<const CoNode&>(*mnodes[k]);
+      const auto& mdof = mnode.Dofs();
 
       for (unsigned d = 0; d < probdim; ++d)
       {
@@ -1893,7 +1893,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
     // varied smooth normal multiplied with the linearized master position
     for (unsigned d = 0; d < probdim; ++d)
     {
-      for (auto& d_n_unit_var : d_n_unit[d])
+      for (const auto& d_n_unit_var : d_n_unit[d])
       {
         CORE::GEN::increaseCapacity(dd_wgap_ma);
         Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_n_unit_var.first, my::gp_id_);
@@ -1904,8 +1904,8 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
         // smooth normal ( 1-st part )
         for (unsigned k = 0; k < my::MASTERNUMNODE; ++k)
         {
-          const CoNode& mnode = static_cast<const CoNode&>(*mnodes[k]);
-          const int* mdof = mnode.Dofs();
+          const auto& mnode = static_cast<const CoNode&>(*mnodes[k]);
+          const auto& mdof = mnode.Dofs();
 
           CORE::GEN::increaseCapacity(dd_wgap_ma_var);
           dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += val * mval(k, 0);
@@ -1918,7 +1918,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
         {
           const double val_1 = val * mtau(d, j);
 
-          for (auto& d_mxigp_j_lin : d_mxigp[j])
+          for (const auto& d_mxigp_j_lin : d_mxigp[j])
           {
             CORE::GEN::increaseCapacity(dd_wgap_ma_var);
             dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=

@@ -1445,7 +1445,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       DRT::Node** nodes = this->Nodes();
       for (int i = 0; i < nen; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(0, i) = x[0];
         xrefe(1, i) = x[1];
         xrefe(2, i) = x[2];
@@ -1458,7 +1458,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       nodes = this->ParentElement()->Nodes();
       for (int i = 0; i < parent_nen; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         parent_xrefe(0, i) = x[0];
         parent_xrefe(1, i) = x[1];
         parent_xrefe(2, i) = x[2];
@@ -2531,7 +2531,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   DRT::Node** nodes = parentele->Nodes();
   for (int i = 0; i < nenparent; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(0, i) = x[0];
     xrefe(1, i) = x[1];
     xrefe(2, i) = x[2];

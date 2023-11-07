@@ -531,7 +531,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 }
                 if (not found)
                 {
-                  const double* x = discret_->gNode(mid)->X();
+                  const auto& x = discret_->gNode(mid)->X();
                   std::cout << "\nmaster node not found in midtosid list: " << mid
                             << "  coord: x=" << x[0] << " y=" << x[1] << " z=" << x[2];
                 }

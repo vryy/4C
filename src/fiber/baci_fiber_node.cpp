@@ -17,7 +17,7 @@ DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 
 DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 {
-  std::array<double, 3> dummy_coords = {999., 999., 999.};
+  std::vector<double> dummy_coords(3, 999.0);
   std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
   std::vector<std::array<double, 3>> fibers;
   std::map<FIBER::AngleType, double> angles;
@@ -27,11 +27,11 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
   return object;
 }
 
-DRT::FIBER::FiberNode::FiberNode(int id, std::array<double, 3> coords,
+DRT::FIBER::FiberNode::FiberNode(int id, const std::vector<double>& coords,
     std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
     std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
     const int owner)
-    : DRT::Node(id, coords.data(), owner),
+    : DRT::Node(id, coords, owner),
       coordinateSystemDirections_(std::move(coordinateSystemDirections)),
       fibers_(std::move(fibers)),
       angles_(std::move(angles))

@@ -154,8 +154,7 @@ bool MORTAR::Coupling2d::Project()
 
       // for nurbs, we introduce a dummy mortar node at the actual spatial position of the master
       // side element boundary. Hence, we need that location
-      // NOTE: the array has to be 3D, as our implementation of DRT::Node implicitly assumes this
-      std::array<double, 3> xm{};
+      std::vector<double> xm(2, 0.0);
       CORE::LINALG::SerialDenseVector mval(mele_.NumNode());
       CORE::LINALG::SerialDenseMatrix deriv(mele_.NumNode(), 1);
       mele_.EvaluateShape(xinode.data(), mval, deriv, mele_.NumNode());
@@ -166,7 +165,7 @@ bool MORTAR::Coupling2d::Project()
         for (int dim = 0; dim < 2; ++dim) xm[dim] += mval(mn) * mnode2->xspatial()[dim];
       }
       std::vector<int> mdofs(2);
-      MORTAR::MortarNode tmp_node(mnode->Id(), xm.data(), mnode->Owner(), 2, mdofs, false);
+      MORTAR::MortarNode tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
       MORTAR::MortarProjector::Impl(SlaveElement())
           ->ProjectElementNormal(tmp_node, SlaveElement(), xi.data());
     }

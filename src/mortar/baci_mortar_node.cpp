@@ -19,9 +19,9 @@ MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
 
 DRT::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
 {
-  const std::array<double, 3> x{};
+  std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
-  auto* node = new MORTAR::MortarNode(0, x.data(), 0, 0, dofs, false);
+  auto* node = new MORTAR::MortarNode(0, x, 0, dofs, false);
   node->Unpack(data);
   return node;
 }
@@ -84,7 +84,7 @@ void MORTAR::MortarNodeDataContainer::Unpack(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, const int numdof,
+MORTAR::MortarNode::MortarNode(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave)
     : DRT::Node(id, coords, owner),
       isslave_(isslave),
@@ -93,7 +93,6 @@ MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, co
       isonedge_(false),
       isoncorner_(false),
       isdbc_(false),
-      numdof_(numdof),
       dofs_(dofs),
       hasproj_(false),
       hassegment_(false),
@@ -102,7 +101,7 @@ MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner, co
       modata_(Teuchos::null),
       nurbsw_(-1.0)
 {
-  for (int i = 0; i < 3; ++i)
+  for (std::size_t i = 0; i < coords.size(); ++i)
   {
     uold()[i] = 0.0;
     xspatial()[i] = X()[i];
@@ -119,7 +118,6 @@ MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old)
       istiedslave_(old.istiedslave_),
       isonbound_(old.isonbound_),
       isdbc_(old.isdbc_),
-      numdof_(old.numdof_),
       dofs_(old.dofs_),
       hasproj_(old.hasproj_),
       hassegment_(old.hassegment_),
@@ -200,8 +198,6 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, dbcdofs_[0]);
   AddtoPack(data, dbcdofs_[1]);
   AddtoPack(data, dbcdofs_[2]);
-  // add numdof_
-  AddtoPack(data, numdof_);
   // dentries_
   AddtoPack(data, dentries_);
   // add dofs_
@@ -252,8 +248,6 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   dbcdofs_[0] = ExtractInt(position, data);
   dbcdofs_[1] = ExtractInt(position, data);
   dbcdofs_[2] = ExtractInt(position, data);
-  // numdof_
-  ExtractfromPack(position, data, numdof_);
   // dentries_
   ExtractfromPack(position, data, dentries_);
   // dofs_

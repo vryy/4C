@@ -1100,15 +1100,13 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     std::fill(vals.values() + 1, vals.values() + numdof, ct_inv * augA);
 
     // copy dof ids
-    std::copy(cnode->Dofs(), cnode->Dofs() + numdof, rowIds.data());
+    std::copy(cnode->Dofs().data(), cnode->Dofs().data() + numdof, rowIds.data());
 
     // insert owner
     std::fill(rowner.data(), rowner.data() + numdof, cnode->Owner());
 
     CORE::LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1965,8 +1963,8 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
         const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
         const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);
 
-        const CORE::LINALG::Matrix<3, 1> X0(cnode0.X(), true);
-        CORE::LINALG::Matrix<3, 1> diffX(cnode1.X(), false);
+        const CORE::LINALG::Matrix<3, 1> X0(cnode0.X().data(), true);
+        CORE::LINALG::Matrix<3, 1> diffX(cnode1.X().data(), false);
 
         diffX.Update(-1.0, X0, 1.0);
 

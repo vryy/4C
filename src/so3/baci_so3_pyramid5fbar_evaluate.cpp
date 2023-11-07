@@ -359,7 +359,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOP5; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(i, 0) = x[0];
         xrefe(i, 1) = x[1];
         xrefe(i, 2) = x[2];
@@ -584,7 +584,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -676,7 +676,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];

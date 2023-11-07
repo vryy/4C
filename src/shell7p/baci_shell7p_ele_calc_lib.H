@@ -77,7 +77,7 @@ namespace DRT::ELEMENTS::SHELL
     {
       const double h2 = thickness * factor * 0.5;
 
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       coordinates.x_refe_(i, 0) = x[0];
       coordinates.x_refe_(i, 1) = x[1];
       coordinates.x_refe_(i, 2) = x[2];

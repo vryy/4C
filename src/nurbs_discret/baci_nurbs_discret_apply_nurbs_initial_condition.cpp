@@ -210,7 +210,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         DRT::Node** nodes = actele->Nodes();
         for (int inode = 0; inode < iel; inode++)
         {
-          const double* x = nodes[inode]->X();
+          const auto& x = nodes[inode]->X();
           for (int dim = 0; dim < spacedim; ++dim)
           {
             xyze(dim, inode) = x[dim];

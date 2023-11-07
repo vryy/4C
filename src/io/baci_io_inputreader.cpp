@@ -349,7 +349,7 @@ namespace DRT
             for (int lid = 0; lid < actdis->NumMyRowNodes(); ++lid)
             {
               const Node* node = actdis->lRowNode(lid);
-              const double* coord = node->X();
+              const auto& coord = node->X();
               std::array<double, 3> coords;
               coords[0] = coord[0];
               coords[1] = coord[1];

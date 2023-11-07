@@ -33,7 +33,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       J(i, 0) = 1.0;
       J(i, 1) = xrefe(i, 0) = x[0];
       J(i, 2) = xrefe(i, 1) = x[1];

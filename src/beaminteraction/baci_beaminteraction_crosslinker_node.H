@@ -175,7 +175,7 @@ namespace CROSSLINKING
     \param owner  (in): Owner of this node.
 
     */
-    CrosslinkerNode(int id, const double* coords, const int owner);
+    CrosslinkerNode(int id, const std::vector<double>& coords, const int owner);
 
     /*!
     \brief Copy Constructor
@@ -294,4 +294,4 @@ namespace CROSSLINKING
 // << operator
 std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
 
-#endif  // BEAMINTERACTION_CROSSLINKER_NODE_H
+#endif  // BACI_BEAMINTERACTION_CROSSLINKER_NODE_H

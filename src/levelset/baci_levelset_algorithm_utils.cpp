@@ -255,7 +255,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
             // evaluate component k of spatial function
             double initialval =
                 problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                    .Evaluate(lnode->X(), time_, k);
+                    .Evaluate(lnode->X().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) dserror("dof not on proc");
           }
@@ -545,7 +545,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
         const DRT::Node* lnode = discret_->lRowNode(lid);
-        const double* coord = lnode->X();
+        const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }
@@ -725,7 +725,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     {
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
       CORE::LINALG::Matrix<3, 2> coordandvel;
-      const double* coord = node->X();
+      const auto& coord = node->X();
       for (int i = 0; i < 3; ++i)
       {
         // get global and local dof IDs
@@ -777,7 +777,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       CORE::LINALG::Matrix<3, 2> closestnodedata(true);
       {
         CORE::LINALG::Matrix<3, 1> nodecoord;
-        const double* coord = lnode->X();
+        auto& coord = lnode->X();
         for (int i = 0; i < 3; ++i) nodecoord(i) = coord[i];
         double mindist = 1.0e19;
 

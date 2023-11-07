@@ -292,8 +292,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), numcoupleddof, dofids, false, false, false));
+    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, false, false, false));
 
     if (isnurbs)
     {
@@ -323,8 +323,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), numcoupleddof, dofids, true, true, false));
+    Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, true, true, false));
 
     if (isnurbs)
     {
@@ -335,8 +335,6 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
 
     interface->AddCoNode(cnode);
   }
-
-  return;
 }
 
 
@@ -661,9 +659,6 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   Teuchos::RCP<CONTACT::CoInterface> interface =
       CONTACT::CoInterface::Create(0, comm, dim, input, false);
 
-  // number of dofs per node based on the coupling vector coupleddof
-  int dof = 3;
-
   // feeding nodes to the interface including ghosted nodes
   std::map<int, DRT::Node*>::const_iterator nodeiter;
 
@@ -680,7 +675,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), dof, masterdis->Dof(node), false, false, false));
+        node->Id(), node->X(), node->Owner(), masterdis->Dof(node), false, false, false));
 
     interface->AddCoNode(mrtrnode);
   }
@@ -692,7 +687,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), dof, slavedis->Dof(node), true, true, false));
+        node->Id(), node->X(), node->Owner(), slavedis->Dof(node), true, true, false));
 
     interface->AddCoNode(mrtrnode);
   }

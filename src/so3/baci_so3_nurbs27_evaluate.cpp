@@ -601,7 +601,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   CORE::LINALG::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -785,7 +785,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1109,7 +1109,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];

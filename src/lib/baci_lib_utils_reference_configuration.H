@@ -53,7 +53,8 @@ namespace DRT
       }
       if (probdim != nodedim)
       {
-        dserror("Problem dimension and dimension of nodes does not match!");
+        dserror(
+            "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
       }
 
       for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
@@ -65,8 +66,6 @@ namespace DRT
       }
 
       coord.Multiply(1.0, nodecoords, funct, 0.0);
-
-      return;
     }
 
     /**
@@ -129,10 +128,8 @@ namespace DRT
       normal.CrossProduct(gxi, geta);
       const double normnormal = normal.Norm2();
       normal.Scale(1.0 / normnormal);
-
-      return;
     }
   }  // namespace UTILS
 }  // namespace DRT
 
-#endif  // LIB_UTILS_REFERENCE_CONFIGURATION_H
+#endif  // BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H

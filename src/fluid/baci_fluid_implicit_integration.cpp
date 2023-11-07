@@ -2692,7 +2692,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           DRT::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
-          const double* refPos = currNode->X();
+          const auto& refPos = currNode->X();
 
           for (int i = 0; i < numdim_; ++i)
           {
@@ -2930,7 +2930,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           DRT::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
-          const double* refPos = currNode->X();
+          const auto& refPos = currNode->X();
 
           double lengthCurrPos = 0.0;
           for (int i = 0; i < numdim_; ++i)
@@ -3705,7 +3705,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // get the node
     DRT::Node* node = discret_->gNode(gid);
     // get the coordinates of the node
-    const double* X = node->X();
+    const auto& X = node->X();
     // get degrees of freedom of a node
     std::vector<int> gdofs = discret_->Dof(node);
     // std::cout << "for node:" << *node << std::endl;
@@ -4282,7 +4282,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
         double initialval = DRT::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .Evaluate(lnode->X(), time_, index);
+                                .Evaluate(lnode->X().data(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
       }

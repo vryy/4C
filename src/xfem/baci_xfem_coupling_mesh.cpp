@@ -746,7 +746,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
   else if (*evaltype == "funct_interpolated")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X(), cond, time);
+    EvaluateFunction(final_values, node->X().data(), cond, time);
   }
   else if (*evaltype == "funct_gausspoint")
   {
@@ -765,7 +765,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
   {
     if (step_ == 0)  // evaluate initialization function at node at current time
     {
-      EvaluateFunction(final_values, node->X(), cond, time);
+      EvaluateFunction(final_values, node->X().data(), cond, time);
     }
     else
       ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
@@ -788,14 +788,14 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
   else if (*evaltype == "funct")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X(), cond, time);
+    EvaluateFunction(final_values, node->X().data(), cond, time);
   }
   else if (*evaltype == "implementation")
   {
     // evaluate implementation
     // TODO: get the function name from the condition!!!
     std::string function_name = "ROTATING_BEAM";
-    EvaluateImplementation(final_values, node->X(), cond, time, function_name);
+    EvaluateImplementation(final_values, node->X().data(), cond, time, function_name);
   }
   else
     dserror("evaltype not supported %s", evaltype->c_str());

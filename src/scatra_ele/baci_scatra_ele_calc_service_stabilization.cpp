@@ -990,9 +990,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
             // evaluation at the integration point. However, we need a node
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
-            functfac = DRT::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                           .Evaluate((ele->Nodes()[jnode])->X(), scatraparatimint_->Time(), isd);
+            functfac =
+                DRT::Problem::Instance()
+                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                    .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
           }
           else
             dserror("Negative time value in body force calculation: time = %f",

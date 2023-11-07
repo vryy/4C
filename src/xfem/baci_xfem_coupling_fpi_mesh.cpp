@@ -1020,7 +1020,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
           {
             int lid = fulldispnp_->Map().LID(GetCondDis()->Dof(0, coupl_ele->Nodes()[inode], idof));
 
-            const double* x = nodes[inode]->X();
+            const auto& x = nodes[inode]->X();
             xrefe(idof, inode) = x[idof];
 
             if (lid != -1)

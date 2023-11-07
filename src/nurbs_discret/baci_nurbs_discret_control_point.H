@@ -71,7 +71,7 @@ namespace DRT
       \param weight (in): nurbs weight
       \param owner  (in): Owner of this node.
       */
-      ControlPoint(int id, const double* coords, const double weight, const int owner);
+      ControlPoint(int id, const std::vector<double>& coords, const double weight, const int owner);
 
       /*!
       \brief Copy Constructor
@@ -155,4 +155,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif  // NURBS_DISCRET_CONTROL_POINT_H
+#endif  // BACI_NURBS_DISCRET_CONTROL_POINT_H

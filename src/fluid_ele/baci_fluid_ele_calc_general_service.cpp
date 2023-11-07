@@ -2955,7 +2955,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
     {
       for (int idof = 0; idof < nsd_; ++idof)
       {
-        const double* x = nodes[inode]->X();
+        const auto& x = nodes[inode]->X();
         xrefe(idof, inode) = x[idof];
         xcurr(idof, inode) = x[idof] + edispnp(idof, inode);
       }
@@ -2970,7 +2970,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
       {
         for (int idof = 0; idof < nsd_; ++idof)
         {
-          const double* x = nodes[inode]->X();
+          const auto& x = nodes[inode]->X();
           xrefe(idof, inode) = x[idof];
         }
       }

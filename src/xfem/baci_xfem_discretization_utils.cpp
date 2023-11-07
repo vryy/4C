@@ -78,7 +78,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
@@ -103,7 +103,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);

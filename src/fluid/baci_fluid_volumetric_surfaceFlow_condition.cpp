@@ -523,7 +523,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
       if (discret_->gNode(it->first)->Owner() == myrank)
       {
         // get the coordinate of a node
-        const double* x = discret_->gNode(it->first)->X();
+        const auto& x = discret_->gNode(it->first)->X();
         for (unsigned int i = 0; i < xyze.size(); i++)
         {
           xyze[i] = x[i];
@@ -593,7 +593,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
       if (discret_->gNode(gid)->Owner() == myrank)
       {
         double border_raduis = 0.0;
-        const double* curr_xyze = discret_->gNode(gid)->X();
+        const auto& curr_xyze = discret_->gNode(gid)->X();
 
         //----------------------------------------------------------------
         // loop over all of the border nodes

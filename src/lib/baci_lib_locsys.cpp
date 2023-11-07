@@ -221,7 +221,7 @@ void DRT::UTILS::LocsysManager::Update(
 
                   // Calculate current position for node
                   std::vector<double> currPos(Dim());
-                  const double* xp = node->X();
+                  const auto& xp = node->X();
 
                   for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
 
@@ -237,7 +237,7 @@ void DRT::UTILS::LocsysManager::Update(
                   functfac =
                       (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
-                          .Evaluate(node->X(), time, j);
+                          .Evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;

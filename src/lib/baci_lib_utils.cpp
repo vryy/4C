@@ -863,7 +863,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
-            const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -957,7 +957,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
-            const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -1258,7 +1258,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
     double var = 0.0;
     for (int j = 0; j < numnodes; ++j)
     {
-      const double* x = nodes[j]->X();
+      const auto& x = nodes[j]->X();
       var += x[i];
     }
     centercoords[i] = var * invnumnodes;

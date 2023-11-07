@@ -536,12 +536,12 @@ namespace IMMERSED
                   sourceeledisp[node * 3 + dof] = myvalues[node * 4 + dof];
 
               // node 1  and node 7 coords of current source element (diagonal points)
-              const double* X1 = curr->second->Nodes()[1]->X();
+              const auto& X1 = curr->second->Nodes()[1]->X();
               double x1[3];
               x1[0] = X1[0] + sourceeledisp[1 * 3 + 0];
               x1[1] = X1[1] + sourceeledisp[1 * 3 + 1];
               x1[2] = X1[2] + sourceeledisp[1 * 3 + 2];
-              const double* X7 = curr->second->Nodes()[7]->X();
+              const auto& X7 = curr->second->Nodes()[7]->X();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -584,8 +584,8 @@ namespace IMMERSED
             else
             {
               // node 1  and node 7 coords of current source element (diagonal points)
-              const double* X1 = curr->second->Nodes()[1]->X();
-              const double* X7 = curr->second->Nodes()[7]->X();
+              const auto& X1 = curr->second->Nodes()[1]->X();
+              const auto& X7 = curr->second->Nodes()[7]->X();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -652,8 +652,7 @@ namespace IMMERSED
               {
                 if (isALE)
                 {
-                  const double* X;
-                  X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->Nodes()[sourcenode]->X();
 
                   distances[sourcenode] =
                       sqrt(pow(xvec[0] - (X[0] + myvalues[sourcenode * 4 + 0]), 2) +
@@ -662,8 +661,7 @@ namespace IMMERSED
                 }
                 else
                 {
-                  const double* X;
-                  X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->Nodes()[sourcenode]->X();
 
                   distances[sourcenode] = sqrt(
                       pow(xvec[0] - X[0], 2) + pow(xvec[1] - X[1], 2) + pow(xvec[2] - X[2], 2));
@@ -682,11 +680,10 @@ namespace IMMERSED
                 }
               }
 
-              const double* X;
               double x[3];
               if (isALE)
               {
-                X = sourceele->Nodes()[maxdistanceindex]->X();
+                const auto& X = sourceele->Nodes()[maxdistanceindex]->X();
                 x[0] = X[0] + myvalues[maxdistanceindex * 4 + 0];
                 x[1] = X[1] + myvalues[maxdistanceindex * 4 + 1];
                 x[2] = X[2] + myvalues[maxdistanceindex * 4 + 2];
@@ -1701,9 +1698,9 @@ namespace IMMERSED
               {
                 // get nodes
                 DRT::Node** bdrynodes = curr->second->Nodes();
-                const double* X0 = bdrynodes[0]->X();
-                const double* X1 = bdrynodes[1]->X();
-                const double* X3 = bdrynodes[3]->X();
+                const auto& X0 = bdrynodes[0]->X();
+                const auto& X1 = bdrynodes[1]->X();
+                const auto& X3 = bdrynodes[3]->X();
 
                 // get location vector
                 curr->second->LocationVector(*evaldis, la, false, condstring, params);

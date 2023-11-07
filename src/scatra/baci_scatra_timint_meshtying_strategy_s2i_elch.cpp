@@ -257,7 +257,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = DRT::INPUT::IntegralValue<bool>(
                                *scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
-                               ? *slave_node->X() * *slave_node->X() * four_pi
+                               ? *slave_node->X().data() * *slave_node->X().data() * four_pi
                                : 1.0;
         const double timefacfac =
             DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
