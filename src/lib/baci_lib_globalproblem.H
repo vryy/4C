@@ -497,10 +497,6 @@ namespace DRT
     {
       return getParameterList()->sublist("VOLMORTAR COUPLING");
     }
-    const Teuchos::ParameterList& TutorialParams() const
-    {
-      return getParameterList()()->sublist("TUTORIAL DYNAMIC");
-    };
     const Teuchos::ParameterList& MORParams() const
     {
       return getParameterList()()->sublist("MOR");

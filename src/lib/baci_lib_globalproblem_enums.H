@@ -62,7 +62,6 @@ enum class ProblemType
   thermo,                // thermal problem
   thermo_fsi,            // thermo-fluid-structure-interaction problem
   tsi,                   // thermal structure interaction
-  tutorial,              // student's c++/baci tutorial
 };
 
 /// Type of shape functions used in spatial discretization

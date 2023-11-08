@@ -70,7 +70,6 @@
 #include "baci_inpar_xfem.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem_enums.H"
-#include "baci_tutorial_inpar.H"
 
 #include <Teuchos_any.hpp>
 #include <Teuchos_Array.hpp>
@@ -442,8 +441,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::REBALANCE::SetValidParameters(list);
   INPAR::SOLVER::SetValidParameters(list);
   INPAR::NLNSOL::SetValidParameters(list);
-
-  INPAR::TUTORIAL::SetValidParameters(list);
 
   return list;
 }

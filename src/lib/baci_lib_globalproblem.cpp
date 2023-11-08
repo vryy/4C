@@ -312,9 +312,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--SEMI-SMOOTH PLASTICITY", *list);
   reader.ReadSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadSection("--VOLMORTAR COUPLING", *list);
-  reader.ReadSection("--TUTORIAL DYNAMIC", *list);
-  reader.ReadSection("--TUTORIAL DYNAMIC/NONLINEAR TRUSS", *list);
-  reader.ReadSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
   reader.ReadSection("--CARDIAC MONODOMAIN CONTROL", *list);
   reader.ReadSection("--MOR", *list);
   reader.ReadSection("--MESH PARTITIONING", *list);
@@ -2037,10 +2034,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
     }
     break;
-    case ProblemType::tutorial:
-    {
-    }
-    break;
     default:
       dserror("Unknown problem type: %d", GetProblemType());
       break;
@@ -2103,10 +2096,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
         ReadMicrofieldsNPsupport();
-        break;
-      }
-      case ProblemType::tutorial:
-      {
         break;
       }
       default:
