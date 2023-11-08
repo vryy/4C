@@ -67,6 +67,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
                             : 0.0),
       adapted_timestep_active_(false),
       dt_adapted_(-1.0),
+      last_dt_change_(0),
       splitter_macro_(Teuchos::null)
 {
   // safety check
@@ -451,6 +452,7 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
           cccv_condition_->ResetPhaseChangeObserver();
           adapted_timestep_active_ = true;
           dt_adapted_ = dt = dt_new;
+          last_dt_change_ = Step();
         }
       }
     }
@@ -460,6 +462,12 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
       // disable, otherwise keep adapted time step
       if (cccv_condition_->IsStepsFromLastPhaseChange(step_))
         adapted_timestep_active_ = false;
+      else if (Step() > last_dt_change_ + 3 * std::ceil(static_cast<double>(dt) /
+                                                        static_cast<double>(dt_adapted_)))
+      {
+        adapted_timestep_active_ = false;
+        return;
+      }
       else
         dt = dt_adapted_;
     }
@@ -857,17 +865,11 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
   // applicable
   if (cccvcyclingcondition)
   {
-    // extract cell voltage
     cellvoltage_ = reader.ReadDouble("cellvoltage");
-
-    // extract cell C rate
     cellcrate_ = reader.ReadDouble("cellcrate");
-
-    // is time step adaptivity activated?
     adapted_timestep_active_ = static_cast<bool>(reader.ReadInt("adapted_timestep_active"));
-
-    // adapted time step
     dt_adapted_ = reader.ReadDouble("dt_adapted");
+    last_dt_change_ = reader.ReadInt("last_dt_change");
 
     // read restart of cccv condition
     cccv_condition_->ReadRestart(reader);
@@ -1588,6 +1590,8 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
 
     // adapted time step
     output_->WriteDouble("dt_adapted", dt_adapted_);
+
+    output_->WriteInt("last_dt_change", last_dt_change_);
 
     // is time step adaptivity activated?
     output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);

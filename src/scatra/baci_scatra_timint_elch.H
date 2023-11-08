@@ -410,6 +410,9 @@ namespace SCATRA
     //! adapted time step
     double dt_adapted_;
 
+    //! time step number of last modification of time step size
+    int last_dt_change_;
+
     //! map extractor for macro scale in multi-scale simulations
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> splitter_macro_;
 
