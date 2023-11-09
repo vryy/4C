@@ -27,19 +27,22 @@ namespace DRT::ELEMENTS
 {
   namespace DETAILS
   {
-    using ImplementedSolidCellTypes =
-        CORE::FE::CellTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::hex18,
-            CORE::FE::CellType::hex20, CORE::FE::CellType::hex27, CORE::FE::CellType::tet4,
-            CORE::FE::CellType::tet10, CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
+    using ImplementedSolidCellTypes = std::integer_sequence<CORE::FE::CellType,
+        CORE::FE::CellType::hex8, CORE::FE::CellType::hex18, CORE::FE::CellType::hex20,
+        CORE::FE::CellType::hex27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10,
+        CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
-        CORE::FE::ApplyToBase<SolidEleCalc, ImplementedSolidCellTypes>;
-    using FbarEvaluators = CORE::FE::ApplyToBase<SolidEleCalcFbar,
-        CORE::FE::CellTypeList<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+        CORE::FE::apply_celltype_sequence<SolidEleCalc, ImplementedSolidCellTypes>;
+
+    using FbarEvaluators = CORE::FE::apply_celltype_sequence<SolidEleCalcFbar,
+        std::integer_sequence<CORE::FE::CellType, CORE::FE::CellType::hex8,
+            CORE::FE::CellType::pyramid5>>;
     using EASEvaluators = CORE::FE::BaseTypeList<
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
-    using MulfEvaluators = CORE::FE::ApplyToBase<SolidEleCalcMulf, ImplementedSolidCellTypes>;
+    using MulfEvaluators =
+        CORE::FE::apply_celltype_sequence<SolidEleCalcMulf, ImplementedSolidCellTypes>;
 
     using SolidEvaluators =
         CORE::FE::Join<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
