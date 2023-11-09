@@ -402,11 +402,11 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Wedge6 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
       //! Evaluate Wedge6 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
       //! Evaluate Wedge6 Weights to keep them static
-      const std::vector<double> sow6_weights();
+      std::vector<double> sow6_weights();
 
 
       //! calculate static shape functions and derivatives for sow6

@@ -57,7 +57,7 @@ namespace SCATRA
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
 
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyFluid.");
       return Teuchos::null;

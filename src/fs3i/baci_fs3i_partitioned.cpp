@@ -773,7 +773,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid to fluid-scalar            Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
     const Teuchos::RCP<const Epetra_Vector> fluidvector) const
 {
   return VolMortarMasterToSlavei(0, fluidvector);
@@ -782,7 +782,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidToFluidScalar(
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid-scalar to fluid            Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
     const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const
 {
   return VolMortarSlaveToMasteri(0, fluidscalarvector);
@@ -791,7 +791,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::FluidScalarToFluid(
 /*----------------------------------------------------------------------*
  |  transport quantity from structure to structure-scalar    Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScalar(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScalar(
     const Teuchos::RCP<const Epetra_Vector> structurevector) const
 {
   return VolMortarMasterToSlavei(1, structurevector);
@@ -800,7 +800,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureToStructureScal
 /*----------------------------------------------------------------------*
  |  transport quantity from structure-scalar to structure    Thon 08/16 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructure(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructure(
     const Teuchos::RCP<const Epetra_Vector> structurescalavector) const
 {
   return VolMortarSlaveToMasteri(1, structurescalavector);
@@ -809,7 +809,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::StructureScalarToStructu
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar master to i-th volmortar slave   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
     const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const
 {
   switch (volume_fieldcouplings_[i])
@@ -830,7 +830,7 @@ const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar slave to i-th volmortar master   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
+Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
     const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const
 {
   switch (volume_fieldcouplings_[i])

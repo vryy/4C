@@ -145,7 +145,7 @@ namespace ART
     // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///

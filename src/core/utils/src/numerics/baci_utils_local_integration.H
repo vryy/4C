@@ -25,9 +25,8 @@ namespace CORE::UTILS
    * @return ValueType Result of the integration
    */
   template <typename StepData>
-  auto IntegrateSimpsonStep(
-      const StepData& step_data_a, const StepData& step_data_b, const StepData& step_data_c)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+  auto IntegrateSimpsonStep(const StepData& step_data_a, const StepData& step_data_b,
+      const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     const auto& [time1, value1] = step_data_a;
     const auto& [time2, value2] = step_data_b;
@@ -93,9 +92,8 @@ namespace CORE::UTILS
    * @return auto
    */
   template <typename StepData>
-  auto IntegrateSimpsonStepBC(
-      const StepData& step_data_a, const StepData& step_data_b, const StepData& step_data_c)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+  auto IntegrateSimpsonStepBC(const StepData& step_data_a, const StepData& step_data_b,
+      const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     return std::get<0>(
         IntegrateSimpsonStepBCAndReturnDerivativeC(step_data_a, step_data_b, step_data_c));
@@ -142,7 +140,7 @@ namespace CORE::UTILS
    */
   template <typename StepData>
   auto IntegrateTrapezoidalStep(const StepData& step_data_a, const StepData& step_data_b)
-      -> std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>
+      -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     return std::get<0>(IntegrateTrapezoidalStepAndReturnDerivativeB(step_data_a, step_data_b));
   }
@@ -159,7 +157,7 @@ namespace CORE::UTILS
    */
   template <typename Integrand, typename Container>
   inline auto IntegrateSimpsonTrapezoidal(Container indexable_container, Integrand integrand)
-      -> std::tuple_element_t<1, decltype(integrand(indexable_container[0]))>
+      -> std::decay_t<std::tuple_element_t<1, decltype(integrand(indexable_container[0]))>>
   {
     using TupleType = decltype(integrand(indexable_container[0]));
     using ValueType = std::tuple_element_t<1, TupleType>;

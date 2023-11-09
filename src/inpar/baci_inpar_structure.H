@@ -41,7 +41,7 @@ namespace INPAR
     };
 
     /// Map element technology to string
-    static inline const std::string EleTechString(const enum EleTech name  ///< enum to convert
+    static inline std::string EleTechString(const enum EleTech name  ///< enum to convert
     )
     {
       switch (name)
@@ -92,7 +92,7 @@ namespace INPAR
     };
 
     /// Map model type to string
-    static inline const std::string ModelTypeString(const enum ModelType name  ///< enum to convert
+    static inline std::string ModelTypeString(const enum ModelType name  ///< enum to convert
     )
     {
       switch (name)
@@ -212,8 +212,7 @@ namespace INPAR
     };
 
     /// Map time integrator to std::string
-    static inline const std::string DynamicTypeString(
-        const enum DynamicType name  ///< enum to convert
+    static inline std::string DynamicTypeString(const enum DynamicType name  ///< enum to convert
     )
     {
       switch (name)
@@ -281,8 +280,7 @@ namespace INPAR
     };
 
     /// Map mid-averaging to std::string
-    static inline const std::string MidAverageString(
-        const enum MidAverageEnum name  ///< enum to convert
+    static inline std::string MidAverageString(const enum MidAverageEnum name  ///< enum to convert
     )
     {
       switch (name)
@@ -325,7 +323,7 @@ namespace INPAR
     };
 
     /// Map predictor enum term to std::string
-    static inline const std::string PredEnumString(const PredEnum name  ///< identifier
+    static inline std::string PredEnumString(const PredEnum name  ///< identifier
     )
     {
       switch (name)
@@ -397,7 +395,7 @@ namespace INPAR
     };
 
     /// Map solution technique enum to std::string
-    static inline const std::string NonlinSolTechString(
+    static inline std::string NonlinSolTechString(
         const enum NonlinSolTech name  ///< enum to convert
     )
     {
@@ -465,8 +463,7 @@ namespace INPAR
     };
 
     /// Map  enum to string
-    static inline const std::string DivContActString(
-        const enum DivContAct name  ///< enum to convert
+    static inline std::string DivContActString(const enum DivContAct name  ///< enum to convert
     )
     {
       switch (name)
@@ -553,7 +550,7 @@ namespace INPAR
     };
 
     /// map convergence check to enum term
-    static inline const std::string STCString(const enum STC_Scale name  ///< enum term
+    static inline std::string STCString(const enum STC_Scale name  ///< enum term
     )
     {
       switch (name)
@@ -691,8 +688,7 @@ namespace INPAR
     };
 
     /// map enum term to std::string
-    static inline const std::string VectorNormString(
-        const enum VectorNorm norm  ///< input enum term
+    static inline std::string VectorNormString(const enum VectorNorm norm  ///< input enum term
     )
     {
       switch (norm)

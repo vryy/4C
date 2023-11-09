@@ -64,7 +64,7 @@ namespace STR
       const INPAR::STR::PredEnum& GetType() const { return type_; };
 
       //! returns the name of the used predictor
-      virtual const std::string Name() const;
+      virtual std::string Name() const;
 
       //! Preprocess the predictor step
       virtual void PrePredict(NOX::Abstract::Group& grp);

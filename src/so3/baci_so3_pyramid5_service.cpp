@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

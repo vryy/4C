@@ -306,7 +306,7 @@ namespace DRT
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
-      const std::vector<double> sop5_ElementCenterRefeCoords();
+      std::vector<double> sop5_ElementCenterRefeCoords();
 
       //@}
 
@@ -414,11 +414,11 @@ namespace DRT
       void sop5_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass);
 
       //! Evaluate Pyramid5 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> sop5_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> sop5_shapefcts();
       //! Evaluate Pyramid5 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> sop5_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> sop5_derivs();
       //! Evaluate Pyramid5 Weights to keep them static
-      const std::vector<double> sop5_weights();
+      std::vector<double> sop5_weights();
 
 
       //! Evaluate shapefunction, derivative and gaussweights

@@ -3,6 +3,7 @@ Checks: >-
   readability-identifier-naming,
   readability-braces-around-statements,
   readability-non-const-parameter,
+  readability-const-return-type,
   readability-qualified-auto,
   readability-redundant-control-flow,
   readability-redundant-declaration,
@@ -51,5 +52,6 @@ CheckOptions:
 WarningsAsErrors:  >-
  modernize-use-nullptr,
  modernize-use-override,
+ readability-const-return-type,
  readability-inconsistent-declaration-parameter-name,
  cppcoreguidelines-virtual-class-destructor

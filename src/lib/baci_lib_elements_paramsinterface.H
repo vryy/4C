@@ -156,7 +156,7 @@ namespace DRT
     }
 
     //! Map action type enum to std::string
-    static inline const std::string ActionType2String(const enum ActionType& type)
+    static inline std::string ActionType2String(const enum ActionType& type)
     {
       switch (type)
       {

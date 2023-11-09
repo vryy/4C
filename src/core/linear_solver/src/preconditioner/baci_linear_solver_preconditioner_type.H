@@ -93,7 +93,7 @@ namespace CORE::LINEAR_SOLVER
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     /// e.g. "IFPACK parameters" for an Ifpack preconditioner
-    virtual const std::string getParameterListName() const { return "unknown"; }
+    virtual std::string getParameterListName() const { return "unknown"; }
 
    protected:
     //! a linear problem wrapper class used by Trilinos and for scaling of the system

@@ -225,10 +225,10 @@ namespace ADAPTER
     virtual bool HaveSpringDashpot() = 0;
 
     /// get constraint manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     /// get SpringDashpot manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
+    virtual Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -237,7 +237,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// expand dirichlet bc map
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)

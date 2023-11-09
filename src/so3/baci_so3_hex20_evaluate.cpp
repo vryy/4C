@@ -1495,7 +1495,7 @@ void DRT::ELEMENTS::So_hex20::soh20_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fcts at all 20 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh20_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh20_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> shapefcts(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
@@ -1517,7 +1517,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fct derivs at all 20 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>>
 DRT::ELEMENTS::So_hex20::soh20_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs(NUMGPT_SOH20);
@@ -1539,7 +1539,7 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Weights at all 20 Gauss Points                       |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
+std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 {
   std::vector<double> weights(NUMGPT_SOH20);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;

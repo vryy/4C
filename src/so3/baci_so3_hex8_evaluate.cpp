@@ -3110,8 +3110,7 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUM
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_shapefcts()
-    const
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::soh8_shapefcts() const
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts(NUMGPT_SOH8);
 
@@ -3129,8 +3128,8 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> DRT::ELEMENTS::So_hex8::
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
-DRT::ELEMENTS::So_hex8::soh8_derivs() const
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> DRT::ELEMENTS::So_hex8::soh8_derivs()
+    const
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
 
@@ -3153,7 +3152,7 @@ void DRT::ELEMENTS::So_hex8::soh8_derivs(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
+std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
 {
   std::vector<double> weights(NUMGPT_SOH8);
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) weights[gp] = gp_rule_.Weight(gp);

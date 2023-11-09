@@ -44,16 +44,10 @@ namespace STI
         ) override;
 
     //! access scatra time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const
-    {
-      return scatra_->ScaTraField();
-    };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const { return scatra_->ScaTraField(); };
 
     //! access thermo time integrator
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const
-    {
-      return thermo_->ScaTraField();
-    };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const { return thermo_->ScaTraField(); };
 
     //! time loop
     void TimeLoop();

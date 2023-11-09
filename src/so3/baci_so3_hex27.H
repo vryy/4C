@@ -311,7 +311,7 @@ namespace DRT
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
-      const std::vector<double> soh27_ElementCenterRefeCoords();
+      std::vector<double> soh27_ElementCenterRefeCoords();
 
       //@}
 
@@ -414,11 +414,11 @@ namespace DRT
       void soh27_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);
 
       //! Evaluate Hex27 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
       //! Evaluate Hex27 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
       //! Evaluate Hex27 Weights to keep them static
-      const std::vector<double> soh27_weights();
+      std::vector<double> soh27_weights();
 
       //! Evaluate shapefunction, derivative and gaussweights
       void soh27_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>**

@@ -119,8 +119,8 @@ namespace FBI
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    const Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams>
-    GetVisualizationOuputParamsPtr() const
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVisualizationOuputParamsPtr()
+        const
     {
       return output_params_;
     }

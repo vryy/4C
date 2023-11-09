@@ -204,7 +204,7 @@ namespace ADAPTER
     {
       return fluid_->DiscWriter();
     }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       return fluid_->GetVelPressSplitter();
     }

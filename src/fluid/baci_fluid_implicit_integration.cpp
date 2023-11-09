@@ -5500,7 +5500,7 @@ void FLD::FluidImplicitTimeInt::RemoveDirichCond(const Teuchos::RCP<const Epetra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
@@ -5514,7 +5514,7 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros =

@@ -74,7 +74,7 @@ namespace ADAPTER
     Teuchos::RCP<const CORE::LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map of volume coupling dofs
-    const Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
+    Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
 
    private:
     /// conditions that define the lung volume constraints

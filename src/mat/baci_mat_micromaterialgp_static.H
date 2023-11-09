@@ -55,7 +55,7 @@ namespace MAT
     void NewResultFile(bool eleowner, std::string& newfilename);
 
     //! create path of new result file
-    const std::string NewResultFilePath(const std::string& newprefix);
+    std::string NewResultFilePath(const std::string& newprefix);
 
     /// Perform microscale simulation
     void PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* defgrd,

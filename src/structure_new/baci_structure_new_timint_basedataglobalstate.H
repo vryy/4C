@@ -589,7 +589,7 @@ namespace STR
       };
 
       /// Returns Epetra_Map of the given model
-      const Epetra_Map BlockMap(const INPAR::STR::ModelType& mt) const
+      Epetra_Map BlockMap(const INPAR::STR::ModelType& mt) const
       {
         if (model_maps_.find(mt) == model_maps_.end())
           dserror(

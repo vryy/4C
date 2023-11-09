@@ -1010,7 +1010,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1031,8 +1031,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>
-DRT::ELEMENTS::So_weg6::sow6_derivs()
+std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_weg6::sow6_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1053,7 +1052,7 @@ DRT::ELEMENTS::So_weg6::sow6_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
+std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;

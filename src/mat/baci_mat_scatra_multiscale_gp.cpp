@@ -434,7 +434,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-const std::string MAT::ScatraMultiScaleGP::NewResultFilePath(const std::string& newprefix)
+std::string MAT::ScatraMultiScaleGP::NewResultFilePath(const std::string& newprefix)
 {
   std::string newfilename;
 

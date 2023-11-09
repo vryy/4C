@@ -349,15 +349,15 @@ namespace DRT
             Teuchos::ParameterList& params);
 
         //! Evaluate Nurbs27 Shapefcts to keep them static
-        const std::vector<CORE::LINALG::Matrix<27, 1>> sonurbs27_shapefcts(
+        std::vector<CORE::LINALG::Matrix<27, 1>> sonurbs27_shapefcts(
             const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Derivs to keep them static
-        const std::vector<CORE::LINALG::Matrix<3, 27>> sonurbs27_derivs(
+        std::vector<CORE::LINALG::Matrix<3, 27>> sonurbs27_derivs(
             const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Weights to keep them static
-        const std::vector<double> sonurbs27_gpweights();
+        std::vector<double> sonurbs27_gpweights();
 
         //! calculate internal energy
         double CalcIntEnergy(DRT::Discretization& discretization, std::vector<double>& disp,

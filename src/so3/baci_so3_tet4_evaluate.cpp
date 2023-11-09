@@ -1787,8 +1787,7 @@ int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 1 Gauss Point                           |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>>
-DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(NUMGPT_SOTET4);
 
@@ -1808,7 +1807,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fct derivs at 1 Gauss Point                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
 DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(NUMGPT_SOTET4);
@@ -1841,7 +1840,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 1 Gauss Point                              |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
+std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 {
   std::vector<double> weights(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
@@ -1852,8 +1851,7 @@ const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 4 Gauss Points                          |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>>
-DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(4);
 
@@ -1881,7 +1879,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fct derivs at 4 Gauss Points                    |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
 DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(4);
@@ -1914,7 +1912,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 4 Gauss Points                             |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
+std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 {
   std::vector<double> weights(4);
   for (int i = 0; i < 4; ++i)

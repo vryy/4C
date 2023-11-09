@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

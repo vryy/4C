@@ -418,7 +418,7 @@ namespace DRT
 
       //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} *
       //! \grad{N}
-      const CORE::LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
+      CORE::LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
 
      private:
       /*========================================================================*/

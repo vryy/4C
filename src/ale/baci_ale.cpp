@@ -358,7 +358,7 @@ void ALE::Ale::EvaluateElements()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
+std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
 {
   switch (name)
   {

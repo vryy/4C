@@ -407,7 +407,7 @@ namespace DRT
       // along with the rather inconsitent matrix sizes.
 
       //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
       //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
       const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
       so_tet10_4gp_derivs();

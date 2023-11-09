@@ -293,7 +293,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1
     */
-    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() override
+    std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -325,7 +325,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element2
     */
-    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() override
+    std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -359,7 +359,7 @@ namespace CONTACT
     /*!
     \brief Get normal vector
     */
-    const CORE::LINALG::SerialDenseVector GetNormal() override
+    CORE::LINALG::SerialDenseVector GetNormal() override
     {
       CORE::LINALG::SerialDenseVector normal(3);
 

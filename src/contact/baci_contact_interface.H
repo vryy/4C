@@ -366,7 +366,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> ActiveNodes() const
+    virtual Teuchos::RCP<Epetra_Map> ActiveNodes() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
@@ -380,14 +380,14 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> ActiveDofs() const
+    virtual Teuchos::RCP<Epetra_Map> ActiveDofs() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
       return activedofs_;
     }
 
-    virtual const Teuchos::RCP<Epetra_Map> InActiveNodes() const
+    virtual Teuchos::RCP<Epetra_Map> InActiveNodes() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
@@ -401,7 +401,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> InActiveDofs() const
+    virtual Teuchos::RCP<Epetra_Map> InActiveDofs() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
@@ -414,7 +414,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> ActiveNDofs() const
+    virtual Teuchos::RCP<Epetra_Map> ActiveNDofs() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
@@ -427,7 +427,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> ActiveTDofs() const
+    virtual Teuchos::RCP<Epetra_Map> ActiveTDofs() const
     {
       if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
 
@@ -440,7 +440,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SlipNodes() const
+    virtual Teuchos::RCP<Epetra_Map> SlipNodes() const
     {
       if (Filled())
         return slipnodes_;
@@ -455,7 +455,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SlipDofs() const
+    virtual Teuchos::RCP<Epetra_Map> SlipDofs() const
     {
       if (Filled())
         return slipdofs_;
@@ -470,7 +470,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SlipTDofs() const
+    virtual Teuchos::RCP<Epetra_Map> SlipTDofs() const
     {
       if (Filled())
         return slipt_;
@@ -485,7 +485,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> NonSmoothNodes() const
+    virtual Teuchos::RCP<Epetra_Map> NonSmoothNodes() const
     {
       if (Filled())
         return nonsmoothnodes_;
@@ -500,7 +500,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SmoothNodes() const
+    virtual Teuchos::RCP<Epetra_Map> SmoothNodes() const
     {
       if (Filled())
         return smoothnodes_;
@@ -515,7 +515,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SdofVertexRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofVertexRowmap() const
     {
       if (Filled())
         return sdofVertexRowmap_;
@@ -529,7 +529,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual const Teuchos::RCP<Epetra_Map> SdofVertexColmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofVertexColmap() const
     {
       if (Filled())
         return sdofVertexColmap_;
@@ -537,7 +537,7 @@ namespace CONTACT
         dserror("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual const Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
     {
       if (Filled())
         return sdofEdgeRowmap_;
@@ -545,7 +545,7 @@ namespace CONTACT
         dserror("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual const Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
     {
       if (Filled())
         return sdofEdgeColmap_;
@@ -553,7 +553,7 @@ namespace CONTACT
         dserror("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual const Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
     {
       if (Filled())
         return sdofSurfRowmap_;
@@ -561,7 +561,7 @@ namespace CONTACT
         dserror("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual const Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
+    virtual Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
     {
       if (Filled())
         return sdofSurfColmap_;

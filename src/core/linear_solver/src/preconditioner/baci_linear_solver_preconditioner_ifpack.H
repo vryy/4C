@@ -41,7 +41,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "IFPACK"; }
 
     //! return name of sublist in parameter list which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "IFPACK Parameters"; }
+    std::string getParameterListName() const override { return "IFPACK Parameters"; }
 
    private:
     //! IFPACK parameter list

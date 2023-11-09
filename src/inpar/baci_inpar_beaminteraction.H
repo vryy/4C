@@ -159,7 +159,7 @@ namespace INPAR
     };
 
     //! Map action type enum to std::string
-    static inline const std::string CrosslinkerType2String(const enum CrosslinkerType type)
+    static inline std::string CrosslinkerType2String(const enum CrosslinkerType type)
     {
       switch (type)
       {

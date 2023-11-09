@@ -210,7 +210,7 @@ void ADAPTER::PoroFluidMultiphaseWrapper::Solve() { porofluid_->Solve(); }
 void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeLoop() { porofluid_->PrepareTimeLoop(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<const CORE::LINALG::MapExtractor>
+Teuchos::RCP<const CORE::LINALG::MapExtractor>
 ADAPTER::PoroFluidMultiphaseWrapper::GetDBCMapExtractor() const
 {
   return porofluid_->GetDBCMapExtractor();

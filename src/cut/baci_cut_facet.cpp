@@ -1355,7 +1355,7 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
  * Return the global coordinates all of its corner points in order
  *                                                              sudhakar 05/15
  *----------------------------------------------------------------------------*/
-const std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
+std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     Element* elem1, bool shadow)
 {
   const std::vector<Point*>& corners = CornerPoints();

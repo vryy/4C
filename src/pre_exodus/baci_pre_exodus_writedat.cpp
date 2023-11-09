@@ -383,7 +383,7 @@ void EXODUS::WriteDatDesignTopology(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
+std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
 {
   if (e.me == EXODUS::bcns)
   {

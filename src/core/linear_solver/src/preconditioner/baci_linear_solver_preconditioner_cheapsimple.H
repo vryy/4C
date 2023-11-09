@@ -64,7 +64,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
      \brief Setup the label of this class.
     */
-    const std::string SetupLabel()
+    std::string SetupLabel()
     {
       std::stringstream strLabel;
 

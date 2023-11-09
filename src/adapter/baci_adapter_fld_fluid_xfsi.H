@@ -127,7 +127,7 @@ namespace ADAPTER
     Teuchos::RCP<FLD::XFluid> MyFluid() { return xfluid_; }
 
     /// return boundary discretization
-    const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
+    Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
 
     bool NewtonRestartMonolithic() { return xfluid_->NewtonRestartMonolithic(); }
 

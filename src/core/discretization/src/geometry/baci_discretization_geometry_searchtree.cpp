@@ -275,7 +275,7 @@ int CORE::GEO::SearchTree::TreeNode::getNumChildren() const
   return -1;
 }
 
-const Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> CORE::GEO::SearchTree::TreeNode::getChild(
+Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> CORE::GEO::SearchTree::TreeNode::getChild(
     const int index) const
 {
   return children_[index];

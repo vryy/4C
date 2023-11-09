@@ -63,7 +63,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "MueLuPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu Parameters"; }
+    std::string getParameterListName() const override { return "MueLu Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -106,7 +106,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "MueLuFlBlockPreconditioner"; }
 
     //! return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -139,7 +139,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "MueLuTsiBlockPreconditioner"; }
 
     // return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -188,7 +188,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "MueLuContactSpPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (Contact) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -232,7 +232,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const final { stream << "MueLuBeamSolidBlockPreconditioner"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }
+    std::string getParameterListName() const final { return "MueLu (BeamSolid) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -265,7 +265,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "MueLuFsiBlockPreconditioner"; }
 
     // return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
+    std::string getParameterListName() const override { return "MueLu (FSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only

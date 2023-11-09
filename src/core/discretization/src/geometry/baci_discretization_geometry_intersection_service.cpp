@@ -100,7 +100,7 @@ void CORE::GEO::checkGeoType(const ::DRT::Element* element,
  | delivers a axis-aligned bounding box for a given          u.may 12/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-const std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
+std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
     const ::DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {

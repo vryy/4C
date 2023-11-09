@@ -63,7 +63,7 @@ namespace SCATRA
     //! init meshtying objects
     void InitMeshtying() override;
 
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
       return Teuchos::null;

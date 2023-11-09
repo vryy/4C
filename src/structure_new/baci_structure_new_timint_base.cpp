@@ -185,7 +185,7 @@ const Epetra_Map& STR::TIMINT::Base::GetMassDomainMap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtractor()
+Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtractor()
 {
   CheckInitSetup();
   return dbc_ptr_->GetDBCMapExtractor();

@@ -35,7 +35,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "CheapSimple"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
+    std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;
@@ -63,7 +63,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "BGS"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "BGS Parameters"; }
+    std::string getParameterListName() const override { return "BGS Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;

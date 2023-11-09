@@ -455,7 +455,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_MultiVector> FluxBoundary() const { return flux_boundary_; };
 
     //! return Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -1063,7 +1063,7 @@ namespace SCATRA
      * be removed.
      * note: VM3 solver still needs an explicit toggle vector for construction
      */
-    const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+    Teuchos::RCP<const Epetra_Vector> DirichletToggle();
 
     /*========================================================================*/
 

@@ -62,7 +62,7 @@ namespace ADAPTER
     }
 
     //! get Dirichlet map extractor
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return AleWrapper::GetDBCMapExtractor();
     }

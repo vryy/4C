@@ -91,8 +91,7 @@ namespace INPAR
     };
 
     //! map enum term to std::string
-    static inline const std::string VectorNormString(
-        const enum VectorNorm norm  //!< input enum term
+    static inline std::string VectorNormString(const enum VectorNorm norm  //!< input enum term
     )
     {
       switch (norm)

@@ -109,7 +109,7 @@ namespace ADAPTER
         ) override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     };
@@ -121,7 +121,7 @@ namespace ADAPTER
     bool HaveConstraint() override { return structure_->HaveConstraint(); };
 
     /// Return bool indicating if constraints are defined
-    const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
     {
       return structure_->GetConstraintManager();
     };

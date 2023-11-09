@@ -319,7 +319,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
 DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);

@@ -43,7 +43,7 @@ namespace EXODUS
       const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! return set of nodes in bc_entity
-  const std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
+  std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
   //! Nodes into datfile
   void WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat);

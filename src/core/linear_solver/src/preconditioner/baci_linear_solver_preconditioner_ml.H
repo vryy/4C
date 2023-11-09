@@ -34,7 +34,7 @@ namespace CORE::LINEAR_SOLVER
     void Print(std::ostream& stream) const override { stream << "ML"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "ML Parameters"; }
+    std::string getParameterListName() const override { return "ML Parameters"; }
 
    private:
     Teuchos::ParameterList& mllist_;

@@ -314,7 +314,7 @@ namespace PARTICLEENGINE
      *
      * \return binning strategy
      */
-    const std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
+    std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
     {
       return binstrategy_;
     };
@@ -326,7 +326,7 @@ namespace PARTICLEENGINE
      *
      * \return bin row map
      */
-    const Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
+    Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
 
     /*!
      * \brief get bin column map
@@ -335,9 +335,9 @@ namespace PARTICLEENGINE
      *
      * \return bin column map
      */
-    const Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
+    Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
 
-    const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
+    ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
       return particlecontainerbundle_;
     };
@@ -358,9 +358,9 @@ namespace PARTICLEENGINE
       return communicatedparticletargets_;
     };
 
-    const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
+    LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
 
-    const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
+    std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
 
     /*!
      * \brief relate all particles to all processors
@@ -431,7 +431,7 @@ namespace PARTICLEENGINE
      *
      * \return discretization reader
      */
-    const std::shared_ptr<IO::DiscretizationReader> BinDisReader(int restartstep) const;
+    std::shared_ptr<IO::DiscretizationReader> BinDisReader(int restartstep) const;
 
     int GetNumberOfParticles() const override;
 

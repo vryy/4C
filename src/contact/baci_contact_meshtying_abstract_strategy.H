@@ -476,12 +476,12 @@ namespace CONTACT
     void EvaluateReferenceState() override {}
     void EvaluateRelMov() override {}
     void EvaluateRelMovPredict() override {}
-    const Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return gsnoderowmap_; }
-    const Teuchos::RCP<Epetra_Map> ActiveRowNodes() override { return Teuchos::null; }
-    const Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Teuchos::null; }
-    const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override { return pgsdofrowmap_; }
-    const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override { return pgmdofrowmap_; }
-    const Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return gsnoderowmap_; }
+    Teuchos::RCP<Epetra_Map> ActiveRowNodes() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override { return pgsdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override { return pgmdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Teuchos::null; }
 
     //! @}
 

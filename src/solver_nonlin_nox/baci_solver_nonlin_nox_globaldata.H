@@ -143,13 +143,13 @@ namespace NOX
       GetLinSolvers();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Required> GetRequiredInterface();
+      Teuchos::RCP<NOX::Epetra::Interface::Required> GetRequiredInterface();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> GetJacobianInterface();
+      Teuchos::RCP<NOX::Epetra::Interface::Jacobian> GetJacobianInterface();
 
       //! return the user-defined preconditioner interface
-      const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
+      Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
 
       //! return the user-defined constraint interface map
       const NOX::NLN::CONSTRAINT::ReqInterfaceMap& GetConstraintInterfaces();

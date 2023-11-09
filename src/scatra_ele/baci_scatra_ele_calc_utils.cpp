@@ -85,7 +85,7 @@ namespace SCATRA
    | convert implementation type of scalar transport elements into corresponding string for output
    purposes   fang 02/15 |
    *---------------------------------------------------------------------------------------------------------------------*/
-  const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
+  std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
   {
     // determine implementation type
     std::string impltypestring;

@@ -175,13 +175,13 @@ namespace ADAPTER
     bool HaveSpringDashpot() override { return structure_->HaveSpringDashpot(); }
 
     /// get constraint manager defined in the structure
-    const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
     {
       return structure_->GetConstraintManager();
     }
 
     /// get constraint manager defined in the structure
-    const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       return structure_->GetSpringDashpotManager();
     }
@@ -196,7 +196,7 @@ namespace ADAPTER
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     }

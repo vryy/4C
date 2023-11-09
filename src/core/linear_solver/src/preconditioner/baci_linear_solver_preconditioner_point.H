@@ -48,7 +48,7 @@ namespace CORE::LINEAR_SOLVER
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
+    std::string getParameterListName() const override { return "unknown"; }
 
    private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
@@ -89,7 +89,7 @@ namespace CORE::LINEAR_SOLVER
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    const std::string getParameterListName() const override { return "unknown"; }
+    std::string getParameterListName() const override { return "unknown"; }
 
    private:
     /// embedded preconditioner

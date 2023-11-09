@@ -283,7 +283,7 @@ namespace DRT
       virtual void SetValence(const double valence, const int k) { valence_[k] = valence; };
 
       //! Access routine for valence of all ionic species or of single ionic species k
-      const std::vector<double> GetValence() { return valence_; };
+      std::vector<double> GetValence() { return valence_; };
       double GetValence(const int k) { return valence_[k]; };
 
       //! the length of the vector containing the diffusion coefficients is increased by 1

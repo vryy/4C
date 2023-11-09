@@ -242,7 +242,7 @@ namespace MAT
     MAT::PAR::Growth* Parameter() const override { return params_; }
 
     /// access to the elastic material
-    const Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
+    Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
 
     // read access to thetaold_
     Teuchos::RCP<const std::vector<double>> ThetaOld() const { return thetaold_; }

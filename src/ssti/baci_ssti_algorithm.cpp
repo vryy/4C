@@ -394,14 +394,14 @@ void SSTI::SSTIAlgorithm::AssignMaterialPointers()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ScaTraField() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ScaTraField() const
 {
   return scatra_->ScaTraField();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
+Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 {
   return thermo_->ScaTraField();
 }

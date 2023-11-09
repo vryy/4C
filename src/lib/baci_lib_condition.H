@@ -446,7 +446,7 @@ namespace DRT
     /*!
     \brief Return communicator
     */
-    inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
+    inline Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition

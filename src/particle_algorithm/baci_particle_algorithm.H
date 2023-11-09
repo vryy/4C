@@ -192,8 +192,7 @@ namespace PARTICLEALGORITHM
      *
      * \return interface to particle engine
      */
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface()
-        const
+    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface() const
     {
       return particleengine_;
     }
@@ -205,8 +204,7 @@ namespace PARTICLEALGORITHM
      *
      * \return interface to particle wall handler
      */
-    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> GetParticleWallHandlerInterface()
-        const
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> GetParticleWallHandlerInterface() const
     {
       return particlewall_;
     }

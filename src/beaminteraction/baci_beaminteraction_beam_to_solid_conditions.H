@@ -81,7 +81,7 @@ namespace BEAMINTERACTION
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
      * @return
      */
-    const Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
+    Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
 
     /**
      * \brief Create the indirect assembly manager for this condition.
@@ -93,8 +93,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
      */
-    const Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData()
-        const
+    Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData() const
     {
       return geometry_evaluation_data_;
     }

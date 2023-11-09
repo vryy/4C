@@ -70,7 +70,7 @@ namespace ADAPTER
     }
 
     /// get constraint manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
+    virtual Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     }
