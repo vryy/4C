@@ -101,6 +101,8 @@ namespace SCATRA
 
     void PostCalcInitialTimeDerivative() override;
 
+    void WriteRestart() const override;
+
    protected:
     void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
 
@@ -122,8 +124,6 @@ namespace SCATRA
 
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
-    void OutputRestart() const override;
-
     double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
@@ -135,4 +135,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_OST_H
+#endif  // BACI_SCATRA_TIMINT_OST_H

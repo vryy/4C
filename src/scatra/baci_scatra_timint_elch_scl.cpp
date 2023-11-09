@@ -241,11 +241,11 @@ void SCATRA::ScaTraTimIntElchSCL::Update(const int num)
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::Output(int num)
+void SCATRA::ScaTraTimIntElchSCL::CheckAndWriteOutputAndRestart(int num)
 {
-  ScaTraTimIntElch::Output(num);
+  ScaTraTimIntElch::CheckAndWriteOutputAndRestart(num);
 
-  MicroScaTraField()->Output(num);
+  MicroScaTraField()->CheckAndWriteOutputAndRestart(num);
 }
 
 /*----------------------------------------------------------------------*

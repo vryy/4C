@@ -55,7 +55,7 @@ namespace SCATRA
 
     void NonlinearSolve() override;
 
-    void Output(int num) override;
+    void CheckAndWriteOutputAndRestart(int num) override;
 
     void PrepareTimeLoop() override;
 

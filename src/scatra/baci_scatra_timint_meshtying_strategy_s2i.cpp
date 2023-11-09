@@ -3083,7 +3083,7 @@ void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::OutputRestart() const
+void SCATRA::MeshtyingStrategyS2I::WriteRestart() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth

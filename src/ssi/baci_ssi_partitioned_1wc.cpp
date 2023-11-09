@@ -139,7 +139,7 @@ void SSI::SSIPart1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // cleanup
   ScaTraField()->Discretization()->ClearState();

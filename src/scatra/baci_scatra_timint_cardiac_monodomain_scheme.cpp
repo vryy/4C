@@ -62,12 +62,11 @@ void SCATRA::TimIntCardiacMonodomainOST::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainOST::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntOneStepTheta::OutputRestart();
+  TimIntOneStepTheta::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -158,12 +157,11 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainBDF2::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntBDF2::OutputRestart();
+  TimIntBDF2::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -243,12 +241,11 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart() const
+void SCATRA::TimIntCardiacMonodomainGenAlpha::WriteRestart() const
 {
   // Call function from baseclass
-  TimIntGenAlpha::OutputRestart();
+  TimIntGenAlpha::WriteRestart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(

@@ -48,8 +48,7 @@ namespace SCATRA
     //! update configuration and output to file/screen
     void OutputState() override;
 
-    //! write output for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     //! read restart
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;

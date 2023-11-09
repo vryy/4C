@@ -483,8 +483,14 @@ namespace SCATRA
     //! returns map extractor used for convergence check either in ELCH or LOMA case
     Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
 
-    //! output solution and restart data to file
-    virtual void Output(const int num = 0);
+    //! Checks if output of results or restart information is required and writes data to disk
+    virtual void CheckAndWriteOutputAndRestart(const int num = 0);
+
+    //! write restart data to disk
+    virtual void WriteRestart() const;
+
+    //! write results to disk
+    void WriteResult(const int num = 0);
 
     //! Convergence check for two way coupled ScaTra problems.
     bool ConvergenceCheck(int itnum, int itmax, const double ittol);
@@ -741,8 +747,11 @@ namespace SCATRA
     //! return rcp ptr to neumann loads vector
     Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
 
-    //! write restart output at current step
-    bool DoOutputRestart() const { return (step_ % uprestart_ == 0 and step_ != 0); }
+    //! returns if restart information is needed for the current time step
+    [[nodiscard]] bool IsRestartStep() const { return (step_ % uprestart_ == 0 and step_ != 0); }
+
+    //! returns if output of results is needed for the current time step
+    [[nodiscard]] bool IsResultStep() const { return ((step_ % upres_ == 0) or IsRestartStep()); }
 
     /*========================================================================*/
     //! @name turbulence and related
@@ -965,17 +974,11 @@ namespace SCATRA
                   (calcflux_boundary_ == INPAR::SCATRA::flux_convective)));
     };
 
-    //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); }
-
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
     //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
     void OutputToGmsh(const int step, const double time) const;
-
-    //! write additional data required for restart
-    virtual void OutputRestart() const;
 
     //! write flux vectors to BINIO
     virtual void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector

@@ -110,7 +110,7 @@ namespace SCATRA
 
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     double ResidualScaling() const override { return 1.0 / (dta_ * genalphafac_); }
 
@@ -133,4 +133,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_GENALPHA_H
+#endif  // BACI_SCATRA_TIMINT_GENALPHA_H

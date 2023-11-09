@@ -484,7 +484,7 @@ void ART::ArtNetImplStationary::Output(
     // output of flow
     OutputFlow();
 
-    if (solvescatra_) scatra_->ScaTraField()->Output();
+    if (solvescatra_) scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   return;

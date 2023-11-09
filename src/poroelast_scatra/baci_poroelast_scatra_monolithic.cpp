@@ -169,7 +169,7 @@ void POROELASTSCATRA::PoroScatraMono::PrepareOutput()
 void POROELASTSCATRA::PoroScatraMono::Output()
 {
   PoroField()->Output();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*

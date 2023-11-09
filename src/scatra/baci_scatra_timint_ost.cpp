@@ -270,7 +270,7 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
   }
 
   // after the next command (time shift of solutions) do NOT call
@@ -304,10 +304,10 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::OutputRestart() const
+void SCATRA::TimIntOneStepTheta::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);

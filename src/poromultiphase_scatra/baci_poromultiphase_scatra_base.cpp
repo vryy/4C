@@ -236,8 +236,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   poromulti_->PrepareTimeLoop();
   // initial output for scatra field
   SetPoroSolution();
-  scatra_->ScaTraField()->Output();
-  if (artery_coupl_) scatramsht_->ArtScatraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
+  if (artery_coupl_) scatramsht_->ArtScatraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*
@@ -251,13 +251,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
   // scatra field
   scatra_->ScaTraField()->Update();
   scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
-  scatra_->ScaTraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
   // artery scatra field
   if (artery_coupl_)
   {
     scatramsht_->ArtScatraField()->Update();
     scatramsht_->ArtScatraField()->EvaluateErrorComparedToAnalyticalSol();
-    scatramsht_->ArtScatraField()->Output();
+    scatramsht_->ArtScatraField()->CheckAndWriteOutputAndRestart();
   }
   if (Comm().MyPID() == 0)
   {

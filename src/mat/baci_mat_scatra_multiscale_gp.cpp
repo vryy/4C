@@ -484,13 +484,18 @@ void MAT::ScatraMultiScaleGP::Output()
         std::vector<double>(0, 0.), step_,
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
-    // output micro-scale quantities
-    microtimint->Output();
+    // output micro-scale results
+    if (microtimint->IsResultStep()) microtimint->WriteResult();
 
-    if (microtimint->DoOutputRestart() and is_ale_)
+    // output micro-scale restart information
+    if (microtimint->IsRestartStep())
     {
-      microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
-      microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+      microtimint->WriteRestart();
+      if (is_ale_)
+      {
+        microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
+        microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+      }
     }
 
     // clear state in micro-scale time integrator

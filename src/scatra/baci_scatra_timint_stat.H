@@ -119,8 +119,7 @@ namespace SCATRA
       return;
     };
 
-    /// write additional data required for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0; }
@@ -134,4 +133,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_STAT_H
+#endif  // BACI_SCATRA_TIMINT_STAT_H

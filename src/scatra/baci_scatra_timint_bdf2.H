@@ -115,8 +115,7 @@ namespace SCATRA
     /// add parameters specific for time-integration scheme
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
-    /// write additional data required for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
@@ -131,4 +130,4 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace SCATRA
-#endif  // SCATRA_TIMINT_BDF2_H
+#endif  // BACI_SCATRA_TIMINT_BDF2_H

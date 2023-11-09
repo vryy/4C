@@ -103,8 +103,7 @@ namespace SCATRA
 
     /*--- query and output ---------------------------------------------------*/
 
-    //! output solution and restart data to file
-    void Output(int num) override;
+    void CheckAndWriteOutputAndRestart(int num) override;
 
     //! problem-specific outputs
     void OutputProblemSpecific() override;
@@ -154,8 +153,7 @@ namespace SCATRA
     //! output cell voltage to screen and file
     void OutputCellVoltage();
 
-    //! output restart data
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     //! output type of closing equation for electric potential
     INPAR::ELCH::EquPot EquPot() const { return equpot_; }

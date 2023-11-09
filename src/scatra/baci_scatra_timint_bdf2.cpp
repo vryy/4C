@@ -272,7 +272,7 @@ void SCATRA::TimIntBDF2::Update(const int num)
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
   }
 
   // solution of this step becomes most recent solution of the last step
@@ -285,10 +285,10 @@ void SCATRA::TimIntBDF2::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::OutputRestart() const
+void SCATRA::TimIntBDF2::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // additional state vectors that are needed for BDF2 restart
   output_->WriteVector("phin", phin_);

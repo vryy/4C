@@ -1203,13 +1203,12 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) c
 
 
 /*----------------------------------------------------------------------*
- | output restart information                                fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputRestart() const
+void SCATRA::ScaTraTimIntImpl::WriteRestart() const
 {
-  // output restart information associated with meshtying strategy
-  strategy_->OutputRestart();
-}  // SCATRA::ScaTraTimIntImpl::OutputRestart()
+  // output restart information associated with mesh tying strategy
+  strategy_->WriteRestart();
+}
 
 
 /*----------------------------------------------------------------------*
