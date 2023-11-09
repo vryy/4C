@@ -128,14 +128,17 @@ namespace SCATRA
     //! is this phase finished?
     bool IsEndOfHalfCyclePhase(double cellvoltage, double cellcrate, double time) const;
 
-    //! is cutt off c rate exceeded?
-    bool IsExceedCellCCRate(double expected_cellcrate) const;
+    //! is cut off c rate exceeded?
+    bool ExceedCellCRate(double expected_cellcrate) const;
 
     //! does cell voltage exceed bounds of current half cycle
-    bool IsExceedCellVoltage(double expected_cellvoltage) const;
+    bool ExceedCellVoltage(double expected_cellvoltage) const;
 
     //! is this condition in initial relaxation?
-    bool IsInitialRelaxation(double time, double dt) const { return time <= initrelaxtime_ - dt; }
+    bool IsInitialRelaxation(const double time, const double dt) const
+    {
+      return time <= initrelaxtime_ - dt;
+    }
 
     //! was phase changed since last adaption of time step?
     bool IsPhaseChanged() const { return phasechanged_; };
@@ -143,9 +146,9 @@ namespace SCATRA
     //! are we in initial relaxation phase?
     bool IsPhaseInitialRelaxation() const { return phaseinitialrelaxation_; };
 
-    //! true if difference between 'step' is and the step when the phase was last changed is equal
-    //! or more than dstep
-    bool IsStepsFromLastPhaseChange(int step);
+    //! true if difference between @p step and the step when the phase was last changed is equal
+    //! or more than  num_add_adapt_timesteps_
+    bool ExceedMaxStepsFromLastPhaseChange(int step);
 
     //! return minimum amount of time steps the initial relaxation time of cccv condition has to be
     //! discretized with
