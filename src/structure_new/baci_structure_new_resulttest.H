@@ -119,7 +119,8 @@ namespace STR
      *  \return  The value for the subsequent comparison.
      *
      *  \author hiermeier \date 11/17 */
-    double GetSpecialResult(const std::string& quantity, Status& special_status) const;
+    std::optional<double> GetSpecialResult(
+        const std::string& quantity, Status& special_status) const;
 
     /** \brief Get the last number of linear iterations
      *
@@ -138,7 +139,8 @@ namespace STR
      *  \return  The number of linear iterations, if possible. Otherwise -1.
      *
      */
-    int GetLastLinIterationNumber(const std::string& quantity, Status& special_status) const;
+    std::optional<int> GetLastLinIterationNumber(
+        const std::string& quantity, Status& special_status) const;
 
     /** \brief Get the number of nonlinear iterations
      *
@@ -157,7 +159,12 @@ namespace STR
      *  \return  The number of nonlinear iterations, if possible. Otherwise -1.
      *
      *  \author hiermeier \date 11/17 */
-    double GetNlnIterationNumber(const std::string& quantity, Status& special_status) const;
+    std::optional<int> GetNlnIterationNumber(
+        const std::string& quantity, Status& special_status) const;
+
+    std::optional<int> GetNodesPerProcNumber(
+        const std::string& quantity, Status& special_status) const;
+
 
     /** \brief Get the value for a specific energy (internal, kinetic, total, etc.)
      *
@@ -169,7 +176,7 @@ namespace STR
      *  \return     The requested energy
      *
      *  \author kremheller \date 11/19 */
-    double GetEnergy(const std::string& quantity, Status& special_status) const;
+    std::optional<double> GetEnergy(const std::string& quantity, Status& special_status) const;
 
     /*!
      * \brief Returns the stress component requested in label at the given node

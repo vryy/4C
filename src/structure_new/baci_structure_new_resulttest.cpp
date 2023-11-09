@@ -319,18 +319,21 @@ void STR::ResultTest::TestSpecial(
 {
   CheckInitSetup();
 
-  if (strudisc_->Comm().MyPID() != 0) return;
-
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);
 
   Status special_status = Status::unevaluated;
-  const double result = GetSpecialResult(quantity, special_status);
+  const std::optional<double> result = GetSpecialResult(quantity, special_status);
+
   switch (special_status)
   {
     case Status::evaluated:
     {
-      nerr += CompareValues(result, "SPECIAL", res);
+      if (result.has_value())
+        nerr += CompareValues(*result, "SPECIAL", res);
+      else
+        dserror(
+            "STR::ResultTest::TestSpecial: Special result has no defined value assigned to it!");
       ++test_count;
       break;
     }
@@ -341,7 +344,7 @@ void STR::ResultTest::TestSpecial(
     }
     default:
     {
-      dserror("What shall be done for this Status type? (enum=%d)", special_status);
+      dserror("STR::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
       exit(EXIT_FAILURE);
     }
   }
@@ -349,7 +352,8 @@ void STR::ResultTest::TestSpecial(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& special_status) const
+std::optional<double> STR::ResultTest::GetSpecialResult(
+    const std::string& quantity, Status& special_status) const
 {
   if (quantity.find("num_iter_step_") != quantity.npos)
   {
@@ -358,6 +362,10 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
   else if (quantity.find("lin_iter_step_") != quantity.npos)
   {
     return GetLastLinIterationNumber(quantity, special_status);
+  }
+  else if (quantity.find("nodes_proc") != quantity.npos)
+  {
+    return GetNodesPerProcNumber(quantity, special_status);
   }
   else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
            quantity == "total_energy" or quantity == "beam_contact_penalty_potential" or
@@ -380,38 +388,84 @@ double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& sp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::ResultTest::GetLastLinIterationNumber(
+std::optional<int> STR::ResultTest::GetLastLinIterationNumber(
     const std::string& quantity, Status& special_status) const
 {
-  const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
+  std::optional<int> result = std::nullopt;
 
-  const int restart = DRT::Problem::Instance()->Restart();
-  if (stepn <= restart) return -1;
+  if (strudisc_->Comm().MyPID() == 0)
+  {
+    const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-  special_status = Status::evaluated;
-  return static_cast<double>(gstate_->GetLastLinIterationNumber(stepn));
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (stepn <= restart) return -1;
+
+    special_status = Status::evaluated;
+    result = gstate_->GetLastLinIterationNumber(stepn);
+  }
+
+  return result;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::ResultTest::GetNlnIterationNumber(
+std::optional<int> STR::ResultTest::GetNlnIterationNumber(
     const std::string& quantity, Status& special_status) const
 {
-  const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
+  std::optional<int> result = std::nullopt;
 
-  const int restart = DRT::Problem::Instance()->Restart();
-  if (stepn <= restart) return -1.0;
+  if (strudisc_->Comm().MyPID() == 0)
+  {
+    const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-  special_status = Status::evaluated;
-  return static_cast<double>(gstate_->GetNlnIterationNumber(stepn));
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (stepn <= restart) return -1;
+
+    special_status = Status::evaluated;
+    result = gstate_->GetNlnIterationNumber(stepn);
+  }
+
+  return result;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::ResultTest::GetEnergy(const std::string& quantity, Status& special_status) const
+std::optional<int> STR::ResultTest::GetNodesPerProcNumber(
+    const std::string& quantity, Status& special_status) const
 {
-  special_status = Status::evaluated;
-  return data_->GetEnergyData(quantity);
+  std::optional<int> result = std::nullopt;
+
+  std::string proc_string = quantity.substr(quantity.find("nodes_proc") + 10);
+  const int proc_num = std::stoi(proc_string);
+
+  // extract processor ID
+  if (proc_num >= strudisc_->Comm().NumProc())
+    dserror("STR::ResultTest::GetNodesPerProcNumber: Invalid processor ID!");
+
+  if (strudisc_->Comm().MyPID() == proc_num)
+  {
+    // extract number of nodes owned by specified processor
+    special_status = Status::evaluated;
+    result = strudisc_->NodeRowMap()->NumMyElements();
+  }
+
+  return result;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::optional<double> STR::ResultTest::GetEnergy(
+    const std::string& quantity, Status& special_status) const
+{
+  std::optional<double> result = std::nullopt;
+
+  if (strudisc_->Comm().MyPID() == 0)
+  {
+    special_status = Status::evaluated;
+    result = data_->GetEnergyData(quantity);
+  }
+
+  return result;
 }
 
 /*----------------------------------------------------------------------------*

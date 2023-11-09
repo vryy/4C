@@ -825,9 +825,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
       DRT::Element* currele = Discret().gElement(elegid);
 
-      beam_bounding_boxes.emplace_back(std::make_pair(
-          elegid, currele->GetBoundingVolume(Discret(),
-                      BeamInteractionDataStatePtr()->GetDisColNp(), geometric_search_params_ptr_)));
+      beam_bounding_boxes.emplace_back(std::make_pair(elegid,
+          currele->GetBoundingVolume(Discret(), *BeamInteractionDataStatePtr()->GetDisColNp(),
+              *geometric_search_params_ptr_)));
     }
 
     // Get vector of the bounding boxes of all possible interacting elements (also including beams
@@ -844,8 +844,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
           contactelementtypes_.end())
       {
         other_bounding_boxes.emplace_back(std::make_pair(currele->Id(),
-            currele->GetBoundingVolume(Discret(), BeamInteractionDataStatePtr()->GetDisColNp(),
-                geometric_search_params_ptr_.getConst())));
+            currele->GetBoundingVolume(Discret(), *BeamInteractionDataStatePtr()->GetDisColNp(),
+                *geometric_search_params_ptr_.getConst())));
       }
     }
 

@@ -23,9 +23,9 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   setStringToIntegralParameter<RebalanceType>("METHOD", "hypergraph",
       "Type of rebalance/partition algorithm to be used for decomposing the entire mesh into "
       "subdomains for parallel computing.",
-      tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection"),
+      tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection", "monolithic"),
       tuple<RebalanceType>(RebalanceType::none, RebalanceType::hypergraph,
-          RebalanceType::recursive_coordinate_bisection),
+          RebalanceType::recursive_coordinate_bisection, RebalanceType::monolithic),
       &meshpartitioning);
 
   DoubleParameter("IMBALANCE_TOL", 1.1,

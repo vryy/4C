@@ -1229,9 +1229,8 @@ might become invalid after a redistribution of the discretization.
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
     virtual CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(
-        const DRT::Discretization& discret,
-        const Teuchos::RCP<const Epetra_Vector>& result_data_dofbased,
-        const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const;
+        const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const;
     /// @}
 
    private:

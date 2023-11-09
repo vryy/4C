@@ -112,6 +112,17 @@ namespace CORE::REBALANCE
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
       Teuchos::RCP<::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
+  /*!
+  \brief Build monolithic node graph of a given discretization
+
+  \pre Discretization has to be FillComplete()!
+
+  @param[in] dis Discretization whose monolithic node graph will be build
+
+  @return Completed monolithic node graph of input discretization
+  */
+  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const ::DRT::Discretization& dis);
+
 }  // namespace CORE::REBALANCE
 
 #endif
