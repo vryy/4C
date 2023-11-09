@@ -10,7 +10,7 @@
 
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_utils_get_functionofanything.H"
+#include "baci_utils_function.H"
 
 #include <vector>
 
@@ -60,7 +60,9 @@ template <int dim>
 void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
   // safety check
-  if (DRT::UTILS::GetFunctionOfAnything(functID_ - 1).NumberComponents() != 1)
+  if (DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+          .NumberComponents() != 1)
     dserror("expected only one component for single phase reaction!");
 
   for (int k = 0; k < numscal_; k++)
@@ -192,10 +194,13 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<dou
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = DRT::UTILS::GetFunctionOfAnything(functID_ - 1).Evaluate(variables, constants, 0);
+  double curval = DRT::Problem::Instance()
+                      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+                      .Evaluate(variables, constants, 0);
   // evaluate derivatives
-  std::vector<double> curderivs(
-      DRT::UTILS::GetFunctionOfAnything(functID_ - 1).EvaluateDerivative(variables, constants, 0));
+  std::vector<double> curderivs(DRT::Problem::Instance()
+                                    ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+                                    .EvaluateDerivative(variables, constants, 0));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
