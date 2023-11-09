@@ -2995,7 +2995,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntElch::NotFinished()
+bool SCATRA::ScaTraTimIntElch::NotFinished() const
 {
   // call base class routine in case no cell cycling is performed
   if (cccv_condition_ == Teuchos::null)

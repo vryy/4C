@@ -94,8 +94,7 @@ namespace SCATRA
 
     /*--- calculate and update -----------------------------------------------*/
 
-    //! determine whether there are still time steps to be evaluated
-    bool NotFinished() override;
+    [[nodiscard]] bool NotFinished() const override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.

@@ -541,7 +541,10 @@ namespace SCATRA
     /*--- calculate and update -----------------------------------------------*/
 
     //! determine whether there are still time steps to be evaluated
-    virtual bool NotFinished() { return step_ < stepmax_ and time_ + 1.e-12 < maxtime_; };
+    [[nodiscard]] virtual bool NotFinished() const
+    {
+      return step_ < stepmax_ and time_ + 1.e-12 < maxtime_;
+    }
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -748,7 +751,13 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
 
     //! returns if restart information is needed for the current time step
-    [[nodiscard]] bool IsRestartStep() const { return (step_ % uprestart_ == 0 and step_ != 0); }
+    [[nodiscard]] bool IsRestartStep() const
+    {
+      // write restart info if the simulation ends
+      const bool is_finished = not NotFinished();
+
+      return (step_ % uprestart_ == 0 and step_ != 0) or is_finished;
+    }
 
     //! returns if output of results is needed for the current time step
     [[nodiscard]] bool IsResultStep() const { return ((step_ % upres_ == 0) or IsRestartStep()); }
