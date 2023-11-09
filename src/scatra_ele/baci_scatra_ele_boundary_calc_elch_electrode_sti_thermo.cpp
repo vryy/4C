@@ -222,15 +222,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
           // exponential Butler-Volmer terms
           const double expterm1 = std::exp(alphaa * frt * eta);
           const double expterm2 = std::exp(-alphac * frt * eta);
-          const double expterm = expterm1 - expterm2;
-
-          // safety check
-          if (std::abs(expterm) > 1.0e5)
-          {
-            dserror(
-                "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-                expterm);
-          }
 
           // linearization of Butler-Volmer mass flux density w.r.t. temperature
           const double dj_dT_timefacfac = -pseudo_contact_fac * timefacfac * j0 * frt /

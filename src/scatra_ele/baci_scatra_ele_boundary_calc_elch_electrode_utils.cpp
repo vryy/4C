@@ -127,8 +127,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   // exponential Butler-Volmer terms
   const double exptermA = std::exp(alphaa * frt * eta);
   const double exptermB = std::exp(-alphac * frt * eta);
-  if (std::abs(exptermA) > 1.0e5 or (std::abs(exptermB) > 1.0e5))
-    dserror("Overflow of exponential term in Butler-Volmer formulation detected!");
 
   // Butler-Volmer:
   // j = j0 * (exp(A)-exp(B)), A = a eta/T, B = b eta/T
@@ -169,13 +167,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
     const double expterm1 = std::exp(alphaa * frt * eta);
     const double expterm2 = std::exp(-alphac * frt * eta);
     const double expterm = expterm1 - expterm2;
-
-    // safety check
-    if (std::abs(expterm) > 1.0e5)
-    {
-      dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-          expterm);
-    }
 
     dj_dsqrtdetg = j0 * expterm;
     dj_depd = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);

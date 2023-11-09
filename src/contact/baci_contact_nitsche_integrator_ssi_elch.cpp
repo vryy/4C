@@ -393,11 +393,6 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         const double expterm2 = std::exp(-alphac * frt * eta);
         const double expterm = expterm1 - expterm2;
 
-        // safety check
-        if (std::abs(expterm) > 1.0e5)
-          dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",
-              expterm);
-
         // calculate Butler-Volmer mass flux density
         const double j = j0 * expterm;
 
