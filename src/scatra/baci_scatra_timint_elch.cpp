@@ -460,7 +460,7 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
     {
       // if time step adaptivity is enabled for more than 3 steps after last change of phase:
       // disable, otherwise keep adapted time step
-      if (cccv_condition_->IsStepsFromLastPhaseChange(step_))
+      if (cccv_condition_->ExceedMaxStepsFromLastPhaseChange(step_))
         adapted_timestep_active_ = false;
       else if (Step() > last_dt_change_ + 3 * std::ceil(static_cast<double>(dt) /
                                                         static_cast<double>(dt_adapted_)))
@@ -504,7 +504,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
 
       const double cellvoltage_new =
           cellvoltage_ + 2.0 * (cellvoltage_ - cellvoltage_old_);  // extrapolate
-      if (cccv_condition_->IsExceedCellVoltage(cellvoltage_new))   // check
+      if (cccv_condition_->ExceedCellVoltage(cellvoltage_new))     // check
       {
         dt_new = cycling_timestep_;  // adapt
         cellvoltage_old_ = -1.0;
@@ -517,7 +517,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
     {
       if (cellcrate_old_ < 0.0) cellcrate_old_ = cellcrate_;
       const double cellcrate_new = cellcrate_ + 2.0 * (cellcrate_ - cellcrate_old_);  // extrapolate
-      if (cccv_condition_->IsExceedCellCCRate(cellcrate_new))                         // check
+      if (cccv_condition_->ExceedCellCRate(cellcrate_new))                            // check
       {
         dt_new = cycling_timestep_;  // adapt
         cellcrate_old_ = -1.0;
