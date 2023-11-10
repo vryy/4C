@@ -9,6 +9,10 @@
 
 #include <gtest/gtest.h>
 
+#include "baci_utils_exceptions.H"
+
+#include <array>
+
 #ifdef BACI_WITH_ARBORX
 
 #include "baci_discretization_geometric_search_distributed_tree.H"
@@ -73,131 +77,64 @@ namespace
     const auto pairs =
         CORE::GEOMETRICSEARCH::GlobalCollisionSearch(primitives_, predicates_, *comm_, verbosity_);
 
+    // The order of the results we get are is not deterministic. Therefore, we save the reference
+    // results in a map, with the colliding GIDs being the keys. Thus the ordering of the pairs in
+    // the collision search does not matter.
+    auto compare_results = [](const auto& pairs_from_collision_search, const auto& reference_map)
+    {
+      EXPECT_EQ(pairs_from_collision_search.size(), reference_map.size());
+      for (const auto& pair : pairs_from_collision_search)
+      {
+        if (reference_map.count({std::get<1>(pair), std::get<3>(pair)}))
+        {
+          const auto& reference_pair = reference_map.at({std::get<1>(pair), std::get<3>(pair)});
+          EXPECT_EQ(std::get<0>(pair), std::get<0>(reference_pair));
+          EXPECT_EQ(std::get<2>(pair), std::get<1>(reference_pair));
+          EXPECT_EQ(std::get<4>(pair), std::get<2>(reference_pair));
+        }
+        else
+        {
+          dserror("Pair {%d, %d} not found in reference map", std::get<1>(pair), std::get<3>(pair));
+        }
+      }
+    };
+
     if (my_rank_ == 0)
     {
-      EXPECT_EQ(pairs.size(), 12);
-
-      EXPECT_EQ(std::get<0>(pairs[0]), 0);
-      EXPECT_EQ(std::get<1>(pairs[0]), 3);
-      EXPECT_EQ(std::get<2>(pairs[0]), 1);
-      EXPECT_EQ(std::get<3>(pairs[0]), 1);
-      EXPECT_EQ(std::get<4>(pairs[0]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[1]), 0);
-      EXPECT_EQ(std::get<1>(pairs[1]), 3);
-      EXPECT_EQ(std::get<2>(pairs[1]), 0);
-      EXPECT_EQ(std::get<3>(pairs[1]), 0);
-      EXPECT_EQ(std::get<4>(pairs[1]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[2]), 0);
-      EXPECT_EQ(std::get<1>(pairs[2]), 3);
-      EXPECT_EQ(std::get<2>(pairs[2]), 0);
-      EXPECT_EQ(std::get<3>(pairs[2]), 6);
-      EXPECT_EQ(std::get<4>(pairs[2]), 1);
-
-      EXPECT_EQ(std::get<0>(pairs[3]), 0);
-      EXPECT_EQ(std::get<1>(pairs[3]), 3);
-      EXPECT_EQ(std::get<2>(pairs[3]), 1);
-      EXPECT_EQ(std::get<3>(pairs[3]), 10);
-      EXPECT_EQ(std::get<4>(pairs[3]), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[4]), 0);
-      EXPECT_EQ(std::get<1>(pairs[4]), 3);
-      EXPECT_EQ(std::get<2>(pairs[4]), 0);
-      EXPECT_EQ(std::get<3>(pairs[4]), 9);
-      EXPECT_EQ(std::get<4>(pairs[4]), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[5]), 1);
-      EXPECT_EQ(std::get<1>(pairs[5]), 4);
-      EXPECT_EQ(std::get<2>(pairs[5]), 1);
-      EXPECT_EQ(std::get<3>(pairs[5]), 1);
-      EXPECT_EQ(std::get<4>(pairs[5]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[6]), 1);
-      EXPECT_EQ(std::get<1>(pairs[6]), 4);
-      EXPECT_EQ(std::get<2>(pairs[6]), 0);
-      EXPECT_EQ(std::get<3>(pairs[6]), 0);
-      EXPECT_EQ(std::get<4>(pairs[6]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[7]), 1);
-      EXPECT_EQ(std::get<1>(pairs[7]), 4);
-      EXPECT_EQ(std::get<2>(pairs[7]), 0);
-      EXPECT_EQ(std::get<3>(pairs[7]), 6);
-      EXPECT_EQ(std::get<4>(pairs[7]), 1);
-
-      EXPECT_EQ(std::get<0>(pairs[8]), 1);
-      EXPECT_EQ(std::get<1>(pairs[8]), 4);
-      EXPECT_EQ(std::get<2>(pairs[8]), 1);
-      EXPECT_EQ(std::get<3>(pairs[8]), 10);
-      EXPECT_EQ(std::get<4>(pairs[8]), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[9]), 1);
-      EXPECT_EQ(std::get<1>(pairs[9]), 4);
-      EXPECT_EQ(std::get<2>(pairs[9]), 0);
-      EXPECT_EQ(std::get<3>(pairs[9]), 9);
-      EXPECT_EQ(std::get<4>(pairs[9]), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[10]), 2);
-      EXPECT_EQ(std::get<1>(pairs[10]), 5);
-      EXPECT_EQ(std::get<2>(pairs[10]), 2);
-      EXPECT_EQ(std::get<3>(pairs[10]), 2);
-      EXPECT_EQ(std::get<4>(pairs[10]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[11]), 2);
-      EXPECT_EQ(std::get<1>(pairs[11]), 5);
-      EXPECT_EQ(std::get<2>(pairs[11]), 1);
-      EXPECT_EQ(std::get<3>(pairs[11]), 7);
-      EXPECT_EQ(std::get<4>(pairs[11]), 1);
+      std::map<std::pair<int, int>, std::array<int, 4>> reference_pairs{
+          {{3, 0}, {0, 0, 0}},   //
+          {{3, 1}, {0, 1, 0}},   //
+          {{3, 6}, {0, 0, 1}},   //
+          {{3, 9}, {0, 0, 2}},   //
+          {{3, 10}, {0, 1, 2}},  //
+          {{4, 0}, {1, 0, 0}},   //
+          {{4, 1}, {1, 1, 0}},   //
+          {{4, 6}, {1, 0, 1}},   //
+          {{4, 9}, {1, 0, 2}},   //
+          {{4, 10}, {1, 1, 2}},  //
+          {{5, 2}, {2, 2, 0}},   //
+          {{5, 7}, {2, 1, 1}}    //
+      };
+      compare_results(pairs, reference_pairs);
     }
     else if (my_rank_ == 1)
     {
-      EXPECT_EQ(pairs.size(), 5);
-
-      EXPECT_EQ(std::get<0>(pairs[0]), 0);
-      EXPECT_EQ(std::get<1>(pairs[0]), 8);
-      EXPECT_EQ(std::get<2>(pairs[0]), 1);
-      EXPECT_EQ(std::get<3>(pairs[0]), 1);
-      EXPECT_EQ(std::get<4>(pairs[0]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[1]), 0);
-      EXPECT_EQ(std::get<1>(pairs[1]), 8);
-      EXPECT_EQ(std::get<2>(pairs[1]), 0);
-      EXPECT_EQ(std::get<3>(pairs[1]), 0);
-      EXPECT_EQ(std::get<4>(pairs[1]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[2]), 0);
-      EXPECT_EQ(std::get<1>(pairs[2]), 8);
-      EXPECT_EQ(std::get<2>(pairs[2]), 0);
-      EXPECT_EQ(std::get<3>(pairs[2]), 6);
-      EXPECT_EQ(std::get<4>(pairs[2]), 1);
-
-      EXPECT_EQ(std::get<0>(pairs[3]), 0);
-      EXPECT_EQ(std::get<1>(pairs[3]), 8);
-      EXPECT_EQ(std::get<2>(pairs[3]), 1);
-      EXPECT_EQ(std::get<3>(pairs[3]), 10);
-      EXPECT_EQ(std::get<4>(pairs[3]), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[4]), 0);
-      EXPECT_EQ(std::get<1>(pairs[4]), 8);
-      EXPECT_EQ(std::get<2>(pairs[4]), 0);
-      EXPECT_EQ(std::get<3>(pairs[4]), 9);
-      EXPECT_EQ(std::get<4>(pairs[4]), 2);
+      std::map<std::pair<int, int>, std::array<int, 4>> reference_pairs{
+          {{8, 0}, {0, 0, 0}},   //
+          {{8, 1}, {0, 1, 0}},   //
+          {{8, 6}, {0, 0, 1}},   //
+          {{8, 9}, {0, 0, 2}},   //
+          {{8, 10}, {0, 1, 2}},  //
+      };
+      compare_results(pairs, reference_pairs);
     }
     else if (my_rank_ == 2)
     {
-      EXPECT_EQ(pairs.size(), 2);
-
-      EXPECT_EQ(std::get<0>(pairs[0]), 0);
-      EXPECT_EQ(std::get<1>(pairs[0]), 11);
-      EXPECT_EQ(std::get<2>(pairs[0]), 2);
-      EXPECT_EQ(std::get<3>(pairs[0]), 2);
-      EXPECT_EQ(std::get<4>(pairs[0]), 0);
-
-      EXPECT_EQ(std::get<0>(pairs[1]), 0);
-      EXPECT_EQ(std::get<1>(pairs[1]), 11);
-      EXPECT_EQ(std::get<2>(pairs[1]), 1);
-      EXPECT_EQ(std::get<3>(pairs[1]), 7);
-      EXPECT_EQ(std::get<4>(pairs[1]), 1);
+      std::map<std::pair<int, int>, std::array<int, 4>> reference_pairs{
+          {{11, 2}, {0, 2, 0}},  //
+          {{11, 7}, {0, 1, 1}}   //
+      };
+      compare_results(pairs, reference_pairs);
     }
   }
 
