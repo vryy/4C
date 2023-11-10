@@ -56,7 +56,7 @@ namespace SCATRA
     /// time loop
     void TimeLoop() override;
 
-    void CheckAndWriteOutputAndRestart(const int num = 0) override;
+    void CheckAndWriteOutputAndRestart() override;
 
     /// read restart data
     void ReadRestart(

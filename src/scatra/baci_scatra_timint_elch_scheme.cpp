@@ -203,10 +203,10 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::Update(const int num)
+void SCATRA::ScaTraTimIntElchOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -482,10 +482,10 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::Update(const int num)
+void SCATRA::ScaTraTimIntElchBDF2::Update()
 {
-  TimIntBDF2::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntBDF2::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -772,10 +772,10 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::Update(const int num)
+void SCATRA::ScaTraTimIntElchGenAlpha::Update()
 {
-  TimIntGenAlpha::Update(num);
-  ScaTraTimIntElch::Update(num);
+  TimIntGenAlpha::Update();
+  ScaTraTimIntElch::Update();
 }
 
 
@@ -1002,7 +1002,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Update(const int num) { TimIntStationary::Update(num); }
+void SCATRA::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); }
 
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
@@ -1130,10 +1130,10 @@ void SCATRA::ScaTraTimIntElchSCLOST::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::Update(const int num)
+void SCATRA::ScaTraTimIntElchSCLOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntElchSCL::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntElchSCL::Update();
 }
 
 

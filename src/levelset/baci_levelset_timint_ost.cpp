@@ -137,7 +137,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
  | extended version for coupled level-set problems                      |
  | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
+void SCATRA::LevelSetTimIntOneStepTheta::Update()
 {
   // -----------------------------------------------------------------
   //                     reinitialize level-set

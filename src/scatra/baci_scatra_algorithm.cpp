@@ -410,10 +410,10 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Update(const int num)
+void SCATRA::ScaTraAlgorithm::Update()
 {
   FluidField()->Update();
-  ScaTraField()->Update(num);
+  ScaTraField()->Update();
 }
 
 /*----------------------------------------------------------------------*/

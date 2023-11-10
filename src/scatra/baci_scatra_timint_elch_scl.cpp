@@ -232,20 +232,20 @@ void SCATRA::ScaTraTimIntElchSCL::PrepareTimeStep()
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::Update(const int num)
+void SCATRA::ScaTraTimIntElchSCL::Update()
 {
-  ScaTraTimIntElch::Update(num);
+  ScaTraTimIntElch::Update();
 
-  MicroScaTraField()->Update(num);
+  MicroScaTraField()->Update();
 }
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::CheckAndWriteOutputAndRestart(int num)
+void SCATRA::ScaTraTimIntElchSCL::CheckAndWriteOutputAndRestart()
 {
-  ScaTraTimIntElch::CheckAndWriteOutputAndRestart(num);
+  ScaTraTimIntElch::CheckAndWriteOutputAndRestart();
 
-  MicroScaTraField()->CheckAndWriteOutputAndRestart(num);
+  MicroScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*

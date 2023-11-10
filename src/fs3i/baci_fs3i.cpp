@@ -411,7 +411,7 @@ void FS3I::FS3I_Base::ScatraOutput()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->CheckAndWriteOutputAndRestart(i);
+    scatra->ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 }
 
@@ -432,7 +432,7 @@ void FS3I::FS3I_Base::UpdateScatraFields()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->Update(i);
+    scatra->ScaTraField()->Update();
   }
 }
 

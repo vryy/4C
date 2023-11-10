@@ -40,7 +40,7 @@ namespace SCATRA
 
     //! update the solution after convergence of the nonlinear iteration,
     //! current solution becomes old solution of next time step
-    void Update(const int num = 0) override;
+    void Update() override;
 
     //  //! Initialization procedure before the first time step is done
     //  void PrepareFirstTimeStep ();

@@ -272,7 +272,7 @@ void SCATRA::TimIntHDG::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  * Update
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::Update(const int num)
+void SCATRA::TimIntHDG::Update()
 {
   SCATRA::TimIntGenAlpha::Update();
 

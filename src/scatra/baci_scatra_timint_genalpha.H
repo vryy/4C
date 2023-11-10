@@ -46,7 +46,7 @@ namespace SCATRA
 
     void ComputeTimeDerivPot0(const bool init) override{};
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 

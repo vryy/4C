@@ -98,11 +98,11 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(int num) override;
+    void Update() override;
 
     /*--- query and output ---------------------------------------------------*/
 
-    void CheckAndWriteOutputAndRestart(int num) override;
+    void CheckAndWriteOutputAndRestart() override;
 
     //! problem-specific outputs
     void OutputProblemSpecific() override;

@@ -601,7 +601,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // finish present structure scatra time step (no output)
   //----------------------------------------------------------------------
-  structurescatra->Update(1);
+  structurescatra->Update();
 
   //----------------------------------------------------------------------
   // Switch time step of scatra fields
@@ -657,8 +657,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   fsi_->Update();
   FsiOutput();
   // fluid scatra update. Structure scatra is done later
-  fluidscatra->Update(0);
-  fluidscatra->CheckAndWriteOutputAndRestart(0);
+  fluidscatra->Update();
+  fluidscatra->CheckAndWriteOutputAndRestart();
 
   //----------------------------------------------------------------------
   // Switch back time steps and set mean values in scatra fields
@@ -751,8 +751,8 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
   // NOTE: fluid scatra is already updated and written in LargeTimeScaleDoGrowthUpdate()
 
   // now update and output the structure scatra field
-  scatravec_[1]->ScaTraField()->Update(1);
-  scatravec_[1]->ScaTraField()->CheckAndWriteOutputAndRestart(1);
+  scatravec_[1]->ScaTraField()->Update();
+  scatravec_[1]->ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*

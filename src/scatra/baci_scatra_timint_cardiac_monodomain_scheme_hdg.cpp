@@ -54,13 +54,13 @@ void SCATRA::TimIntCardiacMonodomainHDG::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::Update(const int num)
+void SCATRA::TimIntCardiacMonodomainHDG::Update()
 {
   // time update of myocard material
   ElementMaterialTimeUpdate();
 
   // Standard Update
-  TimIntHDG::Update(num);
+  TimIntHDG::Update();
 
   return;
 }

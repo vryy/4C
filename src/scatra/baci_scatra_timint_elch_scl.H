@@ -55,7 +55,7 @@ namespace SCATRA
 
     void NonlinearSolve() override;
 
-    void CheckAndWriteOutputAndRestart(int num) override;
+    void CheckAndWriteOutputAndRestart() override;
 
     void PrepareTimeLoop() override;
 
@@ -67,7 +67,7 @@ namespace SCATRA
 
     void TestResults() override;
 
-    void Update(int num) override;
+    void Update() override;
 
    protected:
     void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;

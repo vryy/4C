@@ -402,7 +402,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CheckAndWriteOutputAndRestart(const int num)
+void SCATRA::LevelSetAlgorithm::CheckAndWriteOutputAndRestart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");

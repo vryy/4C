@@ -60,7 +60,7 @@ namespace SCATRA
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update(const int num = 0) override
+    void Update() override
     {
       dserror("You should not need this function!");
       return;

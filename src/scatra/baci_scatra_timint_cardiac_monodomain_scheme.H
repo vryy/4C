@@ -37,7 +37,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
@@ -71,7 +71,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
@@ -102,7 +102,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;

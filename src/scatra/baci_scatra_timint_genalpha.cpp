@@ -340,7 +340,7 @@ void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::Update(const int num)
+void SCATRA::TimIntGenAlpha::Update()
 {
   // set history variable to zero for not spoiling flux calculation
   // if (not incremental_) hist_->PutScalar(0.0);
@@ -350,14 +350,14 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
 
   // compute time derivative at time n+1
   ComputeTimeDerivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0, *phinp_, 0.0);

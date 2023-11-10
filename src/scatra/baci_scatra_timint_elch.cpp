@@ -789,7 +789,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Update(const int num)
+void SCATRA::ScaTraTimIntElch::Update()
 {
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
@@ -797,14 +797,14 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart(const int num)
+void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart()
 {
   // evaluate SOC, c-rate and cell voltage for output
   EvaluateElectrodeInfoInterior();
   EvaluateCellVoltage();
 
   // call base class routine
-  ScaTraTimIntImpl::CheckAndWriteOutputAndRestart(num);
+  ScaTraTimIntImpl::CheckAndWriteOutputAndRestart();
 
   // output electrode interior status information and cell voltage in every time step
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or IsResultStep())

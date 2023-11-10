@@ -1517,8 +1517,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Update(const int num  //!< field number
-)
+void SCATRA::ScaTraTimIntImpl::Update()
 {
   // update quantities associated with meshtying strategy
   strategy_->Update();
@@ -1572,13 +1571,13 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::Bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckAndWriteOutputAndRestart(const int num)
+void SCATRA::ScaTraTimIntImpl::CheckAndWriteOutputAndRestart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
   // write result and potentially flux data
-  if (IsResultStep()) WriteResult(num);
+  if (IsResultStep()) WriteResult();
 
   // add restart data
   if (IsRestartStep()) WriteRestart();
@@ -1586,7 +1585,7 @@ void SCATRA::ScaTraTimIntImpl::CheckAndWriteOutputAndRestart(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::WriteResult(const int num)
+void SCATRA::ScaTraTimIntImpl::WriteResult()
 {
   // step number and time (only after that data output is possible)
   output_->NewStep(step_, time_);
@@ -1609,21 +1608,21 @@ void SCATRA::ScaTraTimIntImpl::WriteResult(const int num)
     if (step_ == 0 or
         (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or
         (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
-      CalcFlux(true, num);
+      CalcFlux(true);
 
     if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
     if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
   }
 
   // write mean values of scalar(s)
-  OutputTotalAndMeanScalars(num);
+  OutputTotalAndMeanScalars();
 
   // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
   OutputDomainOrBoundaryIntegrals("DomainIntegral");
   OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
 
   // write integral values of reaction(s)
-  OutputIntegrReac(num);
+  OutputIntegrReac();
 
   // problem-specific outputs
   OutputProblemSpecific();

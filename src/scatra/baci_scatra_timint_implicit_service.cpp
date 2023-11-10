@@ -58,10 +58,7 @@
 /*----------------------------------------------------------------------*
  | calculate fluxes inside domain and/or on boundary         fang 07/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcFlux(
-    const bool writetofile,  //!< flag for writing flux info to file
-    const int num            //!< field number
-)
+void SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
 {
   switch (calcflux_domain_)
   {
@@ -92,7 +89,7 @@ void SCATRA::ScaTraTimIntImpl::CalcFlux(
     case INPAR::SCATRA::flux_total:
     {
       // calculate normal flux vector field only for the user-defined boundary conditions:
-      flux_boundary_ = CalcFluxAtBoundary(writetofile, num);
+      flux_boundary_ = CalcFluxAtBoundary(writetofile);
 
       break;
     }
@@ -197,9 +194,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    const bool writetofile,  //!< ?
-    const int num            //!< field number
-)
+    const bool writetofile)
 {
   // The normal flux calculation is based on the idea proposed in
   // GRESHO ET AL.,
@@ -522,7 +517,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     {
       std::ostringstream temp;
       temp << icond;
-      temp << num;
+      temp << discret_->Name();
       const std::string fname = problem_->OutputControlFile()->FileName() +
                                 ".boundaryflux_ScaTraFluxCalc_" + temp.str() + ".txt";
 

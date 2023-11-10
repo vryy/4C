@@ -305,8 +305,7 @@ namespace SCATRA
     virtual void PostSolve(){};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update(const int num = 0  //!< field number
-    );
+    virtual void Update();
 
     /*!
      * @brief apply moving mesh data
@@ -316,17 +315,15 @@ namespace SCATRA
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! calculate fluxes inside domain and/or on boundary
-    void CalcFlux(const bool writetofile,  //!< flag for writing flux info to file
-        const int num = 0                  //!< field number
+    void CalcFlux(const bool writetofile  //!< flag for writing flux info to file
     );
 
     //! calculate flux vector field inside computational domain
     Teuchos::RCP<Epetra_MultiVector> CalcFluxInDomain();
 
-    //! calculate mass/heat normal flux at specified boundaries
-    Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(const bool writetofile,  //!< ?
-        const int num = 0                                                        //!< field number
-    );
+    //! calculate mass/heat normal flux at specified boundaries and write result to file if @p
+    //! writetofile is true
+    Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(const bool writetofile);
 
     //! calculation of relative error with reference to analytical solution
     virtual void EvaluateErrorComparedToAnalyticalSol();
@@ -484,13 +481,13 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
 
     //! Checks if output of results or restart information is required and writes data to disk
-    virtual void CheckAndWriteOutputAndRestart(const int num = 0);
+    virtual void CheckAndWriteOutputAndRestart();
 
     //! write restart data to disk
     virtual void WriteRestart() const;
 
     //! write results to disk
-    void WriteResult(const int num = 0);
+    void WriteResult();
 
     //! Convergence check for two way coupled ScaTra problems.
     bool ConvergenceCheck(int itnum, int itmax, const double ittol);
