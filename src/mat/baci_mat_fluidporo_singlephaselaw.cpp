@@ -12,7 +12,7 @@
 
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_utils_get_functionofanything.H"
+#include "baci_utils_function.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -320,9 +320,13 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 template <int dim>
 void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
 {
-  if (DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).NumberComponents() != 1)
+  if (DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+          .NumberComponents() != 1)
     dserror("expected only one component for the saturation evaluation");
-  if (DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).NumberComponents() != 1)
+  if (DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+          .NumberComponents() != 1)
     dserror("expected only one component for the pressure evaluation");
 
 
@@ -371,7 +375,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  return DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).Evaluate(dp_, {}, 0);
+  return DRT::Problem::Instance()
+      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+      .Evaluate(dp_, {}, 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -411,7 +417,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
   dp_[0].second = presval;
 
   std::vector<double> deriv =
-      DRT::UTILS::GetFunctionOfAnything(functionID_saturation_ - 1).EvaluateDerivative(dp_, {}, 0);
+      DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+          .EvaluateDerivative(dp_, {}, 0);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -462,7 +470,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
   S_[0].second = saturation;
 
   std::vector<double> deriv =
-      DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).EvaluateDerivative(S_, {}, 0);
+      DRT::Problem::Instance()
+          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+          .EvaluateDerivative(S_, {}, 0);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -493,5 +503,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  return DRT::UTILS::GetFunctionOfAnything(functionID_pressure_ - 1).Evaluate(S_, {}, 0);
+  return DRT::Problem::Instance()
+      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+      .Evaluate(S_, {}, 0);
 }

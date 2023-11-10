@@ -21,7 +21,7 @@
 #include "baci_porofluidmultiphase_ele_parameter.H"
 #include "baci_poromultiphase_scatra_artery_coupling_defines.H"
 #include "baci_utils_fad.H"
-#include "baci_utils_get_functionofanything.H"
+#include "baci_utils_function.H"
 
 #include <Epetra_MultiVector.h>
 
@@ -427,7 +427,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
-    artdiam_funct_ = &DRT::UTILS::GetFunctionOfAnything(diam_funct_num - 1);
+    artdiam_funct_ = &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(
+        diam_funct_num - 1);
     if (coupltype_ == type_porofluid)
     {
       // cont derivatives + 1 artery pressure derivative
@@ -3568,7 +3569,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (funct_vec[i] >= 0 && abs(scale_vec[i]) > 0)
     {
-      my_funct_vec.at(i) = &DRT::UTILS::GetFunctionOfAnything(funct_vec[i]);
+      my_funct_vec.at(i) =
+          &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(funct_vec[i]);
       funct_coupl_active_ = true;
     }
     else
