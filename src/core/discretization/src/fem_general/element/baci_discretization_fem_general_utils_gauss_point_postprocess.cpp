@@ -33,7 +33,8 @@ namespace
 }  // namespace
 
 void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
-    const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data)
+    const CORE::LINALG::SerialDenseMatrix& data, const ::DRT::Discretization& dis,
+    Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())
   {
@@ -47,6 +48,13 @@ void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& e
     {
       DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27>(ele, data,
           nodal_data, true, GetGaussIntegration<CORE::FE::CellType::hex27>(data.numRows()));
+    }
+    break;
+    case CORE::FE::CellType::nurbs27:
+    {
+      DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<CORE::FE::CellType::nurbs27>(dis,
+          ele, data, nodal_data, true,
+          GetGaussIntegration<CORE::FE::CellType::nurbs27>(data.numRows()));
     }
     break;
     case CORE::FE::CellType::tet10:

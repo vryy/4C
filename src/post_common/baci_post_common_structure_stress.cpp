@@ -119,7 +119,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
         [&](DRT::Element& ele)
         {
           CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), nodal_stress);
+              ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
     filter_.GetWriter().WriteNodalResultStep(
@@ -398,7 +398,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         [&](DRT::Element& ele)
         {
           CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), nodal_stress);
+              ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
 

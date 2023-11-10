@@ -54,8 +54,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
   const bool hasvolfracs = (nummultifluiddofpernode > numfluidphases);
 
   // get nodal coordinates current and reference
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, la[0].lm_);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, la[0].lm_);
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
@@ -167,8 +167,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
   const bool hasvolfracs = (nummultifluiddofpernode > numfluidphases);
 
   // get nodal coordinates current and reference
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, la[0].lm_);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, la[0].lm_);
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
@@ -241,6 +241,7 @@ template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex18>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex20>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::nurbs27>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::pyramid5>;

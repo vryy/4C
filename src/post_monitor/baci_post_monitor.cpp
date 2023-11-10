@@ -869,7 +869,7 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
       [&](DRT::Element& ele)
       {
         CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-            ele, *data->at(ele.Id()), nodal_stress);
+            ele, *data->at(ele.Id()), *dis, nodal_stress);
       });
 
   if (nodeowner_)

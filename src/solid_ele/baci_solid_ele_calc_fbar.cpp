@@ -135,7 +135,7 @@ namespace
 
   template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_str<distype>, 1> EvaluateStrainsBar(
-      const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates,
+      const DRT::ELEMENTS::ElementNodes<distype>& nodal_coordinates,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping, double detF_centroid)
   {
     const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping =
@@ -180,8 +180,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
   // get current nodal coordinates
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -295,8 +295,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   // deformation gradient and strains at centroid of element
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
@@ -341,8 +341,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
   CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
   CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   // deformation gradient and strains at centroid of element
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
@@ -390,8 +390,8 @@ double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const D
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   double intenergy = 0.0;
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   // deformation gradient and strains at centroid of element
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);

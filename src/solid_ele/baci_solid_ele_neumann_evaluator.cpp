@@ -37,6 +37,10 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
       return EvaluateNeumann<CORE::FE::CellType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
+    case CORE::FE::CellType::nurbs27:
+      return EvaluateNeumann<CORE::FE::CellType::nurbs27>(
+          element, discretization, condition, dof_index_array, element_force_vector, total_time);
+      break;
     case CORE::FE::CellType::pyramid5:
       return EvaluateNeumann<CORE::FE::CellType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
@@ -94,8 +98,8 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
   // get ids of functions of space and time
   const auto* function_ids = condition.Get<std::vector<int>>("funct");
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(element, discretization, dof_index_array);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(element, discretization, dof_index_array);
 
   ForEachGaussPoint<distype>(nodal_coordinates, gauss_integration,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
@@ -111,7 +115,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
         // material/reference co-ordinates of Gauss point
         CORE::LINALG::Matrix<numdim, 1> gauss_point_reference_coordinates;
         gauss_point_reference_coordinates.MultiplyTN(
-            nodal_coordinates.reference_, shape_functions.shapefunctions_);
+            nodal_coordinates.reference_coordinates_, shape_functions.shapefunctions_);
 
         for (auto dim = 0; dim < numdim; dim++)
         {

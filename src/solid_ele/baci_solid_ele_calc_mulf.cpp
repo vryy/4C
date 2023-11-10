@@ -137,8 +137,8 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMa
   const CORE::LINALG::Matrix<num_nodes<distype>, num_dim<distype>> nodal_displacements =
       GetNodalDisplacements<distype>(discretization, lm);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -233,8 +233,8 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Update(const DRT::Element& ele,
 {
   const CORE::LINALG::Matrix<num_nodes<distype>, num_dim<distype>> nodal_displacements =
       GetNodalDisplacements<distype>(discretization, lm);
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
@@ -263,8 +263,8 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::UpdatePrestress(const DRT::Elemen
 {
   const CORE::LINALG::Matrix<num_nodes<distype>, num_dim<distype>> nodal_displacements =
       GetNodalDisplacements<distype>(discretization, lm);
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
@@ -309,8 +309,8 @@ double DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateInternalEnergy(const D
   const CORE::LINALG::Matrix<num_nodes_, num_dim_> nodal_displacements =
       GetNodalDisplacements<distype>(discretization, lm);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
@@ -352,8 +352,8 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateStress(const DRT::Elemen
   const CORE::LINALG::Matrix<num_nodes<distype>, num_dim<distype>> nodal_displacements =
       GetNodalDisplacements<distype>(discretization, lm);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
@@ -449,6 +449,7 @@ template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex18>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex20>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::nurbs27>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::pyramid5>;

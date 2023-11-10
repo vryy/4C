@@ -335,6 +335,12 @@ template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement,
         1>>&,
     FIBER::NodalFiberHolder&);
+template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::nurbs27>(
+    const DRT::Node* const*,
+    const std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs27>::numNodePerElement,
+        1>>&,
+    FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tri3>(
     const DRT::Node* const*,
     const std::vector<CORE::LINALG::Matrix<
@@ -382,6 +388,8 @@ template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex18>(
 template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex20>(
     const DRT::Node* const* nodes);
 template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex27>(
+    const DRT::Node* const* nodes);
+template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::nurbs27>(
     const DRT::Node* const* nodes);
 template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::pyramid5>(
     const DRT::Node* const* nodes);

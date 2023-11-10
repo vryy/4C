@@ -22,6 +22,7 @@
 
 #include <memory>
 
+
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
 DRT::ELEMENTS::SolidType& DRT::ELEMENTS::SolidType::Instance() { return instance_; }
@@ -84,6 +85,12 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddOptionalNamedDoubleVector("FIBER2", 3)
                              .AddOptionalNamedDoubleVector("FIBER3", 3)
                              .Build();
+
+  defsgeneral["NURBS27"] = INPUT::LineDefinition::Builder()
+                               .AddIntVector("NURBS27", 27)
+                               .AddNamedInt("MAT")
+                               .AddNamedString("KINEM")
+                               .Build();
 
   defsgeneral["TET4"] = INPUT::LineDefinition::Builder()
                             .AddIntVector("TET4", 4)
@@ -253,6 +260,11 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   eastype_ = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
+  if (Shape() == CORE::FE::CellType::nurbs27)
+  {
+    SetNurbsElement() = true;
+  }
+
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
@@ -306,6 +318,11 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   if (linedef->HaveNamed("MULF"))
   {
     eletech_.insert(INPAR::STR::EleTech::ps_mulf);
+  }
+
+  if (Shape() == CORE::FE::CellType::nurbs27)
+  {
+    SetNurbsElement() = true;
   }
 
   solid_calc_variant_ =

@@ -881,7 +881,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           {
             if (DoPostprocessingOnElement(ele))
               CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-                  ele, *map_data.at(ele.Id()), assembled_data);
+                  ele, *map_data.at(ele.Id()), Discret(), assembled_data);
           });
     };
 

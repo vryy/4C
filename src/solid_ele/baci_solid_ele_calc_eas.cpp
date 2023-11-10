@@ -151,7 +151,7 @@ namespace
    */
   template <CORE::FE::CellType distype>
   CentroidTransformation<distype> EvaluateCentroidTransformation(
-      const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates)
+      const DRT::ELEMENTS::ElementNodes<distype>& nodal_coordinates)
   {
     CentroidTransformation<distype> centroid_transformation;
 
@@ -635,8 +635,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -763,8 +763,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
   CentroidTransformation<distype> centroid_transformation =
       EvaluateCentroidTransformation<distype>(nodal_coordinates);
 
@@ -815,8 +815,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
   CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
   CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   CentroidTransformation<distype> centroid_transformation =
       EvaluateCentroidTransformation<distype>(nodal_coordinates);
@@ -867,8 +867,8 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
     Teuchos::ParameterList& params)
 {
   double intenergy = 0.0;
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   CentroidTransformation<distype> centroid_transformation =
       EvaluateCentroidTransformation<distype>(nodal_coordinates);

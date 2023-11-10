@@ -47,6 +47,29 @@ namespace CORE::DRT::UTILS
       const GaussIntegration& intpoints);
 
   /*!
+   * @brief Evaluates the linear operator that extrapolates quantities from the Gauss points to
+   * the knots for NURBS-based elements.
+   *
+   * This method follows the same steps as EvaluateGaussPointsToNodesExtrapolationMatrix(...)
+   * but is adapted for NURBS elements. The main difference is that for the evaluation of the
+   * shape functions (step 2) of EvaluateGaussPointsToNodesExtrapolationMatrix(...)), the element
+   * knot span and the weights of its control points must be obtained, which are stored
+   * in the discretization related to the element.
+   *
+   * @note This method is not thread-safe and must not be called in a multi-threaded environment.
+   *
+   * @tparam distype Discretization type of the element
+   * @param dis (in) : discretization
+   * @param ele (in) : element
+   * @param integration (in) : Gauss integration points
+   * @return CORE::LINALG::SerialDenseMatrix
+   */
+  template <CORE::FE::CellType distype, class GaussIntegration>
+  CORE::LINALG::SerialDenseMatrix EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
+      const ::DRT::Discretization& dis, const ::DRT::Element& ele,
+      const GaussIntegration& intpoints);
+
+  /*!
    * @brief Extrapolates Gauss point data to the nodes and assembles it into a global data vector
    *
    * @tparam distype discretization type
@@ -63,6 +86,28 @@ namespace CORE::DRT::UTILS
   void ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
       const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
       bool nodal_average, const GaussIntegration& integration);
+
+  /*!
+   * @brief Extrapolates Gauss point data to the knots of a NURBS element and assembles
+   * it into a global data vector
+   *
+   * The discretization is necessary for the evaluation of the shape functions, as it
+   * stores the knot span and weights of a NURBS-based element
+   * @tparam distype discretization type
+   * @tparam GaussIntegration type of the container that holds the gauss integration rule
+   * @param dis (in) : discretization
+   * @param ele (in) :  element
+   * @param gp_data (in) : Data at the Gauss points
+   * @param global_data (out) : global data
+   * @param nodal_average (in) : Whether to compute nodal averages at the nodes which are shared
+   * between elements. Only set this to true if every element contributes equally to the nodal
+   * quantity.
+   * @param integration (in) : Container that holds the integration points
+   */
+  template <CORE::FE::CellType distype, class GaussIntegration>
+  void ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const ::DRT::Discretization& dis,
+      const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+      Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
 }  // namespace CORE::DRT::UTILS
 
 #endif  // FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_H

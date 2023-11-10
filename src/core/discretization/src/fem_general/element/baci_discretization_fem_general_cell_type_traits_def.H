@@ -219,6 +219,9 @@ namespace CORE::FE::DETAILS
       celltype == CORE::FE::CellType::hex27>;
 
   template <CORE::FE::CellType celltype>
+  using is_nurbs = std::bool_constant<celltype == CORE::FE::CellType::nurbs27>;
+
+  template <CORE::FE::CellType celltype>
   using is_wedge = std::bool_constant<celltype == CORE::FE::CellType::wedge6 ||
                                       celltype == CORE::FE::CellType::wedge15>;
 
@@ -239,6 +242,13 @@ namespace CORE::FE::DETAILS
       celltype == CORE::FE::CellType::line2 || celltype == CORE::FE::CellType::line3 ||
       celltype == CORE::FE::CellType::line4 || celltype == CORE::FE::CellType::line5 ||
       celltype == CORE::FE::CellType::line6>;
+
+  template <CORE::FE::CellType celltype>
+  using use_lagrange_shapefnct =
+      std::bool_constant<is_tet<celltype>::value || is_hex<celltype>::value ||
+                         is_wedge<celltype>::value || is_pyramid<celltype>::value ||
+                         is_quad<celltype>::value || is_tri<celltype>::value ||
+                         is_line<celltype>::value>;
   /// @}
 }  // namespace CORE::FE::DETAILS
 

@@ -13,9 +13,11 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
+#include "baci_nurbs_discret_nurbs_utils.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -36,6 +38,13 @@ namespace
     if (numgp < 20) return CORE::FE::CellType::hex8;
     if (numgp < 27) return CORE::FE::CellType::hex20;
     return CORE::FE::CellType::hex27;
+  }
+
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_nurbs<distype>, bool> = true>
+  inline CORE::FE::CellType GetGaussPointExtrapolationBaseDistype(unsigned numgp)
+  {
+    if (numgp < 8) return CORE::FE::CellType::point1;
+    return CORE::FE::CellType::nurbs27;
   }
 
   template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_quad<distype>, bool> = true>
@@ -87,6 +96,40 @@ namespace
       CORE::LINALG::SerialDenseVector shape_functions(base_numnod);
       CORE::DRT::UTILS::shape_function_dim<CORE::LINALG::Matrix<nsd, 1>,
           CORE::LINALG::SerialDenseVector, nsd>(xi, shape_functions, base_distype);
+
+      for (int inode = 0; inode < base_numnod; ++inode)
+      {
+        mat(gp, inode) = shape_functions(inode);
+      }
+    }
+    return mat;
+  }
+
+  template <CORE::FE::CellType distype, class GaussIntegration>
+  CORE::LINALG::SerialDenseMatrix EvaluateNURBSBaseShapeFunctionsAtGaussPoints(
+      const DRT::Discretization& dis, const DRT::Element& ele,
+      const CORE::FE::CellType base_distype, const GaussIntegration& intpoints)
+  {
+    constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
+    CORE::LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
+
+    // Obtain weights and knot vector of element
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
+        weights(true);
+    std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
+
+    const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
+    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+
+
+    for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
+    {
+      CORE::LINALG::Matrix<nsd, 1> xi(intpoints.Point(gp), true);
+
+      CORE::LINALG::SerialDenseVector shape_functions(base_numnod);
+      CORE::DRT::NURBS::UTILS::nurbs_shape_function_dim(
+          shape_functions, xi, myknots, weights, base_distype);
 
       for (int inode = 0; inode < base_numnod; ++inode)
       {
@@ -336,6 +379,37 @@ CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<CORE::FE::CellTy
 }
 
 template <CORE::FE::CellType distype, class GaussIntegration>
+CORE::LINALG::SerialDenseMatrix
+CORE::DRT::UTILS::EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
+    const ::DRT::Discretization& dis, const ::DRT::Element& ele, const GaussIntegration& intpoints)
+{
+  static std::unordered_map<unsigned, CORE::LINALG::SerialDenseMatrix> extrapolation_matrix_cache{};
+
+  if (extrapolation_matrix_cache.find(intpoints.NumPoints()) == extrapolation_matrix_cache.end())
+  {
+    CORE::FE::CellType base_distype =
+        GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
+
+    dsassert(DRT::UTILS::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
+        "The base discretization has more nodes than Gauss points. The extrapolation is not "
+        "unique! "
+        "This should not happen. The evaluation of the base extrapolation type for the number of "
+        "gauss points is not correct.");
+
+    LINALG::SerialDenseMatrix shapefcns_at_gps =
+        EvaluateNURBSBaseShapeFunctionsAtGaussPoints<distype>(dis, ele, base_distype, intpoints);
+
+    LINALG::SerialDenseMatrix matrix_gp_to_base =
+        EvaluateProjectionGaussPointsToBaseDistype(shapefcns_at_gps);
+
+    extrapolation_matrix_cache[intpoints.NumPoints()] =
+        EvaluateProjectionGaussPointsToDistype<distype>(matrix_gp_to_base, base_distype);
+  }
+
+  return extrapolation_matrix_cache[intpoints.NumPoints()];
+}
+
+template <CORE::FE::CellType distype, class GaussIntegration>
 void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const GaussIntegration& integration)
@@ -344,6 +418,20 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
       ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
   CORE::LINALG::multiply(
       nodal_quantity, EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data);
+
+  AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);
+}
+
+template <CORE::FE::CellType distype, class GaussIntegration>
+void CORE::DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble(
+    const ::DRT::Discretization& dis, const ::DRT::Element& ele,
+    const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
+    const GaussIntegration& integration)
+{
+  CORE::LINALG::SerialDenseMatrix nodal_quantity(
+      ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
+  CORE::LINALG::multiply(nodal_quantity,
+      EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix<distype>(dis, ele, integration), gp_data);
 
   AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);
 }
@@ -380,6 +468,15 @@ template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::hex27,
+    CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::nurbs27,
+    CORE::DRT::UTILS::IntegrationPoints3D>(const ::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE::CellType::nurbs27,
     CORE::DRT::UTILS::GaussIntegration>(const ::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const CORE::DRT::UTILS::GaussIntegration& integration);
@@ -453,3 +550,14 @@ template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<CORE::FE
     CORE::DRT::UTILS::IntegrationPoints2D>(const ::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
+
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<
+    CORE::FE::CellType::nurbs27, CORE::DRT::UTILS::GaussIntegration>(
+    const ::DRT::Discretization& dis, const ::DRT::Element& ele,
+    const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
+    const GaussIntegration& integration);
+template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<
+    CORE::FE::CellType::nurbs27, CORE::DRT::UTILS::IntegrationPoints3D>(
+    const ::DRT::Discretization& dis, const ::DRT::Element& ele,
+    const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
+    const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
