@@ -17,6 +17,8 @@
 
 #include <Epetra_Vector.h>
 
+#include <optional>
+
 
 // forward declarations
 namespace DRT
