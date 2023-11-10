@@ -47,6 +47,15 @@ namespace CORE::FE::DETAILS
     static constexpr std::array value = {DETAILS::CellTypeToString<celltypes>::value...};
   };
 
+  template <typename T>
+  struct celltype_sequence_to_array;
+
+  template <CellType... celltypes>
+  struct celltype_sequence_to_array<std::integer_sequence<CellType, celltypes...>>
+  {
+    static constexpr std::array value = {celltypes...};
+  };
+
   template <std::size_t first, typename T>
   struct celltype_sequence_generator;
 
