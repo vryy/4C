@@ -98,7 +98,7 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Poro_P1_Scatra ";
-  os << DRT::DistypeToString(distype).c_str() << " ";
+  os << CORE::FE::CellTypeToString(distype).c_str() << " ";
   Element::Print(os);
   return;
 }

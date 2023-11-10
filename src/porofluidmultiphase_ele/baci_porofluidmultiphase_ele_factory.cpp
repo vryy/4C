@@ -118,7 +118,8 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       break;
     }
     default:
-      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.",
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;

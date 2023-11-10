@@ -11,7 +11,6 @@
 #ifndef BACI_CUT_BASE_BOUNDARYCELL_H
 #define BACI_CUT_BASE_BOUNDARYCELL_H
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <cmath>

@@ -236,7 +236,7 @@ bool CONTACT::INTEGRATOR::WithinBounds(
     }
     default:
     {
-      dserror("Unsupported element type %s!", DRT::DistypeToString(type).c_str());
+      dserror("Unsupported element type %s!", CORE::FE::CellTypeToString(type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -352,7 +352,7 @@ double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& 
     default:
     {
       dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -487,7 +487,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     default:
     {
       dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -539,7 +539,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     default:
     {
       dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -667,7 +667,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     default:
     {
       dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -793,7 +793,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     default:
     {
       dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }

@@ -46,7 +46,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
     case CORE::FE::CellType::nurbs3:
       return Get2D<CORE::FE::CellType::nurbs3>(tar_type, debug);
     default:
-      dserror("Unsupported reference-type %s.", DRT::DistypeToString(ref_type).c_str());
+      dserror("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -71,7 +71,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
         return Projector<ProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs3>::Instance();
       return Projector<EmptyProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs3>::Instance();
     default:
-      dserror("Unsupported target-type %s.", DRT::DistypeToString(tar_type).c_str());
+      dserror("Unsupported target-type %s.", CORE::FE::CellTypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -92,7 +92,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
     case CORE::FE::CellType::nurbs9:
       return Get3D<CORE::FE::CellType::nurbs9>(tar_type, debug);
     default:
-      dserror("Unsupported reference-type %s.", DRT::DistypeToString(ref_type).c_str());
+      dserror("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -120,7 +120,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
         return Projector<ProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs9>::Instance();
       return Projector<EmptyProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs9>::Instance();
     default:
-      dserror("Unsupported target-type %s.", DRT::DistypeToString(tar_type).c_str());
+      dserror("Unsupported target-type %s.", CORE::FE::CellTypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
   }
 }

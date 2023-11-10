@@ -1976,7 +1976,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
         dserror(
             "You have to implement the characteristic element length"
             " calculation for the given element type. (ele-type=%s)",
-            DRT::DistypeToString(ele->Shape()).c_str());
+            CORE::FE::CellTypeToString(ele->Shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }

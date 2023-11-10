@@ -270,7 +270,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   os << "Thermo element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
@@ -405,7 +405,7 @@ CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
         dserror(
             "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
             "implemented.",
-            DRT::DistypeToString(ParentElement()->Shape()).c_str());
+            CORE::FE::CellTypeToString(ParentElement()->Shape()).c_str());
       }
       break;
     default:

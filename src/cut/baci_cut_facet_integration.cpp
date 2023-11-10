@@ -1089,7 +1089,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
         }
         default:
           dserror("unsupported integration cell type ( cell type = %s )",
-              ::DRT::DistypeToString(bcell->Shape()).c_str());
+              CORE::FE::CellTypeToString(bcell->Shape()).c_str());
           exit(EXIT_FAILURE);
       }
       double wei = iquad.Weight() * drs * normalX;

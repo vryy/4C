@@ -292,7 +292,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
     }  // case CORE::FE::CellType::quad4:
     default:
       dserror("Unsupported side shape! (shape = %d | %s )", side.Shape(),
-          ::DRT::DistypeToString(side.Shape()).c_str());
+          CORE::FE::CellTypeToString(side.Shape()).c_str());
       break;
   }
   return false;

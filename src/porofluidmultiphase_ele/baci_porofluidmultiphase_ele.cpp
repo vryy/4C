@@ -322,7 +322,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
   os << "PoroFluidMultiPhase element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
 
@@ -359,7 +359,7 @@ bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
   SetMaterial(material);
 
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   return true;
 }
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
   os << "PoroFluidMultiPhaseBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(Shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }

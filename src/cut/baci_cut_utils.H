@@ -457,7 +457,7 @@ namespace CORE::GEO
           break;
         default:
           dserror("Currently unsupported discretization type: %s",
-              ::DRT::DistypeToString(distype).c_str());
+              CORE::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
     }

@@ -142,7 +142,7 @@ char CORE::GEO::CUT::OUTPUT::GmshElementType(CORE::FE::CellType shape)
       return ' ';
     }
     default:
-      dserror("Unsupported cell shape! ( shape = %s )", ::DRT::DistypeToString(shape).c_str());
+      dserror("Unsupported cell shape! ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // impossible to reach this point

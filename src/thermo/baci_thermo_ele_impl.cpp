@@ -88,7 +88,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
     }
     default:
       dserror("Element shape %s (%d nodes) not activated. Just do it.",
-          DistypeToString(ele->Shape()).c_str(), ele->NumNode());
+          CORE::FE::CellTypeToString(ele->Shape()).c_str(), ele->NumNode());
       break;
   }
   return nullptr;

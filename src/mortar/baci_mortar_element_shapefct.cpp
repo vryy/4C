@@ -2429,7 +2429,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
       // if all bound: error
       if ((nnodes - numbound) < 1e-12)
       {
-        std::cout << "numnode= " << nnodes << "shape= " << DRT::DistypeToString(Shape())
+        std::cout << "numnode= " << nnodes << "shape= " << CORE::FE::CellTypeToString(Shape())
                   << std::endl;
         dserror("all nodes are bound");
       }

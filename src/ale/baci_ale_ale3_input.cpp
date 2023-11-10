@@ -25,7 +25,7 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   linedef->Print(std::cout);
 
-  CORE::FE::CellType shape = StringToDistype(distype);
+  CORE::FE::CellType shape = CORE::FE::StringToCellType(distype);
 
   std::cout << " distype " << distype << std::endl;
 

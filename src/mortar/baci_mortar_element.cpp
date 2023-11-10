@@ -1504,7 +1504,7 @@ double MORTAR::MortarElement::MinEdgeSize()
     default:
     {
       dserror("%s is not implemented for discretization type '%s' of MortarElement.",
-          __PRETTY_FUNCTION__, DRT::DistypeToString(shape).c_str());
+          __PRETTY_FUNCTION__, CORE::FE::CellTypeToString(shape).c_str());
       break;
     }
   }
@@ -1581,7 +1581,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
     default:
     {
       dserror("%s is not implemented for discretization type '%s' of MortarElement.",
-          __PRETTY_FUNCTION__, DRT::DistypeToString(shape).c_str());
+          __PRETTY_FUNCTION__, CORE::FE::CellTypeToString(shape).c_str());
       break;
     }
   }

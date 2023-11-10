@@ -15,6 +15,7 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_xfem.H"
+#include "baci_mat_material.H"
 #include "baci_utils_singleton_owner.H"
 
 // forward declarations

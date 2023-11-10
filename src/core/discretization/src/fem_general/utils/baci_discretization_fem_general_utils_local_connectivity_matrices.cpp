@@ -93,8 +93,8 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
       return 5;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
   return numnodes;
@@ -135,8 +135,8 @@ int CORE::DRT::UTILS::getNumberOfElementCornerNodes(const CORE::FE::CellType& di
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numCornerNodes;
 }
@@ -198,8 +198,8 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementCornerNodes(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return faceNodeMap;
 }
@@ -278,8 +278,8 @@ std::vector<int> CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return faceNodeMap;
 }
@@ -327,8 +327,8 @@ int CORE::DRT::UTILS::getNumberOfElementLines(const CORE::FE::CellType& distype)
       numLines = 1;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numLines;
 }
@@ -373,8 +373,8 @@ int CORE::DRT::UTILS::getNumberOfElementSurfaces(const CORE::FE::CellType& disty
       numSurf = 0;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numSurf;
 }
@@ -410,8 +410,8 @@ int CORE::DRT::UTILS::getNumberOfElementVolumes(const CORE::FE::CellType& distyp
       return numVol = 0;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numVol;
 }
@@ -427,8 +427,8 @@ int CORE::DRT::UTILS::getNumberOfElementFaces(const CORE::FE::CellType& distype)
   else if (dim == 1)
     return 2;
   else
-    dserror(
-        "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+    dserror("discretization type %s not yet implemented",
+        (CORE::FE::CellTypeToString(distype)).c_str());
   return 0;
 }
 
@@ -510,8 +510,8 @@ CORE::FE::CellType CORE::DRT::UTILS::getEleFaceShapeType(
       type = DisTypeToFaceShapeType<CORE::FE::CellType::point1>::shape;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
       break;
   }
   return type;
@@ -748,8 +748,8 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingSurfaces(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
   return map;
@@ -990,8 +990,8 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumberingLines(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
   return map;
@@ -1030,8 +1030,8 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_lines_surfac
     }
   }
   else
-    dserror(
-        "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+    dserror("discretization type %s not yet implemented",
+        (CORE::FE::CellTypeToString(distype)).c_str());
 
 
   return map;
@@ -1101,8 +1101,8 @@ CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_para
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
   return map;
@@ -1169,8 +1169,8 @@ CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
   return coord;
@@ -1242,8 +1242,8 @@ void CORE::DRT::UTILS::getCornerNodeIndices(
       break;
     }
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
 }
 
@@ -1327,8 +1327,8 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::point1>::dim;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return dim;
 }
@@ -1392,8 +1392,8 @@ int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
       order = DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>::order;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return order;
 }
@@ -1463,8 +1463,8 @@ int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
       degree = DisTypeToDegree<CORE::FE::CellType::wedge15>::degree;
       break;
     default:
-      dserror(
-          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+      dserror("discretization type %s not yet implemented",
+          (CORE::FE::CellTypeToString(distype)).c_str());
       break;
   }
   return degree;
@@ -1496,7 +1496,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
 
     // FluidBoundary element: line3
     case 3:
@@ -1521,7 +1521,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad4
     case 4:
@@ -1534,7 +1534,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
 
     // FluidBoundary element: tri6
     case 6:
@@ -1544,7 +1544,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad8
     case 8:
@@ -1554,7 +1554,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
 
     // FluidBoundary element: quad9
     case 9:
@@ -1566,7 +1566,7 @@ CORE::FE::CellType CORE::DRT::UTILS::getShapeOfBoundaryElement(
         dserror(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, ::DRT::DistypeToString(parentshape).c_str());
+            nen, CORE::FE::CellTypeToString(parentshape).c_str());
     default:
       dserror("unexpected number of nodes %d for boundary element", nen);
   }

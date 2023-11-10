@@ -313,7 +313,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
       return Create2D<CORE::FE::CellType::nurbs3>(mastertype, cparams, wrapper);
     default:
       dserror("Unsupported slave element type %d|\"%s\"", slavetype,
-          DRT::DistypeToString(slavetype).c_str());
+          CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -335,7 +335,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
       return Create2D<slavetype, CORE::FE::CellType::nurbs3>(cparams, wrapper);
     default:
       dserror("Unsupported master element type %d|\"%s\"", mastertype,
-          DRT::DistypeToString(mastertype).c_str());
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -386,7 +386,8 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     case CORE::FE::CellType::nurbs9:
       return Create3D<CORE::FE::CellType::nurbs9>(mastertype, cparams, wrapper);
     default:
-      dserror("Unsupported slave element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
+      dserror("Unsupported slave element type %d|\"%s\"",
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -409,8 +410,8 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     case CORE::FE::CellType::nurbs9:
       return Create3D<slavetype, CORE::FE::CellType::nurbs9>(cparams, wrapper);
     default:
-      dserror(
-          "Unsupported master element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
+      dserror("Unsupported master element type %d|\"%s\"",
+          CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }

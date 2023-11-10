@@ -87,7 +87,8 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.",
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;

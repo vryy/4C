@@ -131,7 +131,8 @@ void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
 {
   os << "MembraneLine ";
   os << " Discretization type: "
-     << DRT::DistypeToString(CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape).c_str();
+     << CORE::FE::CellTypeToString(CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
+            .c_str();
   Element::Print(os);
   return;
 }

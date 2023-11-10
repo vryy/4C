@@ -193,7 +193,7 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
-  os << DRT::DistypeToString(distype).c_str() << " ";
+  os << CORE::FE::CellTypeToString(distype).c_str() << " ";
   Element::Print(os);
 }
 

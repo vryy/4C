@@ -305,7 +305,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, point, floattype);
     default:
-      dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
+      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -344,7 +344,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
+      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -382,7 +382,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
+      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -430,7 +430,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", ::DRT::DistypeToString(distype).c_str());
+      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 

@@ -13,6 +13,7 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 

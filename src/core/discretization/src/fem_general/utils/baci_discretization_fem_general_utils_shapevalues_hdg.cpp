@@ -464,7 +464,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
           }
         }
         else
-          dserror("Shape type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
+          dserror(
+              "Shape type %s not yet implemented", (CORE::FE::CellTypeToString(distype)).c_str());
         break;
       default:
         dserror("Only implemented in 2D and 3D");

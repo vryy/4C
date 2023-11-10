@@ -98,7 +98,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
     }
     default:
       dserror("unsupported integration cell type ( cell type = %s )",
-          ::DRT::DistypeToString(elem1_->Shape()).c_str());
+          CORE::FE::CellTypeToString(elem1_->Shape()).c_str());
       exit(EXIT_FAILURE);
   }
   volcell_->SetVolume(volGlobal);

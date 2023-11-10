@@ -224,7 +224,7 @@ void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
   os << "Lubrication element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
 
   return;
 }
@@ -259,7 +259,7 @@ bool DRT::ELEMENTS::Lubrication::ReadElement(
   SetMaterial(material);
 
   // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   return true;
 }
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
   os << "LubricationBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << DRT::DistypeToString(Shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }

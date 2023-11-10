@@ -1839,7 +1839,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
       break;
     }
     default:
-      dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str());
+      dserror("side-distype %s not handled", CORE::FE::CellTypeToString(side_distype).c_str());
       break;
   }
 

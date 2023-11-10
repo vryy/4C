@@ -1877,8 +1877,8 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType
       break;
     default:
     {
-      dserror(
-          "Unsupported side type! ( %d | %s )", sidetype, ::DRT::DistypeToString(sidetype).c_str());
+      dserror("Unsupported side type! ( %d | %s )", sidetype,
+          CORE::FE::CellTypeToString(sidetype).c_str());
       break;
     }
   }

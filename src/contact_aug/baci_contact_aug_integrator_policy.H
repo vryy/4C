@@ -12,6 +12,7 @@
 
 #include "baci_contact_aug_contact_integrator_utils.H"
 #include "baci_contact_aug_timemonitor.H"
+#include "baci_lib_node.H"
 
 namespace CONTACT
 {

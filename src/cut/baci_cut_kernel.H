@@ -251,7 +251,7 @@ namespace CORE::GEO
           }
           default:
             dserror("unsupported element type: %i | %s", elementType,
-                ::DRT::DistypeToString(elementType).c_str());
+                CORE::FE::CellTypeToString(elementType).c_str());
             break;
         }
       }
@@ -360,7 +360,7 @@ namespace CORE::GEO
           }
           default:
             dserror("unsupported element type: %i | %s", elementType,
-                ::DRT::DistypeToString(elementType).c_str());
+                CORE::FE::CellTypeToString(elementType).c_str());
             break;
         }  // switch ( elementType )
         return false;
@@ -449,7 +449,7 @@ namespace CORE::GEO
           }
           default:
             dserror("unsupported element type: %i | %s", elementType,
-                ::DRT::DistypeToString(elementType).c_str());
+                CORE::FE::CellTypeToString(elementType).c_str());
             break;
         }  // switch ( elementType )
         return false;
@@ -989,7 +989,7 @@ namespace CORE::GEO
           if (debug)
           {
             std::cout << "\n=== ComputePosition ===\n";
-            std::cout << "Element    = " << ::DRT::DistypeToString(elementType) << "\n";
+            std::cout << "Element    = " << CORE::FE::CellTypeToString(elementType) << "\n";
             std::cout << "xyze_      = " << *xyze_;
             std::cout << "px_        = " << *px_;
             std::cout << "\n";
@@ -1350,7 +1350,7 @@ namespace CORE::GEO
             dserror(
                 "This type of element %s  is not yet implemented for the CLN calculation. You are "
                 "welcome to edit fem_shapefunctions.H file to fix it",
-                ::DRT::DistypeToString(elementType).c_str());
+                CORE::FE::CellTypeToString(elementType).c_str());
           }
 
           bool conv;
@@ -1850,7 +1850,7 @@ namespace CORE::GEO
           if (debug)
           {
             std::cout << "\n=== ComputeDistance ===\n";
-            std::cout << "Side       = " << ::DRT::DistypeToString(sideType) << "\n";
+            std::cout << "Side       = " << CORE::FE::CellTypeToString(sideType) << "\n";
             std::cout << "xyze_side_ = " << *xyze_side_;
             std::cout << "px_        = " << *px_;
             std::cout << "\n";
@@ -2457,7 +2457,7 @@ namespace CORE::GEO
                 "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
                 "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
                 "change all the integers occuring there double for CLN to work.",
-                ::DRT::DistypeToString(sideType).c_str());
+                CORE::FE::CellTypeToString(sideType).c_str());
           }
 
           int prec = CLN_START_PRECISION;  // standart initial precision
@@ -3055,7 +3055,7 @@ namespace CORE::GEO
         {
           if (sideType != CORE::FE::CellType::tri3)
             dserror("This method only works for tri3 side. Current side is %s",
-                ::DRT::DistypeToString(sideType).c_str());
+                CORE::FE::CellTypeToString(sideType).c_str());
 
           CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
           double distance_tolerance = TOPOLOGICAL_TOLERANCE;
@@ -3374,8 +3374,8 @@ namespace CORE::GEO
           {
             std::cout << "\n\n === ComputeIntersection ===\n";
             std::cout << "--- Setup()\n";
-            std::cout << "  Edge = " << ::DRT::DistypeToString(edgeType) << "\n";
-            std::cout << "  Side = " << ::DRT::DistypeToString(sideType) << "\n";
+            std::cout << "  Edge = " << CORE::FE::CellTypeToString(edgeType) << "\n";
+            std::cout << "  Side = " << CORE::FE::CellTypeToString(sideType) << "\n";
             std::cout << "  xyze_side = " << std::setprecision(15) << xyze_side;
             std::cout << "  xyze_edge = " << std::setprecision(15) << xyze_edge;
           }
@@ -3668,7 +3668,7 @@ namespace CORE::GEO
               dserror(
                   "unsupported element type ( % s ) in WritetoGmsh."
                   " Please feel free to extend the functionality if necessary.",
-                  ::DRT::DistypeToString(sideType).c_str());
+                  CORE::FE::CellTypeToString(sideType).c_str());
           }
 
           file << "View \""
@@ -3924,7 +3924,7 @@ namespace CORE::GEO
                 "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
                 "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
                 "change all the integers occuring there double for CLN to work.",
-                ::DRT::DistypeToString(sideType).c_str());
+                CORE::FE::CellTypeToString(sideType).c_str());
           }
 
           // Converting values for the calculation on the CLN
@@ -4472,7 +4472,7 @@ namespace CORE::GEO
         {
           if (sideType != CORE::FE::CellType::tri3)
             dserror("This method only works for tri3 side. Current side is %s",
-                ::DRT::DistypeToString(sideType).c_str());
+                CORE::FE::CellTypeToString(sideType).c_str());
 
           double distance_tolerance = TOPOLOGICAL_TOLERANCE;
           // get tolerance with 1e-14 around the triangle, but in local coordinates

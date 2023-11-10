@@ -230,7 +230,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 {
   os << "Membrane ";
-  os << " Discretization type: " << DRT::DistypeToString(distype).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   std::cout << std::endl;
   std::cout << data_;

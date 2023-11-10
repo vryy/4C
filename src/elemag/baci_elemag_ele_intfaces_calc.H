@@ -13,7 +13,13 @@
 
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

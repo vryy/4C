@@ -11,6 +11,7 @@ Here is everything related with writing a dat-file
 /*----------------------------------------------------------------------*/
 #include "baci_pre_exodus_writedat.H"
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_lib_conditiondefinition.H"
 #include "baci_pre_exodus_reader.H"
@@ -568,7 +569,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << DRT::DistypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

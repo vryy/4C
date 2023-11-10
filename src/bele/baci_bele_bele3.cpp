@@ -217,7 +217,7 @@ void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
 {
-  os << "Bele3_" << numdofpernode_ << " " << DRT::DistypeToString(Shape());
+  os << "Bele3_" << numdofpernode_ << " " << CORE::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }

@@ -12,15 +12,18 @@ the Baci guide in the Convention chapter.
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
+#include <cmath>
 #include <type_traits>
 
 #define PY5TOL 1.0e-14
 
 namespace CORE::DRT::UTILS
 {
+  // use std::pow directly to allow resolving the overload with FAD types
+  using std::pow;
+
   /*!
    \brief Fill a vector of type VectorType with with 3D shape function
    */
@@ -2288,7 +2291,7 @@ namespace CORE::DRT::UTILS
         break;
       }
       default:
-        std::cout << ::DRT::DistypeToString(distype) << std::endl;
+        std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
         dserror("distype unknown\n");
         break;
     } /* end switch(distype) */

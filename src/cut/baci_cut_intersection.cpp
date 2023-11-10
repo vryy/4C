@@ -187,7 +187,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       dserror(
           "The given side element type is currently unsupported! \n"
           "( dim = %d | sideType = %s ",
-          dimside, ::DRT::DistypeToString(sidetype).c_str());
+          dimside, CORE::FE::CellTypeToString(sidetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -271,7 +271,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     dserror(
         "Two line2 elements are expected, but instead a %s (edge) and %s (side) "
         "element were given.",
-        ::DRT::DistypeToString(edgetype).c_str(), ::DRT::DistypeToString(sidetype).c_str());
+        CORE::FE::CellTypeToString(edgetype).c_str(), CORE::FE::CellTypeToString(sidetype).c_str());
 
   side_rs_corner_intersect.clear();
   edge_r_corner_intersect.clear();
@@ -1390,7 +1390,7 @@ CORE::GEO::CUT::IntersectionFactory::CreateIntersection(
       dserror(
           "Unsupported edgeType! If meaningful, add your edgeType here. \n"
           "Given edgeType = %s",
-          ::DRT::DistypeToString(edge_type).c_str());
+          CORE::FE::CellTypeToString(edge_type).c_str());
       break;
   }
   exit(EXIT_FAILURE);

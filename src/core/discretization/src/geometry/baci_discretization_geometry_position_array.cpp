@@ -11,6 +11,8 @@
 
 #include "baci_discretization_geometry_position_array.H"
 
+#include "baci_lib_element.H"
+
 
 
 CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Element* const ele)

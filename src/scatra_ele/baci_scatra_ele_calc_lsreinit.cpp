@@ -1169,7 +1169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTe
       }
       default:
         dserror("cell distype not implemented yet ( cellType = %s )",
-            DRT::DistypeToString(celldistype).c_str());
+            CORE::FE::CellTypeToString(celldistype).c_str());
         break;
     }
   }

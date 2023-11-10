@@ -423,7 +423,7 @@ void CORE::GEO::CUT::VolumeCell::NewBoundaryCell(
       NewQuad4Cell(mesh, f, x);
       break;
     default:
-      dserror("Unsupported shape ( shape = %s )", ::DRT::DistypeToString(shape).c_str());
+      dserror("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -542,7 +542,7 @@ void CORE::GEO::CUT::VolumeCell::NewIntegrationCell(
       NewPyramid5Cell(mesh, x);
       break;
     default:
-      dserror("Unsupported shape ( shape = %s )", ::DRT::DistypeToString(shape).c_str());
+      dserror("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }

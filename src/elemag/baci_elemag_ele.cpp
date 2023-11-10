@@ -241,7 +241,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   return true;
 }

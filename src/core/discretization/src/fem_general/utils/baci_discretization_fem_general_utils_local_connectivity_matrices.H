@@ -17,7 +17,9 @@ mapping
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
-#include "baci_lib_element.H"
+#include "baci_discretization_fem_general_cell_type_traits.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::DRT::UTILS
 {
@@ -1437,8 +1439,8 @@ namespace CORE::DRT::UTILS
       }
       default:
       {
-        dserror(
-            "discretization type %s not yet implemented", ::DRT::DistypeToString(distype).c_str());
+        dserror("discretization type %s not yet implemented",
+            CORE::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
       }
     }
