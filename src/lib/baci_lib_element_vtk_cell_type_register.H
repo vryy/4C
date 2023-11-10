@@ -128,8 +128,11 @@ namespace DRT
           return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());
         case CORE::FE::CellType::nurbs8:  // nurbs8, not yet implemented
           return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());
-        case CORE::FE::CellType::nurbs27:  // nurbs27, not yet implemented
-          return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());
+        case CORE::FE::CellType::nurbs27:  // nurbs27, using a tri-quadratic hexahedron as hex27
+          return std::pair<uint8_t, std::vector<int>>(
+              29, make_vector<int>()
+                      << 0 << 2 << 8 << 6 << 18 << 20 << 26 << 24 << 1 << 5 << 7 << 3 << 19 << 23
+                      << 25 << 21 << 9 << 11 << 17 << 15 << 12 << 14 << 10 << 16 << 4 << 22 << 13);
         default:
           dserror("Unknown element shape type: %d", baciele_shape_type);
           return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());

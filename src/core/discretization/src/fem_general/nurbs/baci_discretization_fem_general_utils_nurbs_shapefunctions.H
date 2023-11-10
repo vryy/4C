@@ -12,6 +12,10 @@
 
 #include "baci_discretization_fem_general_utils_bspline.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_nurbs_discret.H"
+#include "baci_nurbs_discret_nurbs_utils.H"
 
 
 namespace CORE::DRT::NURBS::UTILS
@@ -92,8 +96,8 @@ namespace CORE::DRT::NURBS::UTILS
 
   */
 
-  template <class V, class WG>
-  bool nurbs_get_1D_funct(V& nurbs_shape_funct, const double& u,
+  template <class V, class UV, class WG>
+  bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
       const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
@@ -373,8 +377,8 @@ namespace CORE::DRT::NURBS::UTILS
 
   */
 
-  template <class VF, class VD, class WG>
-  bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const double& u,
+  template <class VF, class VD, class UV, class WG>
+  bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
       const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
@@ -3868,10 +3872,9 @@ namespace CORE::DRT::NURBS::UTILS
     }
   }
 
-
   //! Evaluate basis functions of nurbs basis functions.
   template <class VF, class UV, class WG>
-  bool nurbs_get_funct(VF& nurbs_shape_funct, const UV& uv,
+  bool nurbs_shape_function_dim(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {

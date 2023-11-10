@@ -183,7 +183,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::DRT::NURBS::UTILS::nurbs_get_funct(val, xi, ele.Knots(), weights, type);
+      return CORE::DRT::NURBS::UTILS::nurbs_shape_function_dim(val, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the first derivative w.r.t. xi of the shape function

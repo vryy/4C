@@ -108,9 +108,18 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for hex elements with %d Gauss points", numgp);
     }
+  }
 
-    // to make the compiler happy
-    return GaussRule3D::undefined;
+  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_nurbs<distype>, int> = 0>
+  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  {
+    switch (numgp)
+    {
+      case 27:
+        return GaussRule3D::hex_27point;
+      default:
+        dserror("I don't know the GaussRule3D for nurbs elements with %d Gauss points", numgp);
+    }
   }
 
   template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
@@ -131,9 +140,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know an open GaussRule3D for tet elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
   template <CORE::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
@@ -150,9 +156,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for wedge elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
   template <CORE::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
@@ -167,9 +170,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule3D for pyramid elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule3D::undefined;
   }
 
   /// get total number of GPs of the 3D Gauss rule at compile time
@@ -410,9 +410,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule2D for quad elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule2D::undefined;
   }
 
   template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
@@ -441,9 +438,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule2D for tri elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule2D::undefined;
   }
 
   //! supported 1d integration rules
@@ -516,9 +510,6 @@ namespace CORE::DRT::UTILS
       default:
         dserror("I don't know the GaussRule1D for line elements with %d Gauss points", numgp);
     }
-
-    // to make the compiler happy
-    return GaussRule1D::undefined;
   }
 
   /*!

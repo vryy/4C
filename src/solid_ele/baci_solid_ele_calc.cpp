@@ -39,8 +39,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -124,11 +124,11 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
-  const NodalCoordinates<distype> nodal_coordinates_old =
-      EvaluateNodalCoordinatesOld<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates_old =
+      EvaluateElementNodesOfPreviousTimestep<distype>(ele, discretization, lm);
 
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -231,8 +231,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
@@ -259,8 +259,8 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   double intenergy = 0.0;
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
@@ -298,8 +298,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
   CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
   CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
-  const NodalCoordinates<distype> nodal_coordinates =
-      EvaluateNodalCoordinates<distype>(ele, discretization, lm);
+  const ElementNodes<distype> nodal_coordinates =
+      EvaluateElementNodes<distype>(ele, discretization, lm);
 
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
@@ -391,6 +391,7 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex18>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex20>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::nurbs27>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5>;

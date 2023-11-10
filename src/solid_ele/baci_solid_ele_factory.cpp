@@ -70,6 +70,10 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
       return CreateSolidCalculationInterface<CORE::FE::CellType::hex18>(
           ele, eletech, kinem_type, eastype);
       break;
+    case CORE::FE::CellType::nurbs27:
+      return CreateSolidCalculationInterface<CORE::FE::CellType::nurbs27>(
+          ele, eletech, kinem_type, eastype);
+      break;
     case CORE::FE::CellType::pyramid5:
       return CreateSolidCalculationInterface<CORE::FE::CellType::pyramid5>(
           ele, eletech, kinem_type, eastype);

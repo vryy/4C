@@ -29,8 +29,8 @@ namespace DRT::ELEMENTS
   {
     using ImplementedSolidCellTypes = std::integer_sequence<CORE::FE::CellType,
         CORE::FE::CellType::hex8, CORE::FE::CellType::hex18, CORE::FE::CellType::hex20,
-        CORE::FE::CellType::hex27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10,
-        CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
+        CORE::FE::CellType::hex27, CORE::FE::CellType::nurbs27, CORE::FE::CellType::tet4,
+        CORE::FE::CellType::tet10, CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
         CORE::FE::apply_celltype_sequence<SolidEleCalc, ImplementedSolidCellTypes>;

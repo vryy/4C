@@ -31,10 +31,12 @@ namespace CORE::DRT::ELEMENTS
    *
    * @param ele (in) : Reference to finite element
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
+   * @param dis (in) : Reference to the discretization
    * @param nodal_data (out) : Assembled data
    */
   void ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
-      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data);
+      const CORE::LINALG::SerialDenseMatrix& data, const ::DRT::Discretization& dis,
+      Epetra_MultiVector& nodal_data);
 
   /*!
    * @brief Averaging of all Gauss point quantities in @data within the element @ele and assembly to

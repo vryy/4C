@@ -58,7 +58,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
       [&](DRT::Element& ele)
       {
         CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-            ele, *stresses->at(ele.Id()), nodal_stresses_source);
+            ele, *stresses->at(ele.Id()), Discret(), nodal_stresses_source);
       });
 
   const auto* nodegids = Discret().NodeRowMap();

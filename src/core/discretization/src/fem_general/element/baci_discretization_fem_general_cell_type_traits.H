@@ -30,6 +30,9 @@ namespace CORE::FE
   inline static constexpr bool is_hex = DETAILS::is_hex<celltype>::value;
 
   template <CORE::FE::CellType celltype>
+  inline static constexpr bool is_nurbs = DETAILS::is_nurbs<celltype>::value;
+
+  template <CORE::FE::CellType celltype>
   inline static constexpr bool is_wedge = DETAILS::is_wedge<celltype>::value;
 
   template <CORE::FE::CellType celltype>
@@ -43,6 +46,10 @@ namespace CORE::FE
 
   template <CORE::FE::CellType celltype>
   inline static constexpr bool is_line = DETAILS::is_line<celltype>::value;
+
+  template <CORE::FE::CellType celltype>
+  inline static constexpr bool use_lagrange_shapefnct =
+      DETAILS::use_lagrange_shapefnct<celltype>::value;
   /// @}
 
 

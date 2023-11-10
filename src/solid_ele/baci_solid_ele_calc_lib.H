@@ -12,6 +12,7 @@
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_fiber_nodal_fiber_holder.H"
 #include "baci_fiber_utils.H"
 #include "baci_lib_discret.H"
@@ -20,6 +21,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_so3_material.H"
+#include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_so3_element_service.H"
 #include "baci_solid_ele_utils.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
@@ -29,6 +31,11 @@
 
 #include <numeric>
 
+namespace DRT::ELEMENTS
+{
+  template <CORE::FE::CellType distype, typename Enable = void>
+  struct ElementNodes;
+}  // namespace DRT::ELEMENTS
 
 namespace DRT::ELEMENTS::DETAIL
 {
@@ -45,6 +52,92 @@ namespace DRT::ELEMENTS::DETAIL
   template <CORE::FE::CellType distype>
   inline static constexpr int num_dof_per_ele = num_nodes<distype>* num_dim<distype>;
 }  // namespace DRT::ELEMENTS::DETAIL
+
+namespace DRT::ELEMENTS::DETAILS
+{
+  /*!
+   * @brief Get the nodal coordinates
+   *
+   * Extracts the displacement from the previous iteration from the discretization and computes the
+   * current and reference position of the nodal coordinates
+   *
+   * @tparam distype : Discretization type
+   * @param ele (in) : Reference to the element
+   * @param discretization (in) : Reference to the discretization
+   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   * @return ElementNodes<distype> : Nodal coordinates from previous iteration
+   */
+  template <CORE::FE::CellType distype>
+  DRT::ELEMENTS::ElementNodes<distype> GetNodalCoordinates(
+      const DRT::Element& ele, const Epetra_Vector& displacements, const std::vector<int>& lm)
+  {
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
+
+    DRT::ELEMENTS::ElementNodes<distype> coordinates;
+    for (int i = 0; i < DETAIL::num_nodes<distype>; ++i)
+    {
+      for (int d = 0; d < DETAIL::num_dim<distype>; ++d)
+      {
+        coordinates.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
+        coordinates.current_coordinates_(i, d) =
+            coordinates.reference_coordinates_(i, d) + mydisp[i * DETAIL::num_dim<distype> + d];
+      }
+    }
+
+    return coordinates;
+  }
+
+  /*!
+   * @brief Evaluates the nodal coordinates for the desired iteration (state)
+   *
+   * Extracts the displacement from the discretization and computes the current and reference
+   * position of the nodal coordinates
+   *
+   * @tparam distype : Discretization type
+   * @param ele (in) : Reference to the element
+   * @param discretization (in) : Reference to the discretization
+   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   * @param state_type (in) : State to obtain from discretization
+   * @return ElementNodes<distype> : Nodal coordinates
+   */
+
+  template <CORE::FE::CellType distype,
+      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<distype>, bool> = true>
+  DRT::ELEMENTS::ElementNodes<distype> EvaluateElementNodes(const DRT::Element& ele,
+      const DRT::Discretization& discretization, const std::vector<int>& lm,
+      const std::string& state_type)
+  {
+    const Epetra_Vector& displacements = *discretization.GetState(state_type);
+
+    return GetNodalCoordinates<distype>(ele, displacements, lm);
+  }
+
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_nurbs<distype>, bool> = true>
+  DRT::ELEMENTS::ElementNodes<distype> EvaluateElementNodes(const DRT::Element& ele,
+      const DRT::Discretization& discretization, const std::vector<int>& lm,
+      const std::string& state_type)
+  {
+    if (state_type == "old displacement")
+    {
+      dserror(
+          "The nodal evaluation for the old displacement for the GEMM implementation is not tested "
+          "for NURBS elements");
+    }
+
+    const Epetra_Vector& displacements = *discretization.GetState(state_type);
+
+    auto coordinates = GetNodalCoordinates<distype>(ele, displacements, lm);
+
+    // Obtain the information required for a NURBS element
+    bool zero_size = ::DRT::NURBS::GetMyNurbsKnotsAndWeights(
+        discretization, &ele, coordinates.knots_, coordinates.weights_);
+    if (zero_size)
+      dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
+
+    return coordinates;
+  }
+}  // namespace DRT::ELEMENTS::DETAILS
 
 namespace DRT::ELEMENTS
 {
@@ -191,22 +284,50 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief A type holding the reference and the current position of nodes of an element
+   * @brief A type holding information of the nodes of an element,
+   * such as their reference and current position. Additional information
+   * is stored for NURBS elements
    *
    * @tparam distype
    */
-  template <CORE::FE::CellType distype>
-  struct NodalCoordinates
+  template <CORE::FE::CellType distype, typename Enable>
+  struct ElementNodes
   {
     /*!
      * @brief Position of nodes in the reference configuration
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> reference_;
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>
+        reference_coordinates_;
 
     /*!
      * @brief Position of nodes in the current configuration
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> current_;
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> current_coordinates_;
+  };
+
+  template <CORE::FE::CellType distype>
+  struct ElementNodes<distype, typename std::enable_if<CORE::FE::is_nurbs<distype>>::type>
+  {
+    /*!
+     * @brief Position of nodes in the reference configuration
+     */
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>
+        reference_coordinates_;
+
+    /*!
+     * @brief Position of nodes in the current configuration
+     */
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> current_coordinates_;
+
+    /*!
+     * @brief Knot span of a NURBS element
+     */
+    std::vector<CORE::LINALG::SerialDenseVector> knots_;
+
+    /*!
+     * @brief Weights of control points
+     */
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, 1, double> weights_;
   };
 
   /*!
@@ -238,71 +359,29 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the nodal coordinates from the previous iteration (old)
+   * @brief Evaluates the nodal coordinates from this iteration
    *
-   * Extracts the displacement from the previous iteration from the discretization and computes the
-   * current and reference position of the nodal coordinates
-   *
-   * @tparam distype : Discretization type
    * @param ele (in) : Reference to the element
-   * @param discretization (in) : Reference to the discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   * @return NodalCoordinates<distype> : Nodal coordinates from previous iteration
    */
   template <CORE::FE::CellType distype>
-  NodalCoordinates<distype> EvaluateNodalCoordinatesOld(const DRT::Element& ele,
+  ElementNodes<distype> EvaluateElementNodes(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Epetra_Vector& displacements = *discretization.GetState("old displacement");
-    std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
-
-    NodalCoordinates<distype> coordinates;
-    for (int i = 0; i < DETAIL::num_nodes<distype>; ++i)
-    {
-      for (int d = 0; d < DETAIL::num_dim<distype>; ++d)
-      {
-        coordinates.reference_(i, d) = ele.Nodes()[i]->X()[d];
-        coordinates.current_(i, d) =
-            coordinates.reference_(i, d) + mydisp[i * DETAIL::num_dim<distype> + d];
-      }
-    }
-
-    return coordinates;
+    return DETAILS::EvaluateElementNodes<distype>(ele, discretization, lm, "displacement");
   }
 
   /*!
-   * @brief Evaluates the nodal coordinates from this iteration
+   * @brief Evaluates the nodal coordinates from the previous iteration (old)
    *
-   * Extracts the displacement from the discretization and computes the current and reference
-   * position of the nodal coordinates
-   *
-   * @tparam distype : Discretization type
    * @param ele (in) : Reference to the element
-   * @param discretization (in) : Reference to the discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   * @return NodalCoordinates<distype> : Nodal coordinates
    */
   template <CORE::FE::CellType distype>
-  NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::Element& ele,
+  ElementNodes<distype> EvaluateElementNodesOfPreviousTimestep(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Epetra_Vector& displacements = *discretization.GetState("displacement");
-    std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
-
-    NodalCoordinates<distype> coordinates;
-    for (int i = 0; i < DETAIL::num_nodes<distype>; ++i)
-    {
-      for (int d = 0; d < DETAIL::num_dim<distype>; ++d)
-      {
-        coordinates.reference_(i, d) = ele.Nodes()[i]->X()[d];
-        coordinates.current_(i, d) =
-            coordinates.reference_(i, d) + mydisp[i * DETAIL::num_dim<distype> + d];
-      }
-    }
-
-    return coordinates;
+    return DETAILS::EvaluateElementNodes<distype>(ele, discretization, lm, "old displacement");
   }
 
   /*!
@@ -333,7 +412,8 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_hex<distype>, int> = 0>
+  template <CORE::FE::CellType distype,
+      std::enable_if_t<CORE::FE::is_hex<distype> | CORE::FE::is_nurbs<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
@@ -419,13 +499,27 @@ namespace DRT::ELEMENTS
    * @return ShapeFunctionsAndDerivatives<distype> : An object holding the shape functions and the
    * first derivatives evaluated at the respective point in the parameter space
    */
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType distype,
+      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<distype>, bool> = true>
   ShapeFunctionsAndDerivatives<distype> EvaluateShapeFunctionsAndDerivs(
-      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi)
+      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      const ElementNodes<distype>& nodal_coordinates)
   {
     ShapeFunctionsAndDerivatives<distype> shapefcns;
     CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns.shapefunctions_);
     CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, shapefcns.derivatives_);
+
+    return shapefcns;
+  }
+
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_nurbs<distype>, bool> = true>
+  ShapeFunctionsAndDerivatives<distype> EvaluateShapeFunctionsAndDerivs(
+      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      const ElementNodes<distype>& nodal_coordinates)
+  {
+    ShapeFunctionsAndDerivatives<distype> shapefcns;
+    CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(shapefcns.shapefunctions_,
+        shapefcns.derivatives_, xi, nodal_coordinates.knots_, nodal_coordinates.weights_, distype);
 
     return shapefcns;
   }
@@ -461,11 +555,11 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType distype>
   JacobianMapping<distype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalCoordinates<distype>& nodal_coordinates)
+      const ElementNodes<distype>& nodal_coordinates)
   {
     JacobianMapping<distype> jacobian;
 
-    jacobian.jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
+    jacobian.jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
     jacobian.inverse_jacobian_ = jacobian.jacobian_;
     jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
     jacobian.N_XYZ_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
@@ -484,10 +578,10 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType distype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalCoordinates<distype>& nodal_coordinates)
+      const ElementNodes<distype>& nodal_coordinates)
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> jacobian;
-    jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
+    jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
 
     return jacobian.Determinant();
   }
@@ -501,7 +595,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   JacobianMapping<distype> EvaluateJacobianMappingCentroid(
-      const NodalCoordinates<distype>& nodal_coordinates)
+      const ElementNodes<distype>& nodal_coordinates)
   {
     // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi_centroid =
@@ -509,7 +603,7 @@ namespace DRT::ELEMENTS
 
     // shape functions and derivatives evaluated at element centroid
     const ShapeFunctionsAndDerivatives<distype> shape_functions_centroid =
-        EvaluateShapeFunctionsAndDerivs<distype>(xi_centroid);
+        EvaluateShapeFunctionsAndDerivs<distype>(xi_centroid, nodal_coordinates);
 
     // jacobian mapping evaluated at centroid
     const JacobianMapping<distype> jacobian_mapping_centroid =
@@ -546,10 +640,10 @@ namespace DRT::ELEMENTS
    * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> : Element centroid's coordinates in
    * reference configuration
    */
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType distype,
+      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<distype>, int> = 0>
   CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinateCentroid(
-      const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>&
-          nodal_coordinates_reference)
+      const ElementNodes<distype>& nodal_coordinates)
   {
     const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi_centroid =
         EvaluateParameterCoordinateCentroid<distype>();
@@ -558,7 +652,26 @@ namespace DRT::ELEMENTS
     CORE::DRT::UTILS::shape_function<distype>(xi_centroid, shape_functions_centroid);
 
     const CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> centroid_coordinates_reference =
-        EvaluateReferenceCoordinate<distype>(nodal_coordinates_reference, shape_functions_centroid);
+        EvaluateReferenceCoordinate<distype>(
+            nodal_coordinates.reference_coordinates_, shape_functions_centroid);
+
+    return centroid_coordinates_reference;
+  }
+
+  template <CORE::FE::CellType distype, std::enable_if_t<CORE::FE::is_nurbs<distype>, int> = 0>
+  CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinateCentroid(
+      const ElementNodes<distype>& nodal_coordinates)
+  {
+    const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi_centroid =
+        EvaluateParameterCoordinateCentroid<distype>();
+
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, 1> shape_functions_centroid(true);
+    CORE::DRT::NURBS::UTILS::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
+        nodal_coordinates.knots_, nodal_coordinates.weights_, distype);
+
+    const CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> centroid_coordinates_reference =
+        EvaluateReferenceCoordinate<distype>(
+            nodal_coordinates.reference_coordinates_, shape_functions_centroid);
 
     return centroid_coordinates_reference;
   }
@@ -588,7 +701,7 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType distype>
   SpatialMaterialMapping<distype> EvaluateSpatialMaterialMapping(
       const JacobianMapping<distype>& jacobian_mapping,
-      const NodalCoordinates<distype>& nodal_coordinates, const double scale_defgrd = 1.0,
+      const ElementNodes<distype>& nodal_coordinates, const double scale_defgrd = 1.0,
       const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
   {
     SpatialMaterialMapping<distype> spatial_material_mapping;
@@ -602,7 +715,7 @@ namespace DRT::ELEMENTS
     else
     {
       spatial_material_mapping.deformation_gradient_.MultiplyTT(
-          scale_defgrd, nodal_coordinates.current_, jacobian_mapping.N_XYZ_);
+          scale_defgrd, nodal_coordinates.current_coordinates_, jacobian_mapping.N_XYZ_);
     }
     spatial_material_mapping.inverse_deformation_gradient_.Invert(
         spatial_material_mapping.deformation_gradient_);
@@ -669,7 +782,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType distype, std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   double EvaluateDeformationGradientDeterminantCentroid(
-      const NodalCoordinates<distype>& nodal_coordinates)
+      const ElementNodes<distype>& nodal_coordinates)
   {
     // jacobian mapping at centroid of element
     const JacobianMapping<distype> jacobian_mapping_centroid =
@@ -1095,7 +1208,7 @@ namespace DRT::ELEMENTS
    * point.
    */
   template <CORE::FE::CellType distype, typename GaussPointEvaluator>
-  inline void ForEachGaussPoint(const NodalCoordinates<distype>& nodal_coordinates,
+  inline void ForEachGaussPoint(const ElementNodes<distype>& nodal_coordinates,
       const CORE::DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
@@ -1104,7 +1217,7 @@ namespace DRT::ELEMENTS
           EvaluateParameterCoordinate<distype>(integration, gp);
 
       const ShapeFunctionsAndDerivatives<distype> shape_functions =
-          EvaluateShapeFunctionsAndDerivs<distype>(xi);
+          EvaluateShapeFunctionsAndDerivs<distype>(xi, nodal_coordinates);
 
       const JacobianMapping<distype> jacobian_mapping =
           EvaluateJacobianMapping(shape_functions, nodal_coordinates);
@@ -1125,13 +1238,12 @@ namespace DRT::ELEMENTS
    * @param params (in/out) : ParameterList the quantities are added to
    */
   template <CORE::FE::CellType distype>
-  void EvaluateGPCoordinatesAndAddToParameterList(
-      const NodalCoordinates<distype>& nodal_coordinates,
+  void EvaluateGPCoordinatesAndAddToParameterList(const ElementNodes<distype>& nodal_coordinates,
       const ShapeFunctionsAndDerivatives<distype>& shape_functions_gp,
       Teuchos::ParameterList& params)
   {
     auto gp_ref_coord = EvaluateReferenceCoordinate<distype>(
-        nodal_coordinates.reference_, shape_functions_gp.shapefunctions_);
+        nodal_coordinates.reference_coordinates_, shape_functions_gp.shapefunctions_);
     params.set("gprefecoord", gp_ref_coord);
   }
 
@@ -1145,10 +1257,9 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType distype>
   void EvaluateCentroidCoordinatesAndAddToParameterList(
-      const NodalCoordinates<distype>& nodal_coordinates, Teuchos::ParameterList& params)
+      const ElementNodes<distype>& nodal_coordinates, Teuchos::ParameterList& params)
   {
-    auto element_center =
-        EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates.reference_);
+    auto element_center = EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates);
     params.set("elecenter", element_center);
   }
 
