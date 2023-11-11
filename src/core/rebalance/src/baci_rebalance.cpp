@@ -338,7 +338,8 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
   auto result = CORE::GEOMETRICSEARCH::GlobalCollisionSearch(
       bounding_boxes, bounding_boxes, dis.Comm(), params.verbosity_);
 
-  // 2. Set up a multivector which will be populated with all ghosting information
+  // 2. Set up a multivector which will be populated with all ghosting information,
+  // i.e., the nodal connectivity of each element that collides with an element on this rank
   const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
   Epetra_MultiVector node_information(*dis.ElementRowMap(), n_nodes_per_element_max, true);
 
@@ -396,12 +397,12 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
   for (const auto& [predicate_lid, predicate_gid, primitive_lid, primitive_gid, primitive_proc] :
       result)
   {
-    int predicate_lid2 = dis.ElementRowMap()->LID(predicate_gid);
-    if (predicate_lid2 < 0)
+    int predicate_lid_discretization = dis.ElementRowMap()->LID(predicate_gid);
+    if (predicate_lid_discretization < 0)
       dserror("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
           dis.Comm().MyPID());
-    if (predicate_lid != predicate_lid2)
-      dserror("The ids dont match from arborx and th discretization");
+    if (predicate_lid != predicate_lid_discretization)
+      dserror("The ids dont match from arborx and the discretization");
     const auto* predicate = dis.gElement(predicate_gid);
 
     int primitive_lid_in_map = my_colliding_primitives_map.LID(primitive_gid);
@@ -413,7 +414,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
       int index_main = node_main->Id();
       for (int j_node = 0; j_node < n_nodes_per_element_max; ++j_node)
       {
-        // Get indices for predicate nodes
+        // Get indices for primitive nodes
         int primitive_node_index =
             (int)(my_colliding_primitives_node_ids.Pointers()[j_node][primitive_lid_in_map]);
 
