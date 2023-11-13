@@ -1250,7 +1250,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     std::vector<double>& point_coordinates) const
 {
   // This NURBS element will be displayed like a hex27 element in the vtk output.
-  const int number_of_ouput_points = 27;
+  const int number_of_output_points = 27;
   const auto vtk_cell_info =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27);
   const std::vector<int>& numbering = vtk_cell_info.second;
@@ -1277,7 +1277,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     // Loop over the "nodes" of the hex27 element.
     CORE::LINALG::Matrix<3, 1, double> r;
     CORE::LINALG::Matrix<3, 1, double> xi;
-    for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
+    for (unsigned int i_node_hex = 0; i_node_hex < number_of_output_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)
         xi(i) = CORE::DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
@@ -1289,7 +1289,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     }
   }
 
-  return number_of_ouput_points;
+  return number_of_output_points;
 }
 
 /**
@@ -1298,7 +1298,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
 unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResultDataVector(
     const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
     unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
-    std::vector<double>& vtu_point_result_data) const
+    std::vector<double>& output_point_result_data) const
 {
   if (read_result_data_from_dofindex != 0)
     dserror("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
@@ -1306,7 +1306,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
   if (result_num_dofs_per_node != 3)
     dserror("The nurbs elements can only output nodal data with dimension 3, e.g., displacements");
 
-  // This NURBS element will be displayed like a hex27 element in the vtk output.
+  // This NURBS element will be displayed like a hex27 element in the visualization output.
   const int number_of_ouput_points = 27;
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27).second;
@@ -1338,7 +1338,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
       // Get the reference position at the parameter coordinate.
       EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
 
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) vtu_point_result_data.push_back(r(i_dim));
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) output_point_result_data.push_back(r(i_dim));
     }
   }
 

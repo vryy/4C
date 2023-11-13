@@ -283,7 +283,7 @@ namespace DRT
             DRT::Discretization& discretization, bool do_inverse);
 
         /**
-         * \brief Add the element geometry visualization to the vtu data vectors (derived)
+         * \brief Add the element geometry visualization to the visualization data vectors (derived)
          */
         unsigned int AppendVisualizationGeometry(const DRT::Discretization& discret,
             std::vector<uint8_t>& cell_types,
@@ -297,7 +297,7 @@ namespace DRT
             const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
             unsigned int& result_num_dofs_per_node,
             const unsigned int read_result_data_from_dofindex,
-            std::vector<double>& vtu_point_result_data) const override;
+            std::vector<double>& output_point_result_data) const override;
 
        protected:
         //! action parameters recognized by So_nurbs27
