@@ -18,6 +18,7 @@
 #include "baci_lib_node.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_red_airways_elem_params.h"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -358,11 +359,10 @@ namespace DRT
       //! set qout
       //  void           setqout(double Qout){ qout_ = Qout;}
 
-      //! get element parameters
-      void getParams(std::string name, double& var);
-
-      //! get element parameters
-      void getParams(std::string name, int& var);
+      /*!
+       * \brief Get fixed airway parameters of the RedAirway element
+       */
+      [[nodiscard]] const REDAIRWAYS::AirwayParams& GetAirwayParams() const;
 
      private:
       //! action parameters recognized by airway
@@ -401,13 +401,9 @@ namespace DRT
       //! container containing all kind of airway thisandthat
       DRT::Container data_;
 
+      //! Airway-specific parameters
+      DRT::REDAIRWAYS::AirwayParams airwayParams_;
 
-      // data
-      std::map<std::string, double> elemParams_;
-
-
-      // element tree generation
-      int generation_;
 
       // internal calculation methods
 
@@ -753,16 +749,18 @@ namespace DRT
       //! set qout
       //  void           setqout(double Qout){ qout_ = Qout;}
 
-      //! set element parameters
-      void setParams(std::string name, double& var);
+      /*!
+       * \brief Update relaxed reference volume of the RedAcinus element.
+       *
+       * Prestressed volume states in the input file may differ from the actual V0 used in many
+       * formulas.
+       */
+      void UpdateRelaxedVolume(double newVol);
 
-      //! get element parameters
-      void getParams(std::string name, double& var);
-
-      //! get element parameters
-      void getParams(std::string name, int& var);
-
-      const std::map<std::string, double> getAllParams() { return elemParams_; }
+      /*!
+       * \brief Get fixed acinus parameters of the RedAcinus element
+       */
+      [[nodiscard]] const REDAIRWAYS::AcinusParams& GetAcinusParams() const;
 
      private:
       //! action parameters recognized by acinus
@@ -797,13 +795,9 @@ namespace DRT
       //! container containing all kind of airway thisandthat
       DRT::Container data_;
 
+      //! Acinus-specific parameters
+      DRT::REDAIRWAYS::AcinusParams acinusParams_;
 
-      // data
-      std::map<std::string, double> elemParams_;
-
-
-      // element tree generation
-      int generation_;
 
       // internal calculation methods
 

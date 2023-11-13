@@ -92,17 +92,17 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
     Teuchos::RCP<const MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params, double time,
     double dt)
 {
+  const auto acinus_params = ele->GetAcinusParams();
+
   // Decide which acinus material should be used
   if ((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
       (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_exponential) ||
       (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_doubleexponential) ||
       (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden))
   {
-    double VolAcinus;
-    ele->getParams("AcinusVolume", VolAcinus);
-    double volAlvDuct;
-    ele->getParams("AlveolarDuctVolume", volAlvDuct);
-    const double NumOfAcini = double(floor(VolAcinus / volAlvDuct));
+    const double VolAcinus = acinus_params.volume_relaxed;
+    const double volAlvDuct = acinus_params.alveolar_duct_volume;
+    const auto NumOfAcini = double(floor(VolAcinus / volAlvDuct));
 
     const Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat =
         Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(ele->Material());
@@ -212,9 +212,6 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   // Call routine for calculating element matrix and right hand side
   Sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
 
-  double Ao = 0.0;
-  ele->getParams("Area", Ao);
-
   // Put zeros on second line of matrix and rhs in case of interacinar linker
   if (myial[1] > 0.0)
   {
@@ -238,6 +235,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
   const int myrank = discretization.Comm().MyPID();
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto acinus_params = ele->GetAcinusParams();
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
@@ -256,8 +254,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
   // Find the volume of an acinus element
   {
     int gid2 = ele->Id();
-    double acin_vol = 0.0;
-    ele->getParams("AcinusVolume", acin_vol);
+    double acin_vol = acinus_params.volume_relaxed;
     evaluation_data.acini_e_volume->ReplaceGlobalValues(1, &acin_vol, &gid2);
   }
 
@@ -281,10 +278,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
 
   if (evaluation_data.solveScatra)
   {
-    double A = 0.0;
-    double V = 0.0;
-    ele->getParams("AcinusVolume", V);
-    ele->getParams("Area", A);
+    const double A = acinus_params.area;
+    const double V = acinus_params.volume_relaxed;
     int gid = lm[1];
     evaluation_data.junVolMix_Corrector->ReplaceGlobalValues(1, &A, &gid);
 
@@ -757,6 +752,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   const int elemVecdim = lm.size();
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto acinus_params = ele->GetAcinusParams();
 
   // Get control parameters for time integration
   // Get time-step size
@@ -843,8 +839,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
     evaluation_data.acinar_vnp->ReplaceGlobalValues(1, &acinus_volume, &gid);
 
     // Calculate correponding acinar strain
-    double vo = 0.0;
-    ele->getParams("AcinusVolume", vo);
+    const double vo = acinus_params.volume_relaxed;
     double avs_np = (acinus_volume - vo) / vo;
     evaluation_data.acinar_vnp_strain->ReplaceGlobalValues(1, &avs_np, &gid);
   }
@@ -1018,6 +1013,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
     Teuchos::RCP<MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto acinus_params = ele->GetAcinusParams();
 
   // get the element qout
   double q_out = (*evaluation_data.qout_np)[ele->LID()];
@@ -1025,19 +1021,22 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
   // if transport is flowing into the acinus
   if (q_out >= 0.0)
   {
-    ele->getParams("Area", volumeMix_np(1));
+    volumeMix_np(1) = acinus_params.area;
   }
   // els if transport is flowing out of the acinus
   else
   {
-    ele->getParams("Area", volumeMix_np(0));
-    ele->getParams("Area", volumeMix_np(1));
+    volumeMix_np(0) = acinus_params.area;
+    volumeMix_np(1) = acinus_params.area;
   }
 
   // extra treatment if an acinus is not connected to anything else
   for (int i = 0; i < iel; i++)
   {
-    if (ele->Nodes()[i]->NumElement() == 1) ele->getParams("Area", volumeMix_np(i));
+    if (ele->Nodes()[i]->NumElement() == 1)
+    {
+      volumeMix_np(1) = acinus_params.area;
+    }
   }
 }
 
@@ -1480,6 +1479,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
 {
   // Get all general state vectors: flow, pressure,
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto acinus_params = ele->GetAcinusParams();
 
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
 
@@ -1501,11 +1501,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
 
   // Find the total gas exchange surface inside an acinus
   // get the initial volume of an acinus
-  double volAcinus0;
-  ele->getParams("AcinusVolume", volAcinus0);
+  const double volAcinus0 = acinus_params.volume_relaxed;
   // get the initial volume of an alveolar duct
-  double volAlvDuct0;
-  ele->getParams("AlveolarDuctVolume", volAlvDuct0);
+  const double volAlvDuct0 = acinus_params.alveolar_duct_volume;
   // find the  number of alveolar duct
   const double numOfAlvDucts = double(floor(volAcinus0 / volAlvDuct0));
   // define the number of alveoli per alveolar duct

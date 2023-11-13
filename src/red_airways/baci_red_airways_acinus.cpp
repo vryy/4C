@@ -102,8 +102,7 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
       elemType_(old.elemType_),
       resistance_(old.elemType_),
       data_(old.data_),
-      elemParams_(old.elemParams_),
-      generation_(old.generation_)
+      acinusParams_(old.acinusParams_)
 {
   return;
 }
@@ -159,16 +158,11 @@ void DRT::ELEMENTS::RedAcinus::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, elemType_);
   AddtoPack(data, resistance_);
 
-  std::map<std::string, double>::const_iterator it;
-
-  AddtoPack(data, (int)(elemParams_.size()));
-  for (it = elemParams_.begin(); it != elemParams_.end(); it++)
-  {
-    AddtoPack(data, it->first);
-    AddtoPack(data, it->second);
-  }
-
-  AddtoPack(data, generation_);
+  AddtoPack(data, acinusParams_.volume_relaxed);
+  AddtoPack(data, acinusParams_.alveolar_duct_volume);
+  AddtoPack(data, acinusParams_.area);
+  AddtoPack(data, acinusParams_.volume_init);
+  AddtoPack(data, acinusParams_.generation);
 
   return;
 }
@@ -191,22 +185,12 @@ void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
 
   ExtractfromPack(position, data, elemType_);
   ExtractfromPack(position, data, resistance_);
-  std::map<std::string, double> it;
-  int n = 0;
 
-  ExtractfromPack(position, data, n);
-
-  for (int i = 0; i < n; i++)
-  {
-    std::string name;
-    double val;
-    ExtractfromPack(position, data, name);
-    ExtractfromPack(position, data, val);
-    elemParams_[name] = val;
-  }
-
-  // extract generation
-  ExtractfromPack(position, data, generation_);
+  ExtractfromPack(position, data, acinusParams_.volume_relaxed);
+  ExtractfromPack(position, data, acinusParams_.alveolar_duct_volume);
+  ExtractfromPack(position, data, acinusParams_.area);
+  ExtractfromPack(position, data, acinusParams_.volume_init);
+  ExtractfromPack(position, data, acinusParams_.generation);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -286,50 +270,16 @@ bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<doub
   return mxwll_0d_acin->VisData(name, data, this->Id());
 }
 
-/*-----------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::setParams(std::string name, double& var)
-{
-  std::map<std::string, double>::iterator it;
-  it = elemParams_.find(name);
-  if (it == elemParams_.end())
-  {
-    dserror("[%s] is not found with in the element variables", name.c_str());
-    exit(1);
-  }
-  elemParams_[name] = var;
-}
 
-/*----------------------------------------------------------------------*
- |  Get element parameters (public)                        ismail 04/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::getParams(std::string name, double& var)
+void DRT::ELEMENTS::RedAcinus::UpdateRelaxedVolume(double newVol)
 {
-  std::map<std::string, double>::iterator it;
-  it = elemParams_.find(name);
-  if (it == elemParams_.end())
-  {
-    dserror("[%s] is not found with in the element variables", name.c_str());
-    exit(1);
-  }
-  var = elemParams_[name];
+  acinusParams_.volume_relaxed = newVol;
 }
 
 
-/*----------------------------------------------------------------------*
- |  Get element parameters (public)                        ismail 03/11 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::getParams(std::string name, int& var)
+const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams() const
 {
-  if (name == "Generation")
-  {
-    var = generation_;
-  }
-  else
-  {
-    dserror("[%s] is not found with in the element INT variables", name.c_str());
-    exit(1);
-  }
+  return acinusParams_;
 }
 
 /*----------------------------------------------------------------------*
