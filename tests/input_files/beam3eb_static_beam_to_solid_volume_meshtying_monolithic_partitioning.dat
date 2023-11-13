@@ -16,7 +16,7 @@ STRUCT_DISP                           No
 FILESTEPS                             1000
 VERBOSITY                             verbose
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT                    binary
+OUTPUT_DATA_FORMAT                    ascii
 INTERVAL_STEPS                        1
 EVERY_ITERATION                       no
 -------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
