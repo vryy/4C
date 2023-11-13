@@ -20,12 +20,12 @@ OUTPUT_DATA_FORMAT                    ascii
 INTERVAL_STEPS                        1
 EVERY_ITERATION                       no
 -------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
-OUTPUT_STRUCTURE                      yes
-ELEMENT_OWNER                         yes
-ELEMENT_GHOSTING                      yes
+OUTPUT_STRUCTURE		      yes
+ELEMENT_OWNER			      yes
+ELEMENT_GHOSTING		      yes
 -----------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
-OUTPUT_BEAMS                          yes
-ELEMENT_GHOSTING                      yes
+OUTPUT_BEAMS			      yes
+ELEMENT_GHOSTING		      yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
