@@ -163,6 +163,8 @@ namespace
       Teuchos::RCP<const MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params, double time,
       double dt, bool compute_awacinter)
   {
+    const auto airway_params = ele->GetAirwayParams();
+
     double dens = 0.0;
     double visc = 0.0;
 
@@ -195,23 +197,17 @@ namespace
     double qin_np = params.qin_np;
 
     // get the generation number
-    int generation = 0;
-    ele->getParams("Generation", generation);
+    const int generation = airway_params.generation;
 
     double R = -1.0;
 
     // get element information
-    double Ao = 0.0;
-    double A = 0.0;
-    double velPow = 0.0;
-
-    ele->getParams("Area", Ao);
-    A = Ao;
-    ele->getParams("PowerOfVelocityProfile", velPow);
+    const double Ao = airway_params.area;
+    double A = Ao;
+    const double velPow = airway_params.power_velocity_profile;
 
     if (ele->ElemSolvingType() == "Linear")
     {
-      A = Ao;
     }
     else if (ele->ElemSolvingType() == "NonLinear")
     {
@@ -224,9 +220,7 @@ namespace
     }
 
     // Get airway branch length
-    double l_branch = 0.0;
-    ele->getParams("BranchLength", l_branch);
-
+    double l_branch = airway_params.branch_length;
     if (l_branch < 0.0) l_branch = L;
 
     // evaluate Poiseuille resistance
@@ -408,8 +402,7 @@ namespace
     //------------------------------------------------------------
     // Set high resistance for collapsed airway
     //------------------------------------------------------------
-    double airwayColl = 0;
-    ele->getParams("AirwayColl", airwayColl);
+    const double airwayColl = airway_params.airway_coll;
 
     if (airwayColl == 1)
     {
@@ -424,11 +417,11 @@ namespace
     //------------------------------------------------------------
     // get airway compliance
     //------------------------------------------------------------
-    double Ew, tw, nu;
+    const double Ew = airway_params.wall_elasticity;
+    const double tw = airway_params.wall_thickness;
+    const double nu = airway_params.poisson_ratio;
+
     // Get element compliance
-    ele->getParams("WallElasticity", Ew);
-    ele->getParams("WallThickness", tw);
-    ele->getParams("PoissonsRatio", nu);
     double C = 0.0;
     double Ec = 0.0;
     Ec = (Ew * tw * sqrt(M_PI)) / ((1.0 - nu * nu) * 2.0 * sqrt(A) * Ao * L);
@@ -440,10 +433,9 @@ namespace
     //------------------------------------------------------------
     // get airway viscous resistance
     //------------------------------------------------------------
-    double Ts, phis;
+    const double Ts = airway_params.viscous_Ts;
+    const double phis = airway_params.viscous_phase_shift;
     // define 0D airway components
-    ele->getParams("ViscousPhaseShift", phis);
-    ele->getParams("ViscousTs", Ts);
     double gammas = Ts * tan(phis) * (Ew * tw * sqrt(M_PI) / (1.0 - nu * nu)) / (4.0 * M_PI);
     double Rvis = gammas / (Ao * sqrt(Ao) * L);
 
@@ -602,6 +594,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
   std::vector<int>::iterator it_vcr;
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto airway_params = ele->GetAirwayParams();
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -688,10 +681,8 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
     elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->LID()];
   }
 
-
   // Routine for open/collapsed decision
-  double airwayColl = 0.0;
-  ele->getParams("AirwayColl", airwayColl);
+  const double airwayColl = airway_params.airway_coll;
   if (airwayColl == 1)
   {
     EvaluateCollapse(ele, epnp, params, dt);
@@ -720,6 +711,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
   const int myrank = discretization.Comm().MyPID();
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto airway_params = ele->GetAirwayParams();
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
@@ -749,8 +741,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
       evaluation_data.p0nm->ReplaceGlobalValues(1, &val, &gid);
     }
 
-    double A;
-    ele->getParams("Area", A);
+    const double A = airway_params.area;
 
     if (evaluation_data.solveScatra)
     {
@@ -767,8 +758,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         const double L = GetElementLength<distype>(ele);
 
         // get Area
-        double area;
-        ele->getParams("Area", area);
+        const double area = airway_params.area;
 
         // find volume
         double vFluid = area * L;
@@ -870,15 +860,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
   //  if(myrank == ele->Owner())
   {
     int gid = ele->Id();
-    int generation = 0;
-    ele->getParams("Generation", generation);
+    const int generation = airway_params.generation;
 
     double val = double(generation);
     evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
 
 
-    double A;
-    ele->getParams("Area", A);
+    const double A = airway_params.area;
     double V = A * L;
     evaluation_data.elemVolume->ReplaceGlobalValues(1, &V, &gid);
     evaluation_data.elemArea0->ReplaceGlobalValues(1, &A, &gid);
@@ -897,12 +885,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
     RedAirway* ele, CORE::LINALG::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto airway_params = ele->GetAirwayParams();
 
-  double s_c, s_o, Pcrit_o, Pcrit_c;
-  ele->getParams("S_Close", s_c);
-  ele->getParams("S_Open", s_o);
-  ele->getParams("Pcrit_Close", Pcrit_c);
-  ele->getParams("Pcrit_Open", Pcrit_o);
+  const double s_c = airway_params.s_close;
+  const double s_o = airway_params.s_open;
+  const double Pcrit_o = airway_params.p_crit_open;
+  const double Pcrit_c = airway_params.p_crit_close;
 
   double xnp = (*evaluation_data.x_np)[ele->LID()];
   double xn = (*evaluation_data.x_n)[ele->LID()];
@@ -1511,6 +1499,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   // get all essential vector variables
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  const auto airway_params = ele->GetAirwayParams();
 
   // extract all essential element variables from their corresponding variables
   double qinnp = (*evaluation_data.qin_np)[ele->LID()];
@@ -1541,8 +1530,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   const double L = GetElementLength<distype>(ele);
 
   // get area0
-  double area0 = 0.0;
-  ele->getParams("Area", area0);
+  const double area0 = airway_params.area;
 
   // calculate the current area
   double area = eVolumenp / L;
@@ -1720,19 +1708,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
   if (qoutnp >= 0.0)
   {
     volumeMix_np(1) = evolnp / L;
-    //  ele->getParams("Area",volumeMix_np(1));
   }
   if (qinnp < 0.0)
   {
     volumeMix_np(0) = evolnp / L;
-    //  ele->getParams("Area",volumeMix_np(0));
   }
 
   for (int i = 0; i < iel; i++)
   {
     {
       if (ele->Nodes()[i]->NumElement() == 1) volumeMix_np(i) = evolnp / L;
-      // ele->getParams("Area",volumeMix_np(i));
     }
   }
 
@@ -1781,7 +1766,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 
   // get area
   double areanp = eVolnp / L;
-  // ele->getParams("Area",area);
 
   // evaluate velocity at nodes (1) and (2)
   double vel1 = q_in / areanp;
@@ -2042,7 +2026,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
 
   // get area
   double areanp = eVolnp / L;
-  //  ele->getParams("Area",area);
 
   // evaluate velocity at nodes (1) and (2)
   double vel1 = q_in / areanp;
@@ -2113,7 +2096,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::Parame
 
   // get area
   double area = eVolnp / L;
-  //  ele->getParams("Area",area);
 
   // evaluate velocity at nodes (1) and (2)
   double vel1np = q_innp / area;
@@ -2300,7 +2282,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
 
   // get airway area
   double area = eVolnp / length;
-  // ele->getParams("Area",area);
 
   // -------------------------------------------------------------------
   // Get O2 properties in air

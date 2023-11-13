@@ -104,8 +104,7 @@ DRT::ELEMENTS::RedAirway::RedAirway(const DRT::ELEMENTS::RedAirway& old)
       resistance_(old.resistance_),
       elemsolvingType_(old.elemsolvingType_),
       data_(old.data_),
-      elemParams_(old.elemParams_),
-      generation_(old.generation_)
+      airwayParams_(old.airwayParams_)
 {
   return;
 }
@@ -159,16 +158,22 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, resistance_);
   AddtoPack(data, elemsolvingType_);
 
-  std::map<std::string, double>::const_iterator it;
+  AddtoPack(data, airwayParams_.power_velocity_profile);
+  AddtoPack(data, airwayParams_.wall_elasticity);
+  AddtoPack(data, airwayParams_.poisson_ratio);
+  AddtoPack(data, airwayParams_.wall_thickness);
+  AddtoPack(data, airwayParams_.area);
+  AddtoPack(data, airwayParams_.viscous_Ts);
+  AddtoPack(data, airwayParams_.viscous_phase_shift);
+  AddtoPack(data, airwayParams_.branch_length);
+  AddtoPack(data, airwayParams_.generation);
 
-  AddtoPack(data, (int)(elemParams_.size()));
-  for (it = elemParams_.begin(); it != elemParams_.end(); it++)
-  {
-    AddtoPack(data, it->first);
-    AddtoPack(data, it->second);
-  }
-
-  AddtoPack(data, generation_);
+  AddtoPack(data, airwayParams_.airway_coll);
+  AddtoPack(data, airwayParams_.s_close);
+  AddtoPack(data, airwayParams_.s_open);
+  AddtoPack(data, airwayParams_.p_crit_open);
+  AddtoPack(data, airwayParams_.p_crit_close);
+  AddtoPack(data, airwayParams_.open_init);
 
   return;
 }
@@ -192,22 +197,23 @@ void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, elemType_);
   ExtractfromPack(position, data, resistance_);
   ExtractfromPack(position, data, elemsolvingType_);
-  std::map<std::string, double> it;
-  int n = 0;
 
-  ExtractfromPack(position, data, n);
+  ExtractfromPack(position, data, airwayParams_.power_velocity_profile);
+  ExtractfromPack(position, data, airwayParams_.wall_elasticity);
+  ExtractfromPack(position, data, airwayParams_.poisson_ratio);
+  ExtractfromPack(position, data, airwayParams_.wall_thickness);
+  ExtractfromPack(position, data, airwayParams_.area);
+  ExtractfromPack(position, data, airwayParams_.viscous_Ts);
+  ExtractfromPack(position, data, airwayParams_.viscous_phase_shift);
+  ExtractfromPack(position, data, airwayParams_.branch_length);
+  ExtractfromPack(position, data, airwayParams_.generation);
 
-  for (int i = 0; i < n; i++)
-  {
-    std::string name;
-    double val;
-    ExtractfromPack(position, data, name);
-    ExtractfromPack(position, data, val);
-    elemParams_[name] = val;
-  }
-
-  // extract generation
-  ExtractfromPack(position, data, generation_);
+  ExtractfromPack(position, data, airwayParams_.airway_coll);
+  ExtractfromPack(position, data, airwayParams_.s_close);
+  ExtractfromPack(position, data, airwayParams_.s_open);
+  ExtractfromPack(position, data, airwayParams_.p_crit_open);
+  ExtractfromPack(position, data, airwayParams_.p_crit_close);
+  ExtractfromPack(position, data, airwayParams_.open_init);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -239,35 +245,9 @@ bool DRT::ELEMENTS::RedAirway::VisData(const std::string& name, std::vector<doub
 }
 
 
-/*----------------------------------------------------------------------*
- |  Get element parameters (public)                        ismail 04/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::getParams(std::string name, double& var)
+const DRT::REDAIRWAYS::AirwayParams& DRT::ELEMENTS::RedAirway::GetAirwayParams() const
 {
-  std::map<std::string, double>::iterator it;
-  it = elemParams_.find(name);
-  if (it == elemParams_.end())
-  {
-    dserror("[%s] is not found with in the element variables", name.c_str());
-    exit(1);
-  }
-  var = elemParams_[name];
-}
-
-/*----------------------------------------------------------------------*
- |  Get element parameters (public)                        ismail 03/11 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::getParams(std::string name, int& var)
-{
-  if (name == "Generation")
-  {
-    var = generation_;
-  }
-  else
-  {
-    dserror("[%s] is not found with in the element INT variables", name.c_str());
-    exit(1);
-  }
+  return airwayParams_;
 }
 
 /*----------------------------------------------------------------------*
