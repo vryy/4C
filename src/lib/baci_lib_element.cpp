@@ -27,47 +27,6 @@
 
 #include <utility>
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::StringToDistype(const std::string& name)
-{
-  static std::map<std::string, CORE::FE::CellType> gid2distype;
-  if (gid2distype.empty())
-  {
-    gid2distype["HEX8"] = CORE::FE::CellType::hex8;
-    gid2distype["HEX18"] = CORE::FE::CellType::hex18;
-    gid2distype["HEX20"] = CORE::FE::CellType::hex20;
-    gid2distype["HEX27"] = CORE::FE::CellType::hex27;
-    gid2distype["TET4"] = CORE::FE::CellType::tet4;
-    gid2distype["TET10"] = CORE::FE::CellType::tet10;
-    gid2distype["WEDGE6"] = CORE::FE::CellType::wedge6;
-    gid2distype["WEDGE15"] = CORE::FE::CellType::wedge15;
-    gid2distype["PYRAMID5"] = CORE::FE::CellType::pyramid5;
-    gid2distype["QUAD4"] = CORE::FE::CellType::quad4;
-    gid2distype["QUAD8"] = CORE::FE::CellType::quad8;
-    gid2distype["QUAD9"] = CORE::FE::CellType::quad9;
-    gid2distype["TRI3"] = CORE::FE::CellType::tri3;
-    gid2distype["TRI6"] = CORE::FE::CellType::tri6;
-    gid2distype["NURBS2"] = CORE::FE::CellType::nurbs2;
-    gid2distype["NURBS3"] = CORE::FE::CellType::nurbs3;
-    gid2distype["NURBS4"] = CORE::FE::CellType::nurbs4;
-    gid2distype["NURBS8"] = CORE::FE::CellType::nurbs8;
-    gid2distype["NURBS9"] = CORE::FE::CellType::nurbs9;
-    gid2distype["NURBS27"] = CORE::FE::CellType::nurbs27;
-    gid2distype["LINE2"] = CORE::FE::CellType::line2;
-    gid2distype["LINE3"] = CORE::FE::CellType::line3;
-    gid2distype["POINT1"] = CORE::FE::CellType::point1;
-    gid2distype["DIS_NONE"] = CORE::FE::CellType::dis_none;
-    gid2distype["MAX_DISTYPE"] = CORE::FE::CellType::max_distype;
-  }
-
-  std::map<std::string, CORE::FE::CellType>::iterator i;
-  i = gid2distype.find(name);
-  if (i != gid2distype.end()) return i->second;
-  dserror("unsupported distype '%s'", name.c_str());
-  return CORE::FE::CellType::dis_none;
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
@@ -461,7 +420,8 @@ void DRT::Element::NodalConnectivity(
     }
   }
   else
-    dserror("implementation is missing for this distype (%s)", DistypeToString(Shape()).c_str());
+    dserror("implementation is missing for this distype (%s)",
+        CORE::FE::CellTypeToString(Shape()).c_str());
 
   return;
 }
@@ -981,7 +941,7 @@ int DRT::Element::NumFace() const
       return NumSurface();
     default:
       dserror("faces for discretization type %s not yet implemented",
-          (DRT::DistypeToString(Shape())).c_str());
+          (CORE::FE::CellTypeToString(Shape())).c_str());
       return 0;
   }
 }

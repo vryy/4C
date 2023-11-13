@@ -65,7 +65,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
     case CORE::FE::CellType::wedge6:
       return CreateWedge6(eid, nids);
     default:
-      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -85,7 +85,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateSide(
     case CORE::FE::CellType::tri3:
       return CreateTri3Side(sid, nids);
     default:
-      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -1996,7 +1996,7 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
   {
     CORE::FE::CellType shape = i->first;
     std::vector<int>& nc = i->second;
-    std::cout << ::DRT::DistypeToString(shape) << "\tcells: ";
+    std::cout << CORE::FE::CellTypeToString(shape) << "\tcells: ";
     // std::copy( nc.begin(), nc.end(), std::ostream_iterator<int>( std::cout, " " ) );
     for (std::vector<int>::iterator i = nc.begin(); i != nc.end(); ++i)
     {

@@ -910,8 +910,8 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
     }
     default:
     {
-      dserror(
-          "Unsupported edge type! ( %d | %s )", edgetype, ::DRT::DistypeToString(edgetype).c_str());
+      dserror("Unsupported edge type! ( %d | %s )", edgetype,
+          CORE::FE::CellTypeToString(edgetype).c_str());
       break;
     }
   }

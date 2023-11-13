@@ -235,7 +235,7 @@ void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(CORE::FE::CellType di
   if (distype_bc != CORE::FE::CellType::tri3 and distype_bc != CORE::FE::CellType::quad4)
   {
     dserror("unexpected type of boundary integration cell: %s",
-        DRT::DistypeToString(distype_bc).c_str());
+        CORE::FE::CellTypeToString(distype_bc).c_str());
   }
 }
 
@@ -325,7 +325,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
       }
       break;
     default:
-      dserror("Unknown elmenet type ( type = %s )", DRT::DistypeToString(distype).c_str());
+      dserror("Unknown elmenet type ( type = %s )", CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
 

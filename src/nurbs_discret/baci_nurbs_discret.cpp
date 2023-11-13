@@ -400,7 +400,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
             break;
           default:
             dserror("invalid element shape for least squares dirichlet evaluation: %s",
-                DistypeToString(distype).c_str());
+                CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
       else
@@ -432,7 +432,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
             break;
           default:
             dserror("invalid element shape for least squares dirichlet evaluation: %s",
-                DistypeToString(distype).c_str());
+                CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
 

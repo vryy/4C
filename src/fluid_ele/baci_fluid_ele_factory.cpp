@@ -95,7 +95,8 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.",
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -187,7 +188,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
       //    }
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",
-          DRT::DistypeToString(distype).c_str());
+          CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;

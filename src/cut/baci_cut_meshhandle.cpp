@@ -73,7 +73,8 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
         break;
       }
       default:
-        dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+        dserror(
+            "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
     }
     quadraticsides_[sid] = Teuchos::rcp(qsh);
@@ -81,7 +82,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
   }
   else
   {
-    dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+    dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
     exit(EXIT_FAILURE);
   }
 }
@@ -688,7 +689,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
       break;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -763,7 +764,8 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
           break;
         }
         default:
-          dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+          dserror(
+              "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
       quadraticelements_[eid] = Teuchos::rcp(qeh);
@@ -771,7 +773,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
       return qeh;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
+      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }

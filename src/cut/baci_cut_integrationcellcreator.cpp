@@ -110,7 +110,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
       success = creator.Create2DCell<CORE::FE::CellType::quad4>(mesh, cell, cell->Facets());
       break;
     default:
-      dserror("unsupported element shape ( shape = %s )", ::DRT::DistypeToString(shape).c_str());
+      dserror(
+          "unsupported element shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // if the create process was successful, we can finally create the integration cell

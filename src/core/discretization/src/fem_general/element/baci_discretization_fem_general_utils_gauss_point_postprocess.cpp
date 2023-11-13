@@ -125,7 +125,7 @@ void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& e
     break;
     default:
       dserror("Your discretization type (%s) is not yet in the list!",
-          ::DRT::DistypeToString(ele.Shape()).c_str());
+          CORE::FE::CellTypeToString(ele.Shape()).c_str());
   }
 }
 

@@ -168,7 +168,7 @@ void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
 {
-  os << "Vele3 " << DRT::DistypeToString(Shape());
+  os << "Vele3 " << CORE::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }

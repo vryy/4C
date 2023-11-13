@@ -23,7 +23,7 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  SetDisType(DRT::StringToDistype(distype));
+  SetDisType(CORE::FE::StringToCellType(distype));
 
   if (Shape() == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 

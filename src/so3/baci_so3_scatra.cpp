@@ -148,7 +148,7 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_scatra ";
-  os << " Discretization type: " << DRT::DistypeToString(distype).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   return;
 }

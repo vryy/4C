@@ -566,7 +566,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
 
     if (myrank_ == 0)
     {
-      std::cout << "writing " << iter->second << " " << DRT::DistypeToString(distypeiter)
+      std::cout << "writing " << iter->second << " " << CORE::FE::CellTypeToString(distypeiter)
                 << " element(s) as " << ne << " " << ensightCellType << " ensight cell(s)..."
                 << std::endl;
       Write(geofile, ensightCellType);

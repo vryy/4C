@@ -22,6 +22,10 @@
 
 #include <vector>
 
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 namespace CORE::UTILS
 {

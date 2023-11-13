@@ -196,7 +196,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
 {
   // read base element
   // set discretization type
-  distype_ = DRT::StringToDistype(eledistype);
+  distype_ = CORE::FE::StringToCellType(eledistype);
   anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(this->NumNode(), 0.0));
 

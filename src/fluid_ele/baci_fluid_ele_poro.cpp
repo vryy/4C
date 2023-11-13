@@ -165,6 +165,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
-  os << "FluidPoro " << (DistypeToString(distype_)).c_str();
+  os << "FluidPoro " << (CORE::FE::CellTypeToString(distype_)).c_str();
   Element::Print(os);
 }

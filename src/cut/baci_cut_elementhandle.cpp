@@ -194,7 +194,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
       }
       default:
         dserror("unsupported integration cell type ( cell type = %s )",
-            ::DRT::DistypeToString(ic->Shape()).c_str());
+            CORE::FE::CellTypeToString(ic->Shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }
@@ -329,7 +329,7 @@ CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
           }
           default:
             dserror("unsupported integration cell type ( cell type = %s )",
-                ::DRT::DistypeToString(ic->Shape()).c_str());
+                CORE::FE::CellTypeToString(ic->Shape()).c_str());
             exit(EXIT_FAILURE);
         }
       }

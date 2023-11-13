@@ -1106,7 +1106,7 @@ int CORE::GEO::CUT::Element::NumGaussPoints(CORE::FE::CellType shape)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::DebugDump()
 {
-  std::cout << "Problem in element " << Id() << " of shape " << ::DRT::DistypeToString(Shape())
+  std::cout << "Problem in element " << Id() << " of shape " << CORE::FE::CellTypeToString(Shape())
             << ":\n";
   bool haslevelsetside = false;
   const std::vector<Node*>& nodes = Nodes();
@@ -1360,7 +1360,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
     default:
     {
       dserror("Unsupported element type! ( %d | %s )", elementtype,
-          ::DRT::DistypeToString(elementtype).c_str());
+          CORE::FE::CellTypeToString(elementtype).c_str());
       break;
     }
   }

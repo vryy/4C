@@ -13,6 +13,8 @@
 #define BACI_SO3_PORO_P1_SCATRA_H
 
 #include "baci_inpar_scatra.H"
+#include "baci_lib_element.H"
+#include "baci_lib_pack_buffer.H"
 #include "baci_so3_poro_p1.H"
 
 namespace DRT

@@ -699,7 +699,7 @@ namespace CORE::GEO
             break;
           default:
             dserror("Unknown sidetype! (%d | %s)\n", sidetype,
-                ::DRT::DistypeToString(sidetype).c_str());
+                CORE::FE::CellTypeToString(sidetype).c_str());
             break;
         }
         exit(EXIT_FAILURE);

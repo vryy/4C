@@ -329,7 +329,7 @@ bool DRT::ELEMENTS::Shell7pScatra::VisData(const std::string& name, std::vector<
 void DRT::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
 {
   os << "Shell7pScatra ";
-  os << " Discretization type: " << DRT::DistypeToString(distype_).c_str();
+  os << " Discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
   Element::Print(os);
 }
 
@@ -359,7 +359,7 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
   STR::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = DRT::StringToDistype(distype);
+  distype_ = CORE::FE::StringToCellType(distype);
 
   // set thickness in reference frame
   linedef->ExtractDouble("THICK", thickness_);

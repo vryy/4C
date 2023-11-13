@@ -62,7 +62,7 @@ namespace DRT
       Teuchos::RCP<Epetra_Map> elementColMap;
 
       // Create initial (or final) map of row elements
-      CORE::FE::CellType distype_enum = DRT::StringToDistype(inputData.distype_);
+      CORE::FE::CellType distype_enum = CORE::FE::StringToCellType(inputData.distype_);
       int numnewele = inputData.interval_[0] * inputData.interval_[1] * inputData.interval_[2];
       if (inputData.autopartition_)  // linear map
       {
@@ -328,7 +328,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype)));
+          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // current element position
       const size_t ex = 2 * (eleid % interval[0]);
@@ -398,7 +398,7 @@ namespace DRT
     {
       // Reserve nodeids for this element type
       std::vector<int> nodeids(
-          CORE::DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype)));
+          CORE::DRT::UTILS::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
 
       // HEX-equivalent element
       int hex_equiv_eleid = int(eleid / 2);

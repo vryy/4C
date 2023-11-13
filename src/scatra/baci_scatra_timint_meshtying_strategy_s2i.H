@@ -15,6 +15,7 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_scatra.H"
+#include "baci_lib_element.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
 #include <Epetra_FEVector.h>

@@ -12,6 +12,7 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_element.H"
 
 namespace MAT
 {

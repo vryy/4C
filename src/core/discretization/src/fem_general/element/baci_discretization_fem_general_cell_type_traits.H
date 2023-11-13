@@ -122,6 +122,14 @@ namespace CORE::FE
   using apply_celltype_sequence =
       typename DETAILS::apply_celltype_sequence<BaseTypeList, Base, CellTypeSequence>::type;
 
+  /*!
+   * @brief Returns a std::array of celltypes defined in the given integer sequence
+   *
+   * @tparam celltypes Integer sequence of cell types
+   */
+  template <typename celltypes>
+  static constexpr std::array celltype_array =
+      DETAILS::celltype_sequence_to_array<celltypes>::value;
 
   /*!
    * @brief a std::integer_sequence holding all @p CellTypes including @p none and @p max
@@ -339,6 +347,23 @@ namespace CORE::FE
   {
     return CellTypeSwitch<all_celltypes>(
         celltype, [](auto celltype_t) { return celltype_string<celltype_t()>; });
+  }
+
+  inline CellType StringToCellType(const std::string& celltype_str)
+  {
+    constexpr std::array all_names =
+        DETAILS::celltype_sequence_to_string_array<all_celltypes>::value;
+
+    const auto* found_position =
+        std::find(std::begin(all_names), std::end(all_names), celltype_str);
+
+    if (found_position == std::end(all_names))
+    {
+      dserror("Unknown celltype %s", celltype_str.c_str());
+    }
+
+    constexpr std::array all_celltypes_enum = celltype_array<all_celltypes>;
+    return all_celltypes_enum[std::distance(std::begin(all_names), found_position)];
   }
 }  // namespace CORE::FE
 

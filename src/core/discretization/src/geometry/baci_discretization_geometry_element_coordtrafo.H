@@ -105,7 +105,7 @@ namespace CORE::GEO
         elementToCurrentCoordinatesT<FE::CellType::pyramid5>(xyze, xsi, x);
         break;
       default:
-        std::cout << ::DRT::DistypeToString(distype) << std::endl;
+        std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
         dserror("add your 3D distype to this switch!");
         break;
     }
@@ -793,7 +793,7 @@ namespace CORE::GEO
             currentToVolumeElementCoordinatesT<FE::CellType::pyramid5>(xyze, x, xsi, fastinitguess);
         break;
       default:
-        std::cout << ::DRT::DistypeToString(distype) << std::endl;
+        std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
         break;

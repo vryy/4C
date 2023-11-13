@@ -1210,7 +1210,7 @@ namespace CORE::GEO
               "This ComputeDistance routine is only meaningful for "
               "QUAD4 side elements! But you passed in a side element "
               "of type %i | %s.",
-              sidetype, ::DRT::DistypeToString(sidetype).c_str());
+              sidetype, CORE::FE::CellTypeToString(sidetype).c_str());
 
         TEUCHOS_FUNC_TIME_MONITOR("ComputeDistance");
 
@@ -1342,7 +1342,7 @@ namespace CORE::GEO
             dserror(
                 "Unsupported SideType! If meaningful, add your sideType here. \n"
                 "Given SideType = %s",
-                ::DRT::DistypeToString(side_type).c_str());
+                CORE::FE::CellTypeToString(side_type).c_str());
             exit(EXIT_FAILURE);
         }
         exit(EXIT_FAILURE);

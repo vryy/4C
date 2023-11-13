@@ -1048,12 +1048,12 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     else
       dserror(
           "TDetDeformationGradient for type %s not yet implemented, just add your element type!",
-          (DRT::DistypeToString(coupl_ele->Shape())).c_str());
+          (CORE::FE::CellTypeToString(coupl_ele->Shape())).c_str());
     return -1.0;
   }
   else
     dserror("TDetDeformationGradient for type %s not yet implemented, just add your element type!",
-        (DRT::DistypeToString(fele->Shape())).c_str());
+        (CORE::FE::CellTypeToString(fele->Shape())).c_str());
   return -1.0;
 }
 

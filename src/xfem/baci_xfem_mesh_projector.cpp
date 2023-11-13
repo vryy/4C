@@ -438,7 +438,8 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
                 CheckPositionAndProject<CORE::FE::CellType::hex27>(pele, node_xyz, interpolatedvec);
             break;
           default:
-            dserror("Unsupported element shape %s!", DRT::DistypeToString(pele->Shape()).c_str());
+            dserror(
+                "Unsupported element shape %s!", CORE::FE::CellTypeToString(pele->Shape()).c_str());
             break;
         }
 

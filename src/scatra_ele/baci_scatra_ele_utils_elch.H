@@ -12,6 +12,7 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_elch.H"
+#include "baci_lib_element.H"
 
 namespace DRT
 {

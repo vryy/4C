@@ -466,7 +466,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
               << "elementname=\"\""
               << std::endl
               //<<"elementshape=\""
-              //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
+              //<< CORE::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
               << std::endl;
   }
 

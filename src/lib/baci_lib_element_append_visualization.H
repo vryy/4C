@@ -148,7 +148,7 @@ namespace DRT::ELEMENTS
         return AppendVisualizationGeometryNURBS27(ele, discret, cell_types, point_coordinates);
       default:
         dserror("The visualization for the nurbs element shape %s is not implemented",
-            DRT::DistypeToString(ele.Shape()).c_str());
+            CORE::FE::CellTypeToString(ele.Shape()).c_str());
     }
   }
 
@@ -295,7 +295,7 @@ namespace DRT::ELEMENTS
             vtu_point_result_data);
       default:
         dserror("The visualization for the nurbs element shape %s is not implemented",
-            DRT::DistypeToString(ele.Shape()).c_str());
+            CORE::FE::CellTypeToString(ele.Shape()).c_str());
     }
   }
 

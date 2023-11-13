@@ -11,6 +11,7 @@
 #include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_element.H"
 #include "baci_lib_node.H"
 
 /*----------------------------------------------------------------------*

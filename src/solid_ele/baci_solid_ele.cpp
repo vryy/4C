@@ -292,7 +292,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // set discretization type
-  distype_ = DRT::StringToDistype(distype);
+  distype_ = CORE::FE::StringToCellType(distype);
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
