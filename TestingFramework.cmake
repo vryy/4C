@@ -258,6 +258,53 @@ endmacro(baci_test_and_post_ensight_test)
 # RESTART SIMULATION
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_restartonly(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
+# <name_of_test>: give it a name, typically equal to a test file name
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
+# <name_of_input_file_restart>: the name of an input file the current restart can base on
+# <num_proc>: number of processors the test should use
+# <num_proc_base_run>: number of processors of precursor base run
+# <restart_step>: number of restart step; <""> indicates no restart
+# <optional: identifier>: add an identifier to the file results are read from
+macro(
+  baci_test_restartonly_with_name
+  name_of_restart_test
+  name_of_input_file
+  name_of_input_file_restart
+  num_proc
+  num_proc_base_run
+  restart_step
+  )
+  # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
+  if(${ARGC} GREATER 6)
+    set(IDENTIFIER ${ARGV6})
+  else()
+    set(IDENTIFIER "")
+  endif()
+
+  set(name_of_test ${name_of_restart_test}-p${num_proc}-restart-${restart_step})
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
+  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
+
+  add_test(
+    NAME ${name_of_test}
+    COMMAND
+      bash -c
+      "mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
+    )
+
+  require_fixture(
+    ${name_of_test} "${name_of_input_file_restart}-p${num_proc_base_run};test_cleanup"
+    )
+  set_processors(${name_of_test} ${num_proc})
+  set_timeout(${name_of_test})
+
+  # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
+  set_run_serial(${name_of_test})
+endmacro(baci_test_restartonly_with_name)
+
+# RESTART SIMULATION
+# CAUTION: This tests bases on results of a previous simulation/test
+# Usage in TestingFrameworkListOfTests.cmake: "baci_test_restartonly(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <name_of_input_file_restart>: the name of an input file the current restart can base on
 # <num_proc>: number of processors the test should use
@@ -272,32 +319,15 @@ macro(
   num_proc_base_run
   restart_step
   )
-  # set additional output prefix identifier to empty string "" in default claase or to specific string if specified as optional input argument
-  if(${ARGC} GREATER 5)
-    set(IDENTIFIER ${ARGV5})
-  else()
-    set(IDENTIFIER "")
-  endif()
-
-  set(name_of_test ${name_of_input_file}-p${num_proc})
-  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
-  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
-
-  add_test(
-    NAME ${name_of_test}-restart
-    COMMAND
-      bash -c
-      "mkdir -p ${test_directory} && ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
+  set(name_of_test ${name_of_input_file})
+  baci_test_restartonly_with_name(
+    ${name_of_test}
+    ${name_of_input_file}
+    ${name_of_input_file_restart}
+    ${num_proc}
+    ${num_proc_base_run}
+    ${restart_step}
     )
-
-  require_fixture(
-    ${name_of_test}-restart "${name_of_input_file_restart}-p${num_proc_base_run};test_cleanup"
-    )
-  set_processors(${name_of_test}-restart ${num_proc})
-  set_timeout(${name_of_input_file}-p${num_proc}-restart)
-
-  # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
-  set_run_serial(${name_of_test}-restart)
 endmacro(baci_test_restartonly)
 
 ###########
