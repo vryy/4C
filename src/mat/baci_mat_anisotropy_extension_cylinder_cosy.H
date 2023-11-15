@@ -84,7 +84,7 @@ namespace MAT
      */
     const CylinderCoordinateSystemProvider& GetCylinderCoordinateSystem(int gp) const;
 
-    const Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
+    Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
 
    private:
     /*!

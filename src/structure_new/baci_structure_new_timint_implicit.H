@@ -96,7 +96,7 @@ namespace STR
       void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
-      const Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
+      Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
       {
         CheckInitSetup();
         return implint_ptr_;
@@ -148,7 +148,7 @@ namespace STR
         return *predictor_ptr_;
       };
 
-      const Teuchos::RCP<STR::PREDICT::Generic> PredictorPtr()
+      Teuchos::RCP<STR::PREDICT::Generic> PredictorPtr()
       {
         CheckInitSetup();
         return predictor_ptr_;
@@ -166,7 +166,7 @@ namespace STR
         return *nlnsolver_ptr_;
       };
 
-      const Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
+      Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
       {
         CheckInitSetup();
         return nlnsolver_ptr_;

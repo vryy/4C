@@ -98,12 +98,9 @@ namespace SSTI
 
     //! return subproblems
     //@{
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
-    {
-      return structure_;
-    };
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const;
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const;
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ThermoFieldBase() { return thermo_; };
     //@}

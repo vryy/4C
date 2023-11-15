@@ -36,7 +36,7 @@ namespace FLD
     virtual ~FluidDiscretExtractor() = default;
 
     //! get child discretization
-    const Teuchos::RCP<DRT::Discretization> GetChildDiscretization() { return childdiscret_; }
+    Teuchos::RCP<DRT::Discretization> GetChildDiscretization() { return childdiscret_; }
     //! get node to node coupling in case of periodic boundary conditions (column and row version)
     Teuchos::RCP<std::map<int, std::vector<int>>> GetCoupledColNodesChildDiscretization()
     {

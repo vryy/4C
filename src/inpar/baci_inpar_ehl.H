@@ -70,8 +70,7 @@ namespace INPAR
     };
 
     //! Map solution technique enum to std::string
-    static inline const std::string NlnSolTechString(
-        const enum NlnSolTech name  //!< enum to convert
+    static inline std::string NlnSolTechString(const enum NlnSolTech name  //!< enum to convert
     )
     {
       switch (name)

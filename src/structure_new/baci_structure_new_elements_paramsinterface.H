@@ -60,7 +60,7 @@ namespace STR
     };
 
     //! Map evaluation error flag to a std::string
-    static inline const std::string EvalErrorFlag2String(const enum EvalErrorFlag& errorflag)
+    static inline std::string EvalErrorFlag2String(const enum EvalErrorFlag& errorflag)
     {
       switch (errorflag)
       {
@@ -116,11 +116,10 @@ namespace STR
 
       //! @name Model specific interfaces
       //! @{
-      virtual const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface()
-          const = 0;
+      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const = 0;
 
       //! get pointer to special parameter interface for beam elements
-      virtual const Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
+      virtual Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
       //! @}
 
       //! @name Access control parameters for the handling of element internal variables (e.g. EAS)

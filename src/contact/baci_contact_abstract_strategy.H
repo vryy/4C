@@ -975,7 +975,7 @@ namespace CONTACT
     };
 
     //! Return global slave node row map
-    const Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return Data().GSlNodeRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return Data().GSlNodeRowMapPtr(); }
     Teuchos::RCP<const Epetra_Map> SlRowNodesPtr() const { return Data().GSlNodeRowMapPtr(); }
     const Epetra_Map& SlRowNodes() const { return *Data().GSlNodeRowMapPtr(); }
 
@@ -984,42 +984,33 @@ namespace CONTACT
     const Epetra_Map& MaRowNodes() const { return *Data().GMaNodeRowMapPtr(); }
 
     //! Return global active node row map
-    const Teuchos::RCP<Epetra_Map> ActiveRowNodes() override
-    {
-      return Data().GActiveNodeRowMapPtr();
-    };
+    Teuchos::RCP<Epetra_Map> ActiveRowNodes() override { return Data().GActiveNodeRowMapPtr(); };
     virtual Teuchos::RCP<const Epetra_Map> ActiveRowNodes() const
     {
       return Data().GActiveNodeRowMapPtr();
     };
 
     //! Return global slip node row map
-    const Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Data().GSlipNodeRowMapPtr(); };
+    Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Data().GSlipNodeRowMapPtr(); };
     Teuchos::RCP<const Epetra_Map> SlipRowNodes() const { return Data().GSlipNodeRowMapPtr(); };
 
     //! Return global slave dof row map
-    const Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return Data().GSlDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return Data().GSlDofRowMapPtr(); }
 
     //! Return global active dof row map
-    const Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Data().GActiveDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Data().GActiveDofRowMapPtr(); }
 
     //! Return global master dof row map
-    const Teuchos::RCP<Epetra_Map> MasterRowDofs() { return Data().GMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> MasterRowDofs() { return Data().GMaDofRowMapPtr(); }
 
     //! Return global slave dof row map
-    const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return Data().GSlMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return Data().GSlMaDofRowMapPtr(); }
 
     //! Return not redistributed global slave dof row map
-    const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override
-    {
-      return Data().PGSlDofRowMapPtr();
-    }
+    Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override { return Data().PGSlDofRowMapPtr(); }
 
     //! Return not redistributed global master dof row map
-    const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override
-    {
-      return Data().PGMaDofRowMapPtr();
-    }
+    Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override { return Data().PGMaDofRowMapPtr(); }
 
     /*!
     \brief Gather maps needed for contact/meshtying specific multigrid preconditioners

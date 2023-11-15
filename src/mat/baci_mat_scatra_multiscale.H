@@ -31,7 +31,7 @@ namespace MAT
       ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! return name of micro-scale input file
-      const std::string MicroInputFileName() const { return microfile_; }
+      std::string MicroInputFileName() const { return microfile_; }
 
       //! return number of micro-scale discretization
       int MicroDisNum() const { return microdisnum_; };
@@ -129,7 +129,7 @@ namespace MAT
     void ReadRestart(const int gp_id) const;
 
     //! return name of micro-scale input file
-    const std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
+    std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
 
     //! return number of micro-scale discretization
     int MicroDisNum() const { return Params()->MicroDisNum(); }

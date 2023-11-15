@@ -438,7 +438,7 @@ namespace ADAPTER
     bool HaveConstraint() override = 0;
 
     /// get constraint manager defined in the structure
-    const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
@@ -447,7 +447,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;
@@ -474,7 +474,7 @@ namespace ADAPTER
     }
 
     /// get SpringDashpot manager defined in the structure
-    const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("This function seems to be unused!");
       return Teuchos::null;

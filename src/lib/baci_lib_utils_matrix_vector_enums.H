@@ -50,7 +50,7 @@ namespace DRT
     };
 
     //! map matrix block type enum to std::string
-    inline const std::string MatBlockType2String(const enum DRT::UTILS::MatBlockType type)
+    inline std::string MatBlockType2String(const enum DRT::UTILS::MatBlockType type)
     {
       switch (type)
       {
@@ -103,7 +103,7 @@ namespace DRT
     };
 
     //! map vector block type enum to std::string
-    inline const std::string VecBlockType2String(const enum VecBlockType type)
+    inline std::string VecBlockType2String(const enum VecBlockType type)
     {
       switch (type)
       {

@@ -573,9 +573,9 @@ namespace DRT
       void soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);
 
       //! Evaluate Hex8 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
 
       /*!
        * \brief Evaluate the first derivatives of the shape functions at the Gauss point gp
@@ -585,7 +585,7 @@ namespace DRT
        */
       void soh8_derivs(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
       //! Evaluate Hex8 Weights to keep them static
-      const std::vector<double> soh8_weights() const;
+      std::vector<double> soh8_weights() const;
 
       //! push forward of material stresses to the current, spatial configuration
       void PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,

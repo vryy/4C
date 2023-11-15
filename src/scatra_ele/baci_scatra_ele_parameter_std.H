@@ -50,7 +50,7 @@ namespace DRT
       bool IsConservative() const { return is_conservative_; };
       bool SphericalCoords() const { return sphericalcoords_; };
       INPAR::SCATRA::FluxType CalcFluxDomain() const { return calcflux_domain_; };
-      const Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
+      Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
       INPAR::SCATRA::FDCheck FDCheck() const { return fdcheck_; };
       double FDCheckEps() const { return fdcheckeps_; };
       double FDCheckTol() const { return fdchecktol_; };

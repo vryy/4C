@@ -231,24 +231,21 @@ namespace CORE::LINALG
                           with #params_
     \date 02/07,11/08
     */
-    static const Teuchos::ParameterList TranslateSolverParameters(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Translate BACI dat file parameters
 
     */
-    static const Teuchos::ParameterList TranslateBACIToML(
+    static Teuchos::ParameterList TranslateBACIToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static const Teuchos::ParameterList TranslateBACIToMuelu(
+    static Teuchos::ParameterList TranslateBACIToMuelu(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static const Teuchos::ParameterList TranslateBACIToIfpack(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateBACIToIfpack(const Teuchos::ParameterList& inparams);
 
-    static const Teuchos::ParameterList TranslateBACIToBelos(
-        const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateBACIToBelos(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal

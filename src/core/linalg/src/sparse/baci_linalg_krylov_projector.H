@@ -66,10 +66,10 @@ namespace CORE::LINALG
     void FillComplete();
 
     //! give out projector matrix - build it if not yet built (thus not const)
-    const CORE::LINALG::SparseMatrix GetP();
+    CORE::LINALG::SparseMatrix GetP();
 
     //! give out transposed projector matrix - build it if not yet built (thus not const)
-    const CORE::LINALG::SparseMatrix GetPT();
+    CORE::LINALG::SparseMatrix GetPT();
 
     //! wrapper for applying projector to vector for iterative solver
     int ApplyP(Epetra_MultiVector& Y) const;

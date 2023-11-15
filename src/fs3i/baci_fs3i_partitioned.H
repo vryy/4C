@@ -133,28 +133,28 @@ namespace FS3I
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    const Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
+    Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    const Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
+    Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
         const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    const Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
+    Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
         const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    const Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
+    Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
         const Teuchos::RCP<const Epetra_Vector> structurescalavector) const;
 
    private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    const Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
+    Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
         const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    const Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
+    Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
         const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const;
 
    protected:

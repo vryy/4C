@@ -225,15 +225,15 @@ namespace STR
           const double value, const enum STR::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
-      [[nodiscard]] inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface>
-      GetBrownianDynParamInterface() const override
+      [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface()
+          const override
       {
         CheckInitSetup();
         return browniandyn_data_ptr_;
       }
 
       //! get special parameter interface for beam elements [derived]
-      [[nodiscard]] inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
+      [[nodiscard]] inline Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
       GetBeamParamsInterfacePtr() const override
       {
         dsassert(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");

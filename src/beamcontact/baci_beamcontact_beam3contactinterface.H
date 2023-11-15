@@ -127,11 +127,11 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
+    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
 
-    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
+    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
 
-    virtual const CORE::LINALG::SerialDenseVector GetNormal() = 0;
+    virtual CORE::LINALG::SerialDenseVector GetNormal() = 0;
 
     virtual CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 

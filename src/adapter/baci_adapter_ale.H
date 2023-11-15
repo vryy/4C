@@ -115,7 +115,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 

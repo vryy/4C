@@ -112,8 +112,8 @@ namespace ADAPTER
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
-    virtual const Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>>
-    GetPairs() const final
+    virtual Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> GetPairs()
+        const final
     {
       return meshtying_pairs_;
     };
@@ -126,7 +126,7 @@ namespace ADAPTER
 
     /// returns data container geometry_evaluation-data_ holding all geometry related evaluation
     /// data
-    virtual const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> GetGeometryData() const final
+    virtual Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> GetGeometryData() const final
     {
       return geometry_evaluation_data_;
     };

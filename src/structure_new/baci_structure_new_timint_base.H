@@ -120,7 +120,7 @@ namespace STR
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
+      Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
       [[nodiscard]] Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
 
       //! Return locsys manager
@@ -266,7 +266,7 @@ namespace STR
       }
 
       /// FixMe get constraint manager defined in the structure
-      const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
+      Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;

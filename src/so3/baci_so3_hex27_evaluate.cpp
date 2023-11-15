@@ -1679,7 +1679,7 @@ void DRT::ELEMENTS::So_hex27::soh27_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh27_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh27_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
@@ -1701,7 +1701,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
 DRT::ELEMENTS::So_hex27::soh27_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
@@ -1723,7 +1723,7 @@ DRT::ELEMENTS::So_hex27::soh27_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Weights at all 27 Gauss Points                       |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
+std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 {
   std::vector<double> weights(NUMGPT_SOH27);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;

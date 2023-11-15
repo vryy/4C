@@ -443,20 +443,18 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
       //! Evaluate Tet4 Derivs at 1 gausspoint to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-      so_tet4_1gp_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_1gp_derivs();
       //! Evaluate Tet4 Weights at 1 gausspoint to keep them static
-      const std::vector<double> so_tet4_1gp_weights();
+      std::vector<double> so_tet4_1gp_weights();
 
       //! Evaluate Tet4 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
       //! Evaluate Tet4 Derivs at 4 gausspoints to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-      so_tet4_4gp_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_4gp_derivs();
       //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
-      const std::vector<double> so_tet4_4gp_weights();
+      std::vector<double> so_tet4_4gp_weights();
 
       //! @name Multi-scale related stuff
 

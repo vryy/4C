@@ -1325,8 +1325,7 @@ std::vector<double> EXODUS::ExtrudeNodeCoords(const std::vector<double> basecoor
   return newcoords;
 }
 
-const std::map<int, std::set<int>> EXODUS::NodeToEleConn(
-    const std::map<int, std::vector<int>> ele_conn)
+std::map<int, std::set<int>> EXODUS::NodeToEleConn(const std::map<int, std::vector<int>> ele_conn)
 {
   std::map<int, std::set<int>> node_conn;
   std::map<int, std::vector<int>>::const_iterator i_ele;
@@ -1347,7 +1346,7 @@ const std::map<int, std::set<int>> EXODUS::NodeToEleConn(
   return node_conn;
 }
 
-const std::map<int, std::vector<int>> EXODUS::EleNeighbors(
+std::map<int, std::vector<int>> EXODUS::EleNeighbors(
     const std::map<int, std::vector<int>> ele_conn, const std::map<int, std::set<int>>& node_conn)
 {
   std::map<int, std::vector<int>> eleneighbors;
@@ -1408,7 +1407,7 @@ const std::map<int, std::vector<int>> EXODUS::EleNeighbors(
   return eleneighbors;
 }
 
-const std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
+std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
     const std::map<int, std::vector<int>>& ele_nbrs)
 {
   std::set<int> freenodes;
@@ -1442,7 +1441,7 @@ const std::set<int> EXODUS::FreeEdgeNodes(const std::map<int, std::vector<int>>&
   return freenodes;
 }
 
-const std::set<int> EXODUS::FindExtrudedNodes(const std::set<int>& freedgenodes,
+std::set<int> EXODUS::FindExtrudedNodes(const std::set<int>& freedgenodes,
     const std::map<int, std::vector<int>>& nodepair, const std::set<int>& ns)
 {
   std::set<int> extr_nodes;

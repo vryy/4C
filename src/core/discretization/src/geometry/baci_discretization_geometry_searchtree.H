@@ -264,7 +264,7 @@ namespace CORE::GEO
        \param index   child node index
        \return retruns pointer to child node
        */
-      const Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> getChild(const int index) const;
+      Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> getChild(const int index) const;
 
       /*!
        \brief return pointer to the parent node

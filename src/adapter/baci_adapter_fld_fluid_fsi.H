@@ -198,7 +198,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 04/2015
      */
-    const std::string GetTimAdaMethodName() const;
+    std::string GetTimAdaMethodName() const;
 
     //! Type of adaptivity algorithm
     enum ETimAdaAux

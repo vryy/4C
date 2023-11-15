@@ -981,8 +981,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<27, 1>>
-DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
+std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1010,7 +1009,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
+std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1039,7 +1038,7 @@ const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27:
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
+std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 {
   const int numgp = 27;
 

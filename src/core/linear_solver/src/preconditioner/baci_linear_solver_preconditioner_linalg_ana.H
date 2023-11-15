@@ -90,7 +90,7 @@ namespace CORE::LINALG
       /*!
       \brief The derived class shall return a clone of itself by calling its own copy-ctor
       */
-      virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const = 0;
+      virtual Teuchos::RCP<LightWeightOperatorBase> Clone() const = 0;
 
       /*!
       \brief Use transpose of operator
@@ -172,7 +172,7 @@ namespace CORE::LINALG
       {
       }
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new LightWeightOperator(*this));
       }
@@ -234,7 +234,7 @@ namespace CORE::LINALG
       }
 
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new OperatorTransposed(*this));
       }
@@ -311,7 +311,7 @@ namespace CORE::LINALG
       }
 
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new OperatorScaled(*this));
       }
@@ -388,7 +388,7 @@ namespace CORE::LINALG
       }
 
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new OperatorProduct(*this));
       }
@@ -474,7 +474,7 @@ namespace CORE::LINALG
       }
 
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new OperatorSum(*this));
       }
@@ -592,7 +592,7 @@ namespace CORE::LINALG
       }
 
 
-      const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
         return Teuchos::rcp(new OperatorInverse(*this));
       }

@@ -44,7 +44,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override;
 
     void Print(std::ostream &stream) const override { stream << "AMGnxn"; }
-    const std::string getParameterListName() const override { return "AMGnxn Parameters"; }
+    std::string getParameterListName() const override { return "AMGnxn Parameters"; }
 
    private:
     // Private variables

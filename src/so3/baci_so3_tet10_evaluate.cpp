@@ -1502,7 +1502,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>>
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>>
 DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
 {
   static std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> shapefcts(NUMGPT_SOTET10);

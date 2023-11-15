@@ -168,7 +168,7 @@ namespace FLD
     \brief remote access method to general mean statistics manager
 
     */
-    const Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+    Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
     {
       return statistics_general_mean_;
     }

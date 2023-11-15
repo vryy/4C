@@ -101,7 +101,7 @@ namespace STR
         void CheckInit() const { dsassert(IsInit(), "You have to call Init() first!"); }
 
         //! Returns the global state data container pointer
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
+        Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
         {
           CheckInit();
           return gstate_ptr_;
@@ -122,7 +122,7 @@ namespace STR
         }
 
         //! Returns the structural dynamics data container pointer
-        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
+        Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
         {
           CheckInit();
           return sdyn_ptr_;
@@ -143,7 +143,7 @@ namespace STR
         }
 
         //! Returns the non-linear solver implicit time integration interface pointer
-        const Teuchos::RCP<STR::TIMINT::NoxInterface> NoxInterfacePtr()
+        Teuchos::RCP<STR::TIMINT::NoxInterface> NoxInterfacePtr()
         {
           CheckInit();
           return noxinterface_ptr_;

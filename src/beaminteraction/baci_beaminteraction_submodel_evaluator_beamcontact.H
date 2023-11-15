@@ -157,8 +157,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the conditions in this submodel evaluator.
        */
-      inline const Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions()
-          const
+      inline Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions() const
       {
         return beam_interaction_conditions_ptr_;
       }

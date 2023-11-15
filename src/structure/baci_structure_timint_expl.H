@@ -316,21 +316,21 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual const Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    virtual Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       dserror("GetCardiovascular0DManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;

@@ -114,7 +114,7 @@ namespace SCATRA
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    const Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
+    Teuchos::RCP<const CORE::ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_; }
@@ -176,7 +176,7 @@ namespace SCATRA
     }
 
     //! return interface map extractor
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       return interfacemaps_;
     }
@@ -199,13 +199,13 @@ namespace SCATRA
     std::map<const int, DRT::Condition* const>& MasterConditions() { return master_conditions_; }
 
     //! return vector of Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
+    Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
 
     //! return constraint residual vector associated with Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LMResidual() const { return lmresidual_; };
+    Teuchos::RCP<const Epetra_Vector> LMResidual() const { return lmresidual_; };
 
     //! return constraint increment vector associated with Lagrange multiplier dofs
-    const Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
+    Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };

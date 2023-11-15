@@ -140,9 +140,9 @@ namespace SSTI
     //@}
 
     //! SSTI mono maps
-    const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
+    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
 
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
     {
       return ssti_mono_->StructureField();
     }

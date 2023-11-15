@@ -173,7 +173,7 @@ namespace ALE
     virtual void EvaluateElements();
 
     /// Convert element action enum to std::string
-    virtual const std::string ElementActionString(
+    virtual std::string ElementActionString(
         const enum INPAR::ALE::AleDynamic name  ///< enum to convert
     );
 
@@ -315,7 +315,7 @@ namespace ALE
     /// create result test for encapsulated algorithm
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
         ) override

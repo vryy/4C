@@ -198,10 +198,10 @@ namespace SSI
     }
 
     //! access the scalar transport field
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
 
     //! access the scalar transport field on manifolds
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on other fields
     void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,

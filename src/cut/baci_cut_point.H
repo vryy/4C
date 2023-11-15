@@ -52,7 +52,7 @@ namespace CORE::GEO
       };
 
       /// translate PointPosition enumerator to string
-      static inline const std::string PointPosition2String(const enum PointPosition& pos)
+      static inline std::string PointPosition2String(const enum PointPosition& pos)
       {
         switch (pos)
         {
@@ -301,7 +301,7 @@ namespace CORE::GEO
       void DumpConnectivityInfo();
 
       /// Get the Merged Points
-      const std::vector<Point*> GetMergedPoints() { return merged_points_; };
+      std::vector<Point*> GetMergedPoints() { return merged_points_; };
 
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = nullptr, it means it was inserted without actual

@@ -32,14 +32,14 @@ namespace MAT
      *
      * \return const Teuchos::RCP<CylinderCoordinateSystemProvider>
      */
-    virtual const Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    virtual Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
         const = 0;
   };
 
   class CoordinateSystemHolder : public CoordinateSystemProvider
   {
    public:
-    const Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
         const override
     {
       return cylinderCoordinateSystem_;

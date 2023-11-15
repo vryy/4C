@@ -246,7 +246,7 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;

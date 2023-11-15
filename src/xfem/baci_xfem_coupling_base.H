@@ -128,14 +128,14 @@ namespace XFEM
     void Status(const int coupling_idx, const int side_start_gid);
 
 
-    const std::string DisNameToString(Teuchos::RCP<DRT::Discretization> dis)
+    std::string DisNameToString(Teuchos::RCP<DRT::Discretization> dis)
     {
       if (dis == Teuchos::null) return "---";
 
       return dis->Name();
     }
 
-    const std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
+    std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
     {
       if (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)
         return "XFSI Partitioned";
@@ -169,7 +169,7 @@ namespace XFEM
       return "UNKNOWN";
     }
 
-    const std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
+    std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
     {
       if (strategy == INPAR::XFEM::Xfluid_Sided)
         return "XFLUID-sided averaging";

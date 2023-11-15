@@ -311,7 +311,7 @@ namespace DRT
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
-      const std::vector<double> soh20_ElementCenterRefeCoords();
+      std::vector<double> soh20_ElementCenterRefeCoords();
 
       //@}
 
@@ -407,11 +407,11 @@ namespace DRT
       void soh20_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass);
 
       //! Evaluate Hex20 Shapefcts to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> soh20_shapefcts();
+      std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> soh20_shapefcts();
       //! Evaluate Hex20 Derivs to keep them static
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> soh20_derivs();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> soh20_derivs();
       //! Evaluate Hex20 Weights to keep them static
-      const std::vector<double> soh20_weights();
+      std::vector<double> soh20_weights();
 
       //! Evaluate shapefunction, derivative and gaussweights
       void soh20_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOH20, NUMGPT_SOH20>**

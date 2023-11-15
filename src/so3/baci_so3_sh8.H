@@ -277,12 +277,12 @@ namespace DRT
       );
 
       //! return thickness direction
-      const std::vector<double> GetThickvec() { return thickvec_; };
+      std::vector<double> GetThickvec() { return thickvec_; };
 
       //! Debug gmsh-plot to check thickness direction
       void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
-      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
 
       /** \brief Evaluate the reference and current jacobian as well as the
        *  respective determinants */

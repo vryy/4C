@@ -242,11 +242,11 @@ namespace MORTAR
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
-    virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() const = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -325,7 +325,7 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
-    virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
+    virtual Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;

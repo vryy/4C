@@ -80,7 +80,7 @@ namespace SCATRA
       return Teuchos::null;
     }
 
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
       return Teuchos::null;

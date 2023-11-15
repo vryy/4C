@@ -51,7 +51,7 @@ namespace MORTAR
    * @param[in] act ActionType encoded as enum
    * @return String describing the action type
    */
-  static inline const std::string ActionType2String(const enum ActionType& act)
+  static inline std::string ActionType2String(const enum ActionType& act)
   {
     switch (act)
     {

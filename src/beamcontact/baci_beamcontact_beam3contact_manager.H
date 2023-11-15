@@ -100,19 +100,19 @@ namespace CONTACT
     \brief Get different node or element maps
 
     */
-    inline const Teuchos::RCP<Epetra_Map> RowNodes() const { return noderowmap_; }
-    inline const Teuchos::RCP<Epetra_Map> ColNodes() const { return nodecolmap_; }
-    inline const Teuchos::RCP<Epetra_Map> FullNodes() const { return nodefullmap_; }
-    inline const Teuchos::RCP<Epetra_Map> RowElements() const { return elerowmap_; }
-    inline const Teuchos::RCP<Epetra_Map> ColElements() const { return elecolmap_; }
-    inline const Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
+    inline Teuchos::RCP<Epetra_Map> RowNodes() const { return noderowmap_; }
+    inline Teuchos::RCP<Epetra_Map> ColNodes() const { return nodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map> FullNodes() const { return nodefullmap_; }
+    inline Teuchos::RCP<Epetra_Map> RowElements() const { return elerowmap_; }
+    inline Teuchos::RCP<Epetra_Map> ColElements() const { return elecolmap_; }
+    inline Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
     // template<int numnodes, int numnodalvalues>
     inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& Pairs() const
     {
       return oldpairs_;
     }
 
-    inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const { return tree_; }
+    inline Teuchos::RCP<Beam3ContactOctTree> OcTree() const { return tree_; }
 
     /*!
     \brief Get list of beam contact input parameters

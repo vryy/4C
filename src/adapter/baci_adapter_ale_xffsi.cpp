@@ -30,7 +30,7 @@ ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const Teuchos::RCP<const CORE::LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCMapExtractor()
+Teuchos::RCP<const CORE::LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCMapExtractor()
 {
   return AleWrapper::GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_x_ff);
 }

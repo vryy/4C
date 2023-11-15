@@ -91,15 +91,15 @@ namespace SSTI
     void Timeloop() override;
 
     //! return all maps
-    const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
+    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
 
     //! number of current Newton Iteration
     unsigned int NewtonIteration() const { return Iter(); };
 
     //! state vectors
     //@{
-    const Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
-    const Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
+    Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
+    Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
     //}
 
     //! statistics for evaluation and solving

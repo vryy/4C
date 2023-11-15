@@ -69,11 +69,11 @@ namespace ADAPTER
     virtual const Teuchos::ParameterList& AlgoParameters() { return params_; }
 
     /// interpolate fluid quantity to a scatra one (e.g. via volmortar)
-    const Teuchos::RCP<const Epetra_Vector> FluidToScatra(
+    Teuchos::RCP<const Epetra_Vector> FluidToScatra(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// interpolate scatra quantity to a fluid one (e.g. via volmortar)
-    const Teuchos::RCP<const Epetra_Vector> ScatraToFluid(
+    Teuchos::RCP<const Epetra_Vector> ScatraToFluid(
         const Teuchos::RCP<const Epetra_Vector> scatravector) const;
 
    private:

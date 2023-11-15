@@ -127,7 +127,7 @@ namespace MAT
       inline virtual INPAR::MAT::MaterialType Type() const { return type_; }
 
       /// Return communicator
-      inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
+      inline Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
       /// Return quick accessible material parameter data
       ///

@@ -131,7 +131,7 @@ namespace ADAPTER
     void PrepareTimeLoop() override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override;
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override;
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() const override;

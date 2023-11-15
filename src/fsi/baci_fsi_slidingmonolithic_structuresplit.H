@@ -213,12 +213,12 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain) override;
 
-    const Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField()
+    Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField()
     {
       return Teuchos::rcp_static_cast<ADAPTER::FluidFSIMsht>(FluidField());
     }
 
-    const Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField()
+    Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField()
     {
       return Teuchos::rcp_static_cast<ADAPTER::AleFsiMshtWrapper>(AleField());
     }

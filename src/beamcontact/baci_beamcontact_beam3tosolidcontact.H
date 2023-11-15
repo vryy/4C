@@ -96,9 +96,9 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual const CORE::LINALG::SerialDenseVector GetX1() = 0;
+    virtual CORE::LINALG::SerialDenseVector GetX1() = 0;
 
-    virtual const CORE::LINALG::SerialDenseVector GetX2() = 0;
+    virtual CORE::LINALG::SerialDenseVector GetX2() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
@@ -250,7 +250,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    const CORE::LINALG::SerialDenseVector GetX1() override
+    CORE::LINALG::SerialDenseVector GetX1() override
     {
       CORE::LINALG::SerialDenseVector r1;
       r1.resize(3);
@@ -259,7 +259,7 @@ namespace CONTACT
       return r1;
     };
 
-    const CORE::LINALG::SerialDenseVector GetX2() override
+    CORE::LINALG::SerialDenseVector GetX2() override
     {
       CORE::LINALG::SerialDenseVector r2;
       r2.resize(3);

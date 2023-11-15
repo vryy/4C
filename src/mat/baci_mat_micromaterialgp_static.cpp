@@ -198,7 +198,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   return;
 }
 
-const std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
+std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
 {
   std::string newfilename;
 

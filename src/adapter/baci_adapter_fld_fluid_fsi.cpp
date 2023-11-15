@@ -781,7 +781,7 @@ double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
+std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
 {
   switch (auxintegrator_)
   {

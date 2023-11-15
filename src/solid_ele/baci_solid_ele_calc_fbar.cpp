@@ -59,7 +59,7 @@ namespace
    * @return CORE::LINALG::Matrix<num_dof_per_ele, 1> : H-Operator
    */
   template <CORE::FE::CellType distype, std::enable_if_t<num_dim<distype> == 3, int> = 0>
-  const CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1> EvaluateFbarHOperator(
+  CORE::LINALG::Matrix<num_dof_per_ele<distype>, 1> EvaluateFbarHOperator(
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping_centroid,
       const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping,

@@ -107,7 +107,7 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::string STR::PREDICT::Generic::Name() const
+std::string STR::PREDICT::Generic::Name() const
 {
   CheckInit();
   return INPAR::STR::PredEnumString(type_);

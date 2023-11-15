@@ -811,10 +811,10 @@ namespace STR
     bool HaveSpringDashpot() override = 0;
 
     //! get constraint manager defined in the structure
-    const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override = 0;
 
     //! get spring dashpot manager defined in the structure
-    const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
@@ -869,7 +869,7 @@ namespace STR
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return dbcmaps_;
     }

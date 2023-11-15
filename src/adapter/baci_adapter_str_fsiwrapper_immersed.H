@@ -36,10 +36,7 @@ namespace ADAPTER
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
     /// return the combined interface (matching fsi + immersed)
-    const Teuchos::RCP<CORE::LINALG::MapExtractor> CombinedInterface()
-    {
-      return combinedinterface_;
-    };
+    Teuchos::RCP<CORE::LINALG::MapExtractor> CombinedInterface() { return combinedinterface_; };
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractImmersedInterfaceDispnp();

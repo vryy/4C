@@ -134,7 +134,7 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      const std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
+      std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
       {
         return branchespotsum_;
       }

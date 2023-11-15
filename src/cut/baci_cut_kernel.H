@@ -2618,7 +2618,7 @@ namespace CORE::GEO
 
         std::pair<bool, ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
 
-        const CORE::LINALG::Matrix<probDim, 2, ClnWrapper> GetNormalVector()
+        CORE::LINALG::Matrix<probDim, 2, ClnWrapper> GetNormalVector()
         {
           return Strategy::GetNormalVector();
         }
@@ -3017,10 +3017,7 @@ namespace CORE::GEO
 
         std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
-        const CORE::LINALG::Matrix<probDim, 2> GetNormalVector()
-        {
-          return Strategy::GetNormalVector();
-        }
+        CORE::LINALG::Matrix<probDim, 2> GetNormalVector() { return Strategy::GetNormalVector(); }
 
         bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
         {

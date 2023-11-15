@@ -674,7 +674,7 @@ PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
   return potentialparticleneighbors_;
 }
 
-const PARTICLEENGINE::LocalIndexTupleShrdPtr
+PARTICLEENGINE::LocalIndexTupleShrdPtr
 PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) const
 {
   // safety check
@@ -687,7 +687,7 @@ PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) c
   return globalidIt->second;
 }
 
-const std::shared_ptr<IO::DiscretizationWriter>
+std::shared_ptr<IO::DiscretizationWriter>
 PARTICLEENGINE::ParticleEngine::GetBinDiscretizationWriter() const
 {
   return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
@@ -868,7 +868,7 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
   }
 }
 
-const std::shared_ptr<IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
+std::shared_ptr<IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
     int restartstep) const
 {
   return std::make_shared<IO::DiscretizationReader>(binstrategy_->BinDiscret(), restartstep);

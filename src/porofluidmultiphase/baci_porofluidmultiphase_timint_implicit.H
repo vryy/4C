@@ -166,7 +166,7 @@ namespace POROFLUIDMULTIPHASE
     };
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override
     {
       return dbcmaps_with_volfracpress_;
     }

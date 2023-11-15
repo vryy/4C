@@ -189,7 +189,7 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 /* --------------------------------------------------------------------
                     Create projector P(^T) (for direct solvers)
    -------------------------------------------------------------------- */
-const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
+CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
 {
   /*
    *               / T   \ -1   T
@@ -209,7 +209,7 @@ const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
   return *P_;
 }
 
-const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
+CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
 {
   /*
    *  T             / T   \ -1   T

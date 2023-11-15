@@ -218,7 +218,7 @@ namespace CONTACT
       }
 
       //! Get row map of slave normal dofs
-      const Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
+      Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
       {
         if (Filled())
           return interfaceData_.SNDofRowMap();
@@ -228,7 +228,7 @@ namespace CONTACT
       }
 
       //! Get row map of slave tangential dofs
-      const Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
+      Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
       {
         if (Filled())
           return interfaceData_.STDofRowMap();

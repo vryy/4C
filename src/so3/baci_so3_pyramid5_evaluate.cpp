@@ -1599,7 +1599,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fcts at all Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts(NUMGPT_SOP5);
   // (r,s,t) gp-locations
@@ -1621,7 +1621,7 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyrami
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fct derivs at all  Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
 DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs(NUMGPT_SOP5);
@@ -1644,7 +1644,7 @@ DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Weights at all  Gauss Points                       |
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
+std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
 {
   std::vector<double> weights(NUMGPT_SOP5);
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;

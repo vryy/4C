@@ -221,7 +221,7 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///

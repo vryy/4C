@@ -62,15 +62,15 @@ namespace EXODUS
 
   std::vector<double> MeanVec(const std::vector<std::vector<double>> baseVecs);
 
-  const std::map<int, std::set<int>> NodeToEleConn(const std::map<int, std::vector<int>> ele_conn);
+  std::map<int, std::set<int>> NodeToEleConn(const std::map<int, std::vector<int>> ele_conn);
 
-  const std::map<int, std::vector<int>> EleNeighbors(const std::map<int, std::vector<int>> ele_conn,
+  std::map<int, std::vector<int>> EleNeighbors(const std::map<int, std::vector<int>> ele_conn,
       const std::map<int, std::set<int>>& node_conn);
 
-  const std::set<int> FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
+  std::set<int> FreeEdgeNodes(const std::map<int, std::vector<int>>& ele_conn,
       const std::map<int, std::vector<int>>& ele_nbrs);
 
-  const std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes,
+  std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes,
       const std::map<int, std::vector<int>>& nodepair, const std::set<int>& ns);
 
   std::set<int> FreeFaceNodes(

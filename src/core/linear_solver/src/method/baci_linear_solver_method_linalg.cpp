@@ -209,7 +209,7 @@ int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refact
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
@@ -225,7 +225,7 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList mllist;
@@ -558,7 +558,7 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
@@ -575,7 +575,7 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList outparams;
@@ -815,7 +815,7 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
     const Teuchos::ParameterList& inparams)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  0)   TranslateSolverParameters");

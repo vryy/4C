@@ -550,7 +550,7 @@ namespace FLD
     \brief get access to map extractor for velocity and pressure
 
     */
-    const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       return velpressplitter_;
     };
@@ -686,14 +686,14 @@ namespace FLD
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+    virtual Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    virtual const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+    virtual Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
     //! Return locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }

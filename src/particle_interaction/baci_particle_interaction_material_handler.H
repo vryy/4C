@@ -48,10 +48,7 @@ namespace PARTICLEINTERACTION
     }
 
     //! get particle types of stored particle material parameters
-    inline const std::set<PARTICLEENGINE::TypeEnum> GetParticleTypes() const
-    {
-      return storedtypes_;
-    };
+    inline std::set<PARTICLEENGINE::TypeEnum> GetParticleTypes() const { return storedtypes_; };
 
    private:
     //! particle simulation parameter list

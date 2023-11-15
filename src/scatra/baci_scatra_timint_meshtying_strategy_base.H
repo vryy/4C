@@ -184,7 +184,7 @@ namespace SCATRA
     virtual Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const = 0;
 
     //! return interface map extractor
-    virtual const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
     virtual void Output() const { return; };

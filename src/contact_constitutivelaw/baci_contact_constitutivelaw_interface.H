@@ -83,7 +83,7 @@ namespace CONTACT
     /** \brief return the multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness
      */
-    const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> GetConstitutiveContactLaw()
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> GetConstitutiveContactLaw()
     {
       return coconstlaw_;
     }

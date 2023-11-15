@@ -383,7 +383,7 @@ const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
+Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
 {
   if (iReqPtr_.is_null()) dserror("Required interface pointer iReqPtr_ was not initialized!");
 
@@ -392,7 +392,7 @@ const Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
+Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
 {
   if (iJacPtr_.is_null()) dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
 
@@ -400,7 +400,7 @@ const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJa
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
+Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
 NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
   /* We explicitly allow a return value of Teuchos::nullptr, because the
