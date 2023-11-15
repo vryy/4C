@@ -8,7 +8,6 @@ Developer guide
     :maxdepth: 2
 
     bacisetup
-    developer_runsimulation
     bacitesting
     codingguidelines
     developer_addedinformation
