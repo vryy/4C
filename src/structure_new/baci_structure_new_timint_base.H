@@ -31,6 +31,10 @@ namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
 }  // namespace CORE::LINALG
+namespace ADAPTER
+{
+  class StructureTimeAda;
+}
 namespace STR
 {
   class ModelEvaluator;
@@ -47,6 +51,8 @@ namespace STR
      *  \author Michael Hiermeier */
     class Base : public ::ADAPTER::StructureNew, IO::EveryIterationWriterInterface
     {
+      friend class ::ADAPTER::StructureTimeAda;
+
      public:
       /// constructor
       Base();

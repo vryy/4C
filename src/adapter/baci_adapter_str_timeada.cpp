@@ -14,6 +14,7 @@
 
 #include "baci_adapter_str_timeada_joint.H"
 #include "baci_adapter_str_timeada_zienxie.H"
+#include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -350,6 +351,17 @@ void ADAPTER::StructureTimeAda::SizeForOutput()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Output action */
+void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
+{
+  STR::TIMINT::BaseDataIO& dataio = stm_->DataIO();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
+
+  StructureWrapper::Output(forced_writerestart);
+  output_ptr->WriteDouble("next_delta_time", stepsize_);
 }
 
 /*----------------------------------------------------------------------*/

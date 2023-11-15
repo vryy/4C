@@ -86,6 +86,9 @@ namespace ADAPTER
     /// wrapper for things that should be done after solving the update
     void PostUpdate() override{};
 
+    /// output results
+    void Output(bool forced_writerestart = false) override;
+
     /// wrapper for things that should be done after the output
     void PostOutput() override{};
 
