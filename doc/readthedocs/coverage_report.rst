@@ -66,7 +66,7 @@ But try to avoid tests that just execute lines of code.
 
 An ideal code project has 100% coverage, where all existing lines of code are tested with suitable tests.
 
-Under consideration of "[coverage comes after good tests](#1-coverage-comes-after-good-tests)" 
+Under consideration of the above paragraph *coverage comes after good tests*
 one development goal should therefore be to try to converge to this limit over time.
 In fact, many projects allow only merge requests that do not decrease the coverage. 
 With BACI this it is not that simple, because it is unfeasible to create a full coverage report for each merge request.
@@ -79,9 +79,6 @@ Together with "[coverage comes after good tests](#1-coverage-comes-after-good-te
 this will bring BACI closer and closer towards the 100% limit.  
 
 To give you an idea on how good we are doing, the following estimates are used to color the coverage report:
-
-.. role:: red
-.. role:: green
 
 - :red:`low: < 75 %`
 - medium: >= 75 %  (yellow)
