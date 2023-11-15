@@ -1046,7 +1046,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeLoop()
   if (step_ == 0)
   {
     // write out initial state
-    Output();
+    CheckAndWriteOutputAndRestart();
 
     // compute error for problems with analytical solution (initial field!)
     EvaluateErrorComparedToAnalyticalSol();
@@ -1458,7 +1458,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    CheckAndWriteOutputAndRestart();
 
   }  // while
 
@@ -1517,8 +1517,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Update(const int num  //!< field number
-)
+void SCATRA::ScaTraTimIntImpl::Update()
 {
   // update quantities associated with meshtying strategy
   strategy_->Update();
@@ -1572,72 +1571,76 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::Bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Output(const int num)
+void SCATRA::ScaTraTimIntImpl::CheckAndWriteOutputAndRestart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  // solution output and potentially restart data and/or flux data
-  if (DoOutput())
+  // write result and potentially flux data
+  if (IsResultStep()) WriteResult();
+
+  // add restart data
+  if (IsRestartStep()) WriteRestart();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::WriteResult()
+{
+  // step number and time (only after that data output is possible)
+  output_->NewStep(step_, time_);
+
+  // write domain decomposition for visualization (only once at the first time step!)
+  if (step_ == 0) output_->WriteElementData(true);
+
+  // write state vectors
+  OutputState();
+
+  // write output to Gmsh postprocessing files
+  if (outputgmsh_) OutputToGmsh(step_, time_);
+
+  // write flux vector field (only writing, calculation was done during Update() call)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or
+      calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    // step number and time (only after that data output is possible)
-    output_->NewStep(step_, time_);
+    // for flux output of initial field (before first solve) do:
+    // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
+    if (step_ == 0 or
+        (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or
+        (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
+      CalcFlux(true);
 
-    // write domain decomposition for visualization (only once at the first time step!)
-    if (step_ == 0) output_->WriteElementData(true);
-
-    // write state vectors
-    OutputState();
-
-    // write output to Gmsh postprocessing files
-    if (outputgmsh_) OutputToGmsh(step_, time_);
-
-    // write flux vector field (only writing, calculation was done during Update() call)
-    if (calcflux_domain_ != INPAR::SCATRA::flux_none or
-        calcflux_boundary_ != INPAR::SCATRA::flux_none)
-    {
-      // for flux output of initial field (before first solve) do:
-      // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
-      if (step_ == 0 or
-          (calcflux_domain_ != INPAR::SCATRA::flux_none and flux_domain_ == Teuchos::null) or
-          (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
-        CalcFlux(true, num);
-
-      if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
-      if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
-    }
-
-    // write mean values of scalar(s)
-    OutputTotalAndMeanScalars(num);
-
-    // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
-    OutputDomainOrBoundaryIntegrals("DomainIntegral");
-    OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
-
-    // write integral values of reaction(s)
-    OutputIntegrReac(num);
-
-    // problem-specific outputs
-    OutputProblemSpecific();
-
-    // add restart data
-    if (step_ % uprestart_ == 0 and step_ != 0) OutputRestart();
-
-    // biofilm growth
-    if (scfldgrdisp_ != Teuchos::null)
-    {
-      output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
-    }
-
-    // biofilm growth
-    if (scstrgrdisp_ != Teuchos::null)
-    {
-      output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
-    }
-
-    // generate output associated with meshtying strategy
-    strategy_->Output();
+    if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
+    if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
   }
+
+  // write mean values of scalar(s)
+  OutputTotalAndMeanScalars();
+
+  // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
+  OutputDomainOrBoundaryIntegrals("DomainIntegral");
+  OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
+
+  // write integral values of reaction(s)
+  OutputIntegrReac();
+
+  // problem-specific outputs
+  OutputProblemSpecific();
+
+  // biofilm growth
+  if (scfldgrdisp_ != Teuchos::null)
+  {
+    output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
+  }
+
+  // biofilm growth
+  if (scstrgrdisp_ != Teuchos::null)
+  {
+    output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
+  }
+
+  // generate output associated with meshtying strategy
+  strategy_->Output();
 
   // generate output on micro scale if necessary
   if (macro_scale_)
@@ -1660,8 +1663,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
     CORE::LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
-  // NOTE:
-  // statistics output for normal fluxes at boundaries was already done during Update()
 }
 
 /*----------------------------------------------------------------------*

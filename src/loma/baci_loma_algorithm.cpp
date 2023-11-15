@@ -863,7 +863,7 @@ void LOMA::Algorithm::Output()
   // discretizations.
   FluidField()->StatisticsAndOutput();
 
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   return;
 }

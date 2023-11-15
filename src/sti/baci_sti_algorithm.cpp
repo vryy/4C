@@ -198,10 +198,10 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
 void STI::Algorithm::Output()
 {
   // output scatra field
-  scatra_->ScaTraField()->Output();
+  scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // output thermo field
-  thermo_->ScaTraField()->Output();
+  thermo_->ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*--------------------------------------------------------------------------------*

@@ -285,10 +285,10 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiOST::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiOST::Update()
 {
-  TimIntOneStepTheta::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntOneStepTheta::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -328,10 +328,10 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiBDF2::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiBDF2::Update()
 {
-  TimIntBDF2::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntBDF2::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -372,10 +372,10 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update()
 {
-  TimIntGenAlpha::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntGenAlpha::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }
@@ -415,10 +415,10 @@ void SCATRA::ScaTraTimIntPoroMultiStationary::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                         vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiStationary::Update(const int num)
+void SCATRA::ScaTraTimIntPoroMultiStationary::Update()
 {
-  TimIntStationary::Update(num);
-  ScaTraTimIntPoroMulti::Update(num);
+  TimIntStationary::Update();
+  ScaTraTimIntPoroMulti::Update();
 
   return;
 }

@@ -85,7 +85,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::Output()
   //                         output of solution
   // -------------------------------------------------------------------
   PoroField()->Output();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 /*----------------------------------------------------------------------*

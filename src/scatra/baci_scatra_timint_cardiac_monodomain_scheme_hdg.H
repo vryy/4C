@@ -34,7 +34,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     //! write current state to BINIO
     void OutputState() override;

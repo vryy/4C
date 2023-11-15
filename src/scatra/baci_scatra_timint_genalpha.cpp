@@ -340,7 +340,7 @@ void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::Update(const int num)
+void SCATRA::TimIntGenAlpha::Update()
 {
   // set history variable to zero for not spoiling flux calculation
   // if (not incremental_) hist_->PutScalar(0.0);
@@ -350,17 +350,14 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
-    // else
-    // necessary to print statistical values after each time step but the solution only
-    // flux_ = CalcFlux(true);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
 
   // compute time derivative at time n+1
   ComputeTimeDerivative();
 
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0, *phinp_, 0.0);
@@ -377,10 +374,10 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::OutputRestart() const
+void SCATRA::TimIntGenAlpha::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // additional state vectors that are needed for generalized-alpha restart
   output_->WriteVector("phidtnp", phidtnp_);

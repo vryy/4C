@@ -223,8 +223,8 @@ void SSTI::SSTIMono::Output()
               << std::endl;
   }
 
-  ScaTraField()->Output();
-  ThermoField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ThermoField()->CheckAndWriteOutputAndRestart();
   StructureField()->Output();
 }
 
@@ -423,8 +423,8 @@ void SSTI::SSTIMono::Timeloop()
   {
     DistributeSolutionAllFields();
 
-    ScaTraField()->Output();
-    ThermoField()->Output();
+    ScaTraField()->CheckAndWriteOutputAndRestart();
+    ThermoField()->CheckAndWriteOutputAndRestart();
   }
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())

@@ -35,7 +35,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -44,7 +44,7 @@ namespace SCATRA
     void PostCalcInitialPotentialField() override;
 
    protected:
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     void ElectrodeKineticsTimeUpdate() override;
 
@@ -77,7 +77,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
    protected:
     void ComputeTimeDerivPot0(const bool init) override{};
@@ -88,7 +88,7 @@ namespace SCATRA
 
     void SetOldPartOfRighthandside() override;
 
-    void OutputRestart() const override;
+    void WriteRestart() const override;
   };
 
 
@@ -106,7 +106,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -115,7 +115,7 @@ namespace SCATRA
     void PostCalcInitialPotentialField() override{};
 
    protected:
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     void ElectrodeKineticsTimeUpdate() override;
 
@@ -139,7 +139,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -148,7 +148,7 @@ namespace SCATRA
     void PostCalcInitialPotentialField() override;
 
    protected:
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     void ElectrodeKineticsTimeUpdate() override;
 
@@ -170,7 +170,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void Update(const int num = 0) override;
+    void Update() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -179,7 +179,7 @@ namespace SCATRA
     void PostCalcInitialPotentialField() override{};
 
    protected:
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     void ElectrodeKineticsTimeUpdate() override
     {
@@ -190,4 +190,4 @@ namespace SCATRA
   };
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_ELCH_SCHEME_H
+#endif  // BACI_SCATRA_TIMINT_ELCH_SCHEME_H

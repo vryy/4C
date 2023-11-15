@@ -82,7 +82,7 @@ namespace SCATRA
     void OuterIterationConvection();
 
     /// take current results for converged and save for next time step
-    void Update(const int num = 0);
+    void Update() override;
 
     /// take current results for converged and save for next time step
     void UpdateConvection();

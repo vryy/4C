@@ -41,7 +41,7 @@ namespace SCATRA
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
     /// read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
@@ -119,8 +119,7 @@ namespace SCATRA
       return;
     };
 
-    /// write additional data required for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0; }
@@ -134,4 +133,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_STAT_H
+#endif  // BACI_SCATRA_TIMINT_STAT_H

@@ -219,8 +219,7 @@ namespace SCATRA
     //! output solution for post-processing
     void Output() const override;
 
-    //! output restart information
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     //! return mortar projector P
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& P() const { return P_; };

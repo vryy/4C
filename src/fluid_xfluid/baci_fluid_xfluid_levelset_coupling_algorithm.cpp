@@ -221,7 +221,7 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
     dserror("Scatra time integration scheme is not stationary");
 
   // write Scatra output (fluid output has been already called in FluidField()->Integrate();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // Give Scatra Values to fluid.
   // Needed for curvature etc..
@@ -609,7 +609,7 @@ void XFLUIDLEVELSET::Algorithm::Output()
       0)  // Only perform output for given RESULTSEVRY in Control Algo section of input.
   {
     FluidField()->Output();
-    ScaTraField()->Output();
+    ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   if (write_center_of_mass_)
@@ -631,7 +631,8 @@ void XFLUIDLEVELSET::Algorithm::OutputInitialField()
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary) FluidField()->Output();
 
     // output Levelset function initial state
-    if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary) ScaTraField()->Output();
+    if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
+      ScaTraField()->CheckAndWriteOutputAndRestart();
   }
 
   if (write_center_of_mass_)

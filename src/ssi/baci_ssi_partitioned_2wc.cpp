@@ -247,7 +247,7 @@ void SSI::SSIPart2WC::UpdateAndOutput()
   ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   StructureField()->Output();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 

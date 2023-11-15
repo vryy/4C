@@ -312,7 +312,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   }
 
   // now the other physical fiels
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
   AleField()->Output();
 }
 

@@ -69,8 +69,7 @@ namespace SCATRA
     double ThermPressDtAm() override { return thermpressdtam_; }
 
    protected:
-    /// write additional data required for restart
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     /// dynamic Smagorinsky model
     void DynamicComputationOfCs() override;
@@ -95,4 +94,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-#endif  // SCATRA_TIMINT_LOMA_GENALPHA_H
+#endif  // BACI_SCATRA_TIMINT_LOMA_GENALPHA_H

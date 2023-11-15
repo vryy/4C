@@ -551,11 +551,11 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 void SSI::SSIMono::Output()
 {
   // output scalar transport field
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
   if (IsScaTraManifold())
   {
     // domain output
-    ScaTraManifold()->Output();
+    ScaTraManifold()->CheckAndWriteOutputAndRestart();
     // coupling output
     if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
   }
@@ -609,8 +609,8 @@ void SSI::SSIMono::PrepareTimeLoop()
   // calculate initial time derivatives
   CalcInitialTimeDerivative();
 
-  ScaTraField()->Output();
-  if (IsScaTraManifold()) ScaTraManifold()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
+  if (IsScaTraManifold()) ScaTraManifold()->CheckAndWriteOutputAndRestart();
 }
 
 /*--------------------------------------------------------------------------*

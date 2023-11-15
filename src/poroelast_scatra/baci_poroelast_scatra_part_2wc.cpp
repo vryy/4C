@@ -180,7 +180,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Update()
 void POROELASTSCATRA::PoroScatraPart2WC::Output()
 {
   PoroField()->Output();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 }
 
 

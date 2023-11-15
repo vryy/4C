@@ -210,31 +210,27 @@ void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
 
 
 /*----------------------------------------------------------------------*
- | update of solution at end of time step                     gjb 12/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Update(const int num)
+void SCATRA::TimIntStationary::Update()
 {
   // call base class routine
-  ScaTraTimIntImpl::Update(num);
+  ScaTraTimIntImpl::Update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
+    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
   }
-
-  return;
-};
+}
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 10/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::OutputRestart() const
+void SCATRA::TimIntStationary::WriteRestart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::OutputRestart();
+  ScaTraTimIntImpl::WriteRestart();
 
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.

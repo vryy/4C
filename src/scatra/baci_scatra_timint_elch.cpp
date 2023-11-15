@@ -789,7 +789,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Update(const int num)
+void SCATRA::ScaTraTimIntElch::Update()
 {
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
@@ -797,17 +797,17 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Output(const int num)
+void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart()
 {
   // evaluate SOC, c-rate and cell voltage for output
   EvaluateElectrodeInfoInterior();
   EvaluateCellVoltage();
 
   // call base class routine
-  ScaTraTimIntImpl::Output(num);
+  ScaTraTimIntImpl::CheckAndWriteOutputAndRestart();
 
   // output electrode interior status information and cell voltage in every time step
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or DoOutput())
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or IsResultStep())
   {
     // print electrode domain and boundary status information to screen and files
     OutputElectrodeInfoDomain();
@@ -1536,7 +1536,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::OutputRestart() const
+void SCATRA::ScaTraTimIntElch::WriteRestart() const
 {
   // output restart data associated with electrode state of charge conditions if applicable,
   // needed for correct evaluation of cell C rate at the beginning of the first time step after
@@ -2995,7 +2995,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntElch::NotFinished()
+bool SCATRA::ScaTraTimIntElch::NotFinished() const
 {
   // call base class routine in case no cell cycling is performed
   if (cccv_condition_ == Teuchos::null)

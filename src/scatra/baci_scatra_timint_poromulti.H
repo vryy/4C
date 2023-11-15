@@ -40,11 +40,7 @@ namespace SCATRA
     void Init() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void Update(const int num = 0  //!< field number
-        ) override
-    {
-      return;
-    };
+    void Update() override{};
 
     //! set the nodal L2-flux
     virtual void SetL2FluxOfMultiFluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
@@ -112,7 +108,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
   };  // class TimIntPoroMultiOST
 
@@ -133,7 +129,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
   };  // class TimIntPoroMultiBDF2
 
@@ -154,7 +150,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
   };  // class TimIntPoroMultiGenAlpha
 
@@ -175,7 +171,7 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0) override;
+    void Update() override;
 
   };  // class TimIntPoroMultiStationary
 }  // namespace SCATRA

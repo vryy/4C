@@ -94,17 +94,15 @@ namespace SCATRA
 
     /*--- calculate and update -----------------------------------------------*/
 
-    //! determine whether there are still time steps to be evaluated
-    bool NotFinished() override;
+    [[nodiscard]] bool NotFinished() const override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(int num) override;
+    void Update() override;
 
     /*--- query and output ---------------------------------------------------*/
 
-    //! output solution and restart data to file
-    void Output(int num) override;
+    void CheckAndWriteOutputAndRestart() override;
 
     //! problem-specific outputs
     void OutputProblemSpecific() override;
@@ -154,8 +152,7 @@ namespace SCATRA
     //! output cell voltage to screen and file
     void OutputCellVoltage();
 
-    //! output restart data
-    void OutputRestart() const override;
+    void WriteRestart() const override;
 
     //! output type of closing equation for electric potential
     INPAR::ELCH::EquPot EquPot() const { return equpot_; }

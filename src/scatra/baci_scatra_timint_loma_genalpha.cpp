@@ -249,12 +249,11 @@ void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
 
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::OutputRestart() const
+void SCATRA::TimIntLomaGenAlpha::WriteRestart() const
 {
   // write standard fields first
-  TimIntGenAlpha::OutputRestart();
+  TimIntGenAlpha::WriteRestart();
 
   // write additional restart data for loma
   // required for restart of closed systems

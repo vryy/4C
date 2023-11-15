@@ -410,10 +410,10 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Update(const int num)
+void SCATRA::ScaTraAlgorithm::Update()
 {
   FluidField()->Update();
-  ScaTraField()->Update(num);
+  ScaTraField()->Update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -445,7 +445,7 @@ void SCATRA::ScaTraAlgorithm::Output()
   }
 
   FluidField()->StatisticsAndOutput();
-  ScaTraField()->Output();
+  ScaTraField()->CheckAndWriteOutputAndRestart();
 
   // we have to call the output of averaged fields for scatra separately
   if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)

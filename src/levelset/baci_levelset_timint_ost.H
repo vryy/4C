@@ -65,7 +65,7 @@ namespace SCATRA
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update(const int num = 0) override;
+    void Update() override;
 
     /// update phi within the reinitialization loop
     void UpdateReinit() override;

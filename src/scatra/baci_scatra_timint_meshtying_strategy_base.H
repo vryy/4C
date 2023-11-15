@@ -190,7 +190,7 @@ namespace SCATRA
     virtual void Output() const { return; };
 
     //! output restart information
-    virtual void OutputRestart() const { return; };
+    virtual void WriteRestart() const {};
 
     /*!
      * @brief  read restart data
