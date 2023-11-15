@@ -305,7 +305,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
         case SCATRA::DifferentiationType::disp:
         {
           double dj_dsqrtdetg(0.0), dj_ddetF(0.0);
-          myelectrodeutils::CalculateButlerVolmerDispLinearizations(
+          CalculateButlerVolmerDispLinearizations(
               kineticmodel, alphaa, alphac, frt, j0, eta, depd_ddetF, dj_dsqrtdetg, dj_ddetF);
 
           const double dj_dsqrtdetg_timefacwgt = pseudo_contact_fac * dj_dsqrtdetg * timefacwgt;
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
           double dj_dT_slave(0.0);
 
           // calculate linearizations of Butler-Volmer kinetics w.r.t. tmperature dofs
-          myelectrodeutils::CalculateButlerVolmerTempLinearizations(
+          CalculateButlerVolmerTempLinearizations(
               alphaa, alphac, depddT, eta, etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
 
           const double djdT_slave_timefacfac = dj_dT_slave * timefacfac;

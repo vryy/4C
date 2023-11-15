@@ -1041,8 +1041,18 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
-                scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2IKinetics", condid);
+                for (auto [kinetics_slave_cond_id, kinetics_slave_cond] :
+                    kinetics_conditions_meshtying_slaveside_)
+                {
+                  if (kinetics_slave_cond_id == condid)
+                  {
+                    // collect condition specific data and store to scatra boundary parameter class
+                    SetConditionSpecificScaTraParameters(*kinetics_slave_cond);
+
+                    scatratimint_->Discretization()->EvaluateCondition(
+                        condparams, strategy, "S2IKinetics", condid);
+                  }
+                }
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1063,6 +1073,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
+                auto* s2i_coupling_growth_cond =
+                    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+
+                // collect condition specific data and store to scatra boundary parameter class
+                SetConditionSpecificScaTraParameters(*s2i_coupling_growth_cond);
+
                 scatratimint_->Discretization()->EvaluateCondition(
                     condparams, strategy, "S2ICouplingGrowth", condid);
 

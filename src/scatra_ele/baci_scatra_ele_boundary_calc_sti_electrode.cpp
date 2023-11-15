@@ -265,7 +265,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
       double dj_dT_slave(0.0);
 
       // calculate linearizations of Butler-Volmer kinetics w.r.t. temperature dofs
-      myelectrodeutils::CalculateButlerVolmerTempLinearizations(
+      CalculateButlerVolmerTempLinearizations(
           alphaa, alphac, depddT, eta, etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
 
       const double dj_mass_energydT_slave =
@@ -663,9 +663,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
             double dj_dpot_master(0.0);
 
             // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-            myelectrodeutils::CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt,
-                epdderiv, alphaa, alphac, 0.0, expterm1, expterm2, kr, faraday, emasterphiint,
-                eslavephiint, cmax, eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+            CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv, alphaa, alphac,
+                0.0, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax, eta,
+                dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
             const double dj_energydc_slave =
                 pseudo_contact_fac * dj_dc_slave * molar_heat_capacity * etempint;

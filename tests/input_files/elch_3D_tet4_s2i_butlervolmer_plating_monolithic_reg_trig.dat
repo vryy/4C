@@ -3,7 +3,7 @@
 ==================================================================
                   General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Test case for electrode-electrolyte interface coupling involving lithium plating:
 - based on geometry in Goldin et al., Electrochimica Acta 64 (2012) 118-129
 - three-dimensional problem with two two-dimensional electrode-electrolyte interfaces
@@ -14,13 +14,13 @@ Test case for electrode-electrolyte interface coupling involving lithium plating
 - lithium plating begins at time step 21
 - monolithic evaluation of lithium plating with trigonometrical regularization for lithium stripping
 - 1560 tet4 elements with matching interface nodes
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         35
@@ -29,99 +29,99 @@ THETA                           0.5
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
 OUTPUTSCALARS                   entire_domain_and_by_condition
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0.0
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
-----------------------------------------------------------------ELCH CONTROL
+------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     253
 INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
----------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
+-----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 INTLAYERGROWTH_EVALUATION       monolithic
 INTLAYERGROWTH_LINEAR_SOLVER    1
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 4.3e-8 COND_PARA_NUM 1 COND_PARA 1.e6 C_MAX 26.39 CHI_MAX 1.0 OCP_MODEL Taralov X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 13 OCP_PARA -0.132 0 0 0 0 0 0 0 0 0 1.41 -3.52 0 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
 MAT 3 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 1.1e-7 COND_PARA_NUM 1 COND_PARA 3.8e4 C_MAX 23.671 CHI_MAX 1.0 OCP_MODEL Taralov X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 13 OCP_PARA 4.06279 0.0677504 -21.8502 12.8268 -0.045 -71.69 -0.105734 1.00167 0.379571 -1.576 0.01 -200. -0.19 END
 MAT 4 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 5 END
 MAT 5 MAT_newman VALENCE 1.0 DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 TRANSNR -1 THERMFAC 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 3.9e-5 TRANS_PARA_NUM 1 TRANS_PARA 0.399 COND_PARA_NUM 1 COND_PARA 5.0e2 END
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9.00172
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9.44e-9
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.2
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -0.0332652803
-----------------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 12.89178
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 4.1850999
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 1.01163933224631606e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE 8.81124394065713672e-09 TOLERANCE 1.e-16                // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.19815736351017099e+00 TOLERANCE 1.e-09               // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE 2.08831115766319707e-02 TOLERANCE 1.e-11               // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.20073700986506005e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE 2.09711821675588120e-02 TOLERANCE 1.e-11               // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.18038903694316293e+01 TOLERANCE 1.e-08               // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 4.25094353985493889e+00 TOLERANCE 1.e-09               // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 7.96982013313815463e-01 TOLERANCE 1.e-10                // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 7.97222222220785204e-01 TOLERANCE 1.e-10                // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.25094384888395194e+00 TOLERANCE 1.e-09         // cell voltage
-SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 4.00000000000000000e+00 TOLERANCE 1.e-20                       // number of Newton-Raphson iterations during last time step
-SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE 1.21791923205210121e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (near separator)
-SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE 1.21255597050616778e-08 TOLERANCE 1.e-16        // local plating film thickness at anode-electrolyte interface (medium distance from separator)
-SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE 1.20915745881796222e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (large distance from separator)
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE 5.50740227580489439e+00 TOLERANCE 1e-09             // mean lithium concentration averaged over total domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE 1.00660588033137977e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over anode domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE 1.19999999999999152e+00 TOLERANCE 1e-09           // mean lithium concentration averaged over electrolyte domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE 1.18248050000157736e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over cathode domain
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE  1.01161356512959557e+01 TOLERANCE 1.0e-07 // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE  8.80413139579013490e-09 TOLERANCE 1.0e-16 // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE  1.19815709938051773e+00 TOLERANCE 1.2e-08 // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE  2.21275980172501753e-02 TOLERANCE 2.2e-10 // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE  1.20073706459494711e+00 TOLERANCE 1.2e-08 // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE  2.22156794595917105e-02 TOLERANCE 2.2e-10 // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE  1.18038903694335335e+01 TOLERANCE 1.2e-07 // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE  4.25218803616757146e+00 TOLERANCE 4.3e-08 // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE  7.96956802897755945e-01 TOLERANCE 8.0e-09 // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE  7.97222222220785537e-01 TOLERANCE 8.0e-09 // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE  4.25218834519658362e+00 TOLERANCE 4.3e-08 // cell voltage
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE  4.00000000000000000e+00 TOLERANCE 1.0e-16 // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE  1.34531958736848066e-08 TOLERANCE 1.3e-16 // local plating film thickness at anode-electrolyte interface (near separator)
+SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE  1.33986223300498124e-08 TOLERANCE 1.3e-16 // local plating film thickness at anode-electrolyte interface (medium distance from separator)
+SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE  1.33640363892402180e-08 TOLERANCE 1.3e-16 // local plating film thickness at anode-electrolyte interface (large distance from separator)
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE  5.50734113191568575e+00 TOLERANCE 5.5e-08 // mean lithium concentration averaged over total domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE  1.00657821290817129e+01 TOLERANCE 1.0e-07 // mean lithium concentration averaged over anode domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE  1.19999999999999574e+00 TOLERANCE 1.2e-08 // mean lithium concentration averaged over electrolyte domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE  1.18248050000157647e+01 TOLERANCE 1.2e-07 // mean lithium concentration averaged over cathode domain
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 6.544713556e-4 FUNCT 0 0 Live Mid
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
------------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
+-------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            3
 E 1 - ScaTra 1
 E 2 - ScaTra 2
 E 3 - ScaTra 3
-----------------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
+------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF                           4
 E 2 - 0 Slave S2I_KINETICS_ID  0
 E 3 - 0 Master S2I_KINETICS_ID  0
 E 4 - 1 Master S2I_KINETICS_ID  1
 E 5 - 1 Slave S2I_KINETICS_ID  1
------------------------------------------DESIGN S2I KINETICS SURF CONDITIONS
+-------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
-E 2 - 0 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  2.2e-9 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
+E 2 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  3.0e-8 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
 E 3 - 0 Master
 E 4 - 1 Master
 E 5 - 1 Slave KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  7.2e-8 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
-----------------------------------DESIGN S2I COUPLING GROWTH SURF CONDITIONS
+------------------------DESIGN S2I COUPLING GROWTH SURF CONDITIONS
 DSURF  1
 E 2 - 0 KINETIC_MODEL Butler-Volmer NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.2e-7 ALPHA_A 0.5 ALPHA_C 0.5 MOLMASS 6.941e-9 DENSITY 5.34e-7 CONDUCTIVITY 10.6e9 REGTYPE trigonometrical REGPAR 0.0 INITTHICKNESS 0.0
------------------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
+-------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
 E 1 - ID 0 C_0% 1.3195 C_100% 12.2941 ONE_HOUR 3600
 E 3 - ID 1 C_0% 20.574 C_100% 9.5994 ONE_HOUR 3600
------------------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
+-------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF                           2
 E 1 - ID 0
 E 6 - ID 1
----------------------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
+-----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
 DVOL                            3
 E 1 - ID 0
 E 2 - ID 1
 E 3 - ID 2
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1
 NODE    107 DSURFACE 1

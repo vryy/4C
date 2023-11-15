@@ -298,10 +298,9 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         // define flux linearization terms
         double dj_ded_conc(0.0), dj_del_conc(0.0), dj_ded_pot(0.0), dj_del_pot(0.0);
         // calculate flux linearizations
-        DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-            CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
-                alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc, cmax,
-                eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
+        DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv,
+            alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc,
+            cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
         // assemble concentration residuals
         auto residual = scatratimint_->Residual();
@@ -343,7 +342,6 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
       default:
       {
         dserror("Kinetic model for s2i coupling not yet implemented!");
-        break;
       }
     }
   }

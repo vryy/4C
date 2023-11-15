@@ -3270,10 +3270,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // define flux linearization terms
               double dj_dc_ed(0.0), dj_dc_el(0.0), dj_dpot_ed(0.0), dj_dpot_el(0.0);
               // calculate flux linearizations
-              DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-                  CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
-                      alphac, dummyresistance, expterm1, expterm2, kr, faraday, conc_el, conc_ed,
-                      cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
+              DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt,
+                  epdderiv, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday,
+                  conc_el, conc_ed, cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
 
               dq_dphi_[0] = dj_dc_el;
               dq_dphi_[1] = dj_dpot_el;
