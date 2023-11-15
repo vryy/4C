@@ -97,11 +97,22 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new ADAPTER::StructureTimeLoop(sta_));
 
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    const STR::TIMINT::Base& sti = *stm_;
+    const auto& gstate = sti.DataGlobalState();
+    dataglobalstate->GetDisN()->Update(1.0, *(gstate.GetDisN()), 0.0);
+    dataglobalstate->GetVelN()->Update(1.0, *(gstate.GetVelN()), 0.0);
+    dataglobalstate->GetAccN()->Update(1.0, *(gstate.GetAccN()), 0.0);
+  }
+
   // check explicitness
   if (sta_->IsImplicit())
   {
     dserror("Implicit might work, but please check carefully");
   }
+
   // check order
   if (sta_->MethodOrderOfAccuracyDis() > stm_->MethodOrderOfAccuracyDis())
   {

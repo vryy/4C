@@ -63,6 +63,10 @@ namespace ADAPTER
     //! Provide type of algorithm
     enum AdaEnum MethodAdaptDis() const override { return ada_upward; }
 
+   protected:
+    /// setup of the auxiliary time integrator
+    void SetupAuxiliar() override {}
+
    private:
     /*! \brief Make one step with auxiliary scheme
      *
