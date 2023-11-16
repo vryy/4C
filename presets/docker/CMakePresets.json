@@ -65,7 +65,8 @@
         ".docker_base"
       ],
       "cacheVariables": {
-        "BACI_WITH_ADDRESS_SANITIZER": "ON"
+        "BACI_WITH_ADDRESS_SANITIZER": "ON",
+        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=lld"
       }
     },
     {
