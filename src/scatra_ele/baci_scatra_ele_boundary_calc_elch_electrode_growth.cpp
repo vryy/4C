@@ -722,7 +722,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   CORE::LINALG::Matrix<nen_, 1> eslavegrowthhist(true);
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
-  my::ExtractNodeValues(eslavegrowthhist, discretization, la, "growthhist", 2);
+  my::ExtractNodeValues(
+      eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
     dserror("Received illegal condition type!");
@@ -834,7 +835,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   my::ExtractNodeValues(discretization, la);
 
   // extract nodal growth variables associated with boundary element
-  my::ExtractNodeValues(egrowth_, discretization, la, "growth", 2);
+  my::ExtractNodeValues(egrowth_, discretization, la, "growth", my::scatraparams_->NdsGrowth());
 }
 
 // template classes

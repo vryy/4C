@@ -147,8 +147,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       membrane_conc_(Teuchos::null),
       phinp_micro_(Teuchos::null),
       nds_disp_(-1),
+      nds_growth_(-1),
       nds_micro_(-1),
       nds_pres_(-1),
+      nds_scatra_(-1),
+      nds_thermo_(-1),
       nds_two_tensor_quantitiy_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
@@ -909,7 +912,10 @@ void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
       "action", SCATRA::Action::set_nodeset_parameter, eleparams);
 
   eleparams.set<int>("ndsdisp", NdsDisp());
+  eleparams.set<int>("ndsgrowth", NdsGrowth());
   eleparams.set<int>("ndspres", NdsPressure());
+  eleparams.set<int>("ndsscatra", NdsScaTra());
+  eleparams.set<int>("ndsthermo", NdsThermo());
   eleparams.set<int>("ndsTwoTensorQuantity", NdsTwoTensorQuantity());
   eleparams.set<int>("ndsvel", NdsVel());
   eleparams.set<int>("ndswss", NdsWallShearStress());
@@ -2428,6 +2434,14 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
   if (micro_scale_) EvaluateMacroMicroCoupling();
   strategy_->EvaluatePointCoupling();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int SCATRA::ScaTraTimIntImpl::GetMaxDofSetNumber() const
+{
+  return std::max({nds_disp_, nds_growth_, nds_micro_, nds_pres_, nds_scatra_, nds_thermo_,
+      nds_two_tensor_quantitiy_, nds_vel_, nds_wss_});
 }
 
 /*----------------------------------------------------------------------------*

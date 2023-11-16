@@ -255,28 +255,70 @@ namespace SCATRA
     virtual void SetupNatConv();
 
     //! set number of dofset to write displacement values on
-    void SetNumberOfDofSetDisplacement(int nds_disp) { nds_disp_ = nds_disp; }
+    void SetNumberOfDofSetDisplacement(int nds_disp)
+    {
+      dsassert(nds_disp_ == -1, "Don't set 'nds_disp_' twice!");
+      nds_disp_ = nds_disp;
+    }
+
+    //! set number of dofset to write interface growth values on
+    void SetNumberOfDofSetGrowth(int nds_growth)
+    {
+      dsassert(nds_growth_ == -1, "Don't set 'nds_growth_' twice!");
+      nds_growth_ = nds_growth;
+    }
 
     //! set number of dofset to write micro scale values on
-    void SetNumberOfDofSetMicroScale(int nds_micro) { nds_micro_ = nds_micro; }
+    void SetNumberOfDofSetMicroScale(int nds_micro)
+    {
+      dsassert(nds_micro_ == -1, "Don't set 'nds_micro_' twice!");
+      nds_micro_ = nds_micro;
+    }
 
     //! set number of dofset to write pressure values on
-    void SetNumberOfDofSetPressure(int nds_pressure) { nds_pres_ = nds_pressure; }
+    void SetNumberOfDofSetPressure(int nds_pressure)
+    {
+      dsassert(nds_pres_ == -1, "Don't set 'nds_pres_' twice!");
+      nds_pres_ = nds_pressure;
+    }
+
+    //! set number of dofset to write scalar transport values on
+    void SetNumberOfDofSetScaTra(int nds_scatra)
+    {
+      dsassert(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
+      nds_scatra_ = nds_scatra;
+    }
+
+    //! set number of dofset to write thermo values on
+    void SetNumberOfDofSetThermo(int nds_thermo)
+    {
+      dsassert(nds_thermo_ == -1, "Don't set 'nds_thermo_' twice!");
+      nds_thermo_ = nds_thermo;
+    }
 
     //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
     void SetNumberOfDofSetTwoTensorQuantity(int nds_two_tensor_quantitiy)
     {
+      dsassert(nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
       nds_two_tensor_quantitiy_ = nds_two_tensor_quantitiy;
     }
 
-    //! set number of dofset to write vbelocity values on
-    void SetNumberOfDofSetVelocity(int nds_velocity) { nds_vel_ = nds_velocity; }
+    //! set number of dofset to write velocity values on
+    void SetNumberOfDofSetVelocity(int nds_velocity)
+    {
+      dsassert(nds_vel_ == -1, "Don't set 'nds_vel_' twice!");
+      nds_vel_ = nds_velocity;
+    }
 
     //! set number of dofset to write wall shear stress values on
     void SetNumberOfDofSetWallShearStress(int nds_wall_shear_stress)
     {
+      dsassert(nds_wss_ == -1, "Don't set 'nds_wss_' twice!");
       nds_wss_ = nds_wall_shear_stress;
     }
+
+    //! returns the maximum dofset number that is set
+    [[nodiscard]] int GetMaxDofSetNumber() const;
 
     //! store reaction coefficient for macro-micro coupling with deforming macro dis
     void SetMacroMicroReaCoeff(const double macro_micro_rea_coeff)
@@ -430,11 +472,20 @@ namespace SCATRA
     //! return number of dofset associated with displacement dofs
     int NdsDisp() const override { return nds_disp_; }
 
+    //! return number of dofset associated with interface growth dofs
+    int NdsGrowth() const { return nds_growth_; }
+
     //! return number of dofset to store nodal micro quantities on macro dis
     int NdsMicro() const { return nds_micro_; }
 
     //! return number of dofset associated with pressure dofs
     int NdsPressure() const { return nds_pres_; }
+
+    //! return number of dofset associated with scalar transport dofs
+    int NdsScaTra() const { return nds_scatra_; }
+
+    //! return number of dofset associated with thermo dofs
+    int NdsThermo() const { return nds_thermo_; }
 
     //! return number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
     int NdsTwoTensorQuantity() const { return nds_two_tensor_quantitiy_; }
@@ -1320,11 +1371,20 @@ namespace SCATRA
     //! number of dofset associated with displacement dofs
     int nds_disp_;
 
+    //! number of dofset associated with interface growth dofs
+    int nds_growth_;
+
     //! number of dofset to write micro scale values on
     int nds_micro_;
 
     //! number of dofset associated with pressure dofs
     int nds_pres_;
+
+    //! number of dofset associated with scatra dofs
+    int nds_scatra_;
+
+    //! number of dofset associated with thermo dofs
+    int nds_thermo_;
 
     //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
     int nds_two_tensor_quantitiy_;
@@ -1790,4 +1850,4 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
-#endif  // SCATRA_TIMINT_IMPLICIT_H
+#endif  // BACI_SCATRA_TIMINT_IMPLICIT_H

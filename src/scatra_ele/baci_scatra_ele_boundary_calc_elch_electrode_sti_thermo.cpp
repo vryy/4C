@@ -82,7 +82,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
   CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(emastertempnp, discretization, la, "imastertemp", 2);
+    my::ExtractNodeValues(
+        emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
 
   // element slave mechanical stress tensor
   const bool is_pseudo_contact = my::scatraparamsboundary_->IsPseudoContact();
@@ -434,7 +435,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   my::ExtractNodeValues(discretization, la);
 
   // extract nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-  my::ExtractNodeValues(etempnp_, discretization, la, "thermo", 2);
+  my::ExtractNodeValues(etempnp_, discretization, la, "thermo", my::scatraparams_->NdsThermo());
 }
 
 /*----------------------------------------------------------------------*

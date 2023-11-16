@@ -47,9 +47,9 @@ void scatra_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
-    std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
-    std::cout << "###################################################" << std::endl;
+    std::cout << "###################################################" << '\n';
+    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << '\n';
+    std::cout << "###################################################" << '\n';
   }
 
   // access the problem-specific parameter list
@@ -314,11 +314,10 @@ void scatra_dyn(int restart)
       algo->TestResults();
 
       break;
-    }  // case 2
+    }
     default:
     {
       dserror("unknown velocity field type for transport of passive scalar");
-      break;
     }
   }
 }

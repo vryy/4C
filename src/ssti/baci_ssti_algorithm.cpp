@@ -87,12 +87,15 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   scatra_->Init();
   scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  scatra_->ScaTraField()->SetNumberOfDofSetThermo(2);
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams,
       CloneThermoParams(scatraparams, thermoparams),
       problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
   thermo_->Init();
   thermo_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
   thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  thermo_->ScaTraField()->SetNumberOfDofSetScaTra(2);
+  thermo_->ScaTraField()->SetNumberOfDofSetThermo(3);
 
   // distribute dofsets among subproblems
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
@@ -434,7 +437,6 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
     }
     default:
       dserror("Initial field type for thermo not supported");
-      break;
   }
 
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
@@ -465,7 +467,6 @@ Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::BuildSSTI(INPAR::SSTI::SolutionScheme co
     }
     default:
       dserror("unknown coupling algorithm for SSTI!");
-      break;
   }
   return ssti;
 }

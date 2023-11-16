@@ -85,8 +85,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
   {
-    my::ExtractNodeValues(eslavetempnp, discretization, la, "islavetemp", 2);
-    my::ExtractNodeValues(emastertempnp, discretization, la, "imastertemp", 2);
+    my::ExtractNodeValues(
+        eslavetempnp, discretization, la, "islavetemp", my::scatraparams_->NdsThermo());
+    my::ExtractNodeValues(
+        emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
   }
 
   // dummy element matrix and vector

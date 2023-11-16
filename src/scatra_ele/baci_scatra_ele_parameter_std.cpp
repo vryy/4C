@@ -24,7 +24,6 @@ coexist with this general class.
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                             thon/vuong 07/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance(
     const std::string& disname  //!< name of discretization
@@ -38,7 +37,6 @@ DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Inst
 }
 
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     const std::string& disname  //!< name of discretization
@@ -52,8 +50,11 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       fdcheckeps_(0.),
       fdchecktol_(0.),
       nds_disp_(-1),
+      nds_growth_(-1),
       nds_micro_(-1),
       nds_pres_(-1),
+      nds_scatra_(-1),
+      nds_thermo_(-1),
       nds_two_tensor_quantitiy_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
@@ -84,7 +85,10 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
 void DRT::ELEMENTS::ScaTraEleParameterStd::SetNodesetParameters(Teuchos::ParameterList& parameters)
 {
   nds_disp_ = parameters.get<int>("ndsdisp", -1);
+  nds_growth_ = parameters.get<int>("ndsgrowth", -1);
   nds_pres_ = parameters.get<int>("ndspres", -1);
+  nds_scatra_ = parameters.get<int>("ndsscatra", -1);
+  nds_thermo_ = parameters.get<int>("ndsthermo", -1);
   nds_two_tensor_quantitiy_ = parameters.get<int>("ndsTwoTensorQuantity", -1);
   nds_vel_ = parameters.get<int>("ndsvel", -1);
   nds_wss_ = parameters.get<int>("ndswss", -1);
@@ -173,7 +177,6 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
       break;
     default:
       dserror("unknown definition for stabilization parameter");
-      break;
   }
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
@@ -243,6 +246,14 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
   return nds_disp_;
 }
 
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsGrowth() const
+{
+  dsassert(nds_growth_ != -1,
+      "You try to access the number of dofset associated with interface growth dofs without "
+      "having set it!");
+  return nds_growth_;
+}
+
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
 {
   dsassert(nds_micro_ != -1,
@@ -259,6 +270,22 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
   return nds_pres_;
 }
 
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsScaTra() const
+{
+  dsassert(nds_scatra_ != -1,
+      "You try to access the number of dofset associated with scalar transport dofs without having "
+      "set it!");
+  return nds_scatra_;
+}
+
+int DRT::ELEMENTS::ScaTraEleParameterStd::NdsThermo() const
+{
+  dsassert(nds_thermo_ != -1,
+      "You try to access the number of dofset associated with temperature dofs without having "
+      "set it!");
+  return nds_thermo_;
+}
+
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
 {
   dsassert(nds_two_tensor_quantitiy_ != -1,
@@ -266,7 +293,6 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
       "having set it!");
   return nds_two_tensor_quantitiy_;
 }
-
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
 {

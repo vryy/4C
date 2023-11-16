@@ -153,7 +153,6 @@ void sti_dyn(const int& restartstep  //! time step for restart
     default:
     {
       dserror("Unknown coupling algorithm for scatra-thermo interaction!");
-      break;
     }
   }
 
