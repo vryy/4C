@@ -1283,7 +1283,7 @@ namespace DRT::ELEMENTS
     std::unordered_map<std::string, int> quantities_map{};
 
     // Ask material for the output quantity names and sizes
-    solid_material.RegisterVtkOutputDataNames(quantities_map);
+    solid_material.RegisterOutputDataNames(quantities_map);
 
     // Add quantities to the Gauss point output data manager (if they do not already exist)
     gp_data_output_manager.MergeQuantities(quantities_map);
@@ -1315,7 +1315,7 @@ namespace DRT::ELEMENTS
       // Step 1: Collect the data for each Gauss point for the material
       CORE::LINALG::SerialDenseMatrix gp_data(
           stiffness_matrix_integration.NumPoints(), quantity_size, true);
-      bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
+      bool data_available = solid_material.EvaluateOutputData(quantity_name, gp_data);
 
       // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
       // point)

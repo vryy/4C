@@ -148,14 +148,14 @@ void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Mat
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_SolidMaterial::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  material_->RegisterVtkOutputDataNames(names_and_size);
+  material_->RegisterOutputDataNames(names_and_size);
 }
 
-bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
-  return material_->EvaluateVtkOutputData(name, data);
+  return material_->EvaluateOutputData(name, data);
 }

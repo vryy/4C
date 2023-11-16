@@ -128,7 +128,7 @@ namespace FSI
      */
     Teuchos::RCP<ADAPTER::FBIConstraintenforcer> constraint_manager_;
 
-    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> vtk_output_writer_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> visualization_output_writer_;
   };
 }  // namespace FSI
 

@@ -505,7 +505,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+      SolidMaterial()->RegisterOutputDataNames(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
       StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
     }
@@ -522,7 +522,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       {
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
-        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+        bool data_available = SolidMaterial()->EvaluateOutputData(quantity_name, gp_data);
 
         // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
         // point)

@@ -148,10 +148,10 @@ namespace MIXTURE
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void RegisterVtkOutputDataNames(
+    void RegisterOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateVtkOutputData(
+    bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    protected:

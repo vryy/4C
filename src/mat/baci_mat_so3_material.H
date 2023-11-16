@@ -304,8 +304,7 @@ namespace MAT
      *
      * @param[out] name_and_size Unordered map of names of the data with the respective vector size
      */
-    virtual void RegisterVtkOutputDataNames(
-        std::unordered_map<std::string, int>& names_and_size) const
+    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
     {
     }
 
@@ -318,7 +317,7 @@ namespace MAT
      *
      * @return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateVtkOutputData(
+    virtual bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
     {
       return false;

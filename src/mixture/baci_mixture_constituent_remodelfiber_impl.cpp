@@ -137,17 +137,17 @@ void MIXTURE::MixtureConstituent_RemodelFiberImpl::Update(const CORE::LINALG::Ma
   UpdateHomeostaticValues(params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberImpl::RegisterVtkOutputDataNames(
+void MIXTURE::MixtureConstituent_RemodelFiberImpl::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  MixtureConstituent::RegisterVtkOutputDataNames(names_and_size);
+  MixtureConstituent::RegisterOutputDataNames(names_and_size);
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_growth_scalar"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_lambda_r"] = 1;
 }
 
-bool MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateVtkOutputData(
+bool MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
@@ -182,7 +182,7 @@ bool MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateVtkOutputData(
     }
     return true;
   }
-  return MixtureConstituent::EvaluateVtkOutputData(name, data);
+  return MixtureConstituent::EvaluateOutputData(name, data);
 }
 
 CORE::LINALG::Matrix<1, 6> MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateDLambdafsqDC(

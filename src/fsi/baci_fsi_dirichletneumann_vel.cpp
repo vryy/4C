@@ -36,8 +36,7 @@
 FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
     : DirichletNeumann(comm),
       constraint_manager_(ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
-          DRT::Problem::Instance()->FSIDynamicParams(), DRT::Problem::Instance()->FBIParams())),
-      vtk_output_writer_(Teuchos::null)
+          DRT::Problem::Instance()->FSIDynamicParams(), DRT::Problem::Instance()->FBIParams()))
 {
   // empty constructor
 }
@@ -182,7 +181,7 @@ void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
   constraint_manager_->Output(Time(), Step());
-  vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
+  visualization_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
   StructureField()->Discretization()->Writer()->ClearMapCache();
   MBFluidField()->Discretization()->Writer()->ClearMapCache();
 }
@@ -195,9 +194,10 @@ void FSI::DirichletNeumannVel::Timeloop(
 {
   constraint_manager_->Setup(StructureField(), MBFluidField());
   if (GetKinematicCoupling()) constraint_manager_->PrepareFluidSolve();
-  vtk_output_writer_ = Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
-  vtk_output_writer_->Init();
-  vtk_output_writer_->Setup(
+  visualization_output_writer_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
+  visualization_output_writer_->Init();
+  visualization_output_writer_->Setup(
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
       constraint_manager_->GetBridge()->GetParams()->GetVisualizationOuputParamsPtr(), Time());
   constraint_manager_->Evaluate();
