@@ -13,12 +13,16 @@
 
 #include "baci_create_rtdfiles_wrapper.H"
 
+#include <Epetra_MpiComm.h>
+
 #include <cstring>
 #include <iostream>
 
 
 int main(int argc, char *argv[])
 {
+  MPI_Init(&argc, &argv);
+
   printf(
       "\n"
       "**********************************************\n"
@@ -37,6 +41,8 @@ int main(int argc, char *argv[])
   {
     DRT::RTD::WriteReadTheDocsHeader("headerreference.rst");
     std::cout << "Writing headerreference.rst finished\n";
+    DRT::RTD::WriteReadTheDocsCelltypes("celltypereference.rst");
+    std::cout << "Writing celltypes.rst finished\n";
     DRT::RTD::WriteReadTheDocsMaterial("materialreference.rst");
     std::cout << "Writing materialreference.rst finished\n";
     DRT::RTD::WriteReadTheDocsCondition("conditionreference.rst");
@@ -49,5 +55,7 @@ int main(int argc, char *argv[])
      * TODO: Other files can be written as readthedocs Reference files (e.g. Element Reference)
      */
   }
+  MPI_Finalize();
+
   return (0);
 }

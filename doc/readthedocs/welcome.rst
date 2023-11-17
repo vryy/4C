@@ -64,7 +64,3 @@ The following list only contains a few parts and sections, which should be fille
     :ref:`old_Fluid-structure Interaction<fluid_structure_interaction>` and :ref:`old_Free Surface Flow<free_surface_flow>`.
     Somebody should check, which parts of these sections can still be used, ond which should be removed.
 
-- The :ref:`element shapes<elementshapes>` in the **reference section** are not taken from the BACI code yet.
-  Therefore, we need a well-founded information on each element shape (from LINE2 to NURBS27).
-  In a first step, the information on number of nodes and integration points is sufficient;
-  later on, the ordering of nodes and faces should be included in this section as well.

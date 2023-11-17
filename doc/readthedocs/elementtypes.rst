@@ -36,10 +36,6 @@ BEAM3R
 
 *Shapes:*
 
-- :ref:`HERM2LINE2 <herm2line2>` (2 nodes)
-- :ref:`HERM2LINE3 <herm2line3>` (3 nodes)
-- :ref:`HERM2LINE4 <herm2line4>` (4 nodes)
-- :ref:`HERM2LINE5 <herm2line5>` (5 nodes)
 - :ref:`LINE2 <line2>` (2 nodes)
 - :ref:`LINE3 <line3>` (3 nodes)
 - :ref:`LINE4 <line4>` (4 nodes)
@@ -161,7 +157,7 @@ NSTET5
 .. _structureshell7p:
 
 SHELL7P
-^^^^^^
+^^^^^^^
 
 *Shapes:*
 
@@ -202,7 +198,7 @@ SHELL7P
 .. _structureshell7pscatra:
 
 SHELL7PSCATRA
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 *Shapes:*
 

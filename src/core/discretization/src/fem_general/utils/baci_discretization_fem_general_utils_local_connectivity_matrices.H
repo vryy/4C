@@ -21,6 +21,8 @@ mapping
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
+#include <optional>
+
 namespace CORE::DRT::UTILS
 {
   //! 2 surfaces on a Hex16 element with 8 nodes per surface
@@ -590,6 +592,16 @@ namespace CORE::DRT::UTILS
     static const int dim = 1;
   };
   template <>
+  struct DisTypeToDim<CORE::FE::CellType::line5>
+  {
+    static const int dim = 1;
+  };
+  template <>
+  struct DisTypeToDim<CORE::FE::CellType::line6>
+  {
+    static const int dim = 1;
+  };
+  template <>
   struct DisTypeToDim<CORE::FE::CellType::nurbs2>
   {
     static const int dim = 1;
@@ -725,6 +737,21 @@ namespace CORE::DRT::UTILS
     static const int degree = 2;
   };
   template <>
+  struct DisTypeToDegree<CORE::FE::CellType::line4>
+  {
+    static const int degree = 3;
+  };
+  template <>
+  struct DisTypeToDegree<CORE::FE::CellType::line5>
+  {
+    static const int degree = 4;
+  };
+  template <>
+  struct DisTypeToDegree<CORE::FE::CellType::line6>
+  {
+    static const int degree = 5;
+  };
+  template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs2>
   {
     static const int degree = 1;
@@ -738,11 +765,6 @@ namespace CORE::DRT::UTILS
   struct DisTypeToDegree<CORE::FE::CellType::quad4>
   {
     static const int degree = 1;
-  };
-  template <>
-  struct DisTypeToDegree<CORE::FE::CellType::quad6>
-  {
-    static const int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::quad8>
@@ -1275,6 +1297,21 @@ namespace CORE::DRT::UTILS
     static const int order = 2;
   };
   template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line4>
+  {
+    static const int order = 3;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line5>
+  {
+    static const int order = 4;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::line6>
+  {
+    static const int order = 5;
+  };
+  template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>
   {
     static const int order = 1;
@@ -1335,6 +1372,16 @@ namespace CORE::DRT::UTILS
     static const int order = 2;
   };
   template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs8>
+  {
+    static const int order = 1;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs27>
+  {
+    static const int order = 2;
+  };
+  template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::tet4>
   {
     static const int order = 1;
@@ -1349,21 +1396,35 @@ namespace CORE::DRT::UTILS
   {
     static const int order = 1;
   };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge6>
+  {
+    static const int order = 1;
+  };
+  template <>
+  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge15>
+  {
+    static const int order = 2;
+  };
 
 
   /*!
    * @brief returns the order of the element-edges
    *
    * @param[in]  distype  shape of the element
+   * @param[in, opt] default_order if the distype is not known, throw an error
+   *                               or return the value for default_order
    */
-  int getOrder(const CORE::FE::CellType distype);
+  int getOrder(const CORE::FE::CellType distype, std::optional<int> default_order = std::nullopt);
 
   /*!
    * @brief returns the order of the element
    *
    * @param[in]  distype  shape of the element
+   * @param[in, opt] default_degree if the distype is not known, throw an error
+   *                                or return the value for default_degree
    */
-  int getDegree(const CORE::FE::CellType distype);
+  int getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
 
   /*!
    * @brief Returns local node number in the parent element from a given face number and local node

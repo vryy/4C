@@ -47,6 +47,9 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
     case CORE::FE::CellType::quad4:
       return 4;
       break;
+    case CORE::FE::CellType::quad6:
+      return 6;
+      break;
     case CORE::FE::CellType::quad8:
       return 8;
       break;
@@ -62,6 +65,9 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
     case CORE::FE::CellType::nurbs4:
       return 4;
       break;
+    case CORE::FE::CellType::nurbs8:
+      return 8;
+      break;
     case CORE::FE::CellType::nurbs9:
       return 9;
       break;
@@ -70,6 +76,12 @@ int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
       break;
     case CORE::FE::CellType::hex8:
       return 8;
+      break;
+    case CORE::FE::CellType::hex16:
+      return 16;
+      break;
+    case CORE::FE::CellType::hex18:
+      return 18;
       break;
     case CORE::FE::CellType::hex20:
       return 20;
@@ -1263,6 +1275,12 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
     case CORE::FE::CellType::line4:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line4>::dim;
       break;
+    case CORE::FE::CellType::line5:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line5>::dim;
+      break;
+    case CORE::FE::CellType::line6:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line6>::dim;
+      break;
     case CORE::FE::CellType::nurbs2:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
       break;
@@ -1271,6 +1289,9 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
       break;
     case CORE::FE::CellType::quad4:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
+      break;
+    case CORE::FE::CellType::quad6:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad6>::dim;
       break;
     case CORE::FE::CellType::quad8:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim;
@@ -1295,6 +1316,9 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
       break;
     case CORE::FE::CellType::nurbs8:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs8>::dim;
+      break;
+    case CORE::FE::CellType::hex16:
+      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim;
       break;
     case CORE::FE::CellType::hex18:
       dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim;
@@ -1334,17 +1358,29 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
 }
 
 
-int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
+int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype, std::optional<int> default_order)
 {
   int order = 0;
 
   switch (distype)
   {
+    case CORE::FE::CellType::point1:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::point1>::order;
+      break;
     case CORE::FE::CellType::line2:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::line2>::order;
       break;
     case CORE::FE::CellType::line3:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::line3>::order;
+      break;
+    case CORE::FE::CellType::line4:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::line4>::order;
+      break;
+    case CORE::FE::CellType::line5:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::line5>::order;
+      break;
+    case CORE::FE::CellType::line6:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::line6>::order;
       break;
     case CORE::FE::CellType::nurbs2:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>::order;
@@ -1382,6 +1418,12 @@ int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
     case CORE::FE::CellType::hex27:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::hex27>::order;
       break;
+    case CORE::FE::CellType::nurbs8:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs8>::order;
+      break;
+    case CORE::FE::CellType::nurbs27:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::nurbs27>::order;
+      break;
     case CORE::FE::CellType::tet4:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::tet4>::order;
       break;
@@ -1391,7 +1433,14 @@ int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
     case CORE::FE::CellType::pyramid5:
       order = DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>::order;
       break;
+    case CORE::FE::CellType::wedge6:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::wedge6>::order;
+      break;
+    case CORE::FE::CellType::wedge15:
+      order = DisTypeToEdgeOrder<CORE::FE::CellType::wedge15>::order;
+      break;
     default:
+      if (default_order.has_value()) return default_order.value();
       dserror("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
@@ -1399,17 +1448,29 @@ int CORE::DRT::UTILS::getOrder(const CORE::FE::CellType distype)
 }
 
 
-int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
+int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree)
 {
   int degree = 0;
 
   switch (distype)
   {
+    case CORE::FE::CellType::point1:
+      degree = DisTypeToDegree<CORE::FE::CellType::point1>::degree;
+      break;
     case CORE::FE::CellType::line2:
       degree = DisTypeToDegree<CORE::FE::CellType::line2>::degree;
       break;
     case CORE::FE::CellType::line3:
       degree = DisTypeToDegree<CORE::FE::CellType::line3>::degree;
+      break;
+    case CORE::FE::CellType::line4:
+      degree = DisTypeToDegree<CORE::FE::CellType::line4>::degree;
+      break;
+    case CORE::FE::CellType::line5:
+      degree = DisTypeToDegree<CORE::FE::CellType::line5>::degree;
+      break;
+    case CORE::FE::CellType::line6:
+      degree = DisTypeToDegree<CORE::FE::CellType::line6>::degree;
       break;
     case CORE::FE::CellType::nurbs2:
       degree = DisTypeToDegree<CORE::FE::CellType::nurbs2>::degree;
@@ -1435,6 +1496,9 @@ int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
     case CORE::FE::CellType::nurbs4:
       degree = DisTypeToDegree<CORE::FE::CellType::nurbs4>::degree;
       break;
+    case CORE::FE::CellType::nurbs8:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs8>::degree;
+      break;
     case CORE::FE::CellType::nurbs9:
       degree = DisTypeToDegree<CORE::FE::CellType::nurbs9>::degree;
       break;
@@ -1446,6 +1510,9 @@ int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
       break;
     case CORE::FE::CellType::hex27:
       degree = DisTypeToDegree<CORE::FE::CellType::hex27>::degree;
+      break;
+    case CORE::FE::CellType::nurbs27:
+      degree = DisTypeToDegree<CORE::FE::CellType::nurbs27>::degree;
       break;
     case CORE::FE::CellType::tet4:
       degree = DisTypeToDegree<CORE::FE::CellType::tet4>::degree;
@@ -1463,6 +1530,7 @@ int CORE::DRT::UTILS::getDegree(const CORE::FE::CellType distype)
       degree = DisTypeToDegree<CORE::FE::CellType::wedge15>::degree;
       break;
     default:
+      if (default_degree.has_value()) return default_degree.value();
       dserror("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
       break;

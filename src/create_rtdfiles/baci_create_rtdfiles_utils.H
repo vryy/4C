@@ -158,6 +158,13 @@ namespace DRT
     void WriteNote(std::ostream& stream, const std::string& paragraph);
 
     /*!
+     *  \brief write the information for all available cell types for readthedocs
+     *
+     *  \param[in] stream: stream for the restructuredText file
+     */
+    void WriteCelltypeReference(std::ostream& stream);
+
+    /*!
      *  \brief write all known material sections for readthedocs
      *
      *  \param[in] stream: stream for the restructuredText file
