@@ -67,14 +67,14 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<DRT::Condition*> conditions;
-    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
     SetConditionSpecificScaTraParameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
     scatratimint_->Discretization()->EvaluateCondition(condparams, Teuchos::null, Teuchos::null,
-        Teuchos::null, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
+        Teuchos::null, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
     scatratimint_->Discretization()->ClearState();
 
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
@@ -379,7 +379,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
   {
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<DRT::Condition*> conditions;
-    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // loop over all conditions
     for (const auto& condition : conditions)

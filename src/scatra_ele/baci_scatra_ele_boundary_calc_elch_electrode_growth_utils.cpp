@@ -20,7 +20,7 @@ double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, co
     const double c_el, const int kinetic_model,
     const DRT::Condition::ConditionType& s2i_condition_type)
 {
-  dsassert(s2i_condition_type == DRT::Condition::S2ICouplingGrowth,
+  dsassert(s2i_condition_type == DRT::Condition::S2IKineticsGrowth,
       "This method is called with the wrong condition type. Check the implementation!");
 
   switch (kinetic_model)
@@ -30,7 +30,7 @@ double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, co
       return kr * std::pow(c_el, alpha_a);
     }
     default:
-      dserror("Did not recognize kinetic model of S2ICouplingGrowth condition!");
+      dserror("Did not recognize kinetic model of S2IKineticsGrowth condition!");
   }
 }
 
@@ -274,7 +274,7 @@ double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const doub
       scatraeleparamsboundary->RegularizationType();
 
   // actually compute regularization factor if lithium stripping is relevant
-  if (conditiontype == DRT::Condition::S2ICouplingGrowth and
+  if (conditiontype == DRT::Condition::S2IKineticsGrowth and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
@@ -349,7 +349,7 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
       scatraeleparamsboundary->RegularizationType();
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
-  if (conditiontype == DRT::Condition::S2ICouplingGrowth and thickness > 0.0 and
+  if (conditiontype == DRT::Condition::S2IKineticsGrowth and thickness > 0.0 and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
