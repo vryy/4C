@@ -51,6 +51,20 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
+    void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename)
+    {
+      // open ascii file for writing all header parameters
+      std::ofstream celltypeocumentationfile(celltypedocumentationfilename.c_str());
+      if (!celltypeocumentationfile)
+        dserror("failed to open file: %s", celltypedocumentationfilename.c_str());
+      celltypeocumentationfile << "..\n   Created using baci version (git SHA1):\n";
+      celltypeocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+
+      WriteCelltypeReference(celltypeocumentationfile);
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
     void WriteReadTheDocsMaterial(const std::string& materialdocumentationfilename)
     {
       //

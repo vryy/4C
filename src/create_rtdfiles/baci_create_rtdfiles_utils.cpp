@@ -10,6 +10,7 @@
 
 #include "baci_create_rtdfiles_utils.H"
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_io_linedefinition.H"
 #include "baci_io_utils_reader.H"
 #include "baci_lib_utils_createdis.H"
@@ -196,6 +197,38 @@ namespace DRT
       table.Print(stream);
       return stream;
     }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    void WriteCelltypeReference(std::ostream &stream)
+    {
+      WriteLinktarget(stream, "celltypes");
+      WriteHeader(stream, 1, "Cell types");
+
+      for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
+      {
+        std::string celltypename = CORE::FE::CellTypeToString(celltype);
+        std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
+        WriteLinktarget(stream, celltypelinkname);
+        WriteHeader(stream, 2, celltypename);
+
+        std::stringstream celltypeinfostream;
+        celltypeinfostream << "- Nodes: " << CORE::DRT::UTILS::getNumberOfElementNodes(celltype)
+                           << std::endl;
+        celltypeinfostream << "- Dimension: " << CORE::DRT::UTILS::getDimension(celltype)
+                           << std::endl;
+        if (CORE::DRT::UTILS::getOrder(celltype, -1) >= 0)
+        {
+          celltypeinfostream << "- Shape function order (element): "
+                             << CORE::DRT::UTILS::getDegree(celltype) << std::endl;
+          celltypeinfostream << "- Shape function order (edges): "
+                             << CORE::DRT::UTILS::getOrder(celltype) << std::endl;
+        }
+        std::string celltypeinformation = celltypeinfostream.str();
+        WriteParagraph(stream, celltypeinformation);
+      }
+    }
+
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
     void WriteMaterialReference(

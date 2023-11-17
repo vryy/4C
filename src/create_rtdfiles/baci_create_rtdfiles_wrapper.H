@@ -27,6 +27,16 @@ namespace DRT
     void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
 
     /*!
+      \brief Create a restructuredText file containing the cell type section
+        including node numbers, etc.
+        TODO face IDs, etc.
+
+      \param[in] string: filename for the the header parameters, should be celltypereference.rst
+
+    */
+    void WriteReadTheDocsCelltypes(const std::string& celltypedocumentationfilename);
+
+    /*!
       \brief WCreate a restructuredText file containing all material models and parameters
 
       \param[in] string: filename for the the material parameters, should be materialreference.rst

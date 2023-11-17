@@ -6,7 +6,7 @@ Element reference
 .. toctree::
 
    elementtypes
-   elementshapes
+   celltypereference
 
 .. note::
 
