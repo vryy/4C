@@ -854,7 +854,14 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET10)
