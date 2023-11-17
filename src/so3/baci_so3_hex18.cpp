@@ -18,6 +18,7 @@
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_function.H"
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
@@ -520,7 +521,14 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  const double time = params.get("total time", -1.0);
+  const double time = std::invoke(
+      [&]()
+      {
+        if (IsParamsInterface())
+          return StrParamsInterface().GetTotalTime();
+        else
+          return params.get("total time", -1.0);
+      });
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH18)
