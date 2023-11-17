@@ -30,6 +30,7 @@ workflow:
 variables:
   # Clone repository by default, file have changed attribute.
   GIT_STRATEGY: clone
+
   # If not called by a scheduler this variable has to be 0.
   # 1: daily full (release, debug)
   # 3: coverage
@@ -246,8 +247,8 @@ before_script:
     in $OUT; do echo -n "-extra-arg=$i "; done; echo;}
   - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -p
-    . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -use-color
+    -p . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
     "${ESCAPED_PROJECT_DIR}\/.*" | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
     # export clang tidy issues
   - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
