@@ -8,41 +8,28 @@
 */
 /*----------------------------------------------------------------------*/
 
-// clang-format off
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_base.H"
-#include "baci_scatra_utils.H"
-
 #include "baci_coupling_adapter.H"
-
 #include "baci_fluid_rotsym_periodicbc_utils.H"
 #include "baci_fluid_turbulence_dyn_smag.H"
 #include "baci_fluid_turbulence_dyn_vreman.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_parameter_list.H"
-
-#include "baci_nurbs_discret.H"
-
-#include "baci_scatra_ele_action.H"
-
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_scatra_turbulence_hit_scalar_forcing.H"
-
-
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-
-
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
-
 #include "baci_io_runtime_csv_writer.H"
-// clang-format on
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_nurbs_discret.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_scatra_turbulence_hit_scalar_forcing.H"
+#include "baci_scatra_utils.H"
+
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Workspace.h>
 
 
 /*==========================================================================*
