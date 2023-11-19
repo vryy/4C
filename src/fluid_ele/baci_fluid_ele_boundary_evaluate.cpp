@@ -41,7 +41,6 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::ba_calc_node_normal:
     case FLD::calc_node_curvature:
     case FLD::calc_surface_tension:
-    case FLD::conservative_outflow_bc:
     case FLD::calc_Neumann_inflow:
     case FLD::calc_pressure_bou_int:
     case FLD::center_of_mass_calc:
