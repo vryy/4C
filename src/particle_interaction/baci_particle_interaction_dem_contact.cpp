@@ -436,6 +436,11 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       UTILS::VecSetScale(r_ci, (rad_i[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
       UTILS::VecSetScale(r_cj, -(rad_j[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
     }
+    else
+    {
+      std::fill(r_ci, r_ci + 3, 0.);
+      std::fill(r_cj, r_cj + 3, 0.);
+    }
 
     // relative velocity in contact point c between particle i and j
     double vel_rel[3];

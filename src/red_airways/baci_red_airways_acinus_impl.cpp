@@ -186,12 +186,9 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   double e_acin_e_vnp;
   double e_acin_e_vn;
 
-  for (int i = 0; i < elemVecdim; ++i)
-  {
-    // Split area and volumetric flow rate, insert into element arrays
-    e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
-    e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
-  }
+  // Split area and volumetric flow rate, insert into element arrays
+  e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
+  e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
 
   // Get the volumetric flow rate from the previous time step
   DRT::REDAIRWAYS::ElemParams elem_params;

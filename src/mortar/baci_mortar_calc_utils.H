@@ -206,7 +206,7 @@ namespace MORTAR
         // Second Derivation (eta)
         case 2:
         {
-          CORE::LINALG::Matrix<ndim - 1, n> deriv2;
+          CORE::LINALG::Matrix<ndim - 1, n> deriv2(true);
           switch (ndim)
           {
             case 2:
@@ -270,11 +270,16 @@ namespace MORTAR
             MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
             dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
-            for (int j = 0; j < ndim; ++j)
+            if constexpr (ndim > 2)
             {
-              // use shape function values for interpolation
-              globcoord[j] += deriv2(1, i) * mymrtrnode->xspatial()[j];
+              for (int j = 0; j < ndim; ++j)
+              {
+                // use shape function values for interpolation
+                globcoord[j] += deriv2(1, i) * mymrtrnode->xspatial()[j];
+              }
             }
+            else
+              dserror("Not implemented.");
           }
           break;
         }
