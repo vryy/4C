@@ -387,15 +387,11 @@ void Beam3ContactOctTree::OctreeOutput(
       if (step != -2)
         filename << "ContactPairs" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
-        filename << "ContactPairsInit.dat" << std::endl;
-      FILE* fp = nullptr;
-      fp = fopen(filename.str().c_str(), "w");
-      std::stringstream myfile;
+        filename << "ContactPairsInit.dat";
+      std::ofstream out(filename.str());
       for (int i = 0; i < (int)contactpairelements.size(); i++)
-        myfile << ((contactpairelements[i])[0])->Id() << "  " << ((contactpairelements[i][1]))->Id()
-               << std::endl;
-      fprintf(fp, myfile.str().c_str());
-      fclose(fp);
+        out << ((contactpairelements[i])[0])->Id() << "  " << ((contactpairelements[i][1]))->Id()
+            << '\n';
     }
     // octant limits output
     if ((int)octreelimits_.size() > 0)
@@ -405,21 +401,17 @@ void Beam3ContactOctTree::OctreeOutput(
         filename << "OctreeLimits" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "OctreeLimitsInit.dat" << std::endl;
-      FILE* fp = nullptr;
-      fp = fopen(filename.str().c_str(), "w");
-      std::stringstream myfile;
-      for (int u = 0; u < (int)octreelimits_.size(); u++)
+      std::ofstream out(filename.str());
+      for (auto& octreelimit : octreelimits_)
       {
-        for (int v = 0; v < (int)octreelimits_[u].numRows(); v++)
-          myfile << std::scientific << octreelimits_[u](v) << " ";
-        myfile << std::endl;
+        for (int v = 0; v < (int)octreelimit.numRows(); v++)
+          out << std::scientific << octreelimit(v) << " ";
+        out << '\n';
       }
       // root box
       for (int u = 0; u < (int)rootbox_.numRows(); u++)
-        myfile << std::scientific << rootbox_(u) << " ";
-      myfile << std::endl;
-      fprintf(fp, myfile.str().c_str());
-      fclose(fp);
+        out << std::scientific << rootbox_(u) << " ";
+      out << '\n';
 
 #ifdef OCTREEDEBUG
       for (int u = 0; u < (int)octreelimits_.size(); u++)
@@ -442,20 +434,15 @@ void Beam3ContactOctTree::OctreeOutput(
         filename << "BoundingBoxCoords" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "BoundingBoxCoordsInit.dat" << std::endl;
-      FILE* fp = nullptr;
-      fp = fopen(filename.str().c_str(), "w");
-      std::stringstream myfile;
+      std::ofstream out(filename.str());
       for (int u = 0; u < allbboxes_->MyLength(); u++)
       {
         for (int v = 0; v < allbboxes_->NumVectors(); v++)
-          myfile << std::scientific << std::setprecision(10) << (*allbboxes_)[v][u] << " ";
-        myfile << (*diameter_)[u] << std::endl;
+          out << std::scientific << std::setprecision(10) << (*allbboxes_)[v][u] << " ";
+        out << (*diameter_)[u] << '\n';
       }
-      fprintf(fp, myfile.str().c_str());
-      fclose(fp);
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1590,10 +1577,8 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
   }
   // build Pair Vector from contactpairmap
   std::map<int, std::vector<int>>::iterator it;
-  int counter = 0;
   for (it = contactpairmap.begin(); it != contactpairmap.end(); it++)
   {
-    counter++;
     // if(!discret_.Comm().MyPID())
     // std::cout << std::scientific << (*it).first <<"  "<< ((*it).second)[0]<<" "<<
     // ((*it).second)[1]<<std::endl;

@@ -1481,7 +1481,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     gmshfilecontent << "};" << std::endl;
 
     // move everything to gmsh post-processing file and close it
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
@@ -1811,7 +1811,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         gmshfilecontent << "};" << std::endl;
 
         // move everything to gmsh post-processing file and close it
-        fprintf(fp, gmshfilecontent.str().c_str());
+        fprintf(fp, "%s", gmshfilecontent.str().c_str());
         fclose(fp);
       }
 
@@ -2590,7 +2590,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     gmshfilecontent << "};" << std::endl;
 
     // move everything to gmsh post-processing file and close it
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
@@ -3525,7 +3525,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
                   << std::endl;
 
   // move everything to gmsh post-processing files and close them
-  fprintf(fp, gmshfilecontent.str().c_str());
+  fprintf(fp, "%s", gmshfilecontent.str().c_str());
   fclose(fp);
 
   // increase static variable

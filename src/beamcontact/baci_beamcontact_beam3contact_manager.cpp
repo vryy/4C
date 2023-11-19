@@ -2268,7 +2268,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     // gmshfileheader <<"View.Light = 0;\n";
 
     // write content into file and close it
-    fprintf(fp, gmshfileheader.str().c_str());
+    fprintf(fp, "%s", gmshfileheader.str().c_str());
     fclose(fp);
 
     // fp = fopen(filename.str().c_str(), "w");
@@ -2284,7 +2284,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     gmshfilecontent << " \" {" << std::endl;
 
     // write content into file and close
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
@@ -2879,7 +2879,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // visualization*************************************************************
 
       // write content into file and close
-      fprintf(fp, gmshfilecontent.str().c_str());
+      fprintf(fp, "%s", gmshfilecontent.str().c_str());
       fclose(fp);
     }
     Comm().Barrier();
@@ -2898,7 +2898,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     gmshfilecontent << "};" << std::endl;
 
     // write content into file and close
-    fprintf(fp, gmshfilecontent.str().c_str());
+    fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
   Comm().Barrier();
