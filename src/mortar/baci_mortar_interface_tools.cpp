@@ -609,9 +609,9 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       }
 
       // move everything to gmsh post-processing files and close them
-      fprintf(fp, gmshfilecontent.str().c_str());
-      fprintf(fps, gmshfilecontentslave.str().c_str());
-      fprintf(fpm, gmshfilecontentmaster.str().c_str());
+      fprintf(fp, "%s", gmshfilecontent.str().c_str());
+      fprintf(fps, "%s", gmshfilecontentslave.str().c_str());
+      fprintf(fpm, "%s", gmshfilecontentmaster.str().c_str());
       fclose(fp);
       fclose(fps);
       fclose(fpm);
