@@ -8,20 +8,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-// clang-format off
 #include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
 #include "baci_linear_solver_method_linalg.H"
-
-#include <Teuchos_Time.hpp>
-#include <MLAPI_LoadBalanceOperator.h>
-#include <MLAPI_LoadBalanceInverseOperator.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_Workspace.h>
+#include "baci_linear_solver_preconditioner_linalg.H"
 
 #include <EpetraExt_SolverMap_CrsMatrix.h>
-// clang-format on
+#include <MLAPI_Expressions.h>
+#include <MLAPI_LoadBalanceInverseOperator.h>
+#include <MLAPI_LoadBalanceOperator.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_Workspace.h>
+#include <Teuchos_Time.hpp>
 
 
 // #define PRINTOUT
