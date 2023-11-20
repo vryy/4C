@@ -395,9 +395,8 @@ namespace CORE::DRT::NURBS::UTILS
       // loop all rows in the upper table
       for (int p = 0; p < degree_; ++p)
       {
-// do computation of bspline values of specified degree,
-// corresponding to one row in the scheme above
-#pragma clang loop vectorize(disable)  // prevent clang from vectorizing
+        // do computation of bspline values of specified degree,
+        // corresponding to one row in the scheme above
         for (int rr = 0; rr < degree_ - p; ++rr)
         {
           // id of first bspline function of this combination
@@ -703,12 +702,8 @@ namespace CORE::DRT::NURBS::UTILS
       // (or overwrite)
       for (int p = 0; p < degree_ - 1; ++p)
       {
-// do computation of bspline values of specified degree,
-// corresponding to one row in the scheme above
-#pragma clang loop vectorize(disable)  // prevent clang from vectorizing
-        // clang-3.5 runs into an FPE e.g. for the test case contact2D_nurbs9_dual_consistent-p1
-        // if vectorization is enabled due to "0.0/0.0" (whose result does not propagate due
-        // to binary operations on vectorized data)
+        // do computation of bspline values of specified degree,
+        // corresponding to one row in the scheme above
         for (int rr = 0; rr < degree_ - p; ++rr)
         {
           // id of first bspline function of this combination
@@ -1172,9 +1167,8 @@ namespace CORE::DRT::NURBS::UTILS
       // (or overwrite)
       for (int p = 0; p < degree_ - 2; ++p)
       {
-// do computation of bspline values of specified degree,
-// corresponding to one row in the scheme above
-#pragma clang loop vectorize(disable)  // prevent clang from vectorizing
+        // do computation of bspline values of specified degree,
+        // corresponding to one row in the scheme above
         for (int rr = 0; rr < degree_ - p; ++rr)
         {
           // id of first bspline function of this combination
