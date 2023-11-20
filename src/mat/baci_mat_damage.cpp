@@ -2890,7 +2890,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
 
     // cep_tilde_dydsigma_tilde = (Dgamma / omega) . C^{~,ep} : dy/dsigma_tilde
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> cep_tilde_dydsigma_tilde(false);
-    cep_tilde_dydsigma_tilde.Multiply((Dgamma / omega), Cep_tilde, dy_dsigma_tilde, 0.0);
+    cep_tilde_dydsigma_tilde.Multiply((Dgamma / omega), Cep_tilde, dy_dsigma_tilde);
     // C^{ep} += - stress_tilde \otimes cep_tilde_dydsigma_tilde
     cmat.MultiplyNT((-1.0), stress_tilde, cep_tilde_dydsigma_tilde, 1.0);
 

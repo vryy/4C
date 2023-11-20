@@ -578,7 +578,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 
   // to fix cases, with vertexes on one line and no possiblity of triangulation
   std::vector<Point*> last_added_ear;
-  int last_added_ear_head;
+  int last_added_ear_head = -1;
 
   while (true)
   {

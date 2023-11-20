@@ -484,7 +484,7 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   auto macro_increment = macro_micro_dofs_->ExtractOtherVector(increment_elch_scl_);
 
   double residual_L2, micro_residual_L2, macro_residual_L2, increment_L2, micro_increment_L2,
-      macro_increment_L2, state_L2, micro_state_L2, macro_state_L2;
+      macro_increment_L2, micro_state_L2, macro_state_L2;
   residual_elch_scl_->Norm2(&residual_L2);
   micro_residual->Norm2(&micro_residual_L2);
   macro_residual->Norm2(&macro_residual_L2);
@@ -497,19 +497,17 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   // safety checks
   if (std::isnan(residual_L2) or std::isnan(micro_residual_L2) or std::isnan(macro_residual_L2) or
       std::isnan(increment_L2) or std::isnan(micro_increment_L2) or
-      std::isnan(macro_increment_L2) or std::isnan(state_L2) or std::isnan(micro_state_L2) or
-      std::isnan(macro_state_L2))
+      std::isnan(macro_increment_L2) or std::isnan(micro_state_L2) or std::isnan(macro_state_L2))
     dserror("Calculated vector norm is not a number!");
   if (std::isinf(residual_L2) or std::isinf(micro_residual_L2) or std::isinf(macro_residual_L2) or
       std::isinf(increment_L2) or std::isinf(micro_increment_L2) or
-      std::isinf(macro_increment_L2) or std::isinf(state_L2) or std::isinf(micro_state_L2) or
-      std::isinf(macro_state_L2))
+      std::isinf(macro_increment_L2) or std::isinf(micro_state_L2) or std::isinf(macro_state_L2))
     dserror("Calculated vector norm is infinity!");
 
   micro_state_L2 = micro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
   macro_state_L2 = macro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
 
-  state_L2 = std::sqrt(std::pow(micro_state_L2, 2) + std::pow(macro_state_L2, 2));
+  const double state_L2 = std::sqrt(std::pow(micro_state_L2, 2) + std::pow(macro_state_L2, 2));
 
   micro_increment_L2 = micro_increment_L2 / micro_state_L2;
   macro_increment_L2 = macro_increment_L2 / macro_state_L2;
