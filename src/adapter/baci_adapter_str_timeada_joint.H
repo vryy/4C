@@ -55,6 +55,10 @@ namespace ADAPTER
     //! Provide type of algorithm
     enum AdaEnum MethodAdaptDis() const override;
 
+   protected:
+    /// setup of the auxiliary time integrator
+    void SetupAuxiliar() override;
+
    private:
     //! type of adaptivity algorithm
     enum AdaEnum ada_;
@@ -64,9 +68,6 @@ namespace ADAPTER
 
     //! wrapper of the auxiliary integrator
     Teuchos::RCP<Structure> sta_wrapper_;
-
-    /// setup of the auxiliary time integrator
-    void SetupAuxiliar();
 
     /*! \brief Make one step with auxiliary scheme
      *

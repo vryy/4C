@@ -863,8 +863,9 @@ void STR::TIMINT::Base::AddRestartToOutputState()
 {
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
-  // add velocity and acceleration if necessary
-  if (dataio_->IsWriteVelAcc())
+  // force output of velocity and acceleration in case it is not written previously by the model
+  // evaluators
+  if (!dataio_->IsWriteVelAcc())
   {
     output_ptr->WriteVector("velocity", dataglobalstate_->GetVelN());
     output_ptr->WriteVector("acceleration", dataglobalstate_->GetAccN());

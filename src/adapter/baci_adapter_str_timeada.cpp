@@ -14,6 +14,7 @@
 
 #include "baci_adapter_str_timeada_joint.H"
 #include "baci_adapter_str_timeada_zienxie.H"
+#include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -129,6 +130,9 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
     stm_->ReadRestart(restart);
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
+    IO::DiscretizationReader ioreader(stm_->Discretization(), timestepinitial_);
+    stepsizepre_ = ioreader.ReadDouble("next_delta_time");
+    time_ = timeinitial_;
 
     // update variables which depend on initial time and step
     timedirect_ = timefinal_ > timeinitial_ ? 1.0 : -1.0;
@@ -141,10 +145,10 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::ReadRestart(const int step)
+void ADAPTER::StructureTimeAda::ReadRestart(int step)
 {
-  StructureWrapper::ReadRestart(step);
   SetupTimeAda();
+  SetupAuxiliar();
 }
 
 /*----------------------------------------------------------------------*/
@@ -170,8 +174,7 @@ int ADAPTER::StructureTimeAda::Integrate()
   // initialise time loop
   time_ = timeinitial_;
   timestep_ = timestepinitial_;
-  stepsize_ = stepsizeinitial_;
-  stepsizepre_ = stepsize_;
+  stepsize_ = stepsizepre_;
 
   // time loop
   while ((time_ < timefinal_) and (timestep_ < timestepfinal_))
@@ -227,8 +230,8 @@ int ADAPTER::StructureTimeAda::Integrate()
       // adjust step-size and prepare repetition of current step
       if (not accepted)
       {
-        std::cout << "Repeating step " << timestep_ << "/" << timestepfinal_ << " at time " << time_
-                  << " with stepsize = " << stpsiznew << std::endl;
+        std::cout << "Repeating step " << timestep_ + 1 << "/" << timestepfinal_ << " at time "
+                  << time_ << " with stepsize = " << stpsiznew << std::endl;
         std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
                   << " - - - - - - - - - - - - - - -" << std::endl;
 
@@ -273,6 +276,9 @@ int ADAPTER::StructureTimeAda::Integrate()
 
     PostUpdate();
 
+    stepsizepre_ = stepsize_;
+    stepsize_ = stpsiznew;
+
     // write output
     Output();
     PostOutput();
@@ -282,11 +288,9 @@ int ADAPTER::StructureTimeAda::Integrate()
 
     // update
     timestep_ += 1;
+    time_ += stepsizepre_;
     stm_->SetStepN(timestep_);
-    time_ += stepsize_;
     stm_->SetTimeN(time_);
-    stepsizepre_ = stepsize_;
-    stepsize_ = stpsiznew;
     stm_->SetDeltaTime(stepsize_);
     stm_->SetTimeNp(time_ + stepsize_);
 
@@ -298,10 +302,13 @@ int ADAPTER::StructureTimeAda::Integrate()
     // the user reads but rarely listens
     if (myrank == 0)
     {
-      std::cout << "Step " << timestep_ << ", Time " << time_ << ", StepSize " << stepsize_
+      std::cout << "Step " << timestep_ + 1 << ", Time " << time_ << ", new StepSize " << stepsize_
                 << std::endl;
     }
   }
+
+  // force write output
+  Output(true);
 
   // that's it say what went wrong
   return convergencestatus;
@@ -347,6 +354,17 @@ void ADAPTER::StructureTimeAda::SizeForOutput()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Output action */
+void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
+{
+  STR::TIMINT::BaseDataIO& dataio = stm_->DataIO();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
+
+  StructureWrapper::Output(forced_writerestart);
+  output_ptr->WriteDouble("next_delta_time", stepsize_);
 }
 
 /*----------------------------------------------------------------------*/

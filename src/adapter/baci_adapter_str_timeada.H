@@ -69,7 +69,7 @@ namespace ADAPTER
     void Setup() override;
 
     /// read restart information for given time step
-    void ReadRestart(const int step) override;
+    void ReadRestart(int step) override;
 
     /// actual time loop
     int Integrate() override;
@@ -85,6 +85,9 @@ namespace ADAPTER
 
     /// wrapper for things that should be done after solving the update
     void PostUpdate() override{};
+
+    /// output results
+    void Output(bool forced_writerestart = false) override;
 
     /// wrapper for things that should be done after the output
     void PostOutput() override{};
@@ -190,6 +193,9 @@ namespace ADAPTER
      *  \author mayr.mt \date 12/2013
      */
     void ResetStep() override;
+
+    /// setup of the auxiliary time integrator
+    virtual void SetupAuxiliar() = 0;
 
    private:
     //! Setup necessities for time adaptivity
