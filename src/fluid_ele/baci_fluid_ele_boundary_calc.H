@@ -258,21 +258,6 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
-      \brief apply outflow boundary condition which is necessary for the conservative
-      element formulation (since the convective term was partially integrated)
-
-      \param params (in)        : ParameterList for communication between control routine
-      \param discretization (in): A reference to the underlying discretization
-      \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element.
-      \param elevec1 (out)      : vector to be filled by element.
-
-      */
-      void ConservativeOutflowConsistency(DRT::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
-
-      /*!
       \brief compute potential Neumann inflow
 
       \param params (in)        : ParameterList for communication between control routine

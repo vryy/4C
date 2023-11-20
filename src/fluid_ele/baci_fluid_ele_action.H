@@ -97,7 +97,6 @@ namespace FLD
     flow_dep_pressure_bc,
     slip_supp_bc,
     navier_slip_bc,
-    conservative_outflow_bc,
     calc_Neumann_inflow,
     calc_pressure_bou_int,
     center_of_mass_calc,
