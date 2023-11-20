@@ -27,8 +27,7 @@ namespace
 
   template <int NumberOfParameters>
   void CheckNamingAndOrderOfParameters(const std::array<std::string, NumberOfParameters>& param_map,
-      const std::vector<std::pair<std::string, double>>& funct_params,
-      const std::string& function_name)
+      const std::vector<std::pair<std::string, double>>& funct_params, std::string function_name)
   {
     if (funct_params.size() != NumberOfParameters)
     {
@@ -65,7 +64,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideParameters::TumorGrowthLawHeaviside
       p_t_crit(funct_params[4].second)
 {
   constexpr int NUMBER_OF_PARAMS = 5;
-  std::string function_name = "TUMOR_GROWTH_LAW_HEAVISIDE";
+  const std::string function_name = "TUMOR_GROWTH_LAW_HEAVISIDE";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{
       "gamma_T_growth", "w_nl_crit", "w_nl_env", "lambda", "p_t_crit"};
@@ -85,7 +84,7 @@ POROMULTIPHASESCATRA::NecrosisLawHeavisideParameters::NecrosisLawHeavisideParame
       p_t_crit(funct_params[4].second)
 {
   constexpr int NUMBER_OF_PARAMS = 5;
-  std::string function_name = "NECROSIS_LAW_HEAVISIDE";
+  const std::string function_name = "NECROSIS_LAW_HEAVISIDE";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{
       "gamma_t_necr", "w_nl_crit", "w_nl_env", "delta_a_t", "p_t_crit"};
@@ -107,7 +106,7 @@ POROMULTIPHASESCATRA::OxygenConsumptionLawHeavisideParameters::
       p_t_crit(funct_params[4].second)
 {
   constexpr int NUMBER_OF_PARAMS = 5;
-  std::string function_name = "OXYGEN_CONSUMPTION_LAW_HEAVISIDE";
+  const std::string function_name = "OXYGEN_CONSUMPTION_LAW_HEAVISIDE";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{
       "gamma_nl_growth", "gamma_0_nl", "w_nl_crit", "w_nl_env", "p_t_crit"};
@@ -128,7 +127,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecroOxyParameters::
       p_t_crit(funct_params[4].second)
 {
   constexpr int NUMBER_OF_PARAMS = 5;
-  std::string function_name = "TUMOR_GROWTH_LAW_HEAVISIDE_OXY";
+  const std::string function_name = "TUMOR_GROWTH_LAW_HEAVISIDE_OXY";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{
       "gamma_T_growth", "w_nl_crit", "w_nl_env", "lambda", "p_t_crit"};
@@ -153,7 +152,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawContParameters::
       alpha_IF(funct_params[8].second)
 {
   constexpr int NUMBER_OF_PARAMS = 9;
-  std::string function_name = "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT";
+  const std::string function_name = "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{"n", "Pb50", "CaO2_max",
       "alpha_bl_eff", "gammarhoSV", "rho_oxy", "rho_IF", "rho_bl", " alpha_IF"};
@@ -179,7 +178,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDiscParameters::
       alpha_IF(funct_params[9].second)
 {
   constexpr int NUMBER_OF_PARAMS = 10;
-  std::string function_name = "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC";
+  const std::string function_name = "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{"n", "Pb50", "CaO2_max",
       "alpha_bl_eff", "gamma*rho", "rho_oxy", "rho_IF", "rho_bl", "S2_max", "alpha_IF"};
@@ -200,13 +199,15 @@ POROMULTIPHASESCATRA::LungOxygenExchangeLawParameters::LungOxygenExchangeLawPara
       n(funct_params[5].second),
       P_oB50(funct_params[6].second),
       NC_Hb(funct_params[7].second),
-      P_atmospheric(funct_params[8].second)
+      P_atmospheric(funct_params[8].second),
+      volfrac_blood_ref(funct_params[9].second)
 {
-  constexpr int NUMBER_OF_PARAMS = 9;
-  std::string function_name = "LUNG_OXYGEN_EXCHANGE_LAW";
+  constexpr int NUMBER_OF_PARAMS = 10;
+  const std::string function_name = "LUNG_OXYGEN_EXCHANGE_LAW";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{"rho_oxy", "DiffAdVTLC",
-      "alpha_oxy", "rho_air", "rho_bl", "n", "P_oB50", "NC_Hb", "P_atmospheric"};
+      "alpha_oxy", "rho_air", "rho_bl", "n", "P_oB50", "NC_Hb", "P_atmospheric",
+      "volfrac_blood_ref"};
 
   // Check parameters
   CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
@@ -234,7 +235,7 @@ POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLawParameters::
       volfrac_blood_ref(funct_params[13].second)
 {
   constexpr int NUMBER_OF_PARAMS = 14;
-  std::string function_name = "LUNG_CARBONDIOXIDE_EXCHANGE_LAW";
+  const std::string function_name = "LUNG_CARBONDIOXIDE_EXCHANGE_LAW";
 
   static const std::array<std::string, NUMBER_OF_PARAMS> param_map{"rho_CO2", "DiffsolAdVTLC", "pH",
       "rho_air", "rho_bl", "rho_oxy", "n", "P_oB50", "C_Hb", "NC_Hb", "alpha_oxy", "P_atmospheric",

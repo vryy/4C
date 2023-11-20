@@ -156,6 +156,7 @@ namespace POROMULTIPHASESCATRA
     double P_oB50{};
     double NC_Hb{};
     double P_atmospheric{};
+    double volfrac_blood_ref{};
   };
 
   /*!

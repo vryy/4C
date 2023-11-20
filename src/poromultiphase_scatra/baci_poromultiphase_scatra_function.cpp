@@ -800,7 +800,7 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
   if (constants[7].first != "VF1")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    dserror("wrong order in variable vector, porosity not at position 8");
   if (variables[0].first != "phi1")
     dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
@@ -1048,13 +1048,23 @@ void POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::CheckOrder(
   if (variables[0].first == "phi1")
   {
     if (constants[0].first != "p1")
-      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 0");
+      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 1");
+    if (constants[3].first != "VF1")
+      dserror(
+          "wrong order in constants vector, VF1 (volume fraction of additional porous network "
+          "(blood phase)) not at position 4");
     if (variables[1].first != "phi2")
       dserror(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
   }
   else if (variables[0].first == "p1")
   {
+    if (variables[3].first != "VF1")
+    {
+      dserror(
+          "wrong order in variable vector, VF1 (volume fraction of additional porous network "
+          "(blood)) not at position 4");
+    }
     if (constants[0].first != "phi1")
       dserror(
           "wrong order in variable vector, phi1 (oxygen mass fraction in air) not at position 1");
@@ -1093,6 +1103,7 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
 
   // read constants (order is crucial)
   const double P_air = constants[0].second;
+  const double volfrac_blood = constants[3].second;
 
   // partial pressure of oxygen in air
   const double P_oA =
@@ -1110,8 +1121,8 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
       P_oB, CoB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
   // evaluate function
-  const double functval =
-      parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy * (P_oA - P_oB);
+  const double functval = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
+                          (volfrac_blood / parameter.volfrac_blood_ref) * (P_oA - P_oB);
 
   return functval;
 }
@@ -1138,7 +1149,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
   FAD oxy_mass_frac_bl = 0.0;
   oxy_mass_frac_bl.diff(0, 1);  // independent variable 0 out of a total of 1
 
-  double oxy_mass_frac_air = 0.0, P_air = 0.0;
+  double oxy_mass_frac_air = 0.0, P_air = 0.0, volfrac_blood = 0.0;
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
@@ -1146,6 +1157,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
     oxy_mass_frac_air = variables[0].second;
     oxy_mass_frac_bl.val() = variables[1].second;
     P_air = constants[0].second;
+    volfrac_blood = constants[3].second;
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
@@ -1153,10 +1165,14 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
     oxy_mass_frac_air = constants[0].second;
     oxy_mass_frac_bl.val() = constants[1].second;
     P_air = variables[0].second;
+    volfrac_blood = variables[3].second;
   }
   else
     dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
         variables[0].first.c_str());
+
+  // volfrac relation
+  const double volfrac_relation = (volfrac_blood / parameter.volfrac_blood_ref);
 
   FAD P_oB = 0.0;
   FAD C_oB_total = oxy_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
@@ -1164,18 +1180,24 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
       P_oB, C_oB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
+
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
-    deriv[0] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
+    deriv[0] = parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy *
                ((P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_oxy);
-    deriv[1] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy * (-1.0) *
-               P_oB.fastAccessDx(0);
+    deriv[1] = parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy *
+               (-1.0) * P_oB.fastAccessDx(0);
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
-    deriv[0] = (parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy) *
+    deriv[0] = (parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy) *
                ((oxy_mass_frac_air * parameter.rho_air) /
                    parameter.rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
+                                        // partial pressure of oxygen in air
+    const double P_oA = oxy_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air /
+                        parameter.rho_oxy;
+    deriv[3] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
+               (1 / parameter.volfrac_blood_ref) * (P_oA - P_oB.val());
   }
   else
     dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
@@ -1205,11 +1227,11 @@ void POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::CheckOrder(
   if (variables[0].first == "phi1")
   {
     if (constants[0].first != "p1")
-      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 0");
+      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 1");
     if (constants[1].first != "S1")
-      dserror("wrong order in constants vector, S1 (Saturation of air) not at position 1");
+      dserror("wrong order in constants vector, S1 (Saturation of air) not at position 2");
     if (constants[3].first != "VF1")
-      dserror("wrong order in constants vector, VF1 (volfrac 1) not at position 2");
+      dserror("wrong order in constants vector, VF1 (volfrac 1) not at position 4");
     if (variables[1].first != "phi2")
       dserror(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
