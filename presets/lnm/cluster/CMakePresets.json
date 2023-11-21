@@ -6,9 +6,9 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-march=native -Wall -Wno-unused-local-typedefs -Werror=vla",
+        "CMAKE_CXX_FLAGS": "-march=native -Wall -Wvla",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS": "-Wall -march=native",
+        "CMAKE_C_FLAGS": "-Wall -march=native -Wvla",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lhdf5_hl -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
