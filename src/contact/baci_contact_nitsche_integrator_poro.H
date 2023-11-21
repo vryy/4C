@@ -91,7 +91,7 @@ namespace CONTACT
         double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt,
         CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p);
 
-   private:
+   protected:
     /*!
     \brief evaluate GPTS forces and linearization at this gp
     */
@@ -132,7 +132,7 @@ namespace CONTACT
         double& sJ, std::map<int, double>& sJLin, double& sporosity, double& sdphi_dp,
         double& sdphi_dJ);  // out
 
-   private:
+   protected:
     bool no_penetration_;  // no outflow in contact zone ...
     double dv_dd_;         // 1/(theta*dt) for OST
   };
