@@ -21,7 +21,8 @@ namespace INPAR::REBALANCE
     hypergraph,                      //< hypergraph based partitioning
     recursive_coordinate_bisection,  //< recursive coordinate bisection, geometric based
                                      // partitioning
-    monolithic  //< hypergraph based partitioning by using a global monolithic graph
+    monolithic  //< hypergraph based partitioning by using a global monolithic graph constructed
+                // via a global collision search
   };
 
   //! set the parameters for the geometric search strategy

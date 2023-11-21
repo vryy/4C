@@ -115,6 +115,10 @@ namespace CORE::REBALANCE
   /*!
   \brief Build monolithic node graph of a given discretization
 
+  The monolithic graph is build by using a global collision search on the reference configuration,
+  to obtain information about close elements. Based on this information, additional edges are
+  build into the graph.
+
   \pre Discretization has to be FillComplete()!
 
   @param[in] dis Discretization whose monolithic node graph will be build
