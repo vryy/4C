@@ -16,7 +16,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     )
 endif()
 
-project(baci CXX C Fortran)
+project(baci CXX C)
 
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")

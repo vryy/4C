@@ -12,8 +12,6 @@
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lhdf5_hl -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
-        "CMAKE_Fortran_FLAGS": "-Wall",
-        "CMAKE_Fortran_FLAGS_RELEASE": "-O5 -funroll-all-loops -malign-double",
         "BACI_WITH_GOOGLETEST": "OFF",
         "BUILD_DOXYGEN": "OFF"
       }
@@ -29,7 +27,6 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpic++",
         "CMAKE_C_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpif90",
         "INCLUDE_INSTALL_DIR": "/lnm/include",
         "LIB_INSTALL_DIR": "/lnm/lib",
         "Trilinos_PREFIX": "/lnm/2022_Q1/trilinos_openmpi-4.1.5",
@@ -54,7 +51,6 @@
         "CMAKE_C_FLAGS": "-Wall -mfpmath=sse -msse3",
         "CMAKE_CXX_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpic++",
         "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpif90",
         "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
         "CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
         "SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
@@ -76,7 +72,6 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/lnm/mpi407_gcc930/bin/mpic++",
         "CMAKE_C_COMPILER": "/lnm/mpi407_gcc930/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/lnm/mpi407_gcc930/bin/mpif90",
         "INCLUDE_INSTALL_DIR": "/lnm/include",
         "LIB_INSTALL_DIR": "/lnm/lib",
         "Trilinos_PREFIX": "/lnm/2022_Q1/trilinos/trilinos_release",
