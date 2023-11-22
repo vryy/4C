@@ -58,5 +58,5 @@ check_cxx_source_runs(
   )
 
 if(ADVANCED_STACKTR)
-  set_property(GLOBAL APPEND PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS "ENABLE_ADVANCED_STACKTR")
+  target_compile_definitions(baci_global_compile_settings INTERFACE "ENABLE_ADVANCED_STACKTR")
 endif(ADVANCED_STACKTR)
