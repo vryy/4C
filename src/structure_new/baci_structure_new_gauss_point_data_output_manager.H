@@ -8,6 +8,7 @@
 #ifndef BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 #define BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 
+#include "baci_comm_exporter.H"
 #include "baci_inpar_structure.H"
 
 #include <Epetra_IntVector.h>
@@ -107,12 +108,12 @@ namespace STR
       static constexpr int MPI_TAG = 545;
       static const char MPI_DELIMITER = '!';
 
-      void SendMyQuantitiesToProc(const DRT::Exporter& exporter, int to_proc) const;
+      void SendMyQuantitiesToProc(const CORE::COMM::Exporter& exporter, int to_proc) const;
 
       std::unique_ptr<std::unordered_map<std::string, int>> ReceiveQuantitiesFromProc(
-          const DRT::Exporter& exporter, int from_proc) const;
+          const CORE::COMM::Exporter& exporter, int from_proc) const;
 
-      void BroadcastMyQuantitites(const DRT::Exporter& exporter);
+      void BroadcastMyQuantitites(const CORE::COMM::Exporter& exporter);
 
       void PackMyQuantities(std::vector<char>& data) const;
 

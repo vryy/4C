@@ -73,10 +73,11 @@ namespace FLD
     void GetData(int& id, int& direction, ToggleType& type, const DRT::Condition*);
 
     //! receive a block in the round robin communication pattern
-    void ReceiveBlock(std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request);
+    void ReceiveBlock(
+        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
+    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! unpack all master values contained in receive block
     void UnpackLocalMasterValues(std::vector<int>& mymasters,

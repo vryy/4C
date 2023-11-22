@@ -15,6 +15,7 @@
 #include <fftw3.h>
 #endif
 
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_timint_genalpha.H"
@@ -22,7 +23,6 @@
 #include "baci_fluid_turbulence_hit_forcing.H"
 #include "baci_fluid_xwall.H"
 #include "baci_inpar_fluid.H"
-#include "baci_lib_exporter.H"
 
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
@@ -131,7 +131,7 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)

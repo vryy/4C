@@ -110,7 +110,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   std::vector<char> rblock;
 
   // create an exporter for point to point communication
-  DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   // first, communicate coordinates in x1-direction
   for (int np = 0; np < numprocs; ++np)
@@ -278,7 +278,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    DRT::Exporter exporter(discret_->Comm());
+    CORE::COMM::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)

@@ -7,9 +7,9 @@
 
 #include "baci_shell7p_utils.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_exporter.H"
 #include "baci_shell7p_ele.H"
 #include "baci_shell7p_ele_scatra.H"
 
@@ -495,7 +495,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
   // export this map from nodal row map to nodal col map
   const Epetra_Map* noderowmap = dis.NodeRowMap();
   const Epetra_Map* nodecolmap = dis.NodeColMap();
-  DRT::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
+  CORE::COMM::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
   exporter.Export(director_map);
 
   // loop through column nodes and put directors back into discretization

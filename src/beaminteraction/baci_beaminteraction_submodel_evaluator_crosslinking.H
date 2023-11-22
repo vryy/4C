@@ -13,6 +13,7 @@
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
+#include "baci_comm_exporter.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_fixedsizematrix.H"
 
@@ -448,7 +449,7 @@ namespace BEAMINTERACTION
 
       /// send data T to rank= mapkey
       template <typename T>
-      void ISend(DRT::Exporter& exporter, std::vector<MPI_Request>& request,
+      void ISend(CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request,
           std::map<int, std::vector<Teuchos::RCP<T>>> const& send) const;
 
       /// get number of request for each proc
@@ -458,8 +459,8 @@ namespace BEAMINTERACTION
 
       /// recieve "receivesize" number of T and store in vector recv
       template <typename T>
-      void RecvAny(
-          DRT::Exporter& exporter, int receivesize, std::vector<Teuchos::RCP<T>>& recv) const;
+      void RecvAny(CORE::COMM::Exporter& exporter, int receivesize,
+          std::vector<Teuchos::RCP<T>>& recv) const;
 
       /// unblocking send and blocking recvany
       template <typename T>
@@ -467,7 +468,8 @@ namespace BEAMINTERACTION
           std::vector<Teuchos::RCP<T>>& recv) const;
 
       // wait for all communication to finish
-      void Wait(DRT::Exporter& exporter, std::vector<MPI_Request>& request, int length) const;
+      void Wait(
+          CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request, int length) const;
 
       /// debug feature to check bindevent structs
       void PrintAndCheckBindEventData(
@@ -487,10 +489,10 @@ namespace BEAMINTERACTION
       std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData>> crosslinker_data_;
 
       //! crosslinker exporter for crosslinker data container
-      Teuchos::RCP<DRT::Exporter> cl_exporter_;
+      Teuchos::RCP<CORE::COMM::Exporter> cl_exporter_;
 
       //! beam exporter for beam data container
-      Teuchos::RCP<DRT::Exporter> beam_exporter_;
+      Teuchos::RCP<CORE::COMM::Exporter> beam_exporter_;
 
       //! temporary storage for all relevant beam data during crosslinking
       //  (vector index is col lid of beamele)

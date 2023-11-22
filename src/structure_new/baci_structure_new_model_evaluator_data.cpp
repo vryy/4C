@@ -12,9 +12,9 @@
 
 #include "baci_structure_new_model_evaluator_data.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_exporter.H"
 #include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
@@ -28,9 +28,9 @@
 
 namespace
 {
-  static void SendToNextProc(const int p, DRT::Exporter& exporter, const std::vector<int>& mysize,
-      const std::vector<char>& mydata, std::vector<int>& receivedsize,
-      std::vector<char>& receiveddata)
+  static void SendToNextProc(const int p, CORE::COMM::Exporter& exporter,
+      const std::vector<int>& mysize, const std::vector<char>& mydata,
+      std::vector<int>& receivedsize, std::vector<char>& receiveddata)
   {
     const Epetra_Comm& comm = exporter.Comm();
 
@@ -117,7 +117,7 @@ namespace
     std::vector<char> receiveddata;
 
     // create an exporter for point to point communication
-    DRT::Exporter exporter(comm);
+    CORE::COMM::Exporter exporter(comm);
     const int numprocs = comm.NumProc();
 
     for (int p = 0; p < numprocs; ++p)

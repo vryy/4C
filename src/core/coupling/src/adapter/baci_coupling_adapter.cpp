@@ -547,7 +547,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const ::DRT::Discretization& dis,
 
   dofmapvec.clear();
 
-  ::DRT::Exporter exportdofs(*nodemap, *permnodemap, dis.Comm());
+  CORE::COMM::Exporter exportdofs(*nodemap, *permnodemap, dis.Comm());
   exportdofs.Export(dofs);
 
   const int* permnodes = permnodemap->MyGlobalElements();

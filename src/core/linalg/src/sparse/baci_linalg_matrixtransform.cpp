@@ -10,9 +10,9 @@
 
 #include "baci_linalg_matrixtransform.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_exceptions.H"
 
@@ -93,7 +93,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map&
   {
     if (converter != nullptr)
     {
-      ::DRT::Exporter ex(rowmap, colmap, comm);
+      CORE::COMM::Exporter ex(rowmap, colmap, comm);
       converter->FillSrcToDstMap(gidmap_);
       ex.Export(gidmap_);
     }

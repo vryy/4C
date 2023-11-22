@@ -487,15 +487,15 @@ int DRT::DofSet::AssignDegreesOfFreedom(
     // printf("\n");
   }
 
-  Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
+  CORE::COMM::Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
   nodeexporter.Export(nodedofset);
 
-  Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
+  CORE::COMM::Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
   elementexporter.Export(elementdofset);
 
   if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
   {
-    Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
+    CORE::COMM::Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
     faceexporter.Export(facedofset);
   }
 

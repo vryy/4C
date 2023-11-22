@@ -10,9 +10,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_comm_exporter.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"

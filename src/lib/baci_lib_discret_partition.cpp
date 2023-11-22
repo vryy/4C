@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_pbc.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_utils_exceptions.H"
 
@@ -40,7 +40,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
   const Epetra_Map& oldmap = *noderowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
 
   // Do the communication
   exporter.Export(node_);
@@ -81,7 +81,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   }
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
   // Do the communication
   exporter.Export(node_);
 
@@ -149,7 +149,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
 
   // proc 0 sends out messages
   int tag = 0;
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -263,7 +263,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 
   // proc 0 sends out messages
   int tag = 0;
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -335,7 +335,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   const Epetra_Map& oldmap = *elerowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
 
   exporter.Export(element_);
 
@@ -376,7 +376,7 @@ void DRT::Discretization::ExportColumnElements(
   }
 
   // create an exporter object that will figure out the communication pattern
-  DRT::Exporter exporter(oldmap, newmap, Comm());
+  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
   exporter.Export(element_);
 
   // maps and pointers are no longer correct and need rebuilding

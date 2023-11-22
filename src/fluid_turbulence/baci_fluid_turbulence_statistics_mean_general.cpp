@@ -408,7 +408,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   std::map<double, int, doublecomp>::iterator y_and_i;
 
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(avgcomm);
+  CORE::COMM::Exporter exporter(avgcomm);
 
   // necessary variables
   MPI_Request request;

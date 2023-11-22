@@ -1033,7 +1033,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
     }
 
     // communicate from master node row to column map
-    DRT::Exporter ex(*mnoderowmap_, *masternodes, Comm());
+    CORE::COMM::Exporter ex(*mnoderowmap_, *masternodes, Comm());
     ex.Export(triad);
 
     ex.Export(n_x_key);

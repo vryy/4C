@@ -906,7 +906,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
       std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*EvalData().GetStressData());
 
-      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+      CORE::COMM::Exporter ex(
+          *(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
       ex.Export(gp_stress_data);
 
       EvalData().GetStressDataNodePostprocessed() =
@@ -927,7 +928,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
       std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*EvalData().GetStrainData());
 
-      DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
+      CORE::COMM::Exporter ex(
+          *(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
       ex.Export(gp_strain_data);
 
       EvalData().GetStrainDataNodePostprocessed() =

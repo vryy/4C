@@ -6,11 +6,11 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"

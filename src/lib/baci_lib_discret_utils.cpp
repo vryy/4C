@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_parameters.H"
 #include "baci_utils_exceptions.H"

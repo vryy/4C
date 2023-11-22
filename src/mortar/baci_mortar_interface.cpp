@@ -1738,7 +1738,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps(
 
   // build exporter
   interfaceData_->SlExporterPtr() =
-      Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
+      Teuchos::rcp(new CORE::COMM::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
 /*----------------------------------------------------------------------*

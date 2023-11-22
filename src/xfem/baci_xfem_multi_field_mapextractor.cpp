@@ -13,10 +13,10 @@
 
 #include "baci_xfem_multi_field_mapextractor.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_parobject.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"
@@ -212,7 +212,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // (2) round robin loop
   // ------------------------------------------------------------------------
   // create an exporter for point to point communication
-  DRT::Exporter exporter(Comm());
+  CORE::COMM::Exporter exporter(Comm());
   const int numprocs = Comm().NumProc();
 
   for (int p = 0; p < numprocs; ++p)
@@ -548,7 +548,7 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
       sl_max_num_dof_per_inode[ngids[j]] = numdof;
     }
 
-    DRT::Exporter export_max_dof_num(sl_inodemap, ma_inodemap, SlDiscret(i).Comm());
+    CORE::COMM::Exporter export_max_dof_num(sl_inodemap, ma_inodemap, SlDiscret(i).Comm());
     export_max_dof_num.Export(sl_max_num_dof_per_inode);
 
     // communicate the number of standard DoF's

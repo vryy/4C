@@ -12,6 +12,7 @@
 #define BACI_BEAMINTERACTION_CROSSLINKER_HANDLER_H
 
 #include "baci_binstrategy.H"
+#include "baci_comm_exporter.H"
 
 // forward declarations
 namespace DRT
@@ -101,7 +102,7 @@ namespace BEAMINTERACTION
     );
 
     /// receive linker and fill them in correct bin
-    virtual void ReceiveLinkerAndFillThemInBins(int const numrec, DRT::Exporter& exporter,
+    virtual void ReceiveLinkerAndFillThemInBins(int const numrec, CORE::COMM::Exporter& exporter,
         std::list<Teuchos::RCP<DRT::Node>>& homelesslinker);
 
    private:

@@ -306,7 +306,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       std::vector<char> rblock;
 
       // create an exporter for point to point comunication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       for (int np = 0; np < numprocs; ++np)
       {

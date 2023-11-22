@@ -1466,8 +1466,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
       new Epetra_Map(-1, read_node_ids.size(), read_node_ids.data(), 0, BinDiscret().Comm()));
 
   // build exporter object
-  Teuchos::RCP<DRT::Exporter> exporter = Teuchos::rcp(
-      new DRT::Exporter(*dummy_cl_map, *BinDiscret().NodeColMap(), BinDiscret().Comm()));
+  Teuchos::RCP<CORE::COMM::Exporter> exporter = Teuchos::rcp(
+      new CORE::COMM::Exporter(*dummy_cl_map, *BinDiscret().NodeColMap(), BinDiscret().Comm()));
 
   // export
   exporter->Export(cl_datapacks);
@@ -1528,7 +1528,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
 
   // build exporter object
   exporter = Teuchos::rcp(
-      new DRT::Exporter(*dummy_beam_map, *Discret().ElementColMap(), Discret().Comm()));
+      new CORE::COMM::Exporter(*dummy_beam_map, *Discret().ElementColMap(), Discret().Comm()));
 
   // export
   exporter->Export(beam_datapacks);
@@ -2045,7 +2045,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportCrosslinke
   //  BinDiscret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  cl_exporter_ = Teuchos::rcp(new DRT::Exporter(
+  cl_exporter_ = Teuchos::rcp(new CORE::COMM::Exporter(
       *cl_noderowmap_prior_redistr_, *BinDiscret().NodeColMap(), BinDiscret().Comm()));
 
   // we first need to pack our stuff into and std::vector< char > for communication
@@ -2107,7 +2107,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
   //  Discret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  beam_exporter_ = Teuchos::rcp(new DRT::Exporter(
+  beam_exporter_ = Teuchos::rcp(new CORE::COMM::Exporter(
       *beam_elerowmap_prior_redistr_, *Discret().ElementColMap(), Discret().Comm()));
 
   // we first need to pack our row stuff into and std::vector< char > for communication
@@ -3643,7 +3643,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBinIds(
   CheckInitSetup();
 
   // build exporter
-  DRT::Exporter exporter(Discret().Comm());
+  CORE::COMM::Exporter exporter(Discret().Comm());
   int const numproc = Discret().Comm().NumProc();
   int const myrank = GState().GetMyRank();
 
@@ -3916,7 +3916,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
   CheckInit();
 
   // build exporter
-  DRT::Exporter exporter(DiscretPtr()->Comm());
+  CORE::COMM::Exporter exporter(DiscretPtr()->Comm());
   int const numproc = DiscretPtr()->Comm().NumProc();
 
   // -----------------------------------------------------------------------
@@ -4021,7 +4021,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateCrosslinkerUnb
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter& exporter,
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporter& exporter,
     std::vector<MPI_Request>& request,
     std::map<int, std::vector<Teuchos::RCP<T>>> const& send) const
 {
@@ -4082,7 +4082,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceivingProcs(
  *-----------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
-    DRT::Exporter& exporter, int receivesize, std::vector<Teuchos::RCP<T>>& recv) const
+    CORE::COMM::Exporter& exporter, int receivesize, std::vector<Teuchos::RCP<T>>& recv) const
 {
   CheckInit();
 
@@ -4127,7 +4127,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
   CheckInit();
 
   // build exporter
-  DRT::Exporter exporter(BinDiscret().Comm());
+  CORE::COMM::Exporter exporter(BinDiscret().Comm());
 
   // -----------------------------------------------------------------------
   // send
@@ -4155,7 +4155,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Wait(
-    DRT::Exporter& exporter, std::vector<MPI_Request>& request, int length) const
+    CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request, int length) const
 {
   CheckInit();
 
@@ -4191,16 +4191,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrintAndCheckBindEventDat
 //-----------------------------------------------------------------------------
 // explicit template instantiation (to please every compiler)
 //-----------------------------------------------------------------------------
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter&,
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporter&,
     std::vector<MPI_Request>&,
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData>>> const&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter&,
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporter&,
     std::vector<MPI_Request>&,
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BeamData>>> const&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter&,
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporter&,
     std::vector<MPI_Request>&,
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>> const&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(DRT::Exporter&,
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporter&,
     std::vector<MPI_Request>&,
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>> const&) const;
 
@@ -4219,14 +4219,14 @@ template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceiving
     std::vector<int>&) const;
 
 
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(DRT::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
-    DRT::Exporter&, int const, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BeamData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(DRT::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>&) const;
-template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(DRT::Exporter&, int const,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>&) const;
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(CORE::COMM::Exporter&,
+    int const, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData>>&) const;
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(CORE::COMM::Exporter&,
+    int const, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BeamData>>&) const;
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(CORE::COMM::Exporter&,
+    int const, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>&) const;
+template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(CORE::COMM::Exporter&,
+    int const, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>&) const;
 
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(

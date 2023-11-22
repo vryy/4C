@@ -257,7 +257,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -376,7 +376,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
-    std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -423,7 +423,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::SendBlock(
-    std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -792,7 +792,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -982,7 +982,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     }
 
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(dis_->Comm());
+    CORE::COMM::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;

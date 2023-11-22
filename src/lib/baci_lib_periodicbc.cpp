@@ -794,7 +794,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
         const int torank = (myrank + 1) % numproc;              // to
         const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
-        DRT::Exporter exporter(discret_->Comm());
+        CORE::COMM::Exporter exporter(discret_->Comm());
 
 
         for (int irobin = 0; irobin < numproc; ++irobin)
@@ -1184,7 +1184,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     *allcoupledcolnodes_ = (*allcoupledrownodes_);
     {
       // create an exporter
-      DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+      CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
 
       // export information on all master->slave couplings (with multiple
       // couplings)
@@ -1236,7 +1236,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
         // create an exporter
-        DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
 
         // export information on all master->slave couplings (with multiple
         // couplings)
@@ -1279,7 +1279,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       // connectivity
       {
         // create an exporter
-        DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
         // export information on all slave->master couplings (with multiple
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);

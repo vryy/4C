@@ -9,10 +9,10 @@
 #include "baci_ssi_str_model_evaluator_base.H"
 
 #include "baci_adapter_str_ssiwrapper.H"
+#include "baci_comm_exporter.H"
 #include "baci_coupling_adapter.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_io.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
@@ -48,7 +48,8 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   }
 
   // export map to column format
-  DRT::Exporter exporter(*Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
+  CORE::COMM::Exporter exporter(
+      *Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors

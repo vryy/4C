@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"

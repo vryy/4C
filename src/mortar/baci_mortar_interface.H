@@ -9,6 +9,7 @@
 #ifndef BACI_MORTAR_INTERFACE_H
 #define BACI_MORTAR_INTERFACE_H
 
+#include "baci_comm_exporter.H"
 #include "baci_inpar_mortar.H"
 #include "baci_mortar_paramsinterface.H"
 #include "baci_utils_exceptions.H"
@@ -335,9 +336,9 @@ namespace MORTAR
 
     inline INPAR::MORTAR::Problemtype PoroType() const { return porotype_; }
 
-    inline Teuchos::RCP<DRT::Exporter>& SlExporterPtr() { return sl_exporter_; }
+    inline Teuchos::RCP<CORE::COMM::Exporter>& SlExporterPtr() { return sl_exporter_; }
 
-    inline DRT::Exporter& Exporter()
+    inline CORE::COMM::Exporter& Exporter()
     {
       if (sl_exporter_.is_null()) dserror("The exporter has not been initialized.");
 
@@ -524,7 +525,7 @@ namespace MORTAR
     //! flag if ehl contact problem!
     bool ehl_;
 
-    Teuchos::RCP<DRT::Exporter> sl_exporter_;
+    Teuchos::RCP<CORE::COMM::Exporter> sl_exporter_;
 
     //! Is this data container object initialized?
     bool isinit_;

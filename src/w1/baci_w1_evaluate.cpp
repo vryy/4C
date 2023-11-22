@@ -12,13 +12,13 @@
 
 /*----------------------------------------------------------------------*/
 // headers
+#include "baci_comm_exporter.H"
 #include "baci_contact_analytical.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"

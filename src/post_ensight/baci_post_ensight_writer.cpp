@@ -761,7 +761,7 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
   std::vector<char> rblock;  // recieving block
 
   // create an exporter for communication
-  DRT::Exporter exporter(dis->Comm());
+  CORE::COMM::Exporter exporter(dis->Comm());
 
   // pack my node ids into sendbuffer
   sblock.clear();
@@ -964,7 +964,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     std::vector<char> rblock;  // recieving block
 
     // create an exporter for communication
-    DRT::Exporter exporter(dis->Comm());
+    CORE::COMM::Exporter exporter(dis->Comm());
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
