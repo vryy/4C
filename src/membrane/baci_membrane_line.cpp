@@ -104,7 +104,7 @@ CORE::FE::CellType DRT::ELEMENTS::MembraneLine<distype>::Shape() const
  |                                                             fb 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::MembraneLine<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::MembraneLine<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this membrane line element does not support communication");
 

@@ -53,7 +53,7 @@ namespace DRT::ELEMENTS
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidPoroType"; }
 
@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

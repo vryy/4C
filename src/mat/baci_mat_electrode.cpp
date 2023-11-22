@@ -236,7 +236,7 @@ MAT::ElectrodeType MAT::ElectrodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
 {
   auto* electrode = new MAT::Electrode();
   electrode->Unpack(data);
@@ -249,9 +249,9 @@ MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::Electrode::Pack(DRT::PackBuffer& data) const
+void MAT::Electrode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

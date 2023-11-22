@@ -31,7 +31,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::StructPoroReaction::CreateMaterial()
 /*----------------------------------------------------------------------*/
 MAT::StructPoroReactionType MAT::StructPoroReactionType::instance_;
 
-DRT::ParObject* MAT::StructPoroReactionType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::StructPoroReactionType::Create(const std::vector<char>& data)
 {
   MAT::StructPoroReaction* struct_poro = new MAT::StructPoroReaction();
   struct_poro->Unpack(data);
@@ -66,9 +66,9 @@ void MAT::StructPoroReaction::Setup(int numgp, DRT::INPUT::LineDefinition* lined
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Pack(DRT::PackBuffer& data) const
+void MAT::StructPoroReaction::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

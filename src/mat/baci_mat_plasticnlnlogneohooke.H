@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
@@ -77,14 +77,14 @@ namespace MAT
   }  // namespace PAR
 
 
-  class PlasticNlnLogNeoHookeType : public DRT::ParObjectType
+  class PlasticNlnLogNeoHookeType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "PlasticNlnLogNeoHookeType"; }
 
     static PlasticNlnLogNeoHookeType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticNlnLogNeoHookeType instance_;
@@ -125,7 +125,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

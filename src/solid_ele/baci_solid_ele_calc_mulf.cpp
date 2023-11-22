@@ -8,7 +8,7 @@ based with MULF prestressing
 
 #include "baci_solid_ele_calc_mulf.H"
 
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_so3_material.H"
 #include "baci_solid_ele_calc_lib.H"
@@ -89,14 +89,14 @@ DRT::ELEMENTS::SolidEleCalcMulf<distype>::SolidEleCalcMulf()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   data.AddtoPack(history_data_.size());
   for (const auto& item : history_data_)
   {
-    DRT::ParObject::AddtoPack(data, item.inverse_jacobian);
-    DRT::ParObject::AddtoPack(data, item.deformation_gradient);
-    DRT::ParObject::AddtoPack(data, item.is_setup);
+    CORE::COMM::ParObject::AddtoPack(data, item.inverse_jacobian);
+    CORE::COMM::ParObject::AddtoPack(data, item.deformation_gradient);
+    CORE::COMM::ParObject::AddtoPack(data, item.is_setup);
   }
 };
 
@@ -105,15 +105,15 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   std::size_t size;
-  DRT::ParObject::ExtractfromPack(position, data, size);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, size);
   history_data_.resize(size);
 
   for (auto& item : history_data_)
   {
-    DRT::ParObject::ExtractfromPack(position, data, item.inverse_jacobian);
-    DRT::ParObject::ExtractfromPack(position, data, item.deformation_gradient);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, item.inverse_jacobian);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, item.deformation_gradient);
     int is_setup_int;
-    DRT::ParObject::ExtractfromPack(position, data, is_setup_int);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, is_setup_int);
     item.is_setup = static_cast<bool>(is_setup_int);
   }
 };

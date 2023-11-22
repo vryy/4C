@@ -31,14 +31,14 @@ namespace DRT
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkBeam3rLine2PinJointedType : public DRT::ParObjectType
+  class BeamLinkBeam3rLine2PinJointedType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "BeamLinkBeam3rLine2PinJointedType"; };
 
     static BeamLinkBeam3rLine2PinJointedType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkBeam3rLine2PinJointedType instance_;
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class [derived]

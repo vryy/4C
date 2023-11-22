@@ -172,7 +172,7 @@ MAT::CrystalPlasticityType MAT::CrystalPlasticityType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data)
 {
   MAT::CrystalPlasticity* cp = new MAT::CrystalPlasticity();
   cp->Unpack(data);
@@ -192,9 +192,9 @@ MAT::CrystalPlasticity::CrystalPlasticity(MAT::PAR::CrystalPlasticity* params) :
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Pack(DRT::PackBuffer& data) const
+void MAT::CrystalPlasticity::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

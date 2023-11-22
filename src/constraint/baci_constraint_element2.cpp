@@ -18,7 +18,7 @@ DRT::ELEMENTS::ConstraintElement2Type& DRT::ELEMENTS::ConstraintElement2Type::In
 }
 
 
-DRT::ParObject* DRT::ELEMENTS::ConstraintElement2Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ConstraintElement2Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::ConstraintElement2* object = new DRT::ELEMENTS::ConstraintElement2(-1, -1);
   object->Unpack(data);
@@ -86,9 +86,9 @@ DRT::Element* DRT::ELEMENTS::ConstraintElement2::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ConstraintElement2::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

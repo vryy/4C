@@ -25,7 +25,7 @@ DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance() { r
  | create the new element type (public)                     seitz 07/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
@@ -124,7 +124,7 @@ DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance() {
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(-1, -1);
   object->Unpack(data);
@@ -222,7 +222,7 @@ DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance() {
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(-1, -1);
   object->Unpack(data);
@@ -315,7 +315,7 @@ DRT::ELEMENTS::So_tet4PlastType& DRT::ELEMENTS::So_tet4PlastType::Instance() { r
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
@@ -410,7 +410,7 @@ DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(-1, -1);
   object->Unpack(data);

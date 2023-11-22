@@ -26,7 +26,7 @@ DRT::ELEMENTS::FluidHDGType& DRT::ELEMENTS::FluidHDGType::Instance() { return in
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidHDG* object = new DRT::ELEMENTS::FluidHDG(-1, -1);
   object->Unpack(data);
@@ -174,9 +174,9 @@ DRT::Element* DRT::ELEMENTS::FluidHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDG::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidHDG::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

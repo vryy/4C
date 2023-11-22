@@ -27,7 +27,7 @@ namespace DRT
       static PoroFluidMultiPhaseType& Instance();
 
       /// create an element from data
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       /// create an element from a dat file specifier
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
@@ -173,7 +173,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -425,7 +425,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class

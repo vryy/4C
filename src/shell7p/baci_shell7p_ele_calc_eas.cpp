@@ -122,7 +122,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Setup(DRT::Element& ele,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   DRT::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.sdc);
   DRT::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.thickness);
@@ -149,24 +149,26 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.sdc);
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.thickness);
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.num_ans);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.sdc);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.thickness);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.num_ans);
 
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.RTilde_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invDTilde_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.transL_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.RTilde_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invDTilde_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.transL_);
   // number of total EAS parameters
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.membrane);
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.bending);
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.thickness);
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.transverse_shear_strain_const);
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.transverse_shear_strain_lin);
-  DRT::ParObject::ExtractfromPack(position, data, locking_types_.total);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, locking_types_.membrane);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, locking_types_.bending);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, locking_types_.thickness);
+  CORE::COMM::ParObject::ExtractfromPack(
+      position, data, locking_types_.transverse_shear_strain_const);
+  CORE::COMM::ParObject::ExtractfromPack(
+      position, data, locking_types_.transverse_shear_strain_lin);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, locking_types_.total);
 
-  DRT::ParObject::ExtractfromPack(position, data, old_step_length_);
-  DRT::ParObject::ExtractfromPack(position, data, cur_thickness_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, old_step_length_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, cur_thickness_);
 }
 
 template <CORE::FE::CellType distype>

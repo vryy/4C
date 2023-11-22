@@ -83,7 +83,8 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_RemodelFiberExpl::MaterialT
   return INPAR::MAT::mix_remodelfiber_expl;
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::PackConstituent(
+    CORE::COMM::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
   anisotropy_extension_.PackAnisotropy(data);

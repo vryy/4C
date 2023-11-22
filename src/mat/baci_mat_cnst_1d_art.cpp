@@ -65,7 +65,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
 MAT::Cnst_1d_artType MAT::Cnst_1d_artType::instance_;
 
 
-DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 {
   MAT::Cnst_1d_art* cnst_art = new MAT::Cnst_1d_art();
   cnst_art->Unpack(data);
@@ -91,9 +91,9 @@ MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
+void MAT::Cnst_1d_art::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

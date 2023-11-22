@@ -23,7 +23,8 @@ DRT::ELEMENTS::RedAirBloodScatraLine3Type& DRT::ELEMENTS::RedAirBloodScatraLine3
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedAirBloodScatraLine3* object = new DRT::ELEMENTS::RedAirBloodScatraLine3(-1, -1);
   object->Unpack(data);
@@ -125,9 +126,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatraLine3::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

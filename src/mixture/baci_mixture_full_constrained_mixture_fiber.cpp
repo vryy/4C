@@ -7,8 +7,8 @@
 
 #include "baci_mixture_full_constrained_mixture_fiber.H"
 
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
 #include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
@@ -215,13 +215,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(DRT::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(DRT::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(CORE::COMM::PackBuffer& data) const
 {
   data.AddtoPack(sig_h_);
   data.AddtoPack(lambda_pre_);
@@ -266,43 +266,43 @@ template <>
 void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, sig_h_);
-  DRT::ParObject::ExtractfromPack(position, data, lambda_pre_);
-  DRT::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, sig_h_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lambda_pre_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
 
-  DRT::ParObject::ExtractfromPack(position, data, reference_time_);
-  DRT::ParObject::ExtractfromPack(position, data, current_time_shift_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, reference_time_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_shift_);
 
   std::size_t size_of_history;
-  DRT::ParObject::ExtractfromPack(position, data, size_of_history);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_history);
   history_.resize(size_of_history);
 
   for (auto& interval : history_)
   {
     std::size_t size_of_interval;
-    DRT::ParObject::ExtractfromPack(position, data, size_of_interval);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_interval);
     interval.timesteps.resize(size_of_interval);
     for (auto& item : interval.timesteps)
     {
-      DRT::ParObject::ExtractfromPack(position, data, item.reference_stretch);
-      DRT::ParObject::ExtractfromPack(position, data, item.growth_scalar);
-      DRT::ParObject::ExtractfromPack(position, data, item.growth_scalar_production_rate);
-      DRT::ParObject::ExtractfromPack(position, data, item.deposition_time);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.reference_stretch);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar_production_rate);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, item.deposition_time);
     }
 
-    DRT::ParObject::ExtractfromPack(position, data, interval.base_dt);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, interval.base_dt);
 
     interval.adaptivity_info.Unpack(position, data);
   }
 
 
-  DRT::ParObject::ExtractfromPack(position, data, current_time_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_);
 
 
-  DRT::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_sigma_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_dgrowth_scalar_dlambda_f_sq_);
-  DRT::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_sigma_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dgrowth_scalar_dlambda_f_sq_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
 }
 
 template <typename Number>

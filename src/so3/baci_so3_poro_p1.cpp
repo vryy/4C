@@ -9,7 +9,7 @@
 
 #include "baci_so3_poro_p1.H"
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_so3_line.H"
 #include "baci_so3_poro_p1_eletypes.H"
 #include "baci_so3_surface.H"
@@ -37,9 +37,9 @@ DRT::Element* DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Clone() const
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -48,7 +48,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Pack(DRT::PackBuffer& data) c
 
   data.AddtoPack<int>(is_init_porosity_);
 
-  if (is_init_porosity_) DRT::ParObject::AddtoPack<Base::numnod_, 1>(data, *init_porosity_);
+  if (is_init_porosity_) CORE::COMM::ParObject::AddtoPack<Base::numnod_, 1>(data, *init_porosity_);
 
   // add base class Element
   Base::Pack(data);
@@ -61,12 +61,12 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Unpack(const std::vector<char
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  is_init_porosity_ = DRT::ParObject::ExtractInt(position, data);
+  is_init_porosity_ = CORE::COMM::ParObject::ExtractInt(position, data);
 
   if (is_init_porosity_)
   {
     init_porosity_ = Teuchos::rcp(new CORE::LINALG::Matrix<Base::numnod_, 1>(true));
-    DRT::ParObject::ExtractfromPack<Base::numnod_, 1>(position, data, *init_porosity_);
+    CORE::COMM::ParObject::ExtractfromPack<Base::numnod_, 1>(position, data, *init_porosity_);
   }
 
 
@@ -82,15 +82,15 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Unpack(const std::vector<char
 template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>

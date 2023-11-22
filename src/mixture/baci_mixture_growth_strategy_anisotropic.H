@@ -44,7 +44,7 @@ namespace MIXTURE
    public:
     explicit AnisotropicGrowthStrategy(MIXTURE::PAR::AnisotropicGrowthStrategy* params);
 
-    void PackMixtureGrowthStrategy(DRT::PackBuffer& data) const override;
+    void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackMixtureGrowthStrategy(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;

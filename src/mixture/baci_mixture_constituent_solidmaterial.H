@@ -51,7 +51,7 @@ namespace MIXTURE
     explicit MixtureConstituent_SolidMaterial(
         MIXTURE::PAR::MixtureConstituent_SolidMaterial* params, int id);
 
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;

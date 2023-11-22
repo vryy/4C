@@ -104,7 +104,7 @@ MAT::RobinsonType MAT::RobinsonType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::RobinsonType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::RobinsonType::Create(const std::vector<char>& data)
 {
   MAT::Robinson* robinson = new MAT::Robinson();
   robinson->Unpack(data);
@@ -127,9 +127,9 @@ MAT::Robinson::Robinson(MAT::PAR::Robinson* params) : plastic_step(false), param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 11/11 |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::Pack(DRT::PackBuffer& data) const
+void MAT::Robinson::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

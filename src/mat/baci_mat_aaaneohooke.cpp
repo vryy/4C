@@ -49,7 +49,7 @@ MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
 
 
 
-DRT::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
 {
   MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
   aaa->Unpack(data);
@@ -70,9 +70,9 @@ MAT::AAAneohooke::AAAneohooke(MAT::PAR::AAAneohooke* params) : params_(params) {
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::Pack(DRT::PackBuffer& data) const
+void MAT::AAAneohooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

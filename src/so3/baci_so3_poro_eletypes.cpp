@@ -20,7 +20,7 @@ DRT::ELEMENTS::So_hex8PoroType DRT::ELEMENTS::So_hex8PoroType::instance_;
 
 DRT::ELEMENTS::So_hex8PoroType& DRT::ELEMENTS::So_hex8PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
@@ -90,7 +90,7 @@ DRT::ELEMENTS::So_tet4PoroType DRT::ELEMENTS::So_tet4PoroType::instance_;
 
 DRT::ELEMENTS::So_tet4PoroType& DRT::ELEMENTS::So_tet4PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
@@ -159,7 +159,7 @@ DRT::ELEMENTS::So_hex27PoroType DRT::ELEMENTS::So_hex27PoroType::instance_;
 
 DRT::ELEMENTS::So_hex27PoroType& DRT::ELEMENTS::So_hex27PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(-1, -1);
@@ -225,7 +225,7 @@ DRT::ELEMENTS::So_tet10PoroType DRT::ELEMENTS::So_tet10PoroType::instance_;
 
 DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(-1, -1);
@@ -294,7 +294,7 @@ DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(

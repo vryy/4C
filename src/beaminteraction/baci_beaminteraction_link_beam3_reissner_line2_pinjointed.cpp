@@ -13,8 +13,8 @@
 
 #include "baci_beam3_reissner.H"
 #include "baci_beaminteraction_link.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_largerotations.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
@@ -28,7 +28,7 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Create(
+CORE::COMM::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Create(
     const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
@@ -259,11 +259,11 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(CORE::COMM::PackBuffer& data) const
 {
   CheckInitSetup();
 
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -296,7 +296,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
   ExtractfromPack(position, data, dataele);
   if (dataele.size() > 0)
   {
-    DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
+    CORE::COMM::ParObject* object = CORE::COMM::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele == nullptr)
       dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");

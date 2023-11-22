@@ -59,7 +59,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
@@ -162,7 +162,7 @@ namespace DRT
         return Shell7pType::Instance().UniqueParObjectId();
       };
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       void Unpack(const std::vector<char>& data) override;
 

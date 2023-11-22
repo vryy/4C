@@ -31,14 +31,14 @@ namespace DRT
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkTrussType : public DRT::ParObjectType
+  class BeamLinkTrussType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "BeamLinkTrussType"; };
 
     static BeamLinkTrussType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkTrussType instance_;
@@ -97,7 +97,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class [derived]

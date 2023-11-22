@@ -10,11 +10,11 @@
 
 #include "baci_lib_nodereader.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_fiber_node.H"
 #include "baci_lib_elementdefinition.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_immersed_node.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_nurbs_discret_control_point.H"
 

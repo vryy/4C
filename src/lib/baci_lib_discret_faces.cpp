@@ -11,9 +11,9 @@
 
 #include "baci_lib_discret_faces.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
@@ -112,16 +112,16 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     //-------------------------------------------
     // create
 
-    DRT::UTILS::BoundaryBuildType buildtype = DRT::UTILS::buildNothing;
+    CORE::COMM::BoundaryBuildType buildtype = CORE::COMM::buildNothing;
 
     // 3D elements
     if (ele->NumSurface() > 1)  // 2D boundary element and 3D parent element
     {
-      buildtype = DRT::UTILS::buildSurfaces;
+      buildtype = CORE::COMM::buildSurfaces;
     }
     else if (ele->NumSurface() == 1)  // 1D boundary element and 2D parent element
     {
-      buildtype = DRT::UTILS::buildLines;
+      buildtype = CORE::COMM::buildLines;
     }
     else
       dserror("creating internal faces for 1D elements (would be points) not implemented yet");
@@ -133,13 +133,13 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     std::vector<std::vector<int>> connectivity;
     switch (buildtype)
     {
-      case DRT::UTILS::buildSurfaces:
+      case CORE::COMM::buildSurfaces:
       {
         nele = ele->NumSurface();
         connectivity = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
         break;
       }
-      case DRT::UTILS::buildLines:
+      case CORE::COMM::buildLines:
       {
         nele = ele->NumLine();
         connectivity = CORE::DRT::UTILS::getEleNodeNumberingLines(distype);

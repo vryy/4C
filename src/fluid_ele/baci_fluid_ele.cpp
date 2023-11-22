@@ -11,18 +11,18 @@
 
 #include "baci_fluid_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_fluid_ele_tds.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
 DRT::ELEMENTS::FluidType& DRT::ELEMENTS::FluidType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Fluid* object = new DRT::ELEMENTS::Fluid(-1, -1);
   object->Unpack(data);
@@ -215,9 +215,9 @@ DRT::Element* DRT::ELEMENTS::Fluid::Clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Fluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
 {
-  return DRT::UTILS::GetElementLines<FluidBoundary, Fluid>(*this);
+  return CORE::COMM::GetElementLines<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -312,7 +312,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<FluidBoundary, Fluid>(*this);
+  return CORE::COMM::GetElementSurfaces<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -334,7 +334,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace, Fluid>(-1,  //!< internal face element id
+  return CORE::COMM::ElementIntFaceFactory<FluidIntFace, Fluid>(-1,  //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
       nodeids,          //!< node ids of surface element

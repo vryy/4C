@@ -18,7 +18,7 @@ materials with @MAT::Anisotropy
 #include <Teuchos_RCPDecl.hpp>
 
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -54,7 +54,7 @@ namespace MAT
      *
      * \param data
      */
-    void PackAnisotropy(DRT::PackBuffer& data) const override;
+    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart

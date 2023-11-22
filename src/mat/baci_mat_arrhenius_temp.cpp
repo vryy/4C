@@ -43,7 +43,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusTemp::CreateMaterial()
 MAT::ArrheniusTempType MAT::ArrheniusTempType::instance_;
 
 
-DRT::ParObject* MAT::ArrheniusTempType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ArrheniusTempType::Create(const std::vector<char>& data)
 {
   MAT::ArrheniusTemp* arrhenius_temp = new MAT::ArrheniusTemp();
   arrhenius_temp->Unpack(data);
@@ -63,9 +63,9 @@ MAT::ArrheniusTemp::ArrheniusTemp(MAT::PAR::ArrheniusTemp* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusTemp::Pack(DRT::PackBuffer& data) const
+void MAT::ArrheniusTemp::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

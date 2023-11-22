@@ -33,7 +33,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Spring::CreateMaterial()
 MAT::SpringType MAT::SpringType::instance_;
 
 
-DRT::ParObject* MAT::SpringType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SpringType::Create(const std::vector<char>& data)
 {
   MAT::Spring* spring = new MAT::Spring();
   spring->Unpack(data);
@@ -52,9 +52,9 @@ MAT::Spring::Spring(MAT::PAR::Spring* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Spring::Pack(DRT::PackBuffer& data) const
+void MAT::Spring::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

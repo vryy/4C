@@ -87,7 +87,7 @@ namespace FLD
 
     //! pack all master values into a send block
     void PackLocalMasterValues(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, DRT::PackBuffer& sblock);
+        std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock);
 
     //! for all values avaible on the processor, do the final setting of the value
     virtual void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,

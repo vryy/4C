@@ -11,6 +11,7 @@
 #include "baci_particle_wall.H"
 
 #include "baci_binstrategy.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
@@ -19,7 +20,6 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_transparent.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_particle_engine_container.H"
@@ -578,7 +578,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 
       // create wall element
       Teuchos::RCP<DRT::Element> wallele =
-          DRT::UTILS::Factory("BELE3_3", "Polynomial", currele->Id(), currele->Owner());
+          CORE::COMM::Factory("BELE3_3", "Polynomial", currele->Id(), currele->Owner());
 
       // set node ids to element
       wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
@@ -704,7 +704,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
       {
         // create wall element
         Teuchos::RCP<DRT::Element> wallele =
-            DRT::UTILS::Factory("BELE3_3", "Polynomial", eleid, myrank_);
+            CORE::COMM::Factory("BELE3_3", "Polynomial", eleid, myrank_);
 
         // set node ids to element
         wallele->SetNodeIds(4, nodeidsofelements[dim * 2 + sign].data());

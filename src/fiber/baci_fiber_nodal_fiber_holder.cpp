@@ -11,8 +11,8 @@
 
 #include "baci_fiber_nodal_fiber_holder.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_fiber_node.H"
-#include "baci_lib_parobject.H"
 
 void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(
     DRT::FIBER::CoordinateSystemDirection type,

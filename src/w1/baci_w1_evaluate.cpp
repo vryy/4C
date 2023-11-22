@@ -403,7 +403,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -411,7 +411,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);

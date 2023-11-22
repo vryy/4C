@@ -88,13 +88,13 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        DRT::ParObject::AddtoPack(data, *x1line);
+        CORE::COMM::ParObject::AddtoPack(data, *x1line);
       }
       std::swap(sblock, data());
 
@@ -137,7 +137,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           x1avcoords.insert(onecoord);
         }
       }
@@ -146,18 +146,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
     // second, communicate coordinates in x2-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        DRT::ParObject::AddtoPack(data, *x2line);
+        CORE::COMM::ParObject::AddtoPack(data, *x2line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        DRT::ParObject::AddtoPack(data, *x2line);
+        CORE::COMM::ParObject::AddtoPack(data, *x2line);
       }
       std::swap(sblock, data());
 
@@ -200,7 +200,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           x2avcoords.insert(onecoord);
         }
       }
@@ -326,12 +326,12 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
       // first, communicate coordinates in x1-direction
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x2 = x2statlocat.begin();
              x2 != x2statlocat.end(); ++x2)
         {
-          DRT::ParObject::AddtoPack(data, *x2);
+          CORE::COMM::ParObject::AddtoPack(data, *x2);
         }
 
         data.StartPacking();
@@ -339,7 +339,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         for (std::set<double, LineSortCriterion>::iterator x2 = x2statlocat.begin();
              x2 != x2statlocat.end(); ++x2)
         {
-          DRT::ParObject::AddtoPack(data, *x2);
+          CORE::COMM::ParObject::AddtoPack(data, *x2);
         }
 
         std::swap(sblock, data());
@@ -379,7 +379,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             x2statlocat.insert(onecoord);
           }
         }

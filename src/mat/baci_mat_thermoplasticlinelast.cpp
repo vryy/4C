@@ -78,7 +78,7 @@ MAT::ThermoPlasticLinElastType MAT::ThermoPlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 08/11 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoPlasticLinElastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoPlasticLinElastType::Create(const std::vector<char>& data)
 {
   MAT::ThermoPlasticLinElast* plastic = new MAT::ThermoPlasticLinElast();
   plastic->Unpack(data);
@@ -105,9 +105,9 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElas
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 08/11 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoPlasticLinElast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

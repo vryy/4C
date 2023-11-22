@@ -361,7 +361,7 @@ MAT::FluidPoroSingleReactionType MAT::FluidPoroSingleReactionType::instance_;
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-DRT::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroSingleReaction* fluid_poro = new MAT::FluidPoroSingleReaction();
   fluid_poro->Unpack(data);
@@ -384,9 +384,9 @@ MAT::FluidPoroSingleReaction::FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleR
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroSingleReaction::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

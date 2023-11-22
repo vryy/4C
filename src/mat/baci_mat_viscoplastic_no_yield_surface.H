@@ -8,7 +8,7 @@
 #ifndef BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
 #define BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
@@ -94,14 +94,14 @@ namespace MAT
     };
   }  // namespace PAR
 
-  class ViscoPlasticNoYieldSurfaceType : public DRT::ParObjectType
+  class ViscoPlasticNoYieldSurfaceType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ViscoPlasticNoYieldSurfaceType"; }
 
     static ViscoPlasticNoYieldSurfaceType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoPlasticNoYieldSurfaceType instance_;
@@ -141,7 +141,7 @@ namespace MAT
       return ViscoPlasticNoYieldSurfaceType::Instance().UniqueParObjectId();
     }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

@@ -10,16 +10,16 @@
 
 #include "baci_bele_vele3.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
 DRT::ELEMENTS::Vele3Type& DRT::ELEMENTS::Vele3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Vele3* object = new DRT::ELEMENTS::Vele3(-1, -1);
   object->Unpack(data);
@@ -130,9 +130,9 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Line, Vele3>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3>(CORE::COMM::buildLines, *this);
 }
 
 
@@ -187,7 +187,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Surface, Vele3>(DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<Vele3Surface, Vele3>(CORE::COMM::buildSurfaces, *this);
 }
 
 

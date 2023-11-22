@@ -27,7 +27,7 @@ namespace LINALG
 {
   class SerialDenseMatrix;
 }
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -95,7 +95,7 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
 
-    void PackMixtureRule(DRT::PackBuffer& data) const override;
+    void PackMixtureRule(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackMixtureRule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;

@@ -20,7 +20,7 @@ DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
 DRT::ELEMENTS::Truss3Type& DRT::ELEMENTS::Truss3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Truss3(-1, -1);
   object->Unpack(data);
@@ -136,9 +136,9 @@ CORE::FE::CellType DRT::ELEMENTS::Truss3::Shape() const { return CORE::FE::CellT
  |  Pack data                                                  (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

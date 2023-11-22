@@ -57,7 +57,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::CrosslinkerMat::CreateMaterial()
 MAT::CrosslinkerMatType MAT::CrosslinkerMatType::instance_;
 
 
-DRT::ParObject* MAT::CrosslinkerMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::CrosslinkerMatType::Create(const std::vector<char>& data)
 {
   MAT::CrosslinkerMat* linkermat = new MAT::CrosslinkerMat();
   linkermat->Unpack(data);
@@ -80,9 +80,9 @@ MAT::CrosslinkerMat::CrosslinkerMat(MAT::PAR::CrosslinkerMat* params) : params_(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::CrosslinkerMat::Pack(DRT::PackBuffer& data) const
+void MAT::CrosslinkerMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -10,7 +10,7 @@
 
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
@@ -42,14 +42,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ScatraMatAnisoType : public DRT::ParObjectType
+  class ScatraMatAnisoType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ScatraMatAnisoType"; }
 
     static ScatraMatAnisoType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatAnisoType instance_;
@@ -89,7 +89,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class

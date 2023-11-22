@@ -12,6 +12,7 @@
 #include "baci_beaminteraction_periodic_boundingbox.H"
 
 #include "baci_binstrategy_utils.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_inpar_binningstrategy.H"
 #include "baci_io.H"
@@ -19,7 +20,6 @@
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_dofset_independent.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -214,7 +214,7 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
     }
 
     // assign nodes to element
-    Teuchos::RCP<::DRT::Element> newele = ::DRT::UTILS::Factory("VELE3", "Polynomial", 0, 0);
+    Teuchos::RCP<::DRT::Element> newele = ::CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
     boxdiscret_->AddElement(newele);
   }

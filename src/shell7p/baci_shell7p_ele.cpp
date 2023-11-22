@@ -6,8 +6,8 @@
 
 #include "baci_shell7p_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele_factory.H"
 #include "baci_shell7p_ele_interface_serializable.H"
@@ -32,7 +32,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pType::Create(const int id, cons
   return Teuchos::rcp(new DRT::ELEMENTS::Shell7p(id, owner));
 }
 
-DRT::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Shell7p(-1, -1);
   object->Unpack(data);
@@ -205,9 +205,9 @@ int DRT::ELEMENTS::Shell7p::NumLine() const
 int DRT::ELEMENTS::Shell7p::NumSurface() const { return 1; }
 
 
-void DRT::ELEMENTS::Shell7p::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7p::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   // nodal directors
   ExtractfromPack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
   std::shared_ptr<SHELL::Serializable> serializable_interface =
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::Shell7p::Print(std::ostream& os) const
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Shell7pLine, Shell7p>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7p>(CORE::COMM::buildLines, *this);
 }
 
 

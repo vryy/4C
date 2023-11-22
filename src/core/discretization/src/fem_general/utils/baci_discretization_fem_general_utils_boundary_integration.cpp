@@ -505,7 +505,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
     const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
@@ -520,7 +520,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::SerialDenseMatrix& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
     const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
@@ -535,7 +535,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<3, 3>& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
     const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array
@@ -550,7 +550,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
 template <>
 void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     CORE::LINALG::Matrix<2, 2>& derivtrafo,
-    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
+    const CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
     const CORE::FE::CellType distype, const int surfaceid)
 {
   // resize output array

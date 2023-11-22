@@ -11,14 +11,14 @@
 
 namespace CONTACT
 {
-  class FriNodeType : public DRT::ParObjectType
+  class FriNodeType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const final { return "FriNodeType"; }
 
     static FriNodeType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FriNodeType instance_;
@@ -57,7 +57,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -266,7 +266,7 @@ namespace CONTACT
 
     //! @name Access methods
 
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
@@ -426,7 +426,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

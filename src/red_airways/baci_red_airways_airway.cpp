@@ -23,7 +23,7 @@ DRT::ELEMENTS::RedAirwayType DRT::ELEMENTS::RedAirwayType::instance_;
 DRT::ELEMENTS::RedAirwayType& DRT::ELEMENTS::RedAirwayType::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::RedAirwayType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedAirwayType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedAirway* object = new DRT::ELEMENTS::RedAirway(-1, -1);
   object->Unpack(data);
@@ -142,9 +142,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAirway::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAirway::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

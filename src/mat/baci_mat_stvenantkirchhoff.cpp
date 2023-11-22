@@ -34,7 +34,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
 MAT::StVenantKirchhoffType MAT::StVenantKirchhoffType::instance_;
 
 
-DRT::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new MAT::StVenantKirchhoff();
   stvenantk->Unpack(data);
@@ -57,9 +57,9 @@ MAT::StVenantKirchhoff::StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params) :
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Pack(DRT::PackBuffer& data) const
+void MAT::StVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

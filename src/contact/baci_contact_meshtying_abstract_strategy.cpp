@@ -9,13 +9,13 @@
 /*---------------------------------------------------------------------*/
 #include "baci_contact_meshtying_abstract_strategy.H"
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_contact_meshtying_defines.H"
 #include "baci_contact_meshtying_noxinterface.H"
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"

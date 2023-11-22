@@ -7,9 +7,10 @@ equations
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobject.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
@@ -115,7 +116,7 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::PackConstituent(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
   anisotropy_extension_.PackAnisotropy(data);
@@ -123,7 +124,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::PackConstituent(
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Pack(data);
 
-  DRT::ParObject::AddtoPack(data, last_lambda_f_);
+  CORE::COMM::ParObject::AddtoPack(data, last_lambda_f_);
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::UnpackConstituent(
@@ -137,7 +138,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::UnpackConstituent(
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Unpack(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, last_lambda_f_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, last_lambda_f_);
 
   if (params_->growth_enabled_)
   {

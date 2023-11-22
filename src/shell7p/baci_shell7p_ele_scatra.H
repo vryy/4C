@@ -33,7 +33,7 @@ namespace DRT::ELEMENTS
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
         override;
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
         const int id, const int owner) override;
@@ -114,7 +114,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

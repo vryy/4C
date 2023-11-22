@@ -12,9 +12,9 @@
 #include "baci_ale_ale2.H"
 
 #include "baci_ale_ale2_nurbs.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
@@ -24,7 +24,7 @@ DRT::ELEMENTS::Ale2Type& DRT::ELEMENTS::Ale2Type::Instance() { return instance_;
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Ale2* object = new DRT::ELEMENTS::Ale2(-1, -1);
   object->Unpack(data);
@@ -145,9 +145,9 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale2::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
 /*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Ale2Line, Ale2>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Ale2Line, Ale2>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------------*/

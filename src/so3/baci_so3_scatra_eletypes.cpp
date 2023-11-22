@@ -18,7 +18,7 @@ DRT::ELEMENTS::So_hex8ScatraType DRT::ELEMENTS::So_hex8ScatraType::instance_;
 
 DRT::ELEMENTS::So_hex8ScatraType& DRT::ELEMENTS::So_hex8ScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
@@ -90,7 +90,7 @@ DRT::ELEMENTS::So_hex8fbarScatraType& DRT::ELEMENTS::So_hex8fbarScatraType::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>(-1, -1);
@@ -164,7 +164,7 @@ DRT::ELEMENTS::So_hex27ScatraType& DRT::ELEMENTS::So_hex27ScatraType::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(-1, -1);
@@ -235,7 +235,7 @@ DRT::ELEMENTS::So_tet4ScatraType DRT::ELEMENTS::So_tet4ScatraType::instance_;
 
 DRT::ELEMENTS::So_tet4ScatraType& DRT::ELEMENTS::So_tet4ScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
@@ -308,7 +308,7 @@ DRT::ELEMENTS::So_tet10ScatraType& DRT::ELEMENTS::So_tet10ScatraType::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(-1, -1);
@@ -379,7 +379,7 @@ DRT::ELEMENTS::So_weg6ScatraType DRT::ELEMENTS::So_weg6ScatraType::instance_;
 
 DRT::ELEMENTS::So_weg6ScatraType& DRT::ELEMENTS::So_weg6ScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create(const std::vector<char>& data)
 {
   auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>(-1, -1);

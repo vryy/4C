@@ -15,7 +15,7 @@ DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
 DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1, -1);
   object->Unpack(data);
@@ -84,9 +84,9 @@ DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

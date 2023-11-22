@@ -17,7 +17,7 @@ DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
 
 DRT::ELEMENTS::FluidTypeImmersed& DRT::ELEMENTS::FluidTypeImmersed::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidImmersed* object = new DRT::ELEMENTS::FluidImmersed(-1, -1);
   object->Unpack(data);
@@ -86,9 +86,9 @@ DRT::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
  |  Pack data                                                  (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidImmersed::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidImmersed::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

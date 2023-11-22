@@ -57,7 +57,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraChemotaxisMat::CreateMaterial()
 MAT::ScatraChemotaxisMatType MAT::ScatraChemotaxisMatType::instance_;
 
 
-DRT::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraChemotaxisMat* scatra_chemotaxis_mat = new MAT::ScatraChemotaxisMat();
   scatra_chemotaxis_mat->Unpack(data);
@@ -80,9 +80,9 @@ MAT::ScatraChemotaxisMat::ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraChemotaxisMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraChemotaxisMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -431,7 +431,7 @@ void MAT::ELASTIC::Summand::AddShearMod(bool& haveshearmod, double& shearmod) co
 
 int MAT::ELASTIC::Summand::UniqueParObjectId() const { return -1; }
 
-void MAT::ELASTIC::Summand::Pack(DRT::PackBuffer& data) const { return; }
+void MAT::ELASTIC::Summand::Pack(CORE::COMM::PackBuffer& data) const { return; }
 
 void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data) { return; };
 

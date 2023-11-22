@@ -3333,10 +3333,10 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CopyMatrixIntoCharVector(
     std::vector<char>& data, CORE::LINALG::Matrix<nquad_, nsd_>& stuff)
 {
-  DRT::PackBuffer tempBuffer;
-  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  CORE::COMM::PackBuffer tempBuffer;
+  CORE::COMM::ParObject::AddtoPack(tempBuffer, stuff);
   tempBuffer.StartPacking();
-  DRT::ParObject::AddtoPack(tempBuffer, stuff);
+  CORE::COMM::ParObject::AddtoPack(tempBuffer, stuff);
   std::copy(tempBuffer().begin(), tempBuffer().end(), std::back_inserter(data));
 }
 

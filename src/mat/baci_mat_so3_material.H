@@ -23,7 +23,7 @@ namespace MAT
    public:
     int UniqueParObjectId() const override = 0;
 
-    void Pack(DRT::PackBuffer& data) const override = 0;
+    void Pack(CORE::COMM::PackBuffer& data) const override = 0;
 
     void Unpack(const std::vector<char>& data) override = 0;
 

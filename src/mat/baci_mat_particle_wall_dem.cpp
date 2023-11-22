@@ -43,7 +43,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleWallMaterialDEM::CreateMaterial()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleWallMaterialDEMType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ParticleWallMaterialDEMType::Create(const std::vector<char>& data)
 {
   MAT::ParticleWallMaterialDEM* particlewallmatdem = new MAT::ParticleWallMaterialDEM();
   particlewallmatdem->Unpack(data);
@@ -70,9 +70,9 @@ MAT::ParticleWallMaterialDEM::ParticleWallMaterialDEM(MAT::PAR::ParticleWallMate
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleWallMaterialDEM::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleWallMaterialDEM::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

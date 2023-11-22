@@ -153,11 +153,11 @@ void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const in
 }
 
 // Pack everything for distribution to other processors
-void MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent::PackConstituent(CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, numgp_);
-  DRT::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
-  DRT::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
+  CORE::COMM::ParObject::AddtoPack(data, numgp_);
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -169,10 +169,10 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   numgp_ = 0;
   is_setup_ = false;
 
-  DRT::ParObject::ExtractfromPack(position, data, numgp_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, numgp_);
 
-  has_read_element_ = (bool)DRT::ParObject::ExtractInt(position, data);
-  is_setup_ = (bool)DRT::ParObject::ExtractInt(position, data);
+  has_read_element_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+  is_setup_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
 }
 
 void MIXTURE::MixtureConstituent::EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,

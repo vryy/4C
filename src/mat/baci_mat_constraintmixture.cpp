@@ -96,7 +96,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
 
 MAT::ConstraintMixtureType MAT::ConstraintMixtureType::instance_;
 
-DRT::ParObject* MAT::ConstraintMixtureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ConstraintMixtureType::Create(const std::vector<char>& data)
 {
   MAT::ConstraintMixture* comix = new MAT::ConstraintMixture();
   comix->Unpack(data);
@@ -117,9 +117,9 @@ MAT::ConstraintMixture::ConstraintMixture(MAT::PAR::ConstraintMixture* params) :
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
+void MAT::ConstraintMixture::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

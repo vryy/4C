@@ -26,7 +26,7 @@ DRT::ELEMENTS::RedInterAcinarDepType& DRT::ELEMENTS::RedInterAcinarDepType::Inst
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedInterAcinarDep* object = new DRT::ELEMENTS::RedInterAcinarDep(-1, -1);
   object->Unpack(data);
@@ -130,9 +130,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedInterAcinarDep::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

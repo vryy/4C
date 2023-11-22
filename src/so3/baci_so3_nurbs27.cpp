@@ -10,10 +10,10 @@
 
 #include "baci_so3_nurbs27.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_surface.H"
@@ -27,7 +27,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1, -1);
   object->Unpack(data);
@@ -140,9 +140,9 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -216,8 +216,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -225,6 +225,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfac
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
+      CORE::COMM::buildLines, *this);
 }

@@ -52,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElchMat::CreateMaterial()
 MAT::ElchMatType MAT::ElchMatType::instance_;
 
 
-DRT::ParObject* MAT::ElchMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElchMatType::Create(const std::vector<char>& data)
 {
   MAT::ElchMat* elchmat = new MAT::ElchMat();
   elchmat->Unpack(data);
@@ -112,9 +112,9 @@ void MAT::ElchMat::Clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchMat::Pack(DRT::PackBuffer& data) const
+void MAT::ElchMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -18,7 +18,7 @@
 DRT::NURBS::ControlPointType DRT::NURBS::ControlPointType::instance_;
 
 
-DRT::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   double dummyweight = 999.;
@@ -67,9 +67,9 @@ DRT::NURBS::ControlPoint* DRT::NURBS::ControlPoint::Clone() const
   Pack and Unpack are used to communicate this control point
 
 */
-void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
+void DRT::NURBS::ControlPoint::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

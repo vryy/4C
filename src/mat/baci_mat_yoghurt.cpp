@@ -40,7 +40,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Yoghurt::CreateMaterial()
 MAT::YoghurtType MAT::YoghurtType::instance_;
 
 
-DRT::ParObject* MAT::YoghurtType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::YoghurtType::Create(const std::vector<char>& data)
 {
   MAT::Yoghurt* yoghurt = new MAT::Yoghurt();
   yoghurt->Unpack(data);
@@ -60,9 +60,9 @@ MAT::Yoghurt::Yoghurt(MAT::PAR::Yoghurt* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Yoghurt::Pack(DRT::PackBuffer& data) const
+void MAT::Yoghurt::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

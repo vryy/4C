@@ -49,7 +49,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke_stopro::CreateMaterial()
 
 MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
 
-DRT::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)
 {
   MAT::AAAneohooke_stopro* aaa = new MAT::AAAneohooke_stopro();
   aaa->Unpack(data);
@@ -77,9 +77,9 @@ MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::Pack(DRT::PackBuffer& data) const
+void MAT::AAAneohooke_stopro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

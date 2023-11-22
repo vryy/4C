@@ -29,7 +29,7 @@ MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params
 {
 }
 
-void MAT::ELASTIC::CoupAnisoPow::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoPow::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);

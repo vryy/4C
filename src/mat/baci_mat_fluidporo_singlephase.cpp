@@ -107,7 +107,7 @@ MAT::FluidPoroSinglePhaseType MAT::FluidPoroSinglePhaseType::instance_;
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-DRT::ParObject* MAT::FluidPoroSinglePhaseType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroSinglePhaseType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroSinglePhase* fluid_poro = new MAT::FluidPoroSinglePhase();
   fluid_poro->Unpack(data);
@@ -130,9 +130,9 @@ MAT::FluidPoroSinglePhase::FluidPoroSinglePhase(MAT::PAR::FluidPoroSinglePhase* 
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSinglePhase::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroSinglePhase::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -331,7 +331,7 @@ MAT::FluidPoroSingleVolFracType MAT::FluidPoroSingleVolFracType::instance_;
  *  Create material from given data                    kremheller 10/17 |
  *----------------------------------------------------------------------*/
 
-DRT::ParObject* MAT::FluidPoroSingleVolFracType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroSingleVolFracType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroSingleVolFrac* fluid_poro = new MAT::FluidPoroSingleVolFrac();
   fluid_poro->Unpack(data);
@@ -354,9 +354,9 @@ MAT::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(MAT::PAR::FluidPoroSingleVol
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleVolFrac::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroSingleVolFrac::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -458,7 +458,7 @@ MAT::FluidPoroVolFracPressureType MAT::FluidPoroVolFracPressureType::instance_;
  *  Create material from given data                    kremheller 02/18 |
  *----------------------------------------------------------------------*/
 
-DRT::ParObject* MAT::FluidPoroVolFracPressureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroVolFracPressureType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroVolFracPressure* fluid_poro = new MAT::FluidPoroVolFracPressure();
   fluid_poro->Unpack(data);
@@ -481,9 +481,9 @@ MAT::FluidPoroVolFracPressure::FluidPoroVolFracPressure(MAT::PAR::FluidPoroVolFr
 /*----------------------------------------------------------------------*
  * pack material for commuication                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroVolFracPressure::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroVolFracPressure::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

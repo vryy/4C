@@ -88,7 +88,7 @@ CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this FluidIntFace element does not support communication");
   return;

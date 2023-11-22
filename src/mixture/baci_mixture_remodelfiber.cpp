@@ -7,7 +7,7 @@
 
 #include "baci_mixture_remodelfiber.H"
 
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 #include "baci_mixture_remodelfiber-internal.H"
@@ -103,7 +103,7 @@ MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::RemodelFiberI
 
 template <int numstates, typename T>
 void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Pack(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
   if constexpr (!std::is_floating_point_v<T>)
   {
@@ -139,16 +139,16 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Unpack(
   }
   else
   {
-    DRT::ParObject::ExtractfromPack(position, data, lambda_pre_);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, lambda_pre_);
     sig_h_ = EvaluateFiberCauchyStress(1.0, 1.0 / lambda_pre_, 1.0);
 
 
     for (auto& state : states_)
     {
-      DRT::ParObject::ExtractfromPack(position, data, state.growth_scalar);
-      DRT::ParObject::ExtractfromPack(position, data, state.lambda_r);
-      DRT::ParObject::ExtractfromPack(position, data, state.lambda_f);
-      DRT::ParObject::ExtractfromPack(position, data, state.lambda_ext);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, state.growth_scalar);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, state.lambda_r);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, state.lambda_f);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, state.lambda_ext);
     }
   }
 }
@@ -664,7 +664,7 @@ MIXTURE::RemodelFiber<numstates>::RemodelFiber(
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::Pack(DRT::PackBuffer& data) const
+void MIXTURE::RemodelFiber<numstates>::Pack(CORE::COMM::PackBuffer& data) const
 {
   impl_->Pack(data);
 }

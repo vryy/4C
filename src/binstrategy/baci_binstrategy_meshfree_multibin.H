@@ -39,7 +39,7 @@ namespace DRT
       static MeshfreeMultiBinType& Instance();
 
       //!< create parallel object of this element type
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       //!< create element of this element type
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
@@ -133,7 +133,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*------------------------------------------------------------------------*/
       /*!

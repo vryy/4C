@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_PAROBJECTFACTORY_H
-#define BACI_LIB_PAROBJECTFACTORY_H
+#ifndef BACI_COMM_PAROBJECTFACTORY_H
+#define BACI_COMM_PAROBJECTFACTORY_H
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -33,11 +33,14 @@ namespace DRT
     class LineDefinition;
   }
 
-  class ParObject;
   class Element;
   class ElementType;
   class Discretization;
+}  // namespace DRT
 
+namespace CORE::COMM
+{
+  class ParObject;
 
   /// abstract ParObject type information
   /*!
@@ -63,7 +66,7 @@ namespace DRT
     int UniqueParObjectId();
 
     /// Create ParObject from packed data
-    virtual DRT::ParObject* Create(const std::vector<char>& data) { return nullptr; }
+    virtual ParObject* Create(const std::vector<char>& data) { return nullptr; }
 
     /// internal name of this ParObjectType.
     virtual std::string Name() const = 0;
@@ -102,14 +105,14 @@ namespace DRT
     ParObject* Create(const std::vector<char>& data);
 
     /// create an element from its name (and dis type if needed)
-    Teuchos::RCP<Element> Create(
+    Teuchos::RCP<::DRT::Element> Create(
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
-    void InitializeElements(DRT::Discretization& dis);
+    void InitializeElements(::DRT::Discretization& dis);
 
     /// preevaluate elements (via element types)
-    void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+    void PreEvaluate(::DRT::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -117,7 +120,7 @@ namespace DRT
 
     /// setup definition of element input file lines
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+        std::map<std::string, std::map<std::string, ::DRT::INPUT::LineDefinition>>& definitions);
 
    private:
     void Register(ParObjectType* object_type);
@@ -132,13 +135,13 @@ namespace DRT
     std::map<int, ParObjectType*> type_map_;
 
     /// element name cache
-    std::map<std::string, ElementType*> element_cache_;
+    std::map<std::string, ::DRT::ElementType*> element_cache_;
 
     /// preregistered types
     std::vector<ParObjectType*> types_;
 
     /// element types that are actually used
-    std::map<DRT::Discretization*, std::set<ElementType*>> active_elements_;
+    std::map<::DRT::Discretization*, std::set<::DRT::ElementType*>> active_elements_;
 
     // no copying
 
@@ -146,6 +149,6 @@ namespace DRT
     ParObjectFactory& operator=(const ParObjectFactory&);
   };
 
-}  // namespace DRT
+}  // namespace CORE::COMM
 
 #endif

@@ -10,7 +10,7 @@
 #define BACI_MAT_GROWTHREMODEL_ELASTHYPER_H
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_membrane_material_interfaces.H"
@@ -116,14 +116,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class GrowthRemodel_ElastHyperType : public DRT::ParObjectType
+  class GrowthRemodel_ElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthRemodel_ElastHyperType"; }
 
     static GrowthRemodel_ElastHyperType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthRemodel_ElastHyperType instance_;
@@ -164,7 +164,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///

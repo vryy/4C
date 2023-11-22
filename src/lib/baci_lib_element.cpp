@@ -11,6 +11,7 @@
 
 #include "baci_lib_element.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_discretization_geometric_search_params.H"
 #include "baci_io_linedefinition.H"
@@ -19,7 +20,6 @@
 #include "baci_lib_element_append_visualization.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
 #include "baci_lib_node.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_material.H"
 #include "baci_utils_exceptions.H"
 
@@ -263,9 +263,9 @@ int DRT::Element::AddMaterial(const Teuchos::RCP<MAT::Material>& mat)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Pack(DRT::PackBuffer& data) const
+void DRT::Element::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -314,7 +314,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, tmp);
   if (!tmp.empty())
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
     auto* mat = dynamic_cast<MAT::Material*>(o);
     if (mat == nullptr) dserror("failed to unpack material");
     // unpack only first material
@@ -1129,9 +1129,9 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement& old)
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::Pack(DRT::PackBuffer& data) const
+void DRT::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

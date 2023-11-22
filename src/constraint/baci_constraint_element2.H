@@ -10,10 +10,10 @@
 #define BACI_CONSTRAINT_ELEMENT2_H
 
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
@@ -38,7 +38,7 @@ namespace DRT
 
       static ConstraintElement2Type& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -116,7 +116,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class

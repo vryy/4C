@@ -68,7 +68,7 @@ void MAT::ELASTIC::CoupAnisoExpo::RegisterAnisotropyExtensions(MAT::Anisotropy& 
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpo::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   anisotropyExtension_.PackAnisotropy(data);
 }

@@ -27,18 +27,18 @@
 #include <vector>
 
 // forward declarations
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 namespace LINALG
 {
   class SerialDenseMatrix;
 }
-namespace DRT
+namespace DRT::INPUT
 {
-  class PackBuffer;
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+  class LineDefinition;
+}
 namespace MAT
 {
   class Anisotropy;
@@ -119,7 +119,7 @@ namespace MIXTURE
 
     virtual ~MixtureRule() = default;
 
-    virtual void PackMixtureRule(DRT::PackBuffer& data) const;
+    virtual void PackMixtureRule(CORE::COMM::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class

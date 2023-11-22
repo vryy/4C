@@ -52,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_Ogden::CreateMaterial()
 MAT::Maxwell_0d_acinusOgdenType MAT::Maxwell_0d_acinusOgdenType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusOgdenType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusOgdenType::Create(const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_Ogden* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_Ogden();
   mxwll_0d_acin->Unpack(data);
@@ -75,9 +75,9 @@ MAT::Maxwell_0d_acinus_Ogden::Maxwell_0d_acinus_Ogden(MAT::PAR::Maxwell_0d_acinu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Ogden::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_Ogden::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject

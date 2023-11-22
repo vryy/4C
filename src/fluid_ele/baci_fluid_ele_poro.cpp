@@ -12,15 +12,15 @@
 
 #include "baci_fluid_ele_poro.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
 DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::FluidPoro(-1, -1);
   object->Unpack(data);
@@ -95,9 +95,9 @@ DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
   return newelement;
 }
 
-void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,12 +155,12 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Lines()
 {
-  return DRT::UTILS::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
+  return CORE::COMM::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
+  return CORE::COMM::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const

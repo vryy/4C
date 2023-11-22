@@ -63,7 +63,7 @@ namespace MIXTURE
     MixtureGrowthStrategy(MixtureGrowthStrategy&&) noexcept = default;
     MixtureGrowthStrategy& operator=(MixtureGrowthStrategy&&) noexcept = default;
 
-    virtual void PackMixtureGrowthStrategy(DRT::PackBuffer& data) const {}
+    virtual void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const {}
 
     virtual void UnpackMixtureGrowthStrategy(
         std::vector<char>::size_type& position, const std::vector<char>& data)

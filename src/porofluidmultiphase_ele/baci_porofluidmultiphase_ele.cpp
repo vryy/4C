@@ -9,10 +9,10 @@
 
 #include "baci_porofluidmultiphase_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fluidporo_multiphase.H"
 
 /*----------------------------------------------------------------------*
@@ -37,7 +37,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseType& DRT::ELEMENTS::PoroFluidMultiPhaseType::
 /*----------------------------------------------------------------------*
  | create an element from data                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::PoroFluidMultiPhase* object = new DRT::ELEMENTS::PoroFluidMultiPhase(-1, -1);
   object->Unpack(data);
@@ -241,9 +241,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Initialize()
  |  Pack data                                                  (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -335,7 +335,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Lines()
 {
-  return DRT::UTILS::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
+  return CORE::COMM::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
 
 
@@ -344,7 +344,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Line
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
+  return CORE::COMM::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -441,7 +441,7 @@ CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.

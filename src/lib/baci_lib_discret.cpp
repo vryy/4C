@@ -10,9 +10,9 @@
 
 #include "baci_lib_discret.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_dofset_pbc.H"
 #include "baci_lib_dofset_proxy.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_exceptions.H"
@@ -711,7 +711,7 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyElements() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
-  DRT::PackBuffer buffer;
+  CORE::COMM::PackBuffer buffer;
 
   for (auto* ele : elerowptr_) ele->Pack(buffer);
 
@@ -731,7 +731,7 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyNodes() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
-  DRT::PackBuffer buffer;
+  CORE::COMM::PackBuffer buffer;
 
   for (auto* node : noderowptr_) node->Pack(buffer);
 
@@ -756,7 +756,7 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(
   std::vector<DRT::Condition*> cond;
   GetCondition(condname, cond);
 
-  DRT::PackBuffer buffer;
+  CORE::COMM::PackBuffer buffer;
 
   for (auto* c : cond) c->Pack(buffer);
 
@@ -778,8 +778,8 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
   while (index < e->size())
   {
     std::vector<char> data;
-    ParObject::ExtractfromPack(index, *e, data);
-    DRT::ParObject* o = DRT::UTILS::Factory(data);
+    CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
     auto* ele = dynamic_cast<Element*>(o);
     if (ele == nullptr)
     {
@@ -800,8 +800,8 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
   while (index < e->size())
   {
     std::vector<char> data;
-    ParObject::ExtractfromPack(index, *e, data);
-    DRT::ParObject* o = DRT::UTILS::Factory(data);
+    CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
     auto* node = dynamic_cast<Node*>(o);
     if (node == nullptr)
     {
@@ -823,8 +823,8 @@ void DRT::Discretization::UnPackCondition(
   while (index < e->size())
   {
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(index, *e, data);
-    DRT::ParObject* o = DRT::UTILS::Factory(data);
+    CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
     auto* cond = dynamic_cast<DRT::Condition*>(o);
     if (cond == nullptr)
     {

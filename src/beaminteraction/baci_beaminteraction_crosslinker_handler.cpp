@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
 
     // ---- pack data for sending -----
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       for (std::list<Teuchos::RCP<DRT::Node>>::const_iterator currlinker = homelesslinker.begin();
            currlinker != homelesslinker.end(); ++currlinker)
       {
@@ -136,9 +136,9 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
       while (index < rdata.size())
       {
         std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index, rdata, data);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+        Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
@@ -225,7 +225,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
     const int targetproc = pidlist[iter];
     if (targetproc != -1)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       iterhomelesslinker->Pack(data);
       data.StartPacking();
       iterhomelesslinker->Pack(data);
@@ -330,7 +330,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
       std::list<Teuchos::RCP<DRT::Node>>::const_iterator iter;
       for (iter = p->second.begin(); iter != p->second.end(); ++iter)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         (*iter)->Pack(data);
         data.StartPacking();
         (*iter)->Pack(data);
@@ -413,9 +413,9 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int
       while (index < rdata.size())
       {
         std::vector<char> data;
-        DRT::ParObject::ExtractfromPack(index, rdata, data);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+        Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 

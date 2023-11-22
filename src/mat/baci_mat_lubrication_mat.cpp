@@ -76,7 +76,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
 
 MAT::LubricationMatType MAT::LubricationMatType::instance_;
 
-DRT::ParObject* MAT::LubricationMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LubricationMatType::Create(const std::vector<char>& data)
 {
   MAT::LubricationMat* lubrication_mat = new MAT::LubricationMat();
   lubrication_mat->Unpack(data);
@@ -96,9 +96,9 @@ MAT::LubricationMat::LubricationMat(MAT::PAR::LubricationMat* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LubricationMat::Pack(DRT::PackBuffer& data) const
+void MAT::LubricationMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

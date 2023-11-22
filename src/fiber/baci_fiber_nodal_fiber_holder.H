@@ -18,9 +18,13 @@
 #include <unordered_map>
 #include <vector>
 
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
+}
+
+namespace DRT
+{
   namespace FIBER
   {
     /*!

@@ -12,8 +12,8 @@
 #ifndef BACI_FLUID_ELE_TDS_H
 #define BACI_FLUID_ELE_TDS_H
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
@@ -21,14 +21,14 @@
 
 namespace FLD
 {
-  class TDSEleDataType : public DRT::ParObjectType
+  class TDSEleDataType : public CORE::COMM::ParObjectType
   {
     // friend class ParObjectFactory;
    public:
     static TDSEleDataType& Instance() { return instance_; };
 
     /// Create ParObject from packed data
-    DRT::ParObject* Create(const std::vector<char>& data) override { return nullptr; }
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override { return nullptr; }
 
     /// internal name of this ParObjectType.
     std::string Name() const override { return "TDSEleData"; }
@@ -39,7 +39,7 @@ namespace FLD
 
 
 
-  class TDSEleData : public DRT::ParObject
+  class TDSEleData : public CORE::COMM::ParObject
   {
    public:
     /*!
@@ -53,7 +53,7 @@ namespace FLD
     \ref Pack and \ref Unpack are used to communicate this class object
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

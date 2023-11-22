@@ -105,7 +105,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
   if (!myrank)
   {
-    std::map<int, DRT::PackBuffer> sendpb;  // proc to send a set of elements to
+    std::map<int, CORE::COMM::PackBuffer> sendpb;  // proc to send a set of elements to
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
@@ -113,8 +113,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       if (!actele) dserror("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
@@ -123,8 +123,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
@@ -178,8 +178,8 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      ParObject::ExtractfromPack(index, recvdata, data);
-      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
+      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
       if (!ele) dserror("Received object is not an element");
       ele->SetOwner(myrank);
@@ -218,7 +218,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   std::map<int, std::vector<char>> sendmap;
   if (!myrank)
   {
-    std::map<int, DRT::PackBuffer> sendpb;
+    std::map<int, CORE::COMM::PackBuffer> sendpb;
     for (int i = 0; i < size; ++i)
     {
       // proc 0 does not send to itself
@@ -227,8 +227,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       if (!node) dserror("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
@@ -238,8 +238,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }
-    for (std::map<int, DRT::PackBuffer>::iterator fool = sendpb.begin(); fool != sendpb.end();
-         ++fool)
+    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+         fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
@@ -293,8 +293,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      ParObject::ExtractfromPack(index, recvdata, data);
-      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
+      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Node* node = dynamic_cast<DRT::Node*>(object);
       if (!node) dserror("Received object is not a node");
       node->SetOwner(myrank);

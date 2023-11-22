@@ -14,15 +14,15 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -37,7 +37,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    */
-  class ParticleObjectType final : public DRT::ParObjectType
+  class ParticleObjectType final : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleObjectType"; };
@@ -51,7 +51,7 @@ namespace PARTICLEENGINE
      */
     static ParticleObjectType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     //! particle object type instance
@@ -72,7 +72,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    */
-  class ParticleObject : public DRT::ParObject
+  class ParticleObject : public CORE::COMM::ParObject
   {
    public:
     /*!
@@ -105,7 +105,7 @@ namespace PARTICLEENGINE
       return ParticleObjectType::Instance().UniqueParObjectId();
     };
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

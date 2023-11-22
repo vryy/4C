@@ -12,10 +12,10 @@
 
 #include "baci_lib_gridgenerator.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementdefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance.H"
 
@@ -380,7 +380,7 @@ namespace DRT
           break;
       }
       // let the factory create a matching empty element
-      Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype, distype, eleid, myrank);
+      Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
       ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
       ele->ReadElement(elementtype, distype, linedef);
       return ele;
@@ -474,7 +474,7 @@ namespace DRT
       }
 
       // let the factory create a matching empty element
-      Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype, distype, eleid, myrank);
+      Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
       ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
       ele->ReadElement(elementtype, distype, linedef);
       return ele;

@@ -67,7 +67,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Surface::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Ale3Surface element does not support communication");
 }

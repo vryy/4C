@@ -6,9 +6,9 @@
 
 #include "baci_shell7p_ele_scatra.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele_factory.H"
 #include "baci_shell7p_ele_interface_serializable.H"
@@ -19,7 +19,7 @@
 namespace
 {
   template <typename Interface>
-  void TryPackInterface(const Interface& interface, DRT::PackBuffer& data)
+  void TryPackInterface(const Interface& interface, CORE::COMM::PackBuffer& data)
   {
     std::shared_ptr<DRT::ELEMENTS::SHELL::Serializable> serializable_interface =
         std::dynamic_pointer_cast<DRT::ELEMENTS::SHELL::Serializable>(interface);
@@ -43,7 +43,7 @@ DRT::ELEMENTS::Shell7pScatraType DRT::ELEMENTS::Shell7pScatraType::instance_;
 
 DRT::ELEMENTS::Shell7pScatraType& DRT::ELEMENTS::Shell7pScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Shell7pScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pScatraType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Shell7pScatra(-1, -1);
   object->Unpack(data);
@@ -230,9 +230,9 @@ DRT::Element* DRT::ELEMENTS::Shell7pScatra::Clone() const
   return newelement;
 }
 
-void DRT::ELEMENTS::Shell7pScatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pScatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -276,9 +276,10 @@ void DRT::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
   // nodal director
   ExtractfromPack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // extract impltype
-  impltype_ = static_cast<INPAR::SCATRA::ImplType>(DRT::ParObject::ExtractInt(position, data));
+  impltype_ =
+      static_cast<INPAR::SCATRA::ImplType>(CORE::COMM::ParObject::ExtractInt(position, data));
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
 
@@ -335,8 +336,8 @@ void DRT::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
+      CORE::COMM::buildLines, *this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()

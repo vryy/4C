@@ -37,7 +37,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::WeaklyCompressibleFluid::CreateMaterial()
 MAT::WeaklyCompressibleFluidType MAT::WeaklyCompressibleFluidType::instance_;
 
 
-DRT::ParObject* MAT::WeaklyCompressibleFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::WeaklyCompressibleFluidType::Create(const std::vector<char>& data)
 {
   MAT::WeaklyCompressibleFluid* fluid = new MAT::WeaklyCompressibleFluid();
   fluid->Unpack(data);
@@ -60,9 +60,9 @@ MAT::WeaklyCompressibleFluid::WeaklyCompressibleFluid(MAT::PAR::WeaklyCompressib
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::WeaklyCompressibleFluid::Pack(DRT::PackBuffer& data) const
+void MAT::WeaklyCompressibleFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

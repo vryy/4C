@@ -10,7 +10,7 @@
 #ifndef BACI_MATELAST_ISOMUSCLE_BLEMKER_H
 #define BACI_MATELAST_ISOMUSCLE_BLEMKER_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
@@ -81,7 +81,7 @@ namespace MAT
       IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBlemker* params);
 
       /// Pack anisotropy
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       /// Unpack anisotropy
       void UnpackSummand(

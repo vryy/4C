@@ -291,7 +291,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vel, data);
@@ -476,14 +476,14 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 
   // extract size
   int size = 0;
-  DRT::ParObject::ExtractfromPack(position, rblock, size);
+  CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
 
   // extract master ids
   for (int i = 0; i < size; ++i)
   {
     int id;
 
-    DRT::ParObject::ExtractfromPack(position, rblock, id);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, id);
     mymasters.push_back(id);
 
     std::map<int, std::vector<int>>::iterator iter = midtosid_.find(id);
@@ -503,12 +503,12 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
   {
     int slavesize;
 
-    DRT::ParObject::ExtractfromPack(position, rblock, slavesize);
+    CORE::COMM::ParObject::ExtractfromPack(position, rblock, slavesize);
 
     for (int ll = 0; ll < slavesize; ++ll)
     {
       int sid;
-      DRT::ParObject::ExtractfromPack(position, rblock, sid);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, sid);
 
       std::map<int, std::vector<int>>::iterator iter = midtosid_.find(mymasters[rr]);
 
@@ -536,7 +536,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
     {
       double value;
 
-      DRT::ParObject::ExtractfromPack(position, rblock, value);
+      CORE::COMM::ParObject::ExtractfromPack(position, rblock, value);
 
       (mymasters_vel[mm]).push_back(value);
     }
@@ -559,7 +559,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<int>& mymasters,
-    std::vector<std::vector<double>>& mymasters_vel, DRT::PackBuffer& sblock)
+    std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock)
 {
   int size = mymasters.size();
 
@@ -577,12 +577,12 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
   }
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack(sblock, size);
+  CORE::COMM::ParObject::AddtoPack(sblock, size);
 
   // add master ids
   for (int rr = 0; rr < size; ++rr)
   {
-    DRT::ParObject::AddtoPack(sblock, mymasters[rr]);
+    CORE::COMM::ParObject::AddtoPack(sblock, mymasters[rr]);
   }
 
   // add slave ids
@@ -600,10 +600,10 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
 
       int slavesize = (int)slaves.size();
 
-      DRT::ParObject::AddtoPack(sblock, slavesize);
+      CORE::COMM::ParObject::AddtoPack(sblock, slavesize);
       for (int ll = 0; ll < slavesize; ++ll)
       {
-        DRT::ParObject::AddtoPack(sblock, slaves[ll]);
+        CORE::COMM::ParObject::AddtoPack(sblock, slaves[ll]);
       }
     }
   }
@@ -613,7 +613,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
   {
     for (int rr = 0; rr < size; ++rr)
     {
-      DRT::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
+      CORE::COMM::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
     }
   }
 
@@ -826,7 +826,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vel, data);
@@ -1016,7 +1016,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         SetValuesAvailableOnThisProc(mymasters, mymasters_vec, outvec);
 
         // Pack info into block to send
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         PackLocalMasterValues(mymasters, mymasters_vec, data);
         data.StartPacking();
         PackLocalMasterValues(mymasters, mymasters_vec, data);

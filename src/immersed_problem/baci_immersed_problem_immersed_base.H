@@ -793,7 +793,7 @@ namespace IMMERSED
       {
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -840,20 +840,21 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+        for (int i = 0; i < globdim; ++i)
+          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         for (int i = 0; i < globdim; ++i)
-          normal_vec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+          normal_vec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         // wait for all communication to finish
         exporter.Wait(request);
@@ -1127,7 +1128,7 @@ namespace IMMERSED
 
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1167,16 +1168,17 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
-        for (int i = 0; i < globdim; ++i) xvec[i] = DRT::ParObject::ExtractDouble(position, rdata);
+        for (int i = 0; i < globdim; ++i)
+          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1534,7 +1536,7 @@ namespace IMMERSED
         CORE::COMM::Exporter exporter(comm);
         // ---- pack data for sending -----
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1574,17 +1576,17 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = DRT::ParObject::ExtractInt(position, rdata);
-        owner = DRT::ParObject::ExtractInt(position, rdata);
-        datalength = DRT::ParObject::ExtractInt(position, rdata);
+        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
 
         for (int i = 0; i < globdim; ++i)
-          fluid_node_glob_coord[i] = DRT::ParObject::ExtractDouble(position, rdata);
+          fluid_node_glob_coord[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*velnp_at_struct_point)(dim) = DRT::ParObject::ExtractDouble(position, rdata);
+            (*velnp_at_struct_point)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1773,15 +1775,15 @@ namespace IMMERSED
 
               // ---- pack data for sending -----
               {
-                DRT::PackBuffer data;
+                CORE::COMM::PackBuffer data;
                 data.StartPacking();
                 {
                   data.AddtoPack(
                       matched);  //< owner already found matching point vis-a-vis spacepoint
                   data.AddtoPack(owner);  //< myrank = owner of data
-                  DRT::ParObject::AddtoPack<3, 1>(
-                      data, searchdirection);                         //< searchdirection of owner
-                  DRT::ParObject::AddtoPack<3, 1>(data, spacepoint);  //< spacepoint of owner
+                  CORE::COMM::ParObject::AddtoPack<3, 1>(
+                      data, searchdirection);  //< searchdirection of owner
+                  CORE::COMM::ParObject::AddtoPack<3, 1>(data, spacepoint);  //< spacepoint of owner
 
                   data.AddtoPack(tempresult);
                 }
@@ -1805,12 +1807,12 @@ namespace IMMERSED
 
               // ---- unpack data -----
               std::vector<char>::size_type position = 0;
-              matched = DRT::ParObject::ExtractInt(position, rdata);
-              owner = DRT::ParObject::ExtractInt(position, rdata);
-              DRT::ParObject::ExtractfromPack<3, 1>(position, rdata, searchdirection);
-              DRT::ParObject::ExtractfromPack<3, 1>(position, rdata, spacepoint);
+              matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
+              owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
+              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, searchdirection);
+              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, spacepoint);
 
-              tempresult = DRT::ParObject::ExtractDouble(position, rdata);
+              tempresult = CORE::COMM::ParObject::ExtractDouble(position, rdata);
 
               // wait for all communication to finish
               exporter.Wait(request);

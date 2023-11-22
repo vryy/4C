@@ -21,7 +21,7 @@ DRT::ELEMENTS::RedAcinusType DRT::ELEMENTS::RedAcinusType::instance_;
 
 DRT::ELEMENTS::RedAcinusType& DRT::ELEMENTS::RedAcinusType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::RedAcinusType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedAcinusType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedAcinus* object = new DRT::ELEMENTS::RedAcinus(-1, -1);
   object->Unpack(data);
@@ -143,9 +143,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAcinus::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

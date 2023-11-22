@@ -522,7 +522,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
 
         // pack the data for postprocessing
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           // get the size of stress
           so3_ele::AddtoPack(data, couplstress);
           data.StartPacking();

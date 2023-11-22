@@ -2116,7 +2116,7 @@ void XFEM::XFluidTimeInt::ExportMethods(
        dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
-    DRT::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
+    CORE::COMM::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
 
     // Initialization
     int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets from
@@ -2132,14 +2132,14 @@ void XFEM::XFluidTimeInt::ExportMethods(
     //---------------------------------------------------------------------------------------------------------------
     // send current DofSetData to next proc and receive a new map from previous proc
     {
-      DRT::PackBuffer dataSend;  // data to be sent
+      CORE::COMM::PackBuffer dataSend;  // data to be sent
 
       // packing the data
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        DRT::ParObject::AddtoPack(dataSend, node_it->first);
-        DRT::ParObject::AddtoPack(dataSend, node_it->second);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->first);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->second);
       }
 
       dataSend.StartPacking();
@@ -2148,8 +2148,8 @@ void XFEM::XFluidTimeInt::ExportMethods(
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        DRT::ParObject::AddtoPack(dataSend, node_it->first);
-        DRT::ParObject::AddtoPack(dataSend, node_it->second);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->first);
+        CORE::COMM::ParObject::AddtoPack(dataSend, node_it->second);
       }
 
       std::vector<char> dataRecv;
@@ -2166,8 +2166,8 @@ void XFEM::XFluidTimeInt::ExportMethods(
         std::map<int, int> dofset_map;  // dofset map <nds, Method>
 
         // unpack reconstruction method data
-        DRT::ParObject::ExtractfromPack(posinData, dataRecv, nid);
-        DRT::ParObject::ExtractfromPack(posinData, dataRecv, dofset_map);
+        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nid);
+        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dofset_map);
 
         // distribute the received information on this proc if the info is required on this node
 
@@ -2202,7 +2202,7 @@ void XFEM::XFluidTimeInt::ExportMethods(
  * basic function sending data to dest and receiving data from source                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFluidTimeInt::sendData(
-    DRT::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
+    CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
   lengthSend[0] = dataSend().size();

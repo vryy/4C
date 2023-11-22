@@ -58,7 +58,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListReactions::CreateMaterial()
 MAT::MatListReactionsType MAT::MatListReactionsType::instance_;
 
 
-DRT::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
 {
   MAT::MatListReactions* MatListReactions = new MAT::MatListReactions();
   MatListReactions->Unpack(data);
@@ -137,9 +137,9 @@ void MAT::MatListReactions::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
+void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

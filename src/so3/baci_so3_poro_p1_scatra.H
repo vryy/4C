@@ -12,9 +12,9 @@
 #ifndef BACI_SO3_PORO_P1_SCATRA_H
 #define BACI_SO3_PORO_P1_SCATRA_H
 
+#include "baci_comm_pack_buffer.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
-#include "baci_lib_pack_buffer.H"
 #include "baci_so3_poro_p1.H"
 
 namespace DRT
@@ -83,7 +83,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class

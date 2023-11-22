@@ -249,21 +249,21 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         nlnstiffmass(lm, mydisp, nullptr, myres, nullptr, nullptr, nullptr, nullptr, &stress,
             &strain, &plstrain, params, iostress, iostrain, ioplstrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, plstrain);
           data.StartPacking();
           AddtoPack(data, plstrain);

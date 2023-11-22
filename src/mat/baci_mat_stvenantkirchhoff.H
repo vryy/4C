@@ -11,7 +11,7 @@ St. Venant-Kirchhoff material
 #define BACI_MAT_STVENANTKIRCHHOFF_H
 
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
@@ -44,14 +44,14 @@ namespace MAT
     };  // class StVenantKirchhoff
   }     // namespace PAR
 
-  class StVenantKirchhoffType : public DRT::ParObjectType
+  class StVenantKirchhoffType : public CORE::COMM::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "StVenantKirchhoffType"; }
 
     static StVenantKirchhoffType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StVenantKirchhoffType instance_;
@@ -73,7 +73,7 @@ namespace MAT
       return StVenantKirchhoffType::Instance().UniqueParObjectId();
     }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

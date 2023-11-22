@@ -8,11 +8,11 @@
 
 #include "baci_so3_hex18.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -25,7 +25,7 @@ DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
 DRT::ELEMENTS::So_hex18Type& DRT::ELEMENTS::So_hex18Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_hex18(-1, -1);
   object->Unpack(data);
@@ -129,9 +129,9 @@ DRT::Element* DRT::ELEMENTS::So_hex18::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex18::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_hex18::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -195,8 +195,8 @@ void DRT::ELEMENTS::So_hex18::Print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -204,8 +204,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Surfaces()
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex18::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -449,7 +449,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
             iostress, iostrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -457,7 +457,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);

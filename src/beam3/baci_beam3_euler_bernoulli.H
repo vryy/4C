@@ -102,7 +102,7 @@ namespace DRT::ELEMENTS
 
     static Beam3ebType& Instance();
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
         const int id, const int owner) override;
@@ -185,7 +185,7 @@ namespace DRT::ELEMENTS
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

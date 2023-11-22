@@ -51,7 +51,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Myocard::CreateMaterial()
 MAT::MyocardType MAT::MyocardType::instance_;
 
 
-DRT::ParObject* MAT::MyocardType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MyocardType::Create(const std::vector<char>& data)
 {
   MAT::Myocard* myocard = new MAT::Myocard();
   myocard->Unpack(data);
@@ -88,9 +88,9 @@ MAT::Myocard::Myocard(MAT::PAR::Myocard* params)
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::Pack(DRT::PackBuffer& data) const
+void MAT::Myocard::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

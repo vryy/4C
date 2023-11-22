@@ -50,7 +50,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAgasser::CreateMaterial()
 MAT::AAAgasserType MAT::AAAgasserType::instance_;
 
 
-DRT::ParObject* MAT::AAAgasserType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAgasserType::Create(const std::vector<char>& data)
 {
   MAT::AAAgasser* aaa = new MAT::AAAgasser();
   aaa->Unpack(data);
@@ -72,9 +72,9 @@ MAT::AAAgasser::AAAgasser(MAT::PAR::AAAgasser* params) : params_(params) {}
 /*----------------------------------------------------------------------*
  |  Pack                                           (public)             |
  *----------------------------------------------------------------------*/
-void MAT::AAAgasser::Pack(DRT::PackBuffer& data) const
+void MAT::AAAgasser::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

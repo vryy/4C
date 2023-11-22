@@ -35,7 +35,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::TempDepWater::CreateMaterial()
 MAT::TempDepWaterType MAT::TempDepWaterType::instance_;
 
 
-DRT::ParObject* MAT::TempDepWaterType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::TempDepWaterType::Create(const std::vector<char>& data)
 {
   MAT::TempDepWater* tempdepwater = new MAT::TempDepWater();
   tempdepwater->Unpack(data);
@@ -55,9 +55,9 @@ MAT::TempDepWater::TempDepWater(MAT::PAR::TempDepWater* params) : params_(params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::TempDepWater::Pack(DRT::PackBuffer& data) const
+void MAT::TempDepWater::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

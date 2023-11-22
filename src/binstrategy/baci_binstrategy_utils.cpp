@@ -130,7 +130,7 @@ namespace BINSTRATEGY
         std::vector<DRT::Element*>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           (*iter)->Pack(data);
           data.StartPacking();
           (*iter)->Pack(data);
@@ -178,9 +178,10 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::vector<char> data;
-            DRT::ParObject::ExtractfromPack(index, rdata, data);
+            CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
             // this Teuchos::rcp holds the memory of the node
-            Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+            Teuchos::RCP<CORE::COMM::ParObject> object =
+                Teuchos::rcp(CORE::COMM::Factory(data), true);
             Teuchos::RCP<DRT::Element> element = Teuchos::rcp_dynamic_cast<DRT::Element>(object);
             if (element == Teuchos::null) dserror("Received object is not a element");
 
@@ -230,10 +231,10 @@ namespace BINSTRATEGY
         std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          DRT::PackBuffer data;
-          DRT::ParObject::AddtoPack(data, *iter);
+          CORE::COMM::PackBuffer data;
+          CORE::COMM::ParObject::AddtoPack(data, *iter);
           data.StartPacking();
-          DRT::ParObject::AddtoPack(data, *iter);
+          CORE::COMM::ParObject::AddtoPack(data, *iter);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -278,7 +279,7 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::pair<int, std::vector<int>> pair;
-            DRT::ParObject::ExtractfromPack(index, rdata, pair);
+            CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
             std::vector<int>::const_iterator j;
             for (j = pair.second.begin(); j != pair.second.end(); ++j)
               bintorowelemap[*j].insert(pair.first);

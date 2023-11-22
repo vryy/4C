@@ -92,8 +92,8 @@ namespace CORE::LINALG
      */
     bool operator()(const CORE::LINALG::SparseMatrix& src, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const double scale,
-        const ::CORE::ADAPTER::CouplingConverter* row_converter,
-        const ::CORE::ADAPTER::CouplingConverter* col_converter, CORE::LINALG::SparseMatrix& dst,
+        const CORE::ADAPTER::CouplingConverter* row_converter,
+        const CORE::ADAPTER::CouplingConverter* col_converter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -102,7 +102,7 @@ namespace CORE::LINALG
       Internal method.
      */
     void SetupGidMap(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const ::CORE::ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm);
+        const CORE::ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm);
 
     /// copy values from source to destination matrix
     /*!
@@ -194,7 +194,7 @@ namespace CORE::LINALG
       \param addmatrix (i) remove current dst values if false
      */
     bool operator()(const CORE::LINALG::SparseMatrix& src, double scale,
-        const ::CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
+        const CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
         bool addmatrix = false);
 
    private:
@@ -251,7 +251,7 @@ namespace CORE::LINALG
      */
     bool operator()(const Epetra_Map& rowmap, const Epetra_Map& colmap,
         const CORE::LINALG::SparseMatrix& src, double scale,
-        const ::CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
+        const CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -296,8 +296,8 @@ namespace CORE::LINALG
       \param addmatrix    (i) remove current dst values if false
      */
     bool operator()(const CORE::LINALG::SparseMatrix& src, double scale,
-        const ::CORE::ADAPTER::CouplingConverter& rowconverter,
-        const ::CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
+        const CORE::ADAPTER::CouplingConverter& rowconverter,
+        const CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:

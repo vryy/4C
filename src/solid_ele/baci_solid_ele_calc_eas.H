@@ -103,7 +103,7 @@ namespace DRT
 
       void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
 
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 

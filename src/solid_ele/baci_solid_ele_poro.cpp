@@ -7,8 +7,8 @@
 
 #include "baci_solid_ele_poro.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
 #include "baci_so3_line.H"
@@ -121,7 +121,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(const int id, co
   return Teuchos::rcp(new DRT::ELEMENTS::SolidPoro(id, owner));
 }
 
-DRT::ParObject* DRT::ELEMENTS::SolidPoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SolidPoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::SolidPoro(-1, -1);
   object->Unpack(data);
@@ -164,12 +164,12 @@ int DRT::ELEMENTS::SolidPoro::NumVolume() const
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Lines()
 {
-  return DRT::UTILS::GetElementLines<StructuralLine, SolidPoro>(*this);
+  return CORE::COMM::GetElementLines<StructuralLine, SolidPoro>(*this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
+  return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
 }
 
 void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
@@ -275,9 +275,9 @@ MAT::So3Material& DRT::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
   return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
 }
 
-void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
@@ -329,7 +329,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
   solid_ele_property_.eastype = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   poro_ele_property_.impltype = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // anisotropic_permeability_directions_
   int size = 0;

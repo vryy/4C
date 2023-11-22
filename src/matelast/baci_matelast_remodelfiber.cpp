@@ -49,7 +49,7 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
   }
 }
 
-void MAT::ELASTIC::RemodelFiber::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::RemodelFiber::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   int num_fiber = 0;
   num_fiber = potsumfiber_.size();

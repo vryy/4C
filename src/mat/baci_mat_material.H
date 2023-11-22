@@ -12,8 +12,8 @@
 
 
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobject.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -46,10 +46,10 @@ namespace MAT
    * <h3>Storage</h3>
    *
    * In order to support storage of material data (for restart, post
-   * processing, ...) this class does implement DRT::ParObject. The
+   * processing, ...) this class does implement CORE::COMM::ParObject. The
    * elements pack and unpack its materials along with its other data.
    */
-  class Material : public DRT::ParObject
+  class Material : public CORE::COMM::ParObject
   {
    public:
     /// return type of this material

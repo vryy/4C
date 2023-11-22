@@ -61,7 +61,7 @@ CORE::FE::CellType DRT::ELEMENTS::Shell7pLine::Shape() const
   }
 }
 
-void DRT::ELEMENTS::Shell7pLine::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pLine::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Shell7line element does not support communication");
 }

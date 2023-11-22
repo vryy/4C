@@ -14,7 +14,7 @@
 
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
 
-DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
 {
   MAT::ConstraintMixtureHistory* cmhis = new MAT::ConstraintMixtureHistory();
   cmhis->Unpack(data);
@@ -24,9 +24,9 @@ DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  |  History: Pack                                 (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
+void MAT::ConstraintMixtureHistory::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

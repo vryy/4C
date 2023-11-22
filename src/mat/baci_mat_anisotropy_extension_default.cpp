@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy_extension_default.H"
 
-#include "baci_lib_parobject.H"
+#include "baci_comm_parobject.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_service.H"
@@ -39,12 +39,12 @@ MAT::DefaultAnisotropyExtension<numfib>::DefaultAnisotropyExtension(const int in
 }
 
 template <unsigned int numfib>
-void MAT::DefaultAnisotropyExtension<numfib>::PackAnisotropy(DRT::PackBuffer& data) const
+void MAT::DefaultAnisotropyExtension<numfib>::PackAnisotropy(CORE::COMM::PackBuffer& data) const
 {
   // Call base packing
   MAT::FiberAnisotropyExtension<numfib>::PackAnisotropy(data);
 
-  DRT::ParObject::AddtoPack(data, static_cast<int>(initialized_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(initialized_));
 }
 
 template <unsigned int numfib>
@@ -54,7 +54,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::UnpackAnisotropy(
   // Call base unpacking
   MAT::FiberAnisotropyExtension<numfib>::UnpackAnisotropy(data, position);
 
-  initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
+  initialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 template <unsigned int numfib>

@@ -13,9 +13,9 @@
 #define BACI_LIB_ELEMENT_H
 
 
+#include "baci_comm_parobject.H"
 #include "baci_discretization_fem_general_cell_type.H"
 #include "baci_lib_condition.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
@@ -78,7 +78,7 @@ namespace DRT
   and other connectivity information.
 
   */
-  class Element : public DRT::ParObject
+  class Element : public CORE::COMM::ParObject
   {
    public:
     //! @name Enums and Friends
@@ -203,7 +203,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -1315,7 +1315,7 @@ might become invalid after a redistribution of the discretization.
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

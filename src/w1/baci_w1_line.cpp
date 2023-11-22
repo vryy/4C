@@ -105,7 +105,7 @@ CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Wall1Line element does not support communication");
 

@@ -18,7 +18,7 @@
 #include <optional>
 #include <string>
 
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -76,7 +76,7 @@ namespace MIXTURE
       }
     };
 
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 

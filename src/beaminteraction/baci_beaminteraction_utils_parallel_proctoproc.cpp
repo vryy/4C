@@ -41,10 +41,10 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
     std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
-      DRT::PackBuffer data;
-      DRT::ParObject::AddtoPack(data, *iter);
+      CORE::COMM::PackBuffer data;
+      CORE::COMM::ParObject::AddtoPack(data, *iter);
       data.StartPacking();
-      DRT::ParObject::AddtoPack(data, *iter);
+      CORE::COMM::ParObject::AddtoPack(data, *iter);
       sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
     }
     targetprocs[p->first] = 1;
@@ -86,7 +86,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
       while (index < rdata.size())
       {
         std::pair<int, std::vector<int>> pair;
-        DRT::ParObject::ExtractfromPack(index, rdata, pair);
+        CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
         recvdata.push_back(pair);
       }
       if (index != rdata.size())

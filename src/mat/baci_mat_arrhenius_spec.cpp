@@ -41,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusSpec::CreateMaterial()
 MAT::ArrheniusSpecType MAT::ArrheniusSpecType::instance_;
 
 
-DRT::ParObject* MAT::ArrheniusSpecType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ArrheniusSpecType::Create(const std::vector<char>& data)
 {
   MAT::ArrheniusSpec* arrhenius_spec = new MAT::ArrheniusSpec();
   arrhenius_spec->Unpack(data);
@@ -61,9 +61,9 @@ MAT::ArrheniusSpec::ArrheniusSpec(MAT::PAR::ArrheniusSpec* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusSpec::Pack(DRT::PackBuffer& data) const
+void MAT::ArrheniusSpec::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -10,9 +10,9 @@ John Wiley & Sons, Ltd, 2008
 /*----------------------------------------------------------------------*/
 #include "baci_mat_plasticdruckerprager.H"
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
@@ -44,7 +44,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::PlasticDruckerPrager::CreateMaterial()
 }
 MAT::PlasticDruckerPragerType MAT::PlasticDruckerPragerType::instance_;
 
-DRT::ParObject* MAT::PlasticDruckerPragerType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticDruckerPragerType::Create(const std::vector<char>& data)
 {
   MAT::PlasticDruckerPrager* plastic = new MAT::PlasticDruckerPrager();
   plastic->Unpack(data);
@@ -58,9 +58,9 @@ MAT::PlasticDruckerPrager::PlasticDruckerPrager(MAT::PAR::PlasticDruckerPrager* 
 {
 }
 
-void MAT::PlasticDruckerPrager::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticDruckerPrager::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
   int type = UniqueParObjectId();
   AddtoPack(data, type);

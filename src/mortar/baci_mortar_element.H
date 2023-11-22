@@ -41,7 +41,7 @@ namespace MORTAR
 
     static MortarElementType& Instance();
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
@@ -87,7 +87,7 @@ namespace MORTAR
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -409,7 +409,7 @@ namespace MORTAR
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

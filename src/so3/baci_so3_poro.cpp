@@ -9,9 +9,9 @@
 
 #include "baci_so3_poro.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_structporo.H"
 #include "baci_so3_line.H"
 #include "baci_so3_poro_eletypes.H"
@@ -71,9 +71,9 @@ DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -178,15 +178,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
 template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>

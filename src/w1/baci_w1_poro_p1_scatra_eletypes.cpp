@@ -25,7 +25,8 @@ DRT::ELEMENTS::WallQuad4PoroP1ScatraType& DRT::ELEMENTS::WallQuad4PoroP1ScatraTy
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad4>(-1, -1);
@@ -88,7 +89,8 @@ DRT::ELEMENTS::WallQuad9PoroP1ScatraType& DRT::ELEMENTS::WallQuad9PoroP1ScatraTy
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad9>(-1, -1);
@@ -151,7 +153,8 @@ DRT::ELEMENTS::WallTri3PoroP1ScatraType& DRT::ELEMENTS::WallTri3PoroP1ScatraType
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallTri3PoroP1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroP1ScatraType::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::tri3>(-1, -1);

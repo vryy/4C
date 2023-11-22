@@ -10,10 +10,10 @@
 
 #include "baci_w1.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
@@ -21,7 +21,7 @@ DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
 DRT::ELEMENTS::Wall1Type& DRT::ELEMENTS::Wall1Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1* object = new DRT::ELEMENTS::Wall1(-1, -1);
   object->Unpack(data);
@@ -211,9 +211,9 @@ CORE::FE::CellType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
 
 

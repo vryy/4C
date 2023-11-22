@@ -19,7 +19,7 @@ namespace DRT
     class Truss3ScatraType : public Truss3Type
     {
      public:
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -77,7 +77,7 @@ namespace DRT
       void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state) override;
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
      protected:

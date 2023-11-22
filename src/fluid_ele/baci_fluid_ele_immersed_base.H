@@ -24,7 +24,7 @@ namespace DRT
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      DRT::ParObject* Create(const std::vector<char>& data) override = 0;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override = 0;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
@@ -265,7 +265,10 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override { dserror("not implemented in base class"); };
+      void Pack(CORE::COMM::PackBuffer& data) const override
+      {
+        dserror("not implemented in base class");
+      };
 
       /*!
       \brief Unpack data from a char vector into this class

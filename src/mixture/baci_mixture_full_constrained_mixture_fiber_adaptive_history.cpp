@@ -7,8 +7,8 @@
 
 #include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
 
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
 
@@ -81,7 +81,7 @@ void MIXTURE::DETAILS::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& ite
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::Pack(DRT::PackBuffer& data) const
+void MIXTURE::TimestepAdaptivityInfo::Pack(CORE::COMM::PackBuffer& data) const
 {
   data.AddtoPack(GetNumberOfLevels());
   for (const auto& item : list_)
@@ -95,13 +95,13 @@ void MIXTURE::TimestepAdaptivityInfo::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   std::size_t size_of_adaptivity_info;
-  DRT::ParObject::ExtractfromPack(position, data, size_of_adaptivity_info);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_adaptivity_info);
   list_.clear();
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)
   {
-    const unsigned int level = DRT::ParObject::ExtractInt(position, data);
-    const unsigned int num_intervals = DRT::ParObject::ExtractInt(position, data);
+    const unsigned int level = CORE::COMM::ParObject::ExtractInt(position, data);
+    const unsigned int num_intervals = CORE::COMM::ParObject::ExtractInt(position, data);
     list_.emplace_back(level, num_intervals);
   }
 }

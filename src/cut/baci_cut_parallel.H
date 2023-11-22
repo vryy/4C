@@ -14,11 +14,14 @@
 
 #include "baci_cut_meshintersection.H"
 
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 
 namespace DRT
 {
   class Discretization;
-  class PackBuffer;
 }  // namespace DRT
 
 
@@ -110,7 +113,7 @@ namespace CORE::GEO
       /*!
       \brief Pack the point coordinates
        */
-      void packPoints(::DRT::PackBuffer& dataSend,
+      void packPoints(::CORE::COMM::PackBuffer& dataSend,
           std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const;
 
       /*!
@@ -124,10 +127,10 @@ namespace CORE::GEO
       /*!
       \brief Basic function sending data to destination and receiving data from source
        */
-      void sendData(::DRT::PackBuffer& dataSend,  //!< pack buffer
-          int& dest,                              //!< destination proc
-          int& source,                            //!< source proc
-          std::vector<char>& dataRecv             //!< received data
+      void sendData(::CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+          int& dest,                                     //!< destination proc
+          int& source,                                   //!< source proc
+          std::vector<char>& dataRecv                    //!< received data
       ) const;
 
       /*!

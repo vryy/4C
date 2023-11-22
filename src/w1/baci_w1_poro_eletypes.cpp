@@ -22,7 +22,7 @@ DRT::ELEMENTS::WallQuad4PoroType DRT::ELEMENTS::WallQuad4PoroType::instance_;
 
 DRT::ELEMENTS::WallQuad4PoroType& DRT::ELEMENTS::WallQuad4PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
@@ -87,7 +87,7 @@ DRT::ELEMENTS::WallQuad9PoroType DRT::ELEMENTS::WallQuad9PoroType::instance_;
 
 DRT::ELEMENTS::WallQuad9PoroType& DRT::ELEMENTS::WallQuad9PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
@@ -154,7 +154,7 @@ DRT::ELEMENTS::WallNurbs4PoroType& DRT::ELEMENTS::WallNurbs4PoroType::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>(-1, -1);
   object->Unpack(data);
@@ -221,7 +221,7 @@ DRT::ELEMENTS::WallNurbs9PoroType& DRT::ELEMENTS::WallNurbs9PoroType::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>(-1, -1);
   object->Unpack(data);
@@ -285,7 +285,7 @@ DRT::ELEMENTS::WallTri3PoroType DRT::ELEMENTS::WallTri3PoroType::instance_;
 
 DRT::ELEMENTS::WallTri3PoroType& DRT::ELEMENTS::WallTri3PoroType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>(-1, -1);
   object->Unpack(data);

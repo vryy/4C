@@ -45,7 +45,7 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
                                              FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
   anisotropyExtension_.PackAnisotropy(data);

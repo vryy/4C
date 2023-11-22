@@ -34,7 +34,7 @@ MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
 {
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);

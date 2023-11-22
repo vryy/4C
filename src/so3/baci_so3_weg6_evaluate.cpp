@@ -221,14 +221,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
             nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -513,7 +513,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -521,7 +521,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);

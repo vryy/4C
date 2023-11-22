@@ -27,7 +27,7 @@ namespace MAT
 {
   class Material;
 }
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -118,7 +118,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void Pack(DRT::PackBuffer& data) const {};
+    virtual void Pack(CORE::COMM::PackBuffer& data) const {};
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class

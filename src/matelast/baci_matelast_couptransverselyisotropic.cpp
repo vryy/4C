@@ -103,7 +103,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineD
   }
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, A_);
   AddtoPack(data, AA_);

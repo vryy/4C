@@ -9,24 +9,24 @@
 #ifndef BACI_MORTAR_NODE_H
 #define BACI_MORTAR_NODE_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_utils_pairedvector.H"
 
 namespace MORTAR
 {
   /*!
-  \brief A subclass of DRT::ParObjectType that adds mortar element type specific methods
+  \brief A subclass of CORE::COMM::ParObjectType that adds mortar element type specific methods
 
   */
-  class MortarNodeType : public DRT::ParObjectType
+  class MortarNodeType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "MortarNodeType"; }
 
     static MortarNodeType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MortarNodeType instance_;
@@ -66,7 +66,7 @@ namespace MORTAR
      class exists.
 
      */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -341,7 +341,7 @@ namespace MORTAR
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

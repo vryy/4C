@@ -18,7 +18,7 @@
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
 
-DRT::ParObject* CONTACT::CoNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CONTACT::CoNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -59,20 +59,20 @@ CONTACT::CoNodeDataContainer::CoNodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
+void CONTACT::CoNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add txi_
-  DRT::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
   // add teta_
-  DRT::ParObject::AddtoPack(data, teta_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, teta_, 3 * sizeof(double));
   // add grow_
-  DRT::ParObject::AddtoPack(data, grow_);
+  CORE::COMM::ParObject::AddtoPack(data, grow_);
   // add kappa_
-  DRT::ParObject::AddtoPack(data, kappa_);
+  CORE::COMM::ParObject::AddtoPack(data, kappa_);
   // add activeold_
-  DRT::ParObject::AddtoPack(data, activeold_);
+  CORE::COMM::ParObject::AddtoPack(data, activeold_);
   // add n_old_
-  DRT::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -88,17 +88,17 @@ void CONTACT::CoNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // txi_
-  DRT::ParObject::ExtractfromPack(position, data, txi_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, txi_, 3 * sizeof(double));
   // teta_
-  DRT::ParObject::ExtractfromPack(position, data, teta_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, teta_, 3 * sizeof(double));
   // grow_
-  DRT::ParObject::ExtractfromPack(position, data, grow_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, grow_);
   // kappa_
-  DRT::ParObject::ExtractfromPack(position, data, kappa_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, kappa_);
   // activeold_
-  activeold_ = DRT::ParObject::ExtractInt(position, data);
+  activeold_ = CORE::COMM::ParObject::ExtractInt(position, data);
   // n_old_
-  DRT::ParObject::ExtractfromPack(position, data, n_old_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, n_old_, 3 * sizeof(double));
 
   return;
 }
@@ -195,16 +195,16 @@ void CONTACT::AUG::NodeDataContainer::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Pack(DRT::PackBuffer& data) const
+void CONTACT::AUG::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add maxNumMasterElements
-  DRT::ParObject::AddtoPack(data, mentries_);
+  CORE::COMM::ParObject::AddtoPack(data, mentries_);
   // add kappa_
-  DRT::ParObject::AddtoPack(data, kappa_);
+  CORE::COMM::ParObject::AddtoPack(data, kappa_);
   // add grow_
-  DRT::ParObject::AddtoPack(data, wGap_);
+  CORE::COMM::ParObject::AddtoPack(data, wGap_);
   // add augA_
-  DRT::ParObject::AddtoPack(data, augA_);
+  CORE::COMM::ParObject::AddtoPack(data, augA_);
 
   // no need to pack derivs_
   // (these will evaluated new anyway)
@@ -218,13 +218,13 @@ void CONTACT::AUG::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // maxNumMasterElements
-  DRT::ParObject::ExtractfromPack(position, data, mentries_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, mentries_);
   // kappa_
-  DRT::ParObject::ExtractfromPack(position, data, kappa_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, kappa_);
   // grow_
-  DRT::ParObject::ExtractfromPack(position, data, wGap_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, wGap_);
   // augA_
-  DRT::ParObject::ExtractfromPack(position, data, augA_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, augA_);
 
   return;
 }
@@ -280,18 +280,18 @@ CONTACT::CoNodePoroDataContainer::CoNodePoroDataContainer()
  |  Pack data                                                  (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodePoroDataContainer::Pack(DRT::PackBuffer& data) const
+void CONTACT::CoNodePoroDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add fvel
-  DRT::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
   // add fpres
-  DRT::ParObject::AddtoPack(data, fpres_);
+  CORE::COMM::ParObject::AddtoPack(data, fpres_);
   // add svel
-  DRT::ParObject::AddtoPack(data, svel_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, svel_, 3 * sizeof(double));
   // add poroLM
-  DRT::ParObject::AddtoPack(data, porolm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, porolm_, 3 * sizeof(double));
   // add ncoup
-  DRT::ParObject::AddtoPack(data, ncouprow_);
+  CORE::COMM::ParObject::AddtoPack(data, ncouprow_);
   return;
 }
 
@@ -303,15 +303,15 @@ void CONTACT::CoNodePoroDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // fvel
-  DRT::ParObject::ExtractfromPack(position, data, fvel_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, fvel_, 3 * sizeof(double));
   // fpres
-  DRT::ParObject::ExtractfromPack(position, data, fpres_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, fpres_);
   // svel
-  DRT::ParObject::ExtractfromPack(position, data, svel_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, svel_, 3 * sizeof(double));
   // poroLM
-  DRT::ParObject::ExtractfromPack(position, data, porolm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, porolm_, 3 * sizeof(double));
   // ncoup
-  DRT::ParObject::ExtractfromPack(position, data, ncouprow_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, ncouprow_);
   return;
 }
 
@@ -328,13 +328,13 @@ CONTACT::CoNodeTSIDataContainer::CoNodeTSIDataContainer(double t_ref, double t_d
  |  Pack data                                                  (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeTSIDataContainer::Pack(DRT::PackBuffer& data) const
+void CONTACT::CoNodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, temp_master_);
-  DRT::ParObject::AddtoPack(data, t_ref_);
-  DRT::ParObject::AddtoPack(data, t_dam_);
-  DRT::ParObject::AddtoPack(data, derivTempMasterDisp_);
-  DRT::ParObject::AddtoPack(data, derivTempMasterTemp_);
+  CORE::COMM::ParObject::AddtoPack(data, temp_master_);
+  CORE::COMM::ParObject::AddtoPack(data, t_ref_);
+  CORE::COMM::ParObject::AddtoPack(data, t_dam_);
+  CORE::COMM::ParObject::AddtoPack(data, derivTempMasterDisp_);
+  CORE::COMM::ParObject::AddtoPack(data, derivTempMasterTemp_);
   return;
 }
 
@@ -345,11 +345,11 @@ void CONTACT::CoNodeTSIDataContainer::Pack(DRT::PackBuffer& data) const
 void CONTACT::CoNodeTSIDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, temp_master_);
-  DRT::ParObject::ExtractfromPack(position, data, t_ref_);
-  DRT::ParObject::ExtractfromPack(position, data, t_dam_);
-  DRT::ParObject::ExtractfromPack(position, data, derivTempMasterDisp_);
-  DRT::ParObject::ExtractfromPack(position, data, derivTempMasterTemp_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, temp_master_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, t_ref_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, t_dam_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, derivTempMasterDisp_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, derivTempMasterTemp_);
   return;
 }
 
@@ -439,9 +439,9 @@ void CONTACT::CoNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
+void CONTACT::CoNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

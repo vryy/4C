@@ -23,7 +23,7 @@ DRT::ELEMENTS::MembraneScatra_tri3Type& DRT::ELEMENTS::MembraneScatra_tri3Type::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::MembraneScatra_tri3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>(-1, -1);
@@ -76,7 +76,7 @@ DRT::ELEMENTS::MembraneScatra_tri6Type& DRT::ELEMENTS::MembraneScatra_tri6Type::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::MembraneScatra_tri6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri6Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>(-1, -1);
@@ -129,7 +129,8 @@ DRT::ELEMENTS::MembraneScatra_quad4Type& DRT::ELEMENTS::MembraneScatra_quad4Type
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::MembraneScatra_quad4Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>(-1, -1);
@@ -182,7 +183,8 @@ DRT::ELEMENTS::MembraneScatra_quad9Type& DRT::ELEMENTS::MembraneScatra_quad9Type
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::MembraneScatra_quad9Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>(-1, -1);

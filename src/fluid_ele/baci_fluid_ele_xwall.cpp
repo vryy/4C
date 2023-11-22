@@ -16,17 +16,17 @@ of errors, turbulence statistics etc.)
 
 #include "baci_fluid_ele_xwall.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 
 DRT::ELEMENTS::FluidXWallType& DRT::ELEMENTS::FluidXWallType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidXWallType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::FluidXWallType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::FluidXWall* object = new DRT::ELEMENTS::FluidXWall(-1, -1);
   object->Unpack(data);
@@ -111,7 +111,7 @@ DRT::Element* DRT::ELEMENTS::FluidXWall::Clone() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
 {
-  return DRT::UTILS::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
+  return CORE::COMM::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 
@@ -120,7 +120,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
+  return CORE::COMM::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 /*----------------------------------------------------------------------*

@@ -64,7 +64,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::CreateMateri
 MAT::FluidPoroMultiPhaseReactionsType MAT::FluidPoroMultiPhaseReactionsType::instance_;
 
 
-DRT::ParObject* MAT::FluidPoroMultiPhaseReactionsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroMultiPhaseReactionsType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroMultiPhaseReactions* FluidPoroMultiPhaseReactions =
       new MAT::FluidPoroMultiPhaseReactions();
@@ -127,9 +127,9 @@ void MAT::FluidPoroMultiPhaseReactions::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhaseReactions::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroMultiPhaseReactions::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

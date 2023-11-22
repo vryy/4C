@@ -64,9 +64,9 @@ void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkPinJointed::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

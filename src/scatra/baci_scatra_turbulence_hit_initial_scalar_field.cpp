@@ -110,18 +110,18 @@ namespace SCATRA
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          DRT::ParObject::AddtoPack(data, *x1line);
+          CORE::COMM::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -163,7 +163,7 @@ namespace SCATRA
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }

@@ -156,7 +156,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
   {
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *data, *matrix);
+    CORE::COMM::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
 }
@@ -1491,7 +1491,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
       Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
 
       // put knotvector into block
-      DRT::PackBuffer block;
+      CORE::COMM::PackBuffer block;
       knots->Pack(block);
       block.StartPacking();
       knots->Pack(block);

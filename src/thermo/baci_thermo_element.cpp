@@ -10,11 +10,11 @@
  *----------------------------------------------------------------------*/
 #include "baci_thermo_element.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
 #include "baci_utils_exceptions.H"
@@ -27,7 +27,7 @@ DRT::ELEMENTS::ThermoType& DRT::ELEMENTS::ThermoType::Instance() { return instan
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Thermo* object = new DRT::ELEMENTS::Thermo(-1, -1);
   object->Unpack(data);
@@ -211,9 +211,9 @@ CORE::FE::CellType DRT::ELEMENTS::Thermo::Shape() const { return distype_; }  //
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Thermo::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Lines()
 {
-  return DRT::UTILS::GetElementLines<ThermoBoundary, Thermo>(*this);
+  return CORE::COMM::GetElementLines<ThermoBoundary, Thermo>(*this);
 }  // Lines()
 
 
@@ -293,7 +293,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Thermo::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<ThermoBoundary, Thermo>(*this);
+  return CORE::COMM::GetElementSurfaces<ThermoBoundary, Thermo>(*this);
 }  // Surfaces()
 
 /*----------------------------------------------------------------------*

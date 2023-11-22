@@ -46,7 +46,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Setup(DRT::Element& ele,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   DRT::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.sdc);
   DRT::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.thickness);
@@ -58,10 +58,10 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.sdc);
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.thickness);
-  DRT::ParObject::ExtractfromPack(position, data, shell_data_.num_ans);
-  DRT::ParObject::ExtractfromPack(position, data, cur_thickness_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.sdc);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.thickness);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, shell_data_.num_ans);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, cur_thickness_);
 }
 
 

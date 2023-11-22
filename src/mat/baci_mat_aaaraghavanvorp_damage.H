@@ -21,7 +21,7 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 #ifndef BACI_MAT_AAARAGHAVANVORP_DAMAGE_H
 #define BACI_MAT_AAARAGHAVANVORP_DAMAGE_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
@@ -60,14 +60,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class AAAraghavanvorp_damageType : public DRT::ParObjectType
+  class AAAraghavanvorp_damageType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "AAAraghavanvorp_damageType"; }
 
     static AAAraghavanvorp_damageType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAAraghavanvorp_damageType instance_;
@@ -108,7 +108,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class

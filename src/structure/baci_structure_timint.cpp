@@ -959,7 +959,7 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
   }
 
   // re-initialize finite elements
-  DRT::ParObjectFactory::Instance().InitializeElements(*discret_);
+  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*discret_);
 }
 
 /*----------------------------------------------------------------------*/

@@ -118,7 +118,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element

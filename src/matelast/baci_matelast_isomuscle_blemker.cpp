@@ -62,7 +62,7 @@ MAT::ELASTIC::IsoMuscleBlemker::IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBle
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void MAT::ELASTIC::IsoMuscleBlemker::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::IsoMuscleBlemker::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   anisotropyExtension_.PackAnisotropy(data);
 }

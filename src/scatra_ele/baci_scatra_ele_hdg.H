@@ -38,7 +38,7 @@ namespace DRT
 
       static ScaTraHDGType& Instance();
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
           const int id, const int owner) override;
@@ -104,7 +104,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -119,7 +119,7 @@ namespace DRT
       \ref PackMaterial and \ref UnpackMaterial are used to adapt material evaluation
 
       */
-      virtual void PackMaterial(DRT::PackBuffer& data) const;
+      virtual void PackMaterial(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack Material
@@ -473,7 +473,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -756,7 +756,7 @@ namespace DRT
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class

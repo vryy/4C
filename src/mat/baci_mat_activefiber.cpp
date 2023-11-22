@@ -32,10 +32,10 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
 #include "baci_mat_activefiber.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_four_tensor.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_utils_densematrix_svd.H"
@@ -77,7 +77,7 @@ MAT::ActiveFiberType MAT::ActiveFiberType::instance_;
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
 {
   auto* actfiber = new MAT::ActiveFiber();
   actfiber->Unpack(data);
@@ -100,9 +100,9 @@ MAT::ActiveFiber::ActiveFiber(MAT::PAR::ActiveFiber* params) : params_(params) {
 /*----------------------------------------------------------------------*
  |  Pack                                                    rauch  07/14|
  *----------------------------------------------------------------------*/
-void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
+void MAT::ActiveFiber::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -275,7 +275,7 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     auto* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel == nullptr) dserror("failed to unpack passive material");
     matpassive_ = Teuchos::rcp(matel);

@@ -75,9 +75,9 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
+void MAT::PAR::Material::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

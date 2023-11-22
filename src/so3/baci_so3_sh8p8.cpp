@@ -23,7 +23,7 @@ DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;
 
 DRT::ELEMENTS::So_sh8p8Type& DRT::ELEMENTS::So_sh8p8Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_sh8p8Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh8p8Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh8p8(-1, -1);
   object->Unpack(data);
@@ -150,9 +150,9 @@ DRT::Element* DRT::ELEMENTS::So_sh8p8::Clone() const
  |  Pack data                                                  (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh8p8::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

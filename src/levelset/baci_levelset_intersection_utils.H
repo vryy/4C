@@ -24,10 +24,14 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
+
 namespace DRT
 {
   class Discretization;
-  class PackBuffer;
 }  // namespace DRT
 
 namespace CORE::GEO
@@ -96,8 +100,8 @@ namespace SCATRA
       /** \brief pack boundary integration cells from set into char array
        *
        *  \author henke \date 12/09 */
-      void packBoundaryIntCells(
-          const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap, DRT::PackBuffer& dataSend);
+      void packBoundaryIntCells(const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap,
+          CORE::COMM::PackBuffer& dataSend);
 
       /** brief unpack boundary integration cells from char array
        *

@@ -766,10 +766,10 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
   // pack my node ids into sendbuffer
   sblock.clear();
 
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, nodevector);
+  CORE::COMM::PackBuffer data;
+  CORE::COMM::ParObject::AddtoPack(data, nodevector);
   data.StartPacking();
-  DRT::ParObject::AddtoPack(data, nodevector);
+  CORE::COMM::ParObject::AddtoPack(data, nodevector);
   swap(sblock, data());
 
   // now we start the communication
@@ -813,7 +813,7 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
       // extract data from recieved package
       while (index < rblock.size())
       {
-        DRT::ParObject::ExtractfromPack(index, rblock, nodeids);
+        CORE::COMM::ParObject::ExtractfromPack(index, rblock, nodeids);
       }
       // compute node lid based on proc0map and write it to file
       for (int i = 0; i < (int)nodeids.size(); ++i)
@@ -969,10 +969,10 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
 
-    DRT::PackBuffer data;
-    DRT::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    CORE::COMM::PackBuffer data;
+    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     data.StartPacking();
-    DRT::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     swap(sblock, data());
 
     // now we start the communication
@@ -1016,7 +1016,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
         // extract data from recieved package
         while (index < rblock.size())
         {
-          DRT::ParObject::ExtractfromPack(index, rblock, elegids);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, elegids);
         }
         for (int i = 0; i < (int)elegids.size(); ++i)
         {

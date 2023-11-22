@@ -26,7 +26,7 @@
 #include <iosfwd>
 
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -60,7 +60,7 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
                         ->CreateGrowthStrategy();
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
+void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(CORE::COMM::PackBuffer& data) const
 {
   MixtureRule::PackMixtureRule(data);
 

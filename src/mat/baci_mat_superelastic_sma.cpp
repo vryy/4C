@@ -137,7 +137,7 @@ MAT::SuperElasticSMAType MAT::SuperElasticSMAType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
 {
   MAT::SuperElasticSMA* superelast = new MAT::SuperElasticSMA();
   superelast->Unpack(data);
@@ -160,9 +160,9 @@ MAT::SuperElasticSMA::SuperElasticSMA(MAT::PAR::SuperElasticSMA* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                          hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Pack(DRT::PackBuffer& data) const
+void MAT::SuperElasticSMA::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
 

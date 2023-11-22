@@ -1221,10 +1221,10 @@ namespace DRT::ELEMENTS::SHELL
 
   inline void Serialize(const CORE::LINALG::SerialDenseMatrix& matrix, std::vector<char>& data)
   {
-    DRT::PackBuffer packBuffer;
-    DRT::ParObject::AddtoPack(packBuffer, matrix);
+    CORE::COMM::PackBuffer packBuffer;
+    CORE::COMM::ParObject::AddtoPack(packBuffer, matrix);
     packBuffer.StartPacking();
-    DRT::ParObject::AddtoPack(packBuffer, matrix);
+    CORE::COMM::ParObject::AddtoPack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
   }
 

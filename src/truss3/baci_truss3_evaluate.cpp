@@ -542,7 +542,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   }
 
   {
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     AddtoPack(data, stress);
     data.StartPacking();
     AddtoPack(data, stress);

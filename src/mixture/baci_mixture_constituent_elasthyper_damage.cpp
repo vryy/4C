@@ -48,11 +48,12 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyperDamage::MaterialT
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituent_ElastHyperDamage::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_ElastHyperDamage::PackConstituent(
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_growth_);
+  CORE::COMM::ParObject::AddtoPack(data, current_reference_growth_);
 }
 
 // Unpack the constituent
@@ -61,7 +62,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 }
 
 // Reads the element from the input file

@@ -349,14 +349,14 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
             iostress, iostrain);
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           this->AddtoPack(data, stress);
           data.StartPacking();
           this->AddtoPack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           this->AddtoPack(data, strain);
           data.StartPacking();
           this->AddtoPack(data, strain);

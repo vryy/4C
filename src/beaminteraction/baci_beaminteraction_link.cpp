@@ -91,9 +91,9 @@ void BEAMINTERACTION::BeamLink::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLink::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -131,9 +131,9 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // isinit_
-  isinit_ = DRT::ParObject::ExtractInt(position, data);
+  isinit_ = CORE::COMM::ParObject::ExtractInt(position, data);
   // issetup
-  issetup_ = DRT::ParObject::ExtractInt(position, data);
+  issetup_ = CORE::COMM::ParObject::ExtractInt(position, data);
   // id_
   ExtractfromPack(position, data, id_);
 
