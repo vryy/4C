@@ -62,10 +62,6 @@ endif()
 ###------------------------------------------------------------------- Default cmake settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
-  set_property(GLOBAL APPEND PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS "DEBUG")
-endif()
-
 ### process global options
 include(cmake/setup_global_options.cmake)
 
@@ -117,9 +113,6 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
   set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
-
-# Get the global compile definitions which have been populated until here
-get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
 set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
 
