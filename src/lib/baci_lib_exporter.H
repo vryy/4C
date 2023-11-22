@@ -12,7 +12,6 @@
 #ifndef BACI_LIB_EXPORTER_H
 #define BACI_LIB_EXPORTER_H
 
-#include "baci_lib_parobject.H"
 #include "baci_lib_utils_factory.H"
 
 #include <Epetra_Comm.h>

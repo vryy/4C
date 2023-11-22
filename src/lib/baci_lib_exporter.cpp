@@ -10,7 +10,6 @@
 
 #include "baci_lib_exporter.H"
 
-#include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <vector>
