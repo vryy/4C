@@ -13,6 +13,7 @@
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_H
 
 #include "baci_lib_utils_matrix_vector_enums.H"
+#include "baci_structure_new_enum_lists.H"
 #include "baci_structure_new_model_evaluator_generic.H"
 
 // forward declarations
@@ -152,8 +153,7 @@ namespace STR
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(
-          const DRT::UTILS::MatBlockType bt) const;
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(const MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
        *

@@ -10,6 +10,7 @@
 #ifndef BACI_CONTACT_NITSCHE_UTILS_H
 #define BACI_CONTACT_NITSCHE_UTILS_H
 
+#include "baci_contact_utils.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -37,10 +38,10 @@ namespace MORTAR
 
     virtual void Clear() = 0;
 
-    virtual void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
+    virtual void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) = 0;
 
-    virtual void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
+    virtual void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) = 0;
 
     virtual double* Rhs(int dof) = 0;
@@ -199,10 +200,10 @@ namespace MORTAR
     double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
     double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
-    void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
+    void AssembleRHS(MORTAR::MortarElement* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) override;
 
-    void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
+    void AssembleMatrix(MORTAR::MortarElement* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     template <int num_dof_per_node>

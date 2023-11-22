@@ -231,7 +231,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty() || Strategy().IsCondensedSystem())
   {
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
 
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
@@ -241,13 +241,13 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
   else
   {
     // --- displ. - block ---------------------------------------------------
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
     CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
 
     // --- constr. - block --------------------------------------------------
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::constraint);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::constraint);
     if (block_vec_ptr.is_null()) return true;
     Epetra_Vector tmp(f.Map());
     CORE::LINALG::Export(*block_vec_ptr, tmp);
@@ -271,7 +271,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ, &EvalContact());
     if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
     Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
@@ -282,7 +282,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   else if (Strategy().IsCondensedSystem())
   {
     // --- Kdd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ, &EvalContact());
     if (not block_ptr.is_null())
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -297,7 +297,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   else if (Strategy().SystemType() == INPAR::CONTACT::system_saddlepoint)
   {
     // --- Kdd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ, &EvalContact());
     if (not block_ptr.is_null())
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -307,29 +307,29 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     }
 
     // --- Kdz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_lm, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_lm, &EvalContact());
     if (not block_ptr.is_null())
     {
       block_ptr->Scale(timefac_np);
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::displ_lm);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::displ_lm);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
 
     // --- Kzd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::lm_displ, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_displ, &EvalContact());
     if (not block_ptr.is_null())
     {
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_displ);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_displ);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
 
     // --- Kzz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::lm_lm, &EvalContact());
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_lm, &EvalContact());
     if (not block_ptr.is_null())
     {
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_lm);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_lm);
     }
     /* if there are no active contact contributions, we put a identity
      * matrix at the (lm,lm)-block */
@@ -339,7 +339,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
           Teuchos::rcp(new Epetra_Vector(GState().BlockMap(Type()), false));
       err = ones->PutScalar(1.0);
       block_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ones));
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_lm);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_lm);
     }
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
@@ -392,7 +392,7 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(const double& timefac_n)
 {
   // add the contact forces to the old structural residual state vector
   Teuchos::RCP<const Epetra_Vector> strcontactrhs_ptr =
-      Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+      Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
   if (not strcontactrhs_ptr.is_null())
   {
     Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
@@ -945,7 +945,7 @@ void STR::MODELEVALUATOR::Contact::RunPostApplyJacobianInverse(const Epetra_Vect
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Contact::GetJacobianBlock(
-    const DRT::UTILS::MatBlockType bt) const
+    const STR::MatBlockType bt) const
 {
   return GState().GetJacobianBlock(Type(), bt);
 }

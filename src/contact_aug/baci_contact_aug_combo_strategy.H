@@ -122,11 +122,11 @@ namespace CONTACT
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-          const enum DRT::UTILS::VecBlockType& bt) const override;
+          const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
-          const enum DRT::UTILS::VecBlockType& bt) const override;
+          const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
@@ -134,7 +134,7 @@ namespace CONTACT
 
       /// function wrapper
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-          const enum DRT::UTILS::MatBlockType& bt,
+          const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       /// function wrapper

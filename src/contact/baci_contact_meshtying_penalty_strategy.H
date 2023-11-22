@@ -216,11 +216,11 @@ namespace CONTACT
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const override;
+        const enum CONTACT::MatBlockType& bt) const override;
 
     //@}
 

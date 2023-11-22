@@ -10,6 +10,7 @@
 #ifndef BACI_CONTACT_ABSTRACT_STRATEGY_H
 #define BACI_CONTACT_ABSTRACT_STRATEGY_H
 
+#include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_lib_utils_matrix_vector_enums.H"
@@ -891,7 +892,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const
+        const enum CONTACT::VecBlockType& bt) const
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
@@ -914,7 +915,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 08/17  */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
-        const enum DRT::UTILS::VecBlockType& bt) const
+        const enum CONTACT::VecBlockType& bt) const
     {
       return GetRhsBlockPtr(bt);
     }
@@ -945,7 +946,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
+        const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const
     {
       dserror("Not yet implemented!");

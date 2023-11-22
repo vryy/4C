@@ -76,10 +76,9 @@ namespace CONTACT
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //! [derived]
@@ -99,15 +98,15 @@ namespace CONTACT
    protected:
     // create an appropriate vector for the RHS
     Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) override;
+        const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void CompleteMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+    void CompleteMatrixBlockPtr(
+        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     // do not reditribute (during constructor phase)
     bool fix_redistribution_;

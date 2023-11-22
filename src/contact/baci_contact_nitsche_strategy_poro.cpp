@@ -31,10 +31,10 @@ void CONTACT::CoNitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vect
   CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
 
   // Evaluation for all interfaces
-  fp_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::porofluid);
-  kpp_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::porofluid_porofluid);
-  kpd_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::porofluid_displ);
-  kdp_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_porofluid);
+  fp_ = CreateRhsBlockPtr(CONTACT::VecBlockType::porofluid);
+  kpp_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::porofluid_porofluid);
+  kpd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::porofluid_displ);
+  kdp_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_porofluid);
   //    for (int i = 0; i < (int) interface_.size(); ++i)
   //    {
   //      for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
@@ -118,11 +118,11 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::porofluid:
+    case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
     default:
@@ -131,13 +131,13 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
 }
 
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bp) const
+    const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
-    case DRT::UTILS::VecBlockType::porofluid:
+    case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fp_), 0));
     default:
       return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bp);
@@ -145,17 +145,17 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt)
+    const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_porofluid:
+    case CONTACT::MatBlockType::displ_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-    case DRT::UTILS::MatBlockType::porofluid_displ:
-    case DRT::UTILS::MatBlockType::porofluid_porofluid:
+    case CONTACT::MatBlockType::porofluid_displ:
+    case CONTACT::MatBlockType::porofluid_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
@@ -166,11 +166,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMa
 }
 
 void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_porofluid:
+    case CONTACT::MatBlockType::displ_porofluid:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
                   *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // col map
@@ -178,7 +178,7 @@ void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::porofluid_displ:
+    case CONTACT::MatBlockType::porofluid_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
@@ -186,7 +186,7 @@ void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::porofluid_porofluid:
+    case CONTACT::MatBlockType::porofluid_porofluid:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
@@ -197,17 +197,17 @@ void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bp) const
+    const enum CONTACT::MatBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
-    case DRT::UTILS::MatBlockType::porofluid_porofluid:
+    case CONTACT::MatBlockType::porofluid_porofluid:
       return kpp_;
-    case DRT::UTILS::MatBlockType::porofluid_displ:
+    case CONTACT::MatBlockType::porofluid_displ:
       return kpd_;
-    case DRT::UTILS::MatBlockType::displ_porofluid:
+    case CONTACT::MatBlockType::displ_porofluid:
       return kdp_;
     default:
       return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp, nullptr);

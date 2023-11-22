@@ -327,7 +327,7 @@ CONTACT::AUG::PenaltyUpdate::GetStructuralStiffnessMatrix(
 
   // access the full stiffness matrix
   Teuchos::RCP<const CORE::LINALG::SparseMatrix> full_stiff_ptr =
-      cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ);
+      cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ);
   return full_stiff_ptr;
 }
 

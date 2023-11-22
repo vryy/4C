@@ -312,7 +312,7 @@ const Epetra_Map& CONTACT::AUG::ComboStrategy::SlTangentialDoFRowMap(const bool&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   return Get().GetRhsBlockPtr(bt);
 }
@@ -320,7 +320,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtrForNormCheck(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   return Get().GetRhsBlockPtrForNormCheck(bt);
 }
@@ -336,7 +336,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetCondensedRhsPt
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   return Get().GetMatrixBlockPtr(bt, cparams);
 }

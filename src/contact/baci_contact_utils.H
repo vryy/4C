@@ -33,6 +33,38 @@ namespace CORE::LINALG
 
 namespace CONTACT
 {
+  /// enum, which specifies the desired matrix block for the different models
+  enum class MatBlockType
+  {
+    displ_displ,          ///< Kdd block (structural block)
+    displ_lm,             ///< Kdz block (of the corresponding model evaluator)
+    lm_displ,             ///< Kzd block (of the corresponding model evaluator)
+    lm_lm,                ///< Kzz block (of the corresponding model evaluator)
+    temp_temp,            ///< Ktt block (thermal block)
+    temp_displ,           ///< Ktd block (structure-thermo-coupling)
+    displ_temp,           ///< Kdt block (thermo-structure-coupling)
+    porofluid_porofluid,  ///< Kpp block (porofluid-porofluid)
+    porofluid_displ,      ///< Kpd block (porofluid-structure)
+    displ_porofluid,      ///< Kdp block (structure-porofluid)
+    scatra_scatra,        ///< Kss block (scatra-scatra)
+    scatra_displ,         ///< Ksd block (scatra-structure)
+    displ_scatra,         ///< Kds block (structure-scatra)
+    elch_elch,            ///< Kee block (elch-elch)
+    elch_displ,           ///< Ked block (elch-structure)
+    displ_elch            ///< Kde block (structure-elch)
+  };
+
+  //! enum, which specifies the desired vector blocks for the different models
+  enum class VecBlockType
+  {
+    displ,       ///< displacement block (structural block)
+    constraint,  ///< lagrange multiplier/constraint block of the corresponding model
+    temp,        ///< temperature block (thermal block)
+    porofluid,   ///< porofluid block (porofluid block)
+    scatra,      ///< scalar transport block (scatra block)
+    elch         ///< electrochemistry block (elch block)
+  };
+
   namespace UTILS
   {
     /// Get the solid to solid contact conditions

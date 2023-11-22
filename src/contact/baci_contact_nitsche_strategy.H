@@ -11,6 +11,7 @@
 #define BACI_CONTACT_NITSCHE_STRATEGY_H
 
 #include "baci_contact_abstract_strategy.H"
+#include "baci_contact_utils.H"
 
 #include <Epetra_FEVector.h>
 
@@ -77,10 +78,9 @@ namespace CONTACT
     virtual void Integrate(const CONTACT::ParamsInterface& cparams);
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams) const override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
@@ -212,7 +212,7 @@ namespace CONTACT
      * @return the filled RHS vector of given vector block type
      */
     virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+        const enum CONTACT::VecBlockType& bt) const;
 
     /*!
      * @brief  Create an appropriate vector for the RHS
@@ -221,7 +221,7 @@ namespace CONTACT
      * @return  vector for given vector block type
      */
     virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+        const enum CONTACT::VecBlockType& bt) const;
 
     /*!
      * @brief Create appropriate matrix block
@@ -230,7 +230,7 @@ namespace CONTACT
      * @return matrix block for given matrix block type
      */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt);
+        const enum MatBlockType& bt);
 
     /*!
      * @brief Complete the matrix block with correct maps
@@ -239,7 +239,7 @@ namespace CONTACT
      * @param[in,out] kc  matrix block of given matrix block type that has to be completed
      */
     virtual void CompleteMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
+        const enum MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
 
     /*!
      * @brief Fill block matrix of given matrix block type
@@ -248,7 +248,7 @@ namespace CONTACT
      * @return the filled block matrix of given matrix block type
      */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> CreateMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt);
+        const enum MatBlockType& bt);
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
 
