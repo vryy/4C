@@ -8,7 +8,7 @@ function(add_trilinos_package_definitions target trilinos_package_list)
 endfunction()
 
 # temporarily disable our own finders for module lookup
-list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(REMOVE_ITEM CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # Get Trilinos as one entity
 set(CMAKE_PREFIX_PATH ${Trilinos_PREFIX})
@@ -18,7 +18,7 @@ set(Trilinos_DIR "${Trilinos_PREFIX}/lib/cmake/Trilinos")
 find_package(Trilinos)
 
 # re-enable our own finders
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # Echo trilinos build info just for fun
 message(STATUS "Found Trilinos: ${Trilinos_DIR} (Version ${Trilinos_VERSION})")
