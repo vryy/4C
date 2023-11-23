@@ -757,10 +757,10 @@ void THR::TimInt::ApplyForceTangInternal(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     if (fint->Update(
-            1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.))
+            1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
       dserror("update failed");
     tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp),
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
         false, p.get<double>("timefac"), 1.);
     tang->Complete();
   }
@@ -817,10 +817,9 @@ void THR::TimInt::ApplyForceTangInternal(
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    fint->Update(
-        1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.);
+    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
     tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_temp),
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
         false, p.get<double>("timefac"), 1.);
     tang->Complete();
   }
@@ -862,8 +861,7 @@ void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double tim
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
-    fint->Update(
-        1., *contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::VecBlockType::temp), 1.);
+    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
 
   // where the fun starts
   return;

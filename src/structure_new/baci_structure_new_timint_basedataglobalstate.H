@@ -19,6 +19,7 @@
 #include "baci_linalg_sparseoperator.H"
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_structure_new_enum_lists.H"
 #include "baci_timestepping_mstep.H"
 #include "baci_utils_exceptions.H"
 
@@ -185,7 +186,7 @@ namespace STR
        *
        *  \author hiermeier \date 04/17 */
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(
-          const INPAR::STR::ModelType mt, const DRT::UTILS::MatBlockType bt) const;
+          const INPAR::STR::ModelType mt, const MatBlockType bt) const;
 
       /// Get the block of the stiffness matrix which belongs to the displacement dofs.
       Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractDisplBlock(
@@ -197,7 +198,7 @@ namespace STR
        * \param mt (in)  : Model type of the desired block.
        * \param bt (in)  : Desired matrix block type.  */
       Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractModelBlock(CORE::LINALG::SparseOperator& jac,
-          const INPAR::STR::ModelType& mt, const DRT::UTILS::MatBlockType& bt) const;
+          const INPAR::STR::ModelType& mt, const MatBlockType& bt) const;
 
       Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> ExtractDisplRowOfBlocks(
           CORE::LINALG::SparseOperator& jac) const;
@@ -205,7 +206,8 @@ namespace STR
       Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> ExtractRowOfBlocks(
           CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt) const;
 
-      /** \brief Assign a CORE::LINALG::SparseMatrix to one of the blocks of the corresponding model
+      /** \brief Assign a CORE::LINALG::SparseMatrix to one of the blocks of the corresponding
+       * model
        *
        *  You can choose between one of the following blocks
        *
@@ -216,13 +218,13 @@ namespace STR
        *          ===       ===     */
       void AssignModelBlock(CORE::LINALG::SparseOperator& jac,
           const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-          const DRT::UTILS::MatBlockType& bt) const
+          const MatBlockType& bt) const
       {
         AssignModelBlock(jac, matrix, mt, bt, CORE::LINALG::View);
       };
       void AssignModelBlock(CORE::LINALG::SparseOperator& jac,
           const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-          const DRT::UTILS::MatBlockType& bt, const CORE::LINALG::DataAccess& access) const;
+          const MatBlockType& bt, const CORE::LINALG::DataAccess& access) const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.

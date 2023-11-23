@@ -1059,17 +1059,17 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Ep
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       vec_ptr = f_;
       break;
     }
-    case DRT::UTILS::VecBlockType::constraint:
+    case CONTACT::VecBlockType::constraint:
     {
       break;
     }
@@ -1086,23 +1086,23 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum CONTACT::MatBlockType& bt) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       mat_ptr = Teuchos::null;
       break;
-    case DRT::UTILS::MatBlockType::displ_lm:
+    case CONTACT::MatBlockType::displ_lm:
       if (dm_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_;
       break;
-    case DRT::UTILS::MatBlockType::lm_displ:
+    case CONTACT::MatBlockType::lm_displ:
       if (dm_matrix_t_.is_null()) dserror("matrix not available");
       mat_ptr = dm_matrix_t_;
       break;
-    case DRT::UTILS::MatBlockType::lm_lm:
+    case CONTACT::MatBlockType::lm_lm:
       if (lm_diag_matrix_.is_null()) dserror("matrix not available");
       mat_ptr = lm_diag_matrix_;
       break;

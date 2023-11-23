@@ -163,7 +163,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     dsassert(!block_vec_ptr.is_null(), "force not available");
     CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
@@ -171,7 +171,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
   else if (Strategy().IsCondensedSystem())
   {
     // --- displ. - block ---------------------------------------------------
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
@@ -180,7 +180,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
   else if (Strategy().IsSaddlePointSystem())
   {
     // --- displ. - block ---------------------------------------------------
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
@@ -204,7 +204,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
     Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
@@ -215,7 +215,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
   else if (Strategy().IsCondensedSystem())
   {
     // --- Kdd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -230,7 +230,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
   else if (Strategy().SystemType() == INPAR::CONTACT::system_saddlepoint)
   {
     // --- Kdd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
       Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -240,29 +240,29 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
     }
 
     // --- Kdz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_lm);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_lm);
     if (not block_ptr.is_null())
     {
       //      block_ptr->Scale(timefac_np);
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::displ_lm);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::displ_lm);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
 
     // --- Kzd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::lm_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_displ);
     if (not block_ptr.is_null())
     {
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_displ);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_displ);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
 
     // --- Kzz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::lm_lm);
+    block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_lm);
     if (not block_ptr.is_null())
     {
-      GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_lm);
+      GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_lm);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
@@ -388,7 +388,7 @@ void STR::MODELEVALUATOR::Meshtying::RunPostApplyJacobianInverse(const Epetra_Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
-    const DRT::UTILS::MatBlockType bt) const
+    const STR::MatBlockType bt) const
 {
   return GState().GetJacobianBlock(Type(), bt);
 }

@@ -448,12 +448,12 @@ bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epe
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
     {
       if (force_.is_null()) dserror("force vector not available");
       vec_ptr = force_;
@@ -472,12 +472,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum CONTACT::MatBlockType& bt) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       if (stiff_.is_null()) dserror("stiffness not available");
       mat_ptr = stiff_;
       break;

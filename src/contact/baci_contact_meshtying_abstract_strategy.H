@@ -10,6 +10,7 @@
 #ifndef BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
 #define BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
 
+#include "baci_contact_utils.H"
 #include "baci_inpar_mortar.H"
 #include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_mortar_strategy_base.H"
@@ -501,7 +502,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const = 0;
+        const enum CONTACT::VecBlockType& bt) const = 0;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
@@ -513,7 +514,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const = 0;
+        const enum CONTACT::MatBlockType& bt) const = 0;
 
     /*! \brief Return the Lagrange multiplier dof row map
      *

@@ -92,6 +92,31 @@ namespace STR
     temp
   };
 
+  enum class MatBlockType
+  {
+    displ_displ,  ///< Kdd block (structural block)
+    displ_lm,     ///< Kdz block (of the corresponding model evaluator)
+    lm_displ,     ///< Kzd block (of the corresponding model evaluator)
+    lm_lm,        ///< Kzz block (of the corresponding model evaluator)
+  };
+
+  inline std::string MatBlockType2String(const enum MatBlockType type)
+  {
+    switch (type)
+    {
+      case MatBlockType::displ_displ:
+        return "block_displ_displ";
+      case MatBlockType::displ_lm:
+        return "block_displ_lm";
+      case MatBlockType::lm_displ:
+        return "block_lm_displ";
+      case MatBlockType::lm_lm:
+        return "block_lm_lm";
+      default:
+        return "unknown matrix block type";
+    }
+  }
+
 }  // namespace STR
 
 #endif

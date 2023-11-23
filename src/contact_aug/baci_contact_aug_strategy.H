@@ -814,7 +814,7 @@ namespace CONTACT
 
       //! derived
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-          const enum DRT::UTILS::VecBlockType& bt) const override;
+          const enum CONTACT::VecBlockType& bt) const override;
 
       //! Return the condensed right hand side vector (currently unsupported!)
       Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
@@ -826,7 +826,7 @@ namespace CONTACT
 
       //! Return the desired matrix block pointer
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-          const enum DRT::UTILS::MatBlockType& bt,
+          const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)

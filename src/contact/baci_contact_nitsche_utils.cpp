@@ -69,28 +69,28 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 
 template <CORE::FE::CellType parent_distype>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
-    MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
+    MORTAR::MortarElement* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
 {
   switch (row)
   {
-    case DRT::UTILS::VecBlockType::displ:
+    case CONTACT::VecBlockType::displ:
       AssembleRHS<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, rhs_, mele->MoData().ParentDof(), fc);
       break;
-    case DRT::UTILS::VecBlockType::temp:
+    case CONTACT::VecBlockType::temp:
       if (mele->MoData().ParentTempDof().size())
         AssembleRHS<1>(mele, tsi_data_.rhs_t_, mele->MoData().ParentTempDof(), fc);
       break;
-    case DRT::UTILS::VecBlockType::porofluid:
+    case CONTACT::VecBlockType::porofluid:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
         AssembleRHS<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.rhs_p_, mele->MoData().ParentPFDof(), fc);
       break;
-    case DRT::UTILS::VecBlockType::scatra:
+    case CONTACT::VecBlockType::scatra:
       if (mele->MoData().ParentScalarDof().size())
         AssembleRHS<1>(mele, ssi_data_.rhs_s_, mele->MoData().ParentScalarDof(), fc);
       break;
-    case DRT::UTILS::VecBlockType::elch:
+    case CONTACT::VecBlockType::elch:
       if (mele->MoData().ParentScalarDof().size())
         AssembleRHS<2>(mele, ssi_elch_data_.rhs_e_, mele->MoData().ParentScalarDof(), fc);
       break;
@@ -101,61 +101,61 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
 
 template <CORE::FE::CellType parent_distype>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
-    DRT::UTILS::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    CONTACT::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (block)
   {
-    case DRT::UTILS::MatBlockType::displ_displ:
+    case CONTACT::MatBlockType::displ_displ:
       AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, k_, mele->MoData().ParentDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::displ_temp:
+    case CONTACT::MatBlockType::displ_temp:
       AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, tsi_data_.k_dt_, mele->MoData().ParentDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::temp_displ:
+    case CONTACT::MatBlockType::temp_displ:
       if (mele->MoData().ParentTempDof().size())
         AssembleMatrix<1>(mele, tsi_data_.k_td_, mele->MoData().ParentTempDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::temp_temp:
+    case CONTACT::MatBlockType::temp_temp:
       if (mele->MoData().ParentTempDof().size())
         AssembleMatrix<1>(mele, tsi_data_.k_tt_, mele->MoData().ParentTempDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::displ_porofluid:
+    case CONTACT::MatBlockType::displ_porofluid:
       AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, poro_data_.k_dp_, mele->MoData().ParentDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::porofluid_displ:
+    case CONTACT::MatBlockType::porofluid_displ:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
         AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.k_pd_, mele->MoData().ParentPFDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::porofluid_porofluid:
+    case CONTACT::MatBlockType::porofluid_porofluid:
       if (mele->MoData().ParentPFDof().size())  // not if the parent is an impermeable element
         AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1>(
             mele, poro_data_.k_pp_, mele->MoData().ParentPFDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::displ_scatra:
+    case CONTACT::MatBlockType::displ_scatra:
       AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, ssi_data_.k_ds_, mele->MoData().ParentDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::scatra_displ:
+    case CONTACT::MatBlockType::scatra_displ:
       if (mele->MoData().ParentScalarDof().size())
         AssembleMatrix<1>(mele, ssi_data_.k_sd_, mele->MoData().ParentScalarDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::scatra_scatra:
+    case CONTACT::MatBlockType::scatra_scatra:
       if (mele->MoData().ParentScalarDof().size())
         AssembleMatrix<1>(mele, ssi_data_.k_ss_, mele->MoData().ParentScalarDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::displ_elch:
+    case CONTACT::MatBlockType::displ_elch:
       AssembleMatrix<CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
           mele, ssi_elch_data_.k_de_, mele->MoData().ParentDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::elch_displ:
+    case CONTACT::MatBlockType::elch_displ:
       if (mele->MoData().ParentScalarDof().size())
         AssembleMatrix<2>(mele, ssi_elch_data_.k_ed_, mele->MoData().ParentScalarDof(), kc);
       break;
-    case DRT::UTILS::MatBlockType::elch_elch:
+    case CONTACT::MatBlockType::elch_elch:
       if (mele->MoData().ParentScalarDof().size())
         AssembleMatrix<2>(mele, ssi_elch_data_.k_ee_, mele->MoData().ParentScalarDof(), kc);
       break;

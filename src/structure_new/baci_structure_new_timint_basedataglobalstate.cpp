@@ -879,7 +879,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntri
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOperator& jac,
     const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-    const DRT::UTILS::MatBlockType& bt, const CORE::LINALG::DataAccess& access) const
+    const MatBlockType& bt, const CORE::LINALG::DataAccess& access) const
 {
   CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
@@ -894,29 +894,29 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case DRT::UTILS::MatBlockType::displ_displ:
+      case MatBlockType::displ_displ:
       {
         blockmat_ptr->Matrix(0, 0).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::MatBlockType::displ_lm:
+      case MatBlockType::displ_lm:
       {
         blockmat_ptr->Matrix(0, b_id).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::MatBlockType::lm_displ:
+      case MatBlockType::lm_displ:
       {
         blockmat_ptr->Matrix(b_id, 0).Assign(access, matrix);
         break;
       }
-      case DRT::UTILS::MatBlockType::lm_lm:
+      case MatBlockType::lm_lm:
       {
         blockmat_ptr->Matrix(b_id, b_id).Assign(access, matrix);
         break;
       }
       default:
       {
-        dserror("model block %s is not supported", DRT::UTILS::MatBlockType2String(bt).c_str());
+        dserror("model block %s is not supported", MatBlockType2String(bt).c_str());
         break;
       }
     }
@@ -924,8 +924,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
   }
 
   // sanity check
-  if (model_block_id_.find(mt) == model_block_id_.end() or
-      bt != DRT::UTILS::MatBlockType::displ_displ)
+  if (model_block_id_.find(mt) == model_block_id_.end() or bt != MatBlockType::displ_displ)
     dserror(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
@@ -946,7 +945,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractModelBlock(
     CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt,
-    const DRT::UTILS::MatBlockType& bt) const
+    const MatBlockType& bt) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> block = Teuchos::null;
   CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
@@ -961,29 +960,29 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case DRT::UTILS::MatBlockType::displ_displ:
+      case MatBlockType::displ_displ:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, 0));
         break;
       }
-      case DRT::UTILS::MatBlockType::displ_lm:
+      case MatBlockType::displ_lm:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, b_id));
         break;
       }
-      case DRT::UTILS::MatBlockType::lm_displ:
+      case MatBlockType::lm_displ:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, 0));
         break;
       }
-      case DRT::UTILS::MatBlockType::lm_lm:
+      case MatBlockType::lm_lm:
       {
         block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, b_id));
         break;
       }
       default:
       {
-        dserror("model block %s is not supported", DRT::UTILS::MatBlockType2String(bt).c_str());
+        dserror("model block %s is not supported", MatBlockType2String(bt).c_str());
         break;
       }
     }
@@ -991,8 +990,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
   }
 
   // sanity check
-  if (model_block_id_.find(mt) == model_block_id_.end() or
-      bt != DRT::UTILS::MatBlockType::displ_displ)
+  if (model_block_id_.find(mt) == model_block_id_.end() or bt != MatBlockType::displ_displ)
     dserror(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
@@ -1070,7 +1068,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractDisplBlock(
     CORE::LINALG::SparseOperator& jac) const
 {
-  return ExtractModelBlock(jac, INPAR::STR::model_structure, DRT::UTILS::MatBlockType::displ_displ);
+  return ExtractModelBlock(jac, INPAR::STR::model_structure, MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1093,7 +1091,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Jacob
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
-    const INPAR::STR::ModelType mt, const DRT::UTILS::MatBlockType bt) const
+    const INPAR::STR::ModelType mt, const MatBlockType bt) const
 {
   dsassert(!jac_.is_null(), "The jacobian is not initialized!");
 

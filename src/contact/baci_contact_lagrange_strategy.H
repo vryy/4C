@@ -99,7 +99,7 @@ namespace CONTACT
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum CONTACT::VecBlockType& bt) const override;
 
 
     /*! \brief Recover the current state
@@ -130,8 +130,7 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     /*! \brief Apply modifications (e.g. condensation) directly before linear solve

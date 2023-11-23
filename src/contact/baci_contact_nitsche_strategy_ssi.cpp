@@ -20,10 +20,10 @@ void CONTACT::CoNitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cp
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 
-  fs_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::scatra);
-  kss_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra);
-  ksd_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ);
-  kds_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra);
+  fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::scatra);
+  kss_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra);
+  ksd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ);
+  kds_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra);
 }
 
 /*----------------------------------------------------------------------*
@@ -152,12 +152,12 @@ void CONTACT::CoNitscheStrategySsi::SetParentState(
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategySsi::SetupRhsBlockVec(
-    const enum DRT::UTILS::VecBlockType& bt) const
+    const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
-    case DRT::UTILS::VecBlockType::elch:
-    case DRT::UTILS::VecBlockType::scatra:
+    case CONTACT::VecBlockType::elch:
+    case CONTACT::VecBlockType::scatra:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()));
     default:
@@ -168,14 +168,14 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategySsi::SetupRhsBlockVec(
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
-    const enum DRT::UTILS::VecBlockType& bp) const
+    const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
-    case DRT::UTILS::VecBlockType::elch:
-    case DRT::UTILS::VecBlockType::scatra:
+    case CONTACT::VecBlockType::elch:
+    case CONTACT::VecBlockType::scatra:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fs_), 0));
     default:
       return CONTACT::CoNitscheStrategy::GetRhsBlockPtr(bp);
@@ -185,20 +185,20 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt)
+    const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_elch:
-    case DRT::UTILS::MatBlockType::displ_scatra:
+    case CONTACT::MatBlockType::displ_elch:
+    case CONTACT::MatBlockType::displ_scatra:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-    case DRT::UTILS::MatBlockType::elch_displ:
-    case DRT::UTILS::MatBlockType::elch_elch:
-    case DRT::UTILS::MatBlockType::scatra_displ:
-    case DRT::UTILS::MatBlockType::scatra_scatra:
+    case CONTACT::MatBlockType::elch_displ:
+    case CONTACT::MatBlockType::elch_elch:
+    case CONTACT::MatBlockType::scatra_displ:
+    case CONTACT::MatBlockType::scatra_scatra:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()),
@@ -211,20 +211,20 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMat
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
-    case DRT::UTILS::MatBlockType::displ_elch:
-    case DRT::UTILS::MatBlockType::displ_scatra:
+    case CONTACT::MatBlockType::displ_elch:
+    case CONTACT::MatBlockType::displ_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap(),  // col map
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),           // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::elch_displ:
-    case DRT::UTILS::MatBlockType::scatra_displ:
+    case CONTACT::MatBlockType::elch_displ:
+    case CONTACT::MatBlockType::scatra_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
                   *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
@@ -232,8 +232,8 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
-    case DRT::UTILS::MatBlockType::elch_elch:
-    case DRT::UTILS::MatBlockType::scatra_scatra:
+    case CONTACT::MatBlockType::elch_elch:
+    case CONTACT::MatBlockType::scatra_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
@@ -246,20 +246,20 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bp) const
+    const enum CONTACT::MatBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
   switch (bp)
   {
-    case DRT::UTILS::MatBlockType::elch_elch:
-    case DRT::UTILS::MatBlockType::scatra_scatra:
+    case CONTACT::MatBlockType::elch_elch:
+    case CONTACT::MatBlockType::scatra_scatra:
       return kss_;
-    case DRT::UTILS::MatBlockType::elch_displ:
-    case DRT::UTILS::MatBlockType::scatra_displ:
+    case CONTACT::MatBlockType::elch_displ:
+    case CONTACT::MatBlockType::scatra_displ:
       return ksd_;
-    case DRT::UTILS::MatBlockType::displ_elch:
-    case DRT::UTILS::MatBlockType::displ_scatra:
+    case CONTACT::MatBlockType::displ_elch:
+    case CONTACT::MatBlockType::displ_scatra:
       return kds_;
     default:
       return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
