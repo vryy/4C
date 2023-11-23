@@ -10,8 +10,6 @@ equations
 #include "baci_inpar_material.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_parobject.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
@@ -39,6 +37,35 @@ namespace
     if (time < 0) return 0.0;  // Time has not been set by the time integrator during setup
     return time;
   }
+
+  [[nodiscard]] static inline double GetDeltaTime(const Teuchos::ParameterList& params)
+  {
+    return params.get<double>("delta time");
+  }
+
+  MIXTURE::HistoryAdaptionStrategy GetHistoryAdaptionStrategyFromInput(const std::string& input)
+  {
+    if (input == "none")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::none;
+    }
+    else if (input == "window")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::window;
+    }
+    else if (input == "model_equation")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::model_equation;
+    }
+    else if (input == "higher_order")
+    {
+      return MIXTURE::HistoryAdaptionStrategy::higher_order_integration;
+    }
+    else
+    {
+      dserror("Unknown history adaption strategy %s!", input.c_str());
+    }
+  }
 }  // namespace
 
 MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber::
@@ -54,7 +81,8 @@ MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber::
       deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH")),
       initial_deposition_stretch_timefunc_num_(
           matdata->GetInt("INITIAL_DEPOSITION_STRETCH_TIMEFUNCT")),
-      adaptive_history_(matdata->GetInt("ADAPTIVE_HISTORY")),
+      adaptive_history_strategy_(GetHistoryAdaptionStrategyFromInput(
+          *matdata->Get<std::string>("ADAPTIVE_HISTORY_STRATEGY"))),
       adaptive_history_tolerance_(matdata->GetDouble("ADAPTIVE_HISTORY_TOLERANCE"))
 {
 }
@@ -140,7 +168,7 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Initialize()
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         params_->growth_constant_, params_->poisson_decay_time_);
     full_constrained_mixture_fiber_.emplace_back(material, growth_evolution,
-        EvaluateInitialDepositionStretch(0.0), params_->adaptive_history_,
+        EvaluateInitialDepositionStretch(0.0), params_->adaptive_history_strategy_,
         params_->growth_enabled_);
     full_constrained_mixture_fiber_[gp].adaptive_tolerance_ = params_->adaptive_history_tolerance_;
   }
@@ -226,7 +254,7 @@ bool MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateOutputData
       data(gp, 0) = std::accumulate(full_constrained_mixture_fiber_[gp].history_.begin(),
           full_constrained_mixture_fiber_[gp].history_.end(), 0,
           [](std::size_t number, const DepositionHistoryInterval<double>& item)
-          { return number + item.size(); });
+          { return number + item.timesteps.size(); });
     }
     return true;
   }
@@ -274,11 +302,12 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Evaluate(
     CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   const double time = GetTotalTime(params);
+  const double delta_time = GetDeltaTime(params);
 
   CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
-  full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time);
+  full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time, delta_time);
 
   S_stress.Update(EvaluateCurrentPK2(gp, eleGID));
   cmat.Update(EvaluateCurrentCmat(gp, eleGID));

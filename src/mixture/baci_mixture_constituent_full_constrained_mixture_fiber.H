@@ -47,7 +47,7 @@ namespace MIXTURE
       const double deposition_stretch_;
       const int initial_deposition_stretch_timefunc_num_;
 
-      const bool adaptive_history_;
+      const HistoryAdaptionStrategy adaptive_history_strategy_;
       const double adaptive_history_tolerance_;
     };
   }  // namespace PAR
