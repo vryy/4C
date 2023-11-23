@@ -901,69 +901,6 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
 
 /*----------------------------------------------------------------------------*
- | access routine for nodal curvature                         rasthofer 01/15 |
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::GetNodalCurvature(
-    const Teuchos::RCP<const Epetra_Vector> phi,
-    const Teuchos::RCP<const Epetra_MultiVector> gradphi)
-{
-  // Currently, only a nodal curvature reconstruction based on an L_2-projection is supported.
-  // Other reconstruction types, for instance, a mean value computation using the values
-  // of the adjacent elements (applied, e.g., by Florian Henke and implemented in the old combustion
-  // module), should be added here as well.
-
-  Teuchos::RCP<Epetra_Vector> nodalCurvature =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-  ReconstructedNodalCurvature(nodalCurvature, phi, gradphi);
-
-  return nodalCurvature;
-};
-
-
-/*----------------------------------------------------------------------------*
- | Reconstruct nodal curvature                                   winter 04/14 |
- *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature,
-    const Teuchos::RCP<const Epetra_Vector> phi,
-    const Teuchos::RCP<const Epetra_MultiVector> gradPhi)
-{
-  // zero out matrix entries
-  sysmat_->Zero();
-
-  // zeroed residual
-  residual_->PutScalar(0.0);
-
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::recon_curvature_at_nodes, eleparams);
-
-  if (nsd_ != 3) dserror("check functionality for nsd!=3");
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp", phi);
-  discret_->SetState("gradphinp_x", Teuchos::rcp((*gradPhi)(0), false));
-  discret_->SetState("gradphinp_y", Teuchos::rcp((*gradPhi)(1), false));
-  discret_->SetState("gradphinp_z", Teuchos::rcp((*gradPhi)(2), false));
-
-  discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
-
-  discret_->ClearState();
-
-  // finalize the complete matrix
-  sysmat_->Complete();
-
-  solver_->Solve(sysmat_->EpetraOperator(), curvature, residual_, true, true);
-
-  return;
-
-}  // SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature
-
-
-/*----------------------------------------------------------------------------*
  | Get Mass Center, using the smoothing function                 winter 06/14 |
  *----------------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()

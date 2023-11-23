@@ -294,39 +294,6 @@ namespace DRT
           const double interface_thickness  //!< interface thickness of smoothing function.
       );
 
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          CORE::LINALG::SerialDenseVector& elevec2,  //!< element RHS vector (y-direction)
-          CORE::LINALG::SerialDenseVector& elevec3   //!< element RHS vector (z-direction)
-      );
-
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< element RHS vector (x-direction)
-          const INPAR::SCATRA::L2ProjectionSystemType& systemtype  //!< system type
-      );
-
-      //! calculate/reconstruct gradient at element center
-      virtual void CalcGradientEleCenter(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< gradient at element center
-          CORE::LINALG::SerialDenseVector& elevec2   //!< gauss point at element center
-      );
-
-      //! calculate/reconstruct gradient(s) at nodes using L2-projection.
-      virtual void CalcCurvatureAtNodes(
-          const DRT::Element* ele,                   //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          const std::vector<CORE::LINALG::Matrix<nen_, nsd_>>&
-              egradphinp  //!< the gradient of phi in the x-direction
-      );
-
       //! calculate filtered fields for turbulent Prandtl number
       void CalcBoxFilter(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la);
