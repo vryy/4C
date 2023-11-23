@@ -68,8 +68,8 @@ PREDEFINED             =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT                  = @CMAKE_SOURCE_DIR@/doc/doxygen/index.doc \
-                         @CMAKE_SOURCE_DIR@/src
+INPUT                  = @PROJECT_SOURCE_DIR@/doc/doxygen/index.doc \
+                         @PROJECT_SOURCE_DIR@/src
 
 FILE_PATTERNS          = *.H \
                          *.cpp \

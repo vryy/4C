@@ -9,8 +9,8 @@ if(BUILD_DOXYGEN)
   find_package(Doxygen REQUIRED dot)
 
   # set input and output files
-  set(DOXYGEN_CONFIG_IN ${CMAKE_SOURCE_DIR}/doc/doxygen/Doxyfile.in)
-  set(DOXYGEN_OUT_DIRECTORY ${CMAKE_BINARY_DIR}/doc/doxygen/)
+  set(DOXYGEN_CONFIG_IN ${PROJECT_SOURCE_DIR}/doc/doxygen/Doxyfile.in)
+  set(DOXYGEN_OUT_DIRECTORY ${PROJECT_BINARY_DIR}/doc/doxygen)
   set(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUT_DIRECTORY}/Doxyfile)
 
   # find mathjax
@@ -22,7 +22,7 @@ if(BUILD_DOXYGEN)
   add_custom_target(
     doxygen ALL
     COMMAND Doxygen::doxygen ${DOXYGEN_CONFIG_OUT}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     VERBATIM
     COMMENT "Build doxygen"
     )

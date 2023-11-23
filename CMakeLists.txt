@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.25)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
   message(
     FATAL_ERROR
       "In-source build not allowed. "
@@ -31,7 +31,7 @@ set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
 # specify where our own cmake modules are located
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # include all external (cmake) macros that we use
 include(CheckCXXSourceRuns)
