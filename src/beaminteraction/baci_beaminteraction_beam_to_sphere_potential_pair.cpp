@@ -11,13 +11,10 @@
 #include "baci_beaminteraction_beam_to_sphere_potential_pair.H"
 
 #include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_potential_params.H"
-#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beampotential.H"
-#include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"

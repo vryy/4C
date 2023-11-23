@@ -12,7 +12,6 @@
 
 /*----------------------------------------------------------------------*/
 // headers
-#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"

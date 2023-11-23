@@ -10,7 +10,7 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 
-#include "baci_comm_exporter.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_LAPACK.hpp>

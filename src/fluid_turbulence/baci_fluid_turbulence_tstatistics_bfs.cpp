@@ -9,6 +9,7 @@ turbulent flow over a backward-facing step
 
 */
 /*----------------------------------------------------------------------*/
+#include "baci_comm_exporter.H"
 #include "baci_fluid_turbulence_statistics_bfs.H"
 
 #include <fstream>

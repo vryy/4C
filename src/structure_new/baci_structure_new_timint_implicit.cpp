@@ -14,6 +14,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_solver_nonlin_nox_group.H"

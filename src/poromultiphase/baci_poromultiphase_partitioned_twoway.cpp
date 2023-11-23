@@ -13,6 +13,7 @@
 #include "baci_adapter_porofluidmultiphase_wrapper.H"
 #include "baci_adapter_str_wrapper.H"
 #include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 

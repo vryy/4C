@@ -13,6 +13,7 @@ means are computed as time averages
 
 #include "baci_fluid_turbulence_statistics_mean_general.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"

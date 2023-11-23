@@ -13,7 +13,6 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -25,7 +24,6 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-using namespace DRT::UTILS;
 
 
 /*---------------------------------------------------------------------*

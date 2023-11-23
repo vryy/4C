@@ -11,6 +11,7 @@
 
 #include "baci_fluid_turbulence_statistics_cha.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils.H"
 #include "baci_fluid_xwall.H"

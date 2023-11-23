@@ -13,7 +13,6 @@
 #define BACI_LIB_DOFSET_TRANSPARENT_INDEPENDENT_H
 
 
-#include "baci_comm_exporter.H"
 #include "baci_lib_dofset_independent.H"
 #include "baci_lib_dofset_transparent.H"
 

@@ -11,7 +11,6 @@
 #include "baci_beam3_reissner.H"
 #include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_comm_exporter.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"

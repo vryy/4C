@@ -11,16 +11,15 @@
 
 #include "baci_lib_dofset.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_FECrsGraph.h>
 
 #include <algorithm>
 #include <iostream>
-#include <numeric>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

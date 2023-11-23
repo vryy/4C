@@ -13,6 +13,7 @@
 #define BACI_FLUID_XWALL_H
 
 #include "baci_inpar_fluid.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Vector.h>

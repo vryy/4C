@@ -9,6 +9,7 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_nonconforming.H"
 
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"

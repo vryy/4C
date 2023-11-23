@@ -13,6 +13,7 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

@@ -35,6 +35,7 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_linalg_four_tensor.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_utils_densematrix_svd.H"

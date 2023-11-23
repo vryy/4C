@@ -25,6 +25,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_linalg_sparsematrix.H"
