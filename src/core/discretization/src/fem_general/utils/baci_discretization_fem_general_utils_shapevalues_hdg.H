@@ -104,7 +104,7 @@ namespace CORE::DRT::UTILS
     static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     ///! number of nodes on faces
     static const unsigned int nfn_ =
@@ -197,7 +197,7 @@ namespace CORE::DRT::UTILS
     static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     /*!
     \brief Constructor which does the things which do not need to be redone for the same

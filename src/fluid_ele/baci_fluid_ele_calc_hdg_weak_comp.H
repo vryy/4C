@@ -41,7 +41,7 @@ namespace DRT
       static const unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
 
       ///! number of faces on element
-      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,

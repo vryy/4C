@@ -36,7 +36,7 @@ namespace DRT
       static const unsigned int nsd_ = probdim;
 
       //! number of faces on element
-      static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       /// Evaluate supporting methods of the element
       /*!
