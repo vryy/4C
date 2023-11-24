@@ -335,7 +335,7 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr auto celltype_string = DETAILS::CellTypeToString<celltype>::value;
+  static constexpr auto celltype_string = DETAILS::CellTypeInformation<celltype>::name;
 
   /*!
    * @brief Returns a string representation of the celltype
@@ -365,6 +365,40 @@ namespace CORE::FE
     constexpr std::array all_celltypes_enum = celltype_array<all_celltypes>;
     return all_celltypes_enum[std::distance(std::begin(all_names), found_position)];
   }
+
+
+  /*!
+   * @brief Compile time mapping from celltype to dimension of the element
+   *
+   * @tparam celltype
+   */
+  template <CellType celltype>
+  static constexpr int dim = DETAILS::CellTypeInformation<celltype>::dim;
+
+  /*!
+   * @brief Compile time mapping from celltype to number of nodes of the element
+   *
+   * @tparam celltype
+   */
+  template <CellType celltype>
+  static constexpr int num_nodes = DETAILS::CellTypeInformation<celltype>::num_nodes;
+
+  /*!
+   * @brief Compile time mapping from celltype to number of element faces
+   *
+   * @tparam celltype
+   */
+  template <CellType celltype>
+  static constexpr int num_faces = DETAILS::CellTypeInformation<celltype>::num_faces;
+
+  /*!
+   * @brief Compile time mapping from celltype to order of the shape functions
+   *
+   * @tparam celltype
+   */
+  template <CellType celltype>
+  static constexpr CellType order = DETAILS::CellTypeInformation<celltype>::order;
+
 }  // namespace CORE::FE
 
 #endif

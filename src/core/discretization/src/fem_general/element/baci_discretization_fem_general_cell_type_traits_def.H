@@ -21,188 +21,277 @@ namespace CORE::FE::DETAILS
   //! @name Definition of the mapping celltype to string
   /// @{
   template <CellType celltype>
-  struct CellTypeToString
+  struct CellTypeInformation
   {
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::dis_none>
+  struct CellTypeInformation<CORE::FE::CellType::dis_none>
   {
-    static constexpr auto value = "DIS_NONE";
+    static constexpr auto name = "DIS_NONE";
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::quad4>
+  struct CellTypeInformation<CORE::FE::CellType::quad4>
   {
-    static constexpr auto value = "QUAD4";
+    static constexpr auto name = "QUAD4";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 4;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::quad6>
+  struct CellTypeInformation<CORE::FE::CellType::quad6>
   {
-    static constexpr auto value = "QUAD6";
+    static constexpr auto name = "QUAD6";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 6;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::quad8>
+  struct CellTypeInformation<CORE::FE::CellType::quad8>
   {
-    static constexpr auto value = "QUAD8";
+    static constexpr auto name = "QUAD8";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 8;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::quad9>
+  struct CellTypeInformation<CORE::FE::CellType::quad9>
   {
-    static constexpr auto value = "QUAD9";
+    static constexpr auto name = "QUAD9";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 9;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::tri3>
+  struct CellTypeInformation<CORE::FE::CellType::tri3>
   {
-    static constexpr auto value = "TRI3";
+    static constexpr auto name = "TRI3";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 3;
+    static constexpr int num_faces = 3;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::tri6>
+  struct CellTypeInformation<CORE::FE::CellType::tri6>
   {
-    static constexpr auto value = "TRI6";
+    static constexpr auto name = "TRI6";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 6;
+    static constexpr int num_faces = 3;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::hex8>
+  struct CellTypeInformation<CORE::FE::CellType::hex8>
   {
-    static constexpr auto value = "HEX8";
+    static constexpr auto name = "HEX8";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 8;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::hex16>
+  struct CellTypeInformation<CORE::FE::CellType::hex16>
   {
-    static constexpr auto value = "HEX16";
+    static constexpr auto name = "HEX16";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 16;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::hex18>
+  struct CellTypeInformation<CORE::FE::CellType::hex18>
   {
-    static constexpr auto value = "HEX18";
+    static constexpr auto name = "HEX18";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 18;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::hex20>
+  struct CellTypeInformation<CORE::FE::CellType::hex20>
   {
-    static constexpr auto value = "HEX20";
+    static constexpr auto name = "HEX20";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 20;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::hex27>
+  struct CellTypeInformation<CORE::FE::CellType::hex27>
   {
-    static constexpr auto value = "HEX27";
+    static constexpr auto name = "HEX27";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 27;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::tet4>
+  struct CellTypeInformation<CORE::FE::CellType::tet4>
   {
-    static constexpr auto value = "TET4";
+    static constexpr auto name = "TET4";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 4;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::tet10>
+  struct CellTypeInformation<CORE::FE::CellType::tet10>
   {
-    static constexpr auto value = "TET10";
+    static constexpr auto name = "TET10";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 10;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::wedge6>
+  struct CellTypeInformation<CORE::FE::CellType::wedge6>
   {
-    static constexpr auto value = "WEDGE6";
+    static constexpr auto name = "WEDGE6";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 6;
+    static constexpr int num_faces = 5;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::wedge15>
+  struct CellTypeInformation<CORE::FE::CellType::wedge15>
   {
-    static constexpr auto value = "WEDGE15";
+    static constexpr auto name = "WEDGE15";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 15;
+    static constexpr int num_faces = 5;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::pyramid5>
+  struct CellTypeInformation<CORE::FE::CellType::pyramid5>
   {
-    static constexpr auto value = "PYRAMID5";
+    static constexpr auto name = "PYRAMID5";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 5;
+    static constexpr int num_faces = 5;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::line2>
+  struct CellTypeInformation<CORE::FE::CellType::line2>
   {
-    static constexpr auto value = "LINE2";
+    static constexpr auto name = "LINE2";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 2;
+    static constexpr int num_faces = 2;
+    static constexpr int order = 1;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::line3>
+  struct CellTypeInformation<CORE::FE::CellType::line3>
   {
-    static constexpr auto value = "LINE3";
+    static constexpr auto name = "LINE3";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 3;
+    static constexpr int num_faces = 2;
+    static constexpr int order = 2;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::line4>
+  struct CellTypeInformation<CORE::FE::CellType::line4>
   {
-    static constexpr auto value = "LINE4";
+    static constexpr auto name = "LINE4";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 4;
+    static constexpr int num_faces = 2;
+    static constexpr int order = 3;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::line5>
+  struct CellTypeInformation<CORE::FE::CellType::line5>
   {
-    static constexpr auto value = "LINE5";
+    static constexpr auto name = "LINE5";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 5;
+    static constexpr int num_faces = 2;
+    static constexpr int order = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::line6>
+  struct CellTypeInformation<CORE::FE::CellType::line6>
   {
-    static constexpr auto value = "LINE6";
+    static constexpr auto name = "LINE6";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 6;
+    static constexpr int num_faces = 2;
+    static constexpr int order = 5;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::point1>
+  struct CellTypeInformation<CORE::FE::CellType::point1>
   {
-    static constexpr auto value = "POINT1";
+    static constexpr auto name = "POINT1";
+    static constexpr int dim = 0;
+    static constexpr int num_nodes = 1;
+    static constexpr int num_faces = 0;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs2>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs2>
   {
-    static constexpr auto value = "NURBS2";
+    static constexpr auto name = "NURBS2";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 2;
+    static constexpr int num_faces = 2;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs3>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs3>
   {
-    static constexpr auto value = "NURBS3";
+    static constexpr auto name = "NURBS3";
+    static constexpr int dim = 1;
+    static constexpr int num_nodes = 3;
+    static constexpr int num_faces = 2;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs4>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs4>
   {
-    static constexpr auto value = "NURBS4";
+    static constexpr auto name = "NURBS4";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 4;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs9>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs9>
   {
-    static constexpr auto value = "NURBS9";
+    static constexpr auto name = "NURBS9";
+    static constexpr int dim = 2;
+    static constexpr int num_nodes = 9;
+    static constexpr int num_faces = 4;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs8>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs8>
   {
-    static constexpr auto value = "NURBS8";
+    static constexpr auto name = "NURBS8";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 8;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::nurbs27>
+  struct CellTypeInformation<CORE::FE::CellType::nurbs27>
   {
-    static constexpr auto value = "NURBS27";
+    static constexpr auto name = "NURBS27";
+    static constexpr int dim = 3;
+    static constexpr int num_nodes = 27;
+    static constexpr int num_faces = 6;
   };
 
   template <>
-  struct CellTypeToString<CORE::FE::CellType::max_distype>
+  struct CellTypeInformation<CORE::FE::CellType::max_distype>
   {
-    static constexpr auto value = "MAX_DISTYPE";
+    static constexpr auto name = "MAX_DISTYPE";
   };
   /// @}
 

@@ -44,7 +44,7 @@ namespace CORE::FE::DETAILS
   template <CellType... celltypes>
   struct celltype_sequence_to_string_array<std::integer_sequence<CellType, celltypes...>>
   {
-    static constexpr std::array value = {DETAILS::CellTypeToString<celltypes>::value...};
+    static constexpr std::array value = {DETAILS::CellTypeInformation<celltypes>::name...};
   };
 
   template <typename T>
@@ -144,7 +144,7 @@ namespace CORE::FE::DETAILS
       dserror(
           "The function you are calling is not implemented for the cell type %s. Supported "
           "celltypes are %s",
-          DETAILS::CellTypeToString<celltype_t()>::value, celltypes_str_acc.c_str());
+          DETAILS::CellTypeInformation<celltype_t()>::name, celltypes_str_acc.c_str());
     }
   };
   /// @}
