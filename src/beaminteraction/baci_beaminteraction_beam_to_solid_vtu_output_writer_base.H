@@ -47,11 +47,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Empty constructor, set the class variables.
      * @param base_output_name (in) Base name for the created output files.
-     * @param vtk_params (in) RCP to the global vtk parameter list.
+     * @param visualization_output_params (in) RCP to the global visualization parameter list.
      * @param restart_time (in) Time at creation of this object.
      */
     BeamToSolidVtuOutputWriterBase(const std::string& base_output_name,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        double restart_time);
 
     /**
      * \brief Destructor.
@@ -99,7 +100,7 @@ namespace BEAMINTERACTION
     std::map<std::string, Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>>
         visualization_writers_;
 
-    //! Pointer to the global vtk input file options.
+    //! Pointer to the global visualization input file options.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Time at which a restart simulation is started.

@@ -61,7 +61,8 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup the output writer base and the desired field data.
-     * @param vtk_params (in) RCP to parameter container for global vtk options.
+     * @param visualization_output_params (in) RCP to parameter container for global visualization
+     * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */

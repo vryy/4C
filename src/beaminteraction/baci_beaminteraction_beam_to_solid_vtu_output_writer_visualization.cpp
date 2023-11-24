@@ -23,9 +23,10 @@
 BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWriterVisualization(
     const std::string& writer_full_name,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-    : IO::VisualizationManager(vtk_params->GetVisualizationParameters(),
+    double restart_time)
+    : IO::VisualizationManager(visualization_output_params->GetVisualizationParameters(),
           *(DRT::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
-      vtk_params_(vtk_params),
+      visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
       node_gid_map_(Teuchos::null)

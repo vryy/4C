@@ -1,8 +1,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief data container for input parameters for vtk-based visualization of potential-based beam
-       interactions
+\brief data container for input parameters for visualization of potential-based beam interactions
 
 \level 3
 
@@ -29,7 +28,7 @@ namespace BEAMINTERACTION
     virtual ~BeamToBeamPotentialRuntimeOutputParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init(const Teuchos::ParameterList& beam_contact_vtk_paramslist);
+    void Init(const Teuchos::ParameterList& beam_contact_visualization_output_paramslist);
 
     //! setup member variables
     void Setup();

@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVtkOuputParamsPtr()
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVisualizationOutputParamsPtr()
 {
   return output_params_ptr_;
 };

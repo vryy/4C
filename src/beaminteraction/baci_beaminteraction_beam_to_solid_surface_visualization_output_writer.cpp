@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
-          "beam-to-solid-surface", vtk_params, restart_time));
+          "beam-to-solid-surface", visualization_output_params, restart_time));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
@@ -334,7 +334,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputBe
             solid_resultant.numRows() * solid_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
 
-        // Add to the vtk output writer.
+        // Add to the visualization output writer.
         auto& visualization_data = nodal_force_visualization->GetVisualizationData();
         std::vector<double>& field_data_beam_force =
             visualization_data.GetFieldData<double>("sum_coupling_force_beam");

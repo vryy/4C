@@ -33,7 +33,7 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Init(
-    const Teuchos::ParameterList& beam_contact_vtk_paramslist)
+    const Teuchos::ParameterList& beam_contact_visualization_output_paramslist)
 {
   issetup_ = false;
 
@@ -41,21 +41,23 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Init(
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
-  output_interval_steps_ = beam_contact_vtk_paramslist.get<int>("INTERVAL_STEPS");
+  output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ =
-      (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ = (bool)DRT::INPUT::IntegralValue<int>(
+      beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
-  output_forces_ = (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "FORCES");
+  output_forces_ =
+      (bool)DRT::INPUT::IntegralValue<int>(beam_contact_visualization_output_paramslist, "FORCES");
 
   /****************************************************************************/
-  output_moments_ = (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "MOMENTS");
+  output_moments_ =
+      (bool)DRT::INPUT::IntegralValue<int>(beam_contact_visualization_output_paramslist, "MOMENTS");
 
   /****************************************************************************/
   write_force_moment_per_elepair_ = (bool)DRT::INPUT::IntegralValue<int>(
-      beam_contact_vtk_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
+      beam_contact_visualization_output_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
 
   isinit_ = true;
 }

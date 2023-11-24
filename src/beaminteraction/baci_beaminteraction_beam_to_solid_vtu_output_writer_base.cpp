@@ -22,7 +22,10 @@
 BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::BeamToSolidVtuOutputWriterBase(
     const std::string& base_output_name,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-    : base_output_name_(base_output_name), vtk_params_(vtk_params), restart_time_(restart_time)
+    double restart_time)
+    : base_output_name_(base_output_name),
+      visualization_output_params_(visualization_output_params),
+      restart_time_(restart_time)
 {
 }
 
@@ -44,7 +47,8 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::AddVisualizationWriter(
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> new_writer =
         Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>(
             new BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization(
-                base_output_name_ + "-" + writer_name, vtk_params_, restart_time_));
+                base_output_name_ + "-" + writer_name, visualization_output_params_,
+                restart_time_));
     visualization_writers_[writer_name_key] = new_writer;
     return new_writer;
   }

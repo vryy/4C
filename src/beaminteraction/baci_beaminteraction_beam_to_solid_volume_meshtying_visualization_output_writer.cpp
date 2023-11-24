@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
-          "beam-to-solid-volume", vtk_params, restart_time));
+          "beam-to-solid-volume", visualization_output_params, restart_time));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();

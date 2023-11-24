@@ -49,11 +49,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor. The underlying RuntimeVtuWriter will be set up in this method.
      * @param writer_full_name (in) Full name of this visualization on disc.
-     * @param vtk_params (in) Global VTK parameter pointer.
+     * @param visualization_output_params (in) Global visualization parameter pointer.
      * @param restart_time (in) Initial time of the simulation.
      */
     BeamToSolidVtuOutputWriterVisualization(const std::string& writer_full_name,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        double restart_time);
 
     /**
      * \brief Destructor.
@@ -90,7 +91,7 @@ namespace BEAMINTERACTION
     void Write(const unsigned int timestep_number, const double time);
 
    private:
-    //! Global parameters of vtk output.
+    //! Global parameters of visualization output.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Full name of this visualization.

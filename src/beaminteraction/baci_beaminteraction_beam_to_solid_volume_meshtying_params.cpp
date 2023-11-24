@@ -93,7 +93,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::GetVtkOuputParamsPtr()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::GetVisualizationOutputParamsPtr()
 {
   return output_params_ptr_;
 };
