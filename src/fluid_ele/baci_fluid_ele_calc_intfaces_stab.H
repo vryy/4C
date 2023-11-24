@@ -129,7 +129,7 @@ namespace DRT
 
 
       /// number of space dimensions of the FluidIntFace element
-      static const int facensd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int facensd_ = CORE::FE::dim<distype>;
 
       /// number of space dimensions of the parent element
       static const int nsd_ = facensd_ + 1;

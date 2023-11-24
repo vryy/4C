@@ -64,8 +64,7 @@ namespace DRT
       Lubrication object.
     */
 
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class LubricationEleCalc : public LubricationEleInterface
     {
      protected:
@@ -134,7 +133,7 @@ namespace DRT
       static const int nsd_ = probdim;
 
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
-      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::FE::dim<distype>;
 
      protected:
       /*========================================================================*/

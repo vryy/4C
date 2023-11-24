@@ -18,14 +18,13 @@
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& R)
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R)
 {
   // number of nodes per element
   const int nen = CORE::FE::num_nodes<distype>;
 
   // spatial dimension
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int nsd = CORE::FE::dim<distype>;
 
   if (disp.size() != nsd * nen) dserror("mismatch in dimensions");
 
@@ -120,24 +119,19 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& defgrd,
     const INPAR::STR::KinemType kinemType,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::FE::num_nodes<distype>>& derivs,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xdisp,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xcurr,
+    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& inverseJacobian,
+    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
     const INPAR::STR::PreStress prestressType,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp)
 {
   if (kinemType == INPAR::STR::kinem_linear)
   {
     defgrd.Clear();
-    for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+    for (auto i = 0; i < CORE::FE::dim<distype>; ++i)
     {
       defgrd(i, i) = 1.0;
     }
@@ -150,45 +144,35 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradient(
     return;
   }
 
-  ComputeDeformationGradientStandard<distype, CORE::DRT::UTILS::DisTypeToDim<distype>::dim>(
+  ComputeDeformationGradientStandard<distype, CORE::FE::dim<distype>>(
       defgrd, xcurr, derivs, inverseJacobian);
 }
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::FE::num_nodes<distype>>& derivs,
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& defgrd,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xdisp,
+    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
     const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, const int gp)
 {
   // get Jacobian mapping wrt to the stored configuration
-  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      invJdef;
+  CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> invJdef;
   mulfHistory->StoragetoMatrix(gp, invJdef, mulfHistory->JHistory());
 
   // get derivatives wrt to last spatial configuration
-  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, CORE::FE::num_nodes<distype>>
-      N_xyz;
+  CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>> N_xyz;
   N_xyz.Multiply(invJdef, derivs);
 
   // build multiplicative incremental defgrd
-  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      Finc;
+  CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> Finc;
   Finc.MultiplyTT(xdisp, N_xyz);
-  for (auto i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+  for (auto i = 0; i < CORE::FE::dim<distype>; ++i)
   {
     defgrd(i, i) += 1.0;
   }
 
   // get stored old incremental F
-  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-      CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      Fhist;
+  CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> Fhist;
   mulfHistory->StoragetoMatrix(gp, Fhist, mulfHistory->FHistory());
 
   // build total defgrd = delta F * F_old
@@ -240,12 +224,9 @@ void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::FE::num_nodes<distype>>& derivs,
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian)
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xrefe,
+    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& inverseJacobian)
 {
   inverseJacobian.Multiply(1.0, derivs, xrefe, 0.0);
   inverseJacobian.Invert();

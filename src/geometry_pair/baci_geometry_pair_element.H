@@ -47,7 +47,7 @@ namespace GEOMETRYPAIR
     static const CORE::FE::CellType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static const unsigned int dim_ = CORE::DRT::UTILS::DisTypeToDim<discretization_>::dim;
+    static const unsigned int dim_ = CORE::FE::dim<discretization_>;
 
     //! Number of values per node.
     static const unsigned int n_val_ = values_per_node;

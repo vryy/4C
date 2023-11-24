@@ -594,7 +594,7 @@ namespace DRT
           unsigned int slave_numdof>
       double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::EvalElementVolume()
       {
-        switch (CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim)
+        switch (CORE::FE::dim<slave_distype>)
         {
           case 3:
           {

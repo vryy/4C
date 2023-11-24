@@ -55,7 +55,7 @@ namespace DRT
       {
        public:
         /// number of spatial dimensions
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(

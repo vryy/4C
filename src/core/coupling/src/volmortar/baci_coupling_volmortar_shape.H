@@ -382,7 +382,7 @@ namespace CORE::VOLMORTAR
       static const int nn = ::CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions ("+1" due to considering only interface elements)
-      static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int ndim = ::CORE::FE::dim<distype>;
 
       double jac = 0.0;
       std::vector<double> gxi(3);
@@ -522,7 +522,7 @@ namespace CORE::VOLMORTAR
       static const int nn = ::CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions ("+1" due to considering only interface elements)
-      static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int ndim = ::CORE::FE::dim<distype>;
 
       double jac = 0.0;
       std::vector<double> gxi(3);
@@ -1125,7 +1125,7 @@ namespace CORE::VOLMORTAR
         {
           // establish fundamental data
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1202,7 +1202,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs3:
         {
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1299,7 +1299,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs9:
         {
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1374,7 +1374,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs9:
         {
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1461,7 +1461,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::pyramid5:
         {
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1551,7 +1551,7 @@ namespace CORE::VOLMORTAR
         case CORE::FE::CellType::nurbs27:
         {
           //! number of space dimensions
-          static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+          static const int ndim = ::CORE::FE::dim<distype>;
 
           //! number of element nodes
           static const int nnodes = ::CORE::FE::num_nodes<distype>;
@@ -1842,7 +1842,7 @@ namespace CORE::VOLMORTAR
       if (IsNurbs<distype>()) dserror("ERROR: Lagr. LocalToGlobal called for NURBS!");
 
       static const int n = ::CORE::FE::num_nodes<distype>;
-      static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int ndim = ::CORE::FE::dim<distype>;
 
       const ::DRT::Node* const* mynodes = ele.Nodes();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -1874,7 +1874,7 @@ namespace CORE::VOLMORTAR
     template <CORE::FE::CellType distype, class V, class T>
     void shape_function(V& f, const T* xi, INPAR::VOLMORTAR::DualQuad dualquad)
     {
-      switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+      switch (::CORE::FE::dim<distype>)
       {
         case 1:
         {
@@ -1920,7 +1920,7 @@ namespace CORE::VOLMORTAR
         std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     )
     {
-      switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+      switch (::CORE::FE::dim<distype>)
       {
         case 1:
         {
@@ -1951,7 +1951,7 @@ namespace CORE::VOLMORTAR
     void dual_shape_function(
         V& f, const T& xi, const ::DRT::Element& ele, INPAR::VOLMORTAR::DualQuad dualquad)
     {
-      switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+      switch (::CORE::FE::dim<distype>)
       {
         case 1:
         {
@@ -1987,7 +1987,7 @@ namespace CORE::VOLMORTAR
         const ::DRT::Element& ele                             ///< element which is considered
     )
     {
-      switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+      switch (::CORE::FE::dim<distype>)
       {
         case 1:
         {

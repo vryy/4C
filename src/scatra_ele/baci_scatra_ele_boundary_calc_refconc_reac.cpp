@@ -111,9 +111,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // Since this does depend on ALL values of the involved element this is quite a hassle :(
 
   // number of parent spatial dimensions
-  const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  const int pnsd = CORE::FE::dim<pdistype>;
   // number of boundary spatial dimensions
-  const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  const int bnsd = CORE::FE::dim<bdistype>;
 
   if (pnsd != nsd_) dserror("dimension do not match!");
   if (bnsd != nsd_ele_) dserror("dimension do not match!");

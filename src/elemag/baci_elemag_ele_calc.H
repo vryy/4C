@@ -32,7 +32,7 @@ namespace DRT
       static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       /// Number of space dimensions.
-      static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
       /// Number of faces on element.
       static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;

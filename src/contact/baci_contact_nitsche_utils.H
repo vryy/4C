@@ -85,7 +85,7 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
     static const int num_parent_thermo_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_thermo_dof, 1> rhs_t_;
@@ -107,9 +107,9 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
-    static const int num_parent_pf_dof = CORE::FE::num_nodes<parent_distype> *
-                                         (CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim + 1);
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
+    static const int num_parent_pf_dof =
+        CORE::FE::num_nodes<parent_distype> * (CORE::FE::dim<parent_distype> + 1);
 
     CORE::LINALG::Matrix<num_parent_pf_dof, 1> rhs_p_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_pf_dof, 1>> k_pp_;
@@ -130,7 +130,7 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
     static const int num_parent_scatra_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
@@ -152,7 +152,7 @@ namespace MORTAR
     }
 
     static const int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
     static const int num_parent_elch_dof = CORE::FE::num_nodes<parent_distype> * 2;
 
     CORE::LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
@@ -221,13 +221,10 @@ namespace MORTAR
     }
 
    private:
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> *
-                             CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
-        1>
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>, 1>
         rhs_;
     std::unordered_map<int,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> *
-                                 CORE::DRT::UTILS::DisTypeToDim<parent_distype>::dim,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
             1>>
         k_;
     MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;

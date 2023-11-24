@@ -101,7 +101,7 @@ namespace CORE::DRT::UTILS
     static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
     static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
@@ -194,7 +194,7 @@ namespace CORE::DRT::UTILS
         CORE::DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static const unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
     static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;

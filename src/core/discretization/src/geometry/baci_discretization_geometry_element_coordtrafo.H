@@ -647,7 +647,7 @@ namespace CORE::GEO
     // work for elements far away from the origin as well. (27.07.2015 winter & seitz)
 
     // number space dimensions for element
-    const size_t dim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const size_t dim = CORE::FE::dim<DISTYPE>;
 
     // number of nodes of element
     const size_t nen = CORE::FE::num_nodes<DISTYPE>;
@@ -1097,14 +1097,13 @@ namespace CORE::GEO
   */
   template <CORE::FE::CellType DISTYPE>
   static bool ComputeLocalCoordinates(
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          CORE::FE::num_nodes<DISTYPE>>& xyze,
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
+      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>>& xyze,
+      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, 1>& x,
+      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, 1>& xsi)
   {
     bool inelement = true;
 
-    const int numDim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int numDim = CORE::FE::dim<DISTYPE>;
     const int numNodes = CORE::FE::num_nodes<DISTYPE>;
 
     const int maxiter = 20;

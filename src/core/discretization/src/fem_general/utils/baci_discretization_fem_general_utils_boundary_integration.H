@@ -614,10 +614,10 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType DISTYPE, int probdim, typename valueType = double>
   void ComputeMetricTensorForBoundaryEle(
       const CORE::LINALG::Matrix<probdim, ::CORE::FE::num_nodes<DISTYPE>, valueType>& xyze,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::FE::num_nodes<DISTYPE>, valueType>& deriv,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
+      const CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, ::CORE::FE::num_nodes<DISTYPE>,
+          valueType>& deriv,
+      CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, ::CORE::FE::dim<DISTYPE>, valueType>&
+          metrictensor,
       valueType& sqrtdetg, const bool throw_error,
       CORE::LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr,
       const bool unit_normal = true)
@@ -653,8 +653,7 @@ namespace CORE::DRT::UTILS
     |
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
-    CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim, valueType>
-        dxyzdrs;
+    CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
     dxyzdrs.MultiplyNT(deriv, xyze);
 
     /* 2D boundary Element
@@ -700,18 +699,18 @@ namespace CORE::DRT::UTILS
     // Calculate outward pointing normal vector
     if (normalvec)
     {
-      if (probdim == 3 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2)
+      if (probdim == 3 and ::CORE::FE::dim<DISTYPE> == 2)
       {
         (*normalvec)(0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(1, 1) * dxyzdrs(0, 2);
         (*normalvec)(1) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(1, 2) * dxyzdrs(0, 0);
         (*normalvec)(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
       }
-      else if (probdim == 2 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
+      else if (probdim == 2 and ::CORE::FE::dim<DISTYPE> == 1)
       {
         (*normalvec)(0) = dxyzdrs(0, 1);
         (*normalvec)(1) = -dxyzdrs(0, 0);
       }
-      else if (probdim == 3 and ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
+      else if (probdim == 3 and ::CORE::FE::dim<DISTYPE> == 1)
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
@@ -750,19 +749,15 @@ namespace CORE::DRT::UTILS
   //! normal vector at the Gausspoint (template)
   template <CORE::FE::CellType DISTYPE>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim),
-          ::CORE::FE::num_nodes<DISTYPE>>& xyze,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::FE::num_nodes<DISTYPE>>& deriv,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
+      const CORE::LINALG::Matrix<(1 + ::CORE::FE::dim<DISTYPE>), ::CORE::FE::num_nodes<DISTYPE>>&
+          xyze,
+      const CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, ::CORE::FE::num_nodes<DISTYPE>>& deriv,
+      CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, ::CORE::FE::dim<DISTYPE>>& metrictensor,
       double& sqrtdetg,
-      CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec =
-          nullptr)
+      CORE::LINALG::Matrix<(1 + ::CORE::FE::dim<DISTYPE>), 1>* normalvec = nullptr)
   {
     const bool throw_error_if_negative_determinant(true);
-    ComputeMetricTensorForBoundaryEle<DISTYPE,
-        (1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim)>(
+    ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + ::CORE::FE::dim<DISTYPE>)>(
         xyze, deriv, metrictensor, sqrtdetg, throw_error_if_negative_determinant, normalvec);
   }
 
@@ -1585,20 +1580,16 @@ namespace CORE::DRT::UTILS
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
   void EvalShapeFuncAtBouIntPoint(CORE::LINALG::Matrix<::CORE::FE::num_nodes<distype>, 1>& funct,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::FE::num_nodes<distype>>& deriv,
-      double& fac,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::FE::num_nodes<distype>>& xyze,
-      const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>&
-          intpoints,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype>, ::CORE::FE::num_nodes<distype>>& deriv,
+      double& fac, CORE::LINALG::Matrix<::CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype>, 1>& xsi,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype> + 1, ::CORE::FE::num_nodes<distype>>& xyze,
+      const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::FE::dim<distype>>& intpoints,
       const int gpid, const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
       const CORE::LINALG::SerialDenseVector* weights, const bool isnurbs)
   {
     // Obtain number of spatial dimensions of boundary element
-    const int bdrynsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int bdrynsd = ::CORE::FE::dim<distype>;
 
     // local coordinates of the current integration point
     const double* gpcoord = (intpoints.IP().qxg)[gpid];
@@ -1637,13 +1628,10 @@ namespace CORE::DRT::UTILS
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
   void ElementNodeNormal(CORE::LINALG::Matrix<::CORE::FE::num_nodes<distype>, 1>& funct,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::FE::num_nodes<distype>>& deriv,
-      double& fac,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::FE::num_nodes<distype>>& xyze,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype>, ::CORE::FE::num_nodes<distype>>& deriv,
+      double& fac, CORE::LINALG::Matrix<::CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype>, 1>& xsi,
+      CORE::LINALG::Matrix<::CORE::FE::dim<distype> + 1, ::CORE::FE::num_nodes<distype>>& xyze,
       ::DRT::Element* ele, ::DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
@@ -1652,7 +1640,7 @@ namespace CORE::DRT::UTILS
      |                          Initialization                              |
      *----------------------------------------------------------------------*/
     // Number of spatial dimensions of boundary element
-    const int bdrynsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int bdrynsd = ::CORE::FE::dim<distype>;
 
     // Number of spatial dimensions of parent element
     static const int nsd = bdrynsd + 1;

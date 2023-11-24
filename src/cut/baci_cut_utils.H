@@ -138,7 +138,7 @@ namespace CORE::GEO
      *  \author hiermeier */
     template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
         unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+        unsigned dim = CORE::FE::dim<distype>>
     valtype EvalDerivsInParameterSpace(
         const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
         const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
@@ -254,7 +254,7 @@ namespace CORE::GEO
      *  \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
         unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+        unsigned dim = CORE::FE::dim<distype>>
     inline valtype EvalDerivsInParameterSpace(
         const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
         const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
@@ -379,7 +379,7 @@ namespace CORE::GEO
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, CORE::FE::CellType distype, class T1, class T2, class T3,
         unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+        unsigned dim = CORE::FE::dim<distype>>
     void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
         bool unit_normal = true)
     {

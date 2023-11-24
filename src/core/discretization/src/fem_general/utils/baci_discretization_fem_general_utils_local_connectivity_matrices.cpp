@@ -1267,88 +1267,88 @@ int CORE::DRT::UTILS::getDimension(const CORE::FE::CellType distype)
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::line2>;
       break;
     case CORE::FE::CellType::line3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line3>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::line3>;
       break;
     case CORE::FE::CellType::line4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line4>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::line4>;
       break;
     case CORE::FE::CellType::line5:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line5>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::line5>;
       break;
     case CORE::FE::CellType::line6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line6>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::line6>;
       break;
     case CORE::FE::CellType::nurbs2:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs2>;
       break;
     case CORE::FE::CellType::nurbs3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs3>;
       break;
     case CORE::FE::CellType::quad4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::quad4>;
       break;
     case CORE::FE::CellType::quad6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad6>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::quad6>;
       break;
     case CORE::FE::CellType::quad8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::quad8>;
       break;
     case CORE::FE::CellType::quad9:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::quad9>;
       break;
     case CORE::FE::CellType::tri3:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::tri3>;
       break;
     case CORE::FE::CellType::tri6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::tri6>;
       break;
     case CORE::FE::CellType::nurbs4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs4>;
       break;
     case CORE::FE::CellType::nurbs9:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs9>;
       break;
     case CORE::FE::CellType::hex8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::hex8>;
       break;
     case CORE::FE::CellType::nurbs8:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs8>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs8>;
       break;
     case CORE::FE::CellType::hex16:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::hex16>;
       break;
     case CORE::FE::CellType::hex18:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::hex18>;
       break;
     case CORE::FE::CellType::hex20:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::hex20>;
       break;
     case CORE::FE::CellType::hex27:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::hex27>;
       break;
     case CORE::FE::CellType::nurbs27:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs27>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::nurbs27>;
       break;
     case CORE::FE::CellType::tet4:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::tet4>;
       break;
     case CORE::FE::CellType::tet10:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::tet10>;
       break;
     case CORE::FE::CellType::wedge6:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::wedge6>;
       break;
     case CORE::FE::CellType::wedge15:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::wedge15>;
       break;
     case CORE::FE::CellType::pyramid5:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::pyramid5>;
       break;
     case CORE::FE::CellType::point1:
-      dim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::point1>::dim;
+      dim = CORE::FE::dim<CORE::FE::CellType::point1>;
       break;
     default:
       dserror("discretization type %s not yet implemented",

@@ -57,7 +57,7 @@ namespace CORE::VOLMORTAR
     static const int nm_ = ::CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = ::CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int ndim_ = ::CORE::FE::dim<distypeS>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)
@@ -164,7 +164,7 @@ namespace CORE::VOLMORTAR
     static const int ns_ = ::CORE::FE::num_nodes<distypeS>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = ::CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int ndim_ = ::CORE::FE::dim<distypeS>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)

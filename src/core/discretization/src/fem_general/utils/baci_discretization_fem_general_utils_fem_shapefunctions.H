@@ -3084,8 +3084,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType1, class VectorType2>
   constexpr void shape_function(const VectorType1& xsi, VectorType2& f)
   {
-    shape_function_dim<VectorType1, VectorType2, ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>(
-        xsi, f, distype);
+    shape_function_dim<VectorType1, VectorType2, ::CORE::FE::dim<distype>>(xsi, f, distype);
   }
 
   /*!
@@ -3094,7 +3093,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv1(const VectorType& xsi, MatrixType& d)
   {
-    switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+    switch (::CORE::FE::dim<distype>)
     {
       case 1:
       {
@@ -3124,7 +3123,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv2(const VectorType& xsi, MatrixType& d2)
   {
-    switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
+    switch (::CORE::FE::dim<distype>)
     {
       case 1:
       {
@@ -3165,8 +3164,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, int probdim>
   void EvaluateShapeFunctionSpatialDerivativeInProbDim(
       CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& deriv_xyz,
-      const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          CORE::FE::num_nodes<distype>>& deriv,
+      const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
       const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
       const CORE::LINALG::Matrix<probdim, 1>& normal);
 }  // namespace CORE::DRT::UTILS

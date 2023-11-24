@@ -61,11 +61,10 @@ template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombined(
     std::vector<double>& parent_disp)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
-  const int num_dof = CORE::FE::num_nodes<dt_vol> * CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
-  const int dim_image = CORE::FE::num_nodes<dt_vol> * CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim -
-                        CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim *
-                            (CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim + 1) / 2;
+  const int dim = CORE::FE::dim<dt_vol>;
+  const int num_dof = CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>;
+  const int dim_image = CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
+                        CORE::FE::dim<dt_vol> * (CORE::FE::dim<dt_vol> + 1) / 2;
 
   CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xrefe;
   CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xcurr;
@@ -106,7 +105,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& vol)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
 
   double jac;
   CORE::LINALG::Matrix<3, 3> defgrd;
@@ -142,7 +141,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& surf)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
 
   CORE::LINALG::Matrix<6, 6> id4;
   for (int i = 0; i < 3; ++i) id4(i, i) = 1.;
@@ -247,7 +246,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
     CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3>& bop,
     CORE::LINALG::Matrix<3, CORE::FE::num_nodes<dt_vol>>& N_XYZ)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
   const int num_node = CORE::FE::num_nodes<dt_vol>;
   CORE::LINALG::Matrix<dim, num_node> deriv;
 
@@ -313,13 +312,11 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
 template <CORE::FE::CellType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim,
-        CORE::FE::num_nodes<dt_vol> * CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim -
-            CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim*(
-                CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim + 1) /
-                2>& proj)
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>,
+        CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
+            CORE::FE::dim<dt_vol>*(CORE::FE::dim<dt_vol> + 1) / 2>& proj)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
   const int num_node = CORE::FE::num_nodes<dt_vol>;
   if (dim != 3) dserror("this should be 3D");
 
@@ -432,7 +429,7 @@ template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
 double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
     std::vector<double>& parent_disp)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
   const int num_dof = CORE::FE::num_nodes<dt_vol>;
   const int dim_image = CORE::FE::num_nodes<dt_vol> - 1;
 
@@ -476,7 +473,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& vol)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
   const int num_node = CORE::FE::num_nodes<dt_vol>;
 
   double jac;
@@ -517,7 +514,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& surf)
 {
-  const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int dim = CORE::FE::dim<dt_vol>;
   const int num_node = CORE::FE::num_nodes<dt_vol>;
 
   double jac;

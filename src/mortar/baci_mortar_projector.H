@@ -88,7 +88,7 @@ namespace MORTAR
     static const int n_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distype> + 1;
 
     //! @name 2D and 3D projection methods
 
@@ -296,7 +296,7 @@ namespace MORTAR
     static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distypeS> + 1;
 
     //! @name 2D and 3D projection methods
 

@@ -509,7 +509,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
 
   const int ndbcdofs = (int)lm.size();
 
@@ -650,7 +650,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
   const int ndbcdofs = (int)lm.size();
 
   // set element data

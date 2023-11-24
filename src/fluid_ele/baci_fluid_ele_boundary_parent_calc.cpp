@@ -603,7 +603,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     int pid = parent->Id();
 
     // number of parent spatial dimensions
-    static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+    static const int nsd = CORE::FE::dim<pdistype>;
 
     // number of parent element nodes
     static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -631,7 +631,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     int bid = surfele->SurfaceNumber();
 
     // number of boundary spatial dimensions
-    static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+    static const int bnsd = CORE::FE::dim<bdistype>;
 
     // number of boundary element nodes
     static const int biel = CORE::FE::num_nodes<bdistype>;
@@ -1262,7 +1262,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
   static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -1290,7 +1290,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
   static const int biel = CORE::FE::num_nodes<bdistype>;
@@ -1593,7 +1593,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
   static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -1621,7 +1621,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
   static const int biel = CORE::FE::num_nodes<bdistype>;
@@ -1931,7 +1931,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
   static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -1959,7 +1959,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
   static const int biel = CORE::FE::num_nodes<bdistype>;
@@ -3737,7 +3737,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
   static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -3771,7 +3771,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   int bid = surfele->FaceMasterNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
   static const int biel = CORE::FE::num_nodes<bdistype>;
@@ -4316,9 +4316,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   static const int biel = CORE::FE::num_nodes<bdistype>;
 
   /// number of spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;

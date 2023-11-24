@@ -221,11 +221,11 @@ namespace CORE::GEO
       bool AtEdge(const T& xsi, const double& tol)
       {
         // sanity check
-        if (xsi.Rows() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.Rows() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < Dim <===> %d<%d",
-              xsi.Rows(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.Rows(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -281,11 +281,11 @@ namespace CORE::GEO
       template <CORE::FE::CellType elementType, class T, class floatType, unsigned int dim>
       bool WithinLimits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
       {
-        if (xsi.M() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.M() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < eleDim <===> %d<%d",
-              xsi.M(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.M(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -378,11 +378,11 @@ namespace CORE::GEO
       template <CORE::FE::CellType elementType, class T, class floatType>
       bool WithinLimits(const T& xsi, const floatType& tol)
       {
-        if (xsi.M() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.M() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < eleDim <===> %d<%d",
-              xsi.M(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.M(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -466,7 +466,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier */
       template <unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim, class T>
+          unsigned dimSide = CORE::FE::dim<sideType>, class T>
       bool WithinLimitsEmbeddedManifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
       {
         if (probDim == 1) dserror("probDim is not allowed to be equal 1!");
@@ -893,8 +893,7 @@ namespace CORE::GEO
       // Static data storage of ComputePosition data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double>
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double>
       struct ComputePositionStaticMembers
       {
         /// nodal shape function values at the position xsi_
@@ -915,8 +914,7 @@ namespace CORE::GEO
       // Data storage of ComputePosition data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double>
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double>
       struct ComputePositionNoStaticMembers
       {
         CORE::LINALG::Matrix<numNodesElement, 1, floatType> funct_;
@@ -943,8 +941,7 @@ namespace CORE::GEO
        */
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double,
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, unsigned, unsigned, typename>
           class MemberStoragePolicy = ComputePositionStaticMembers>
       class ComputePositionStrategy : public EmptyNewtonStrategy,
@@ -1318,7 +1315,7 @@ namespace CORE::GEO
        */
       template <class Strategy, unsigned probDim, CORE::FE::CellType elementType,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned dim = CORE::FE::dim<elementType>>
       class ComputePositionAdaptivePrecision : Strategy
 #ifdef DEBUG_MEMORY_ALLOCATION
           ,
@@ -1598,7 +1595,7 @@ namespace CORE::GEO
        */
       template <class Strategy, unsigned probDim, CORE::FE::CellType elementType,
           bool computeCln = false, unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned dim = CORE::FE::dim<elementType>>
       class GenericComputePosition : Strategy
       {
        public:
@@ -1675,7 +1672,7 @@ namespace CORE::GEO
        */
       template <unsigned probDim, CORE::FE::CellType elementType, bool computeCln = false,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned dim = CORE::FE::dim<elementType>>
       class ComputePosition
           : public GenericComputePosition<
                 NewtonSolve<ComputePositionStrategy<false, probDim, elementType>, dim>, probDim,
@@ -1698,7 +1695,7 @@ namespace CORE::GEO
       /*--------------------------------------------------------------------------*/
       template <unsigned probDim, CORE::FE::CellType elementType,
           unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned dim = CORE::FE::dim<elementType>>
       class DebugComputePosition
           : public GenericComputePosition<
                 NewtonSolve<
@@ -1721,7 +1718,7 @@ namespace CORE::GEO
 
       // Static storage class of ComputeDistance data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeDistanceStaticMembers
       {
@@ -1767,7 +1764,7 @@ namespace CORE::GEO
 
       // Static storage class of ComputeDistance data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeDistanceNoStaticMembers
       {
@@ -1793,7 +1790,7 @@ namespace CORE::GEO
       };
 
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, unsigned, unsigned, typename>
           class MemberStoragePolicy = ComputeDistanceStaticMembers>
@@ -2403,7 +2400,7 @@ namespace CORE::GEO
        *                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeDistanceAdaptivePrecision : Strategy
 #ifdef DEBUG_MEMORY_ALLOCATION
@@ -2881,7 +2878,7 @@ namespace CORE::GEO
        *                      ^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType sideType,
-          bool computeCln = false, unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          bool computeCln = false, unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class GenericComputeDistance : Strategy
       {
@@ -3195,7 +3192,7 @@ namespace CORE::GEO
        *  ^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <unsigned probDim, CORE::FE::CellType sideType, bool computeCln = false,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeDistance
           : public GenericComputeDistance<
@@ -3214,7 +3211,7 @@ namespace CORE::GEO
 
       /*--------------------------------------------------------------------------*/
       template <unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class DebugComputeDistance
           : public GenericComputeDistance<
@@ -3237,9 +3234,8 @@ namespace CORE::GEO
 
       // Static storage class of ComputeIntersection data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeIntersectionStaticMembers
@@ -3261,9 +3257,8 @@ namespace CORE::GEO
 
       // Storage class of ComputeIntersection data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeIntersectionNoStaticMembers
@@ -3290,9 +3285,8 @@ namespace CORE::GEO
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy
        *      ^^^^^^^^^^^^^^^^^^^^^^^^^^^  */
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, CORE::FE::CellType, unsigned, unsigned,
@@ -3832,9 +3826,8 @@ namespace CORE::GEO
        *                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeIntersectionAdaptivePrecision : Strategy
@@ -4121,7 +4114,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc_edge;
           CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> edgeFunct;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
-              cln_loc_calc.A() + CORE::DRT::UTILS::DisTypeToDim<sideType>::dim, true);
+              cln_loc_calc.A() + CORE::FE::dim<sideType>, true);
 
           CORE::DRT::UTILS::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
           for (unsigned int inode = 0; inode < CORE::FE::num_nodes<edgeType>; ++inode)
@@ -4286,8 +4279,7 @@ namespace CORE::GEO
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType edgeType,
           CORE::FE::CellType sideType, bool computeCln = false,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimEdge = CORE::FE::dim<edgeType>, unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class GenericComputeIntersection : Strategy
@@ -4559,8 +4551,8 @@ namespace CORE::GEO
        *  ^^^^^^^^^^^^^^^^^^^
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <unsigned probDim, CORE::FE::CellType edgeType, CORE::FE::CellType sideType,
-          bool computeCln = false, unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          bool computeCln = false, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeIntersection
@@ -4585,8 +4577,7 @@ namespace CORE::GEO
       /** \brief most derived strategy class for debugging intersection of side
        *  and line */
       template <unsigned probDim, CORE::FE::CellType edgeType, CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
+          unsigned dimEdge = CORE::FE::dim<edgeType>, unsigned dimSide = CORE::FE::dim<sideType>,
           unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
           unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class DebugComputeIntersection

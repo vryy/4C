@@ -2044,7 +2044,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(
 {
   bool successful = true;
 
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<space_time_distype>::dim;
+  const int nsd = CORE::FE::dim<space_time_distype>;
 
   // use one-point Gauss rule
   CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(

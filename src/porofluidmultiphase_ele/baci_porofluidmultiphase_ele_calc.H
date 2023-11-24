@@ -68,7 +68,7 @@ namespace DRT
       static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! number of components necessary to store second derivatives
       // 1 component  for nsd=1:  (N,xx)

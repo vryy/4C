@@ -408,8 +408,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-    static const int target_dim = CORE::DRT::UTILS::DisTypeToDim<targetdistype>::dim;
+    static const int source_dim = CORE::FE::dim<sourcedistype>;
+    static const int target_dim = CORE::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -924,7 +924,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = CORE::DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
+    static const int source_dim = CORE::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1248,8 +1248,8 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = CORE::DRT::UTILS::DisTypeToDim<structdistype>::dim;
-    static const int fluid_dim = CORE::DRT::UTILS::DisTypeToDim<fluiddistype>::dim;
+    static const int struct_dim = CORE::FE::dim<structdistype>;
+    static const int fluid_dim = CORE::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
     const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(

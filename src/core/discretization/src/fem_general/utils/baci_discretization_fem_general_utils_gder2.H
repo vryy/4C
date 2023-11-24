@@ -133,17 +133,15 @@ namespace CORE::DRT::UTILS
   }  // CORE::DRT::UTILS::gder2
 
   template <CORE::FE::CellType DISTYPE, int NumNode>
-  void gder2(const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-                 ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& xjm,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& derxy,
+  void gder2(const CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, ::CORE::FE::dim<DISTYPE>>& xjm,
+      const CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, NumNode>& derxy,
       const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
           NumNode>& deriv2,
-      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& xyze,
+      const CORE::LINALG::Matrix<::CORE::FE::dim<DISTYPE>, NumNode>& xyze,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
           derxy2)
   {
-    gder2<DISTYPE, NumNode, ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>(
-        xjm, derxy, deriv2, xyze, derxy2);
+    gder2<DISTYPE, NumNode, ::CORE::FE::dim<DISTYPE>>(xjm, derxy, deriv2, xyze, derxy2);
   }
 
 

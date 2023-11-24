@@ -81,10 +81,10 @@ namespace CONTACT
         CORE::FE::CellType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
-      static const unsigned REF_DIM = CORE::DRT::UTILS::DisTypeToDim<ref_type>::dim;
+      static const unsigned REF_DIM = CORE::FE::dim<ref_type>;
       static const unsigned REF_NUMNODES = CORE::FE::num_nodes<ref_type>;
 
-      static const unsigned TAR_DIM = CORE::DRT::UTILS::DisTypeToDim<tar_type>::dim;
+      static const unsigned TAR_DIM = CORE::FE::dim<tar_type>;
       static const unsigned TAR_NUMNODES = CORE::FE::num_nodes<tar_type>;
 
      public:

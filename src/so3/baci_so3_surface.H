@@ -434,12 +434,9 @@ namespace DRT
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
       template <CORE::FE::CellType dt_vol>
       void SubspaceProjector(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> *
-                                   CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim,
-              CORE::FE::num_nodes<dt_vol> * CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim -
-                  CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim*(
-                      CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim + 1) /
-                      2>& proj);
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>,
+              CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
+                  CORE::FE::dim<dt_vol>*(CORE::FE::dim<dt_vol> + 1) / 2>& proj);
 
 
       //! Templated version: parent and surface discretization type

@@ -1326,7 +1326,7 @@ template <CORE::FE::CellType parentdistype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
     const DRT::FaceElement* faceele, const double* faceele_xi)
 {
-  const int parent_ele_dim = CORE::DRT::UTILS::DisTypeToDim<parentdistype>::dim;
+  const int parent_ele_dim = CORE::FE::dim<parentdistype>;
   const int parent_ele_num_nodes = CORE::FE::num_nodes<parentdistype>;
 
   auto parent_xi =
@@ -2111,10 +2111,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::FE::dim<pdistype>;
 
   // number of (boundary) element nodes
   static const int bnen = CORE::FE::num_nodes<bdistype>;
@@ -2812,10 +2812,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of spatial dimensions regarding parent element
-  static const int pnsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int pnsd = CORE::FE::dim<pdistype>;
 
   // number of (boundary) element nodes
   static const int bnen = CORE::FE::num_nodes<bdistype>;

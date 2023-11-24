@@ -232,7 +232,7 @@ namespace NTS
     static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim + 1;
+    static const int ndim_ = CORE::FE::dim<distypeM> + 1;
 
     /*!
      \brief Interpolate for nts problems

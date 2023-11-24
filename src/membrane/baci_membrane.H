@@ -97,7 +97,7 @@ namespace DRT
       static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
       static const int noddof_ = 3;

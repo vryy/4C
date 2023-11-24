@@ -126,7 +126,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   //--------------------------------------------------------
   /// number of space dimensions of the FluidIntFace element
-  static const int facensd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int facensd = CORE::FE::dim<distype>;
 
   /// number of space dimensions of the parent element
   static const int nsd = facensd + 1;

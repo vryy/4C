@@ -67,8 +67,7 @@ namespace DRT
       \author gjb
       \date 08/08
     */
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalc : public ScaTraBoundaryInterface
     {
      public:
@@ -77,7 +76,7 @@ namespace DRT
 
       //! number of boundary(!) space dimensions
       static const int nsd_ = probdim;
-      static const int nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ele_ = CORE::FE::dim<distype>;
 
       // schott
       /*----------------------------------------------------------------------*/

@@ -250,7 +250,7 @@ namespace CORE::GEO
      *  \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
     {
@@ -395,7 +395,7 @@ namespace CORE::GEO
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputePosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -441,7 +441,7 @@ namespace CORE::GEO
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+        unsigned dim = CORE::FE::dim<eletype>,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputeEmbeddedPosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
@@ -700,15 +700,13 @@ namespace CORE::GEO
             case INPAR::CUT::floattype_double:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
-                  xyze, xyz);
+                  CORE::FE::dim<eletype>, INPAR::CUT::floattype_double>(xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
               return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
-                  xyze, xyz);
+                  CORE::FE::dim<eletype>, INPAR::CUT::floattype_cln>(xyze, xyz);
               break;
             }
             default:
@@ -731,16 +729,14 @@ namespace CORE::GEO
           {
             case INPAR::CUT::floattype_double:
             {
-              return new ComputePosition<dim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(
-                  xyze, xyz);
+              return new ComputePosition<dim, eletype, numNodesElement, CORE::FE::dim<eletype>,
+                  INPAR::CUT::floattype_double>(xyze, xyz);
               break;
             }
             case INPAR::CUT::floattype_cln:
             {
-              return new ComputePosition<dim, eletype, numNodesElement,
-                  CORE::DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(
-                  xyze, xyz);
+              return new ComputePosition<dim, eletype, numNodesElement, CORE::FE::dim<eletype>,
+                  INPAR::CUT::floattype_cln>(xyze, xyz);
               break;
             }
             default:
@@ -763,8 +759,7 @@ namespace CORE::GEO
        *  \param point   (in) : Given global point
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, CORE::FE::CellType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
@@ -798,7 +793,7 @@ namespace CORE::GEO
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -832,8 +827,7 @@ namespace CORE::GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, CORE::FE::CellType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
@@ -867,7 +861,7 @@ namespace CORE::GEO
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim;
+        const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
           dserror(
               "The element dimension is larger than the problem dimension! \n"
@@ -906,8 +900,7 @@ namespace CORE::GEO
        *  \param xyz     (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, CORE::FE::CellType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(
           const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
@@ -974,8 +967,7 @@ namespace CORE::GEO
        *  \param xyz   (in) : Global coordinates of the given point.
        *
        *  \author hiermeier \date 08/16 */
-      template <unsigned probdim, CORE::FE::CellType eletype,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
+      template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,

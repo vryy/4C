@@ -529,26 +529,26 @@ template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::li
 // CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::wedge15>;
 
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 /* --- ComputePosition --- */
 // non-embedded cases (only)
 template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2>;
@@ -571,55 +571,55 @@ template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15>;
 
 template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 
 template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
+    INPAR::CUT::floattype_cln>;
 
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet4,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tet4>, CORE::FE::dim<CORE::FE::CellType::tet4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet10,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet10>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tet10>, CORE::FE::dim<CORE::FE::CellType::tet10>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex8,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex8>, CORE::FE::dim<CORE::FE::CellType::hex8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex16,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex16>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex16>, CORE::FE::dim<CORE::FE::CellType::hex16>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex18,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex18>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex18>, CORE::FE::dim<CORE::FE::CellType::hex18>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex20,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex20>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex20>, CORE::FE::dim<CORE::FE::CellType::hex20>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex27,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex27>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex27>, CORE::FE::dim<CORE::FE::CellType::hex27>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::pyramid5,
-    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>, CORE::FE::dim<CORE::FE::CellType::pyramid5>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, CORE::FE::dim<CORE::FE::CellType::wedge6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
+    INPAR::CUT::floattype_cln>;
 
 /* --- PositionGeneric --- */
 // embedded cases
@@ -659,75 +659,75 @@ template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15>;
 
 // embedded cases
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 
 // non-embedded cases
 template class CORE::GEO::CUT::PositionGeneric<1, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
+    INPAR::CUT::floattype_cln>;
 
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad9>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
+    INPAR::CUT::floattype_cln>;
 
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet4,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet4>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet4>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tet4>, CORE::FE::dim<CORE::FE::CellType::tet4>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet10,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet10>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tet10>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::tet10>, CORE::FE::dim<CORE::FE::CellType::tet10>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex8,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex8>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex8>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex8>, CORE::FE::dim<CORE::FE::CellType::hex8>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex16,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex16>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex16>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex16>, CORE::FE::dim<CORE::FE::CellType::hex16>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex18,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex18>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex18>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex18>, CORE::FE::dim<CORE::FE::CellType::hex18>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex20,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex20>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex20>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex20>, CORE::FE::dim<CORE::FE::CellType::hex20>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex27,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex27>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::hex27>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::hex27>, CORE::FE::dim<CORE::FE::CellType::hex27>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::pyramid5,
-    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>, CORE::FE::dim<CORE::FE::CellType::pyramid5>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge6>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, CORE::FE::dim<CORE::FE::CellType::wedge6>,
+    INPAR::CUT::floattype_cln>;
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>,
-    CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::wedge15>::dim, INPAR::CUT::floattype_cln>;
+    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
+    INPAR::CUT::floattype_cln>;

@@ -32,19 +32,15 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType distype>
   struct MulfHistoryData
   {
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        inverse_jacobian;
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        deformation_gradient;
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> inverse_jacobian;
+    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> deformation_gradient;
     bool is_setup = false;
 
     MulfHistoryData()
     {
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++i)
+      for (int i = 0; i < CORE::FE::dim<distype>; ++i)
       {
-        for (int j = 0; j < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++j)
+        for (int j = 0; j < CORE::FE::dim<distype>; ++j)
         {
           inverse_jacobian(i, j) = static_cast<double>(i == j);
           deformation_gradient(i, j) = static_cast<double>(i == j);
@@ -114,7 +110,7 @@ namespace DRT::ELEMENTS
    private:
     /// static values for matrix sizes
     static constexpr int num_nodes_ = CORE::FE::num_nodes<distype>;
-    static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    static constexpr int num_dim_ = CORE::FE::dim<distype>;
     static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
     static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 

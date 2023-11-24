@@ -50,7 +50,7 @@ namespace WEAR
         bool& found, double* e)
     {
       static const int numnod = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int ndim = CORE::FE::dim<distype>;
 
       CORE::LINALG::Matrix<numnod, 1> funct;
       CORE::LINALG::Matrix<ndim, numnod> xcure;

@@ -3061,7 +3061,7 @@ namespace FLD
     const int iel = CORE::FE::num_nodes<DISTYPE>;
 
     // get number of dimensions
-    const int nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const int nsd = CORE::FE::dim<DISTYPE>;
 
     // get number of dof's
     const int numdofpernode = nsd + 1;

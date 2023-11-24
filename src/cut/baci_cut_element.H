@@ -410,7 +410,7 @@ namespace CORE::GEO
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
         const int nen = CORE::FE::num_nodes<distype>;
-        const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        const int dim = CORE::FE::dim<distype>;
         CORE::LINALG::Matrix<probdim, nen> xyze;
         CORE::LINALG::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
@@ -637,7 +637,7 @@ namespace CORE::GEO
      *  \author hiermeier */
     template <unsigned probdim, CORE::FE::CellType elementtype,
         unsigned numNodesElement = CORE::FE::num_nodes<elementtype>,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
+        unsigned dim = CORE::FE::dim<elementtype>>
     class ConcreteElement : public Element
     {
      public:
@@ -1001,7 +1001,7 @@ namespace CORE::GEO
       {
         Element* e = nullptr;
         // sanity check
-        if (probdim < CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim)
+        if (probdim < CORE::FE::dim<elementtype>)
           dserror("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)

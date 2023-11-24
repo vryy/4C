@@ -45,9 +45,9 @@ namespace DRT
         /// number of nodes per master (xfem-fluid) element
         static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<slave_distype>;
         /// number of slave element's nodes
         static const unsigned slave_nen_ = CORE::FE::num_nodes<slave_distype>;
 
@@ -266,9 +266,9 @@ namespace DRT
         /// number of nodes per master (xfem-fluid) element
         static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<distype>;
         /// just for compatibility...
         static const unsigned slave_nen_ = nen_;
 

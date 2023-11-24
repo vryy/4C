@@ -70,8 +70,7 @@ namespace DRT
       Scatra object.
     */
 
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalc : public ScaTraEleInterface
     {
      protected:
@@ -143,7 +142,7 @@ namespace DRT
 
       //! number of space dimensions
       static const unsigned nsd_ = probdim;
-      static const unsigned nsd_ele_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const unsigned nsd_ele_ = CORE::FE::dim<distype>;
 
       //! element-type specific flag if second derivatives are needed
       static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;

@@ -37,7 +37,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::ElementHandle::Creat
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic)
 {
   const unsigned nen = CORE::FE::num_nodes<distype>;
-  const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const unsigned dim = CORE::FE::dim<distype>;
   CORE::LINALG::Matrix<dim, nen> xie;
   if (cpoints.size() != nen) dserror("non-matching number of points");
 

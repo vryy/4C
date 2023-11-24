@@ -30,7 +30,7 @@ namespace DRT
       static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
      public:
       //! singleton access method

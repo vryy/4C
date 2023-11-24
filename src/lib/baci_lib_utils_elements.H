@@ -30,7 +30,7 @@ namespace DRT
     {
       // check input
       static_assert(numnode == CORE::FE::num_nodes<type>, "Wrong matrix dimension.");
-      static_assert(numdim == CORE::DRT::UTILS::DisTypeToDim<type>::dim, "Wrong matrix dimension.");
+      static_assert(numdim == CORE::FE::dim<type>, "Wrong matrix dimension.");
 
       CORE::LINALG::Matrix<numdim, numnode> deriv_at_c(false);
       CORE::LINALG::Matrix<numdim, numdim> jac_at_c(false);

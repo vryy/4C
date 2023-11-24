@@ -71,7 +71,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
-  constexpr auto numdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  constexpr auto numdim = CORE::FE::dim<distype>;
   constexpr auto numnod = CORE::FE::num_nodes<distype>;
   CORE::DRT::UTILS::GaussIntegration gauss_integration =
       CreateGaussIntegration<distype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<distype>());

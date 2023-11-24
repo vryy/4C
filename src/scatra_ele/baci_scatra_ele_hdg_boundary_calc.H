@@ -70,7 +70,7 @@ namespace DRT
       static const int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ScaTraHDGBoundary element
-      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
       static const int nsd_ = bdrynsd_ + 1;

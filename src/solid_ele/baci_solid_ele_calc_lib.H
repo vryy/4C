@@ -43,7 +43,7 @@ namespace DRT::ELEMENTS::DETAIL
   inline static constexpr int num_nodes = CORE::FE::num_nodes<distype>;
 
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  inline static constexpr int num_dim = CORE::FE::dim<distype>;
 
   template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;
@@ -263,7 +263,7 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType distype, typename GaussRuleType>
   CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
-    constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    constexpr int num_dim = CORE::FE::dim<distype>;
 
     // setup default integration
     CORE::DRT::UTILS::IntPointsAndWeights<num_dim> intpoints(rule);

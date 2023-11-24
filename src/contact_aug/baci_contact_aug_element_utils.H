@@ -235,7 +235,7 @@ namespace CONTACT
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
       static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
-      static const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
+      static const unsigned DIM = CORE::FE::dim<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);

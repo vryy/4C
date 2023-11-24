@@ -366,7 +366,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               // get number of element nodes
               const int nen = CORE::FE::num_nodes<distype>;
               // get number of space dimensions
-              const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+              const int nsd = CORE::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
               DRT::Element::LocationArray la(discret_->NumDofSets());

@@ -403,7 +403,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
   {
     case CORE::FE::CellType::line2:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::line2>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -416,7 +416,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs2:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs2>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -429,7 +429,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs3:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs3>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -442,7 +442,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::quad4:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::quad4>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
@@ -453,7 +453,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::tri3:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::tri3>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
@@ -464,7 +464,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs4:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs4>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
@@ -475,7 +475,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs9:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs9>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
@@ -552,7 +552,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
   const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
-  const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
+  const unsigned slavedim = CORE::FE::dim<slavetype>;
   const unsigned probdim = slavedim + 1;
 
   CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
@@ -679,7 +679,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
   const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
-  const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
+  const unsigned slavedim = CORE::FE::dim<slavetype>;
   const unsigned probdim = slavedim + 1;
 
   CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
@@ -707,7 +707,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
   {
     case CORE::FE::CellType::line2:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::line2>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -720,7 +720,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs2:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs2>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs2>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -733,7 +733,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs3:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs3>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs3>;
       const unsigned probdim = eledim + 1;
 
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
@@ -746,7 +746,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::quad4:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::quad4>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
@@ -757,7 +757,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::tri3:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::tri3>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
@@ -768,7 +768,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs4:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs4>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs4>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
@@ -779,7 +779,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     case CORE::FE::CellType::nurbs9:
     {
-      const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::nurbs9>::dim;
+      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs9>;
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;

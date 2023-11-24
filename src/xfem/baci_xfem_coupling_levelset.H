@@ -415,7 +415,7 @@ namespace XFEM
       //-------------------------------------------------------------------------
 
       // number space dimensions for element
-      const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      const size_t nsd = CORE::FE::dim<DISTYPE>;
 
       // number of nodes of element
       const size_t nen = CORE::FE::num_nodes<DISTYPE>;
@@ -561,7 +561,7 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const size_t nsd = CORE::FE::dim<DISTYPE>;
 
     // number of nodes of element
     const size_t nen = CORE::FE::num_nodes<DISTYPE>;
@@ -584,7 +584,7 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    //    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    //    const size_t nsd = CORE::FE::dim<DISTYPE>;
 
     // number of nodes of element
     const size_t nen = CORE::FE::num_nodes<DISTYPE>;
@@ -601,7 +601,7 @@ namespace XFEM
       const M4& esmoothedcurvature_T, const int numnode)
   {
     // number space dimensions for element
-    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const size_t nsd = CORE::FE::dim<DISTYPE>;
 
     double icurvature = 0.0;
     return icurvature;
@@ -617,7 +617,7 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+    const size_t nsd = CORE::FE::dim<DISTYPE>;
 
     CORE::LINALG::Matrix<nsd, nsd> p_matrix(false);
     CORE::LINALG::Matrix<nsd, nsd> p_smoothed_matrix(false);

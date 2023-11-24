@@ -191,8 +191,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
     const std::size_t numgp = intpoints.IP().nquad;
 
     std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>> shapefcns(numgp);
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     for (std::size_t q = 0; q < numgp; ++q)
     {
       // gaussian points coordinates
-      for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+      for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
         gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
       CORE::DRT::UTILS::shape_function<distype>(gp_coord, shapefcns[q]);
@@ -290,8 +290,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
       deg = 4 * this->shapes_->degree_;
     else
       deg = 3 * this->shapes_->degree_;
-    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-        intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+    const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
     nqpoints = intpoints.IP().nquad;
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
         gp_mat_alpha_[q] = intpoints.IP().qwgt[q];
         // gaussian points coordinates
-        for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+        for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
         polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
         gp_mat_alpha_[q] = quadrature_->Weight(q);
         // gaussian points coordinates
-        for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+        for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
           mat_gp_coord(idim) = quadrature_->Point(q)[idim];
 
         polySpace_->Evaluate(mat_gp_coord, values_mat_gp_all_[q]);
@@ -676,10 +676,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   else
     degold = 3 * hdgele->DegreeOld();
 
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints_old(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints_old(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
@@ -693,7 +693,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     shape_gp_old[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints_old.IP().qxg[q][idim];
     polySpace->Evaluate(mat_gp_coord, shape_gp_old[q]);
   }
@@ -703,7 +703,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     shape_gp[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
     polySpace->Evaluate(mat_gp_coord, shape_gp[q]);
   }

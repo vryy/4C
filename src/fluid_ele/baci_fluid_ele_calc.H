@@ -83,7 +83,7 @@ namespace DRT
           DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       static const int numdofpernode_ = nsd_ + 1;
 

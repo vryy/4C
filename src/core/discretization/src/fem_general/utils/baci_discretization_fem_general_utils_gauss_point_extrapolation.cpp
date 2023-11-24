@@ -84,7 +84,7 @@ namespace
   CORE::LINALG::SerialDenseMatrix EvaluateBaseShapeFunctionsAtGaussPoints(
       const CORE::FE::CellType base_distype, const GaussIntegration& intpoints)
   {
-    constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    constexpr int nsd = CORE::FE::dim<distype>;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
     CORE::LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
 
@@ -110,7 +110,7 @@ namespace
       const DRT::Discretization& dis, const DRT::Element& ele,
       const CORE::FE::CellType base_distype, const GaussIntegration& intpoints)
   {
-    constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    constexpr int nsd = CORE::FE::dim<distype>;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
     CORE::LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
 
@@ -206,7 +206,7 @@ namespace
     {
       return matrix_gp_to_base;
     }
-    constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+    constexpr int nsd = CORE::FE::dim<distype>;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
 
     CORE::LINALG::SerialDenseMatrix matrix_base_to_dis(CORE::FE::num_nodes<distype>, base_numnod);

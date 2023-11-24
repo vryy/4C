@@ -150,7 +150,7 @@ void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions(
   constexpr std::size_t nen = CORE::FE::num_nodes<distype>;
 
   // spatial dimension
-  constexpr std::size_t nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  constexpr std::size_t nsd = CORE::FE::dim<distype>;
 
   // number of gauss points
   const std::size_t ngp = shapefcts.size();

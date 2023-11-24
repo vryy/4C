@@ -20,8 +20,7 @@ namespace DRT
     template <int NSD>
     class ScaTraEleDiffManagerAniso;
 
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:

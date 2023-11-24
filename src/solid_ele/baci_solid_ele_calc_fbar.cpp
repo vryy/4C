@@ -21,7 +21,7 @@ namespace
   inline static constexpr int num_nodes = CORE::FE::num_nodes<distype>;
 
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  inline static constexpr int num_dim = CORE::FE::dim<distype>;
 
   template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;

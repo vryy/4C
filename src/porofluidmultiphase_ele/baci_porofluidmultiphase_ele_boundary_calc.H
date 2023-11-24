@@ -45,7 +45,7 @@ namespace DRT
       static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
