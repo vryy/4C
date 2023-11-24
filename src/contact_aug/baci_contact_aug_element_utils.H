@@ -177,8 +177,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::MortarElement& ele, T& xi, V& val)
     {
-      static const unsigned NUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -196,8 +195,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::MortarElement& ele, T& xi, V& deriv)
     {
-      static const unsigned NUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -217,8 +215,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::MortarElement& ele, T& xi, U& val, V& deriv)
     {
-      static const unsigned NUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -237,8 +234,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::MortarElement& ele, T& xi, V& deriv2)
     {
-      static const unsigned NUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
       static const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
@@ -261,8 +257,7 @@ namespace CONTACT
     shape_function_and_deriv1_and_deriv2(
         MORTAR::MortarElement& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      static const unsigned NUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
+      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);

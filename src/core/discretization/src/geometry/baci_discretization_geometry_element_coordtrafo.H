@@ -32,7 +32,7 @@ namespace CORE::GEO
   static inline void elementToCurrentCoordinatesT(
       const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
 
     CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
@@ -582,7 +582,7 @@ namespace CORE::GEO
       const M2& xyze                       ///< nodal position array (3,numNodes)
   )
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<dim, numNodes> deriv1;
     CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
@@ -606,7 +606,7 @@ namespace CORE::GEO
       const M1& xyze                         ///< nodal coordinates of an element with shape DISTYPE
   )
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
     funct.Clear();
     CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
@@ -650,7 +650,7 @@ namespace CORE::GEO
     const size_t dim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
     // number of nodes of element
-    const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t nen = CORE::FE::num_nodes<DISTYPE>;
     bool nodeWithinElement = true;
     const int maxiter = 20;  // 40;
     double residual = 1.0;
@@ -813,7 +813,7 @@ namespace CORE::GEO
   static inline void updateJacobianForMap3To2(CORE::LINALG::Matrix<3, 2>& Jacobi,
       const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
 
     static CORE::LINALG::Matrix<2, numNodes> deriv1;
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
@@ -840,7 +840,7 @@ namespace CORE::GEO
       const CORE::LINALG::Matrix<2, 1>& xsi, const CORE::LINALG::Matrix<3, 1>& x,
       const M& xyze_surfaceElement)
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<numNodes, 1> funct;
     CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
 
@@ -867,7 +867,7 @@ namespace CORE::GEO
       const CORE::LINALG::Matrix<3, 2>& Jacobi, const CORE::LINALG::Matrix<3, 1>& F,
       const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
     static CORE::LINALG::Matrix<3, numNodes> deriv2;
     CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
@@ -996,7 +996,7 @@ namespace CORE::GEO
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
       const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<1, 1>& eleCoord)
   {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
 
     const int maxiter = 20;
     int iter = 0;
@@ -1098,14 +1098,14 @@ namespace CORE::GEO
   template <CORE::FE::CellType DISTYPE>
   static bool ComputeLocalCoordinates(
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
+          CORE::FE::num_nodes<DISTYPE>>& xyze,
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
   {
     bool inelement = true;
 
     const int numDim = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<DISTYPE>;
 
     const int maxiter = 20;
     double residual = 1.0;

@@ -72,13 +72,6 @@ namespace STR::MODELEVALUATOR
 }
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <CORE::FE::CellType>
-    struct DisTypeToNumNodePerEle;
-    template <CORE::FE::CellType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
 
   namespace ELEMENTS
   {
@@ -92,9 +85,8 @@ namespace DRT
       CORE::LINALG::Matrix<num_eas, num_eas> invKaa_{true};
 
       /// EAS matrix K_{d alpha}
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement *
-                               CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          num_eas>
+      CORE::LINALG::Matrix<
+          CORE::FE::num_nodes<distype> * CORE::DRT::UTILS::DisTypeToDim<distype>::dim, num_eas>
           Kda_{true};
 
       /// EAS enhacement vector s
@@ -163,8 +155,7 @@ namespace DRT
       DRT::ELEMENTS::EasIterationData<distype, eastype> eas_iteration_data_ = {};
 
       /// static values for matrix sizes
-      static constexpr int num_nodes_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static constexpr int num_nodes_ = CORE::FE::num_nodes<distype>;
       static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;

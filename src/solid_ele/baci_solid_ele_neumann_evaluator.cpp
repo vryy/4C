@@ -72,7 +72,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     double total_time)
 {
   constexpr auto numdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-  constexpr auto numnod = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr auto numnod = CORE::FE::num_nodes<distype>;
   CORE::DRT::UTILS::GaussIntegration gauss_integration =
       CreateGaussIntegration<distype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<distype>());
 

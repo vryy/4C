@@ -249,8 +249,7 @@ namespace CORE::GEO
      *  \author hiermeier
      *  \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
@@ -395,8 +394,7 @@ namespace CORE::GEO
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputePosition
@@ -442,8 +440,7 @@ namespace CORE::GEO
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, CORE::FE::CellType eletype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
+        unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
         INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class ComputeEmbeddedPosition
@@ -594,8 +591,7 @@ namespace CORE::GEO
      private:
       /// template class for the actual position creation
       template <bool isembedded, unsigned probdim, unsigned dim, CORE::FE::CellType eletype,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       class PositionCreator
       {
        public:
@@ -769,8 +765,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
@@ -839,8 +834,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
@@ -914,8 +908,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(
           const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
@@ -946,8 +939,7 @@ namespace CORE::GEO
       Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        const unsigned num_nodes_ele =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
+        const unsigned num_nodes_ele = CORE::FE::num_nodes<eletype>;
         switch (probdim_)
         {
           case 2:
@@ -984,8 +976,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype,
           unsigned dim = CORE::DRT::UTILS::DisTypeToDim<eletype>::dim,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
+          unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)

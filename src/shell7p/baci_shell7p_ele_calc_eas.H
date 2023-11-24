@@ -28,14 +28,6 @@ namespace STR::ELEMENTS
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <CORE::FE::CellType>
-    struct DisTypeToNumNodePerEle;
-    template <CORE::FE::CellType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
-
   namespace ELEMENTS
   {
     /*!

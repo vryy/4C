@@ -418,7 +418,7 @@ namespace XFEM
       const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       // number of nodes of element
-      const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t nen = CORE::FE::num_nodes<DISTYPE>;
 
       // Should this be provided as well by the input?
       DRT::Element* actele = cutter_dis_->gElement(eid);
@@ -564,7 +564,7 @@ namespace XFEM
     const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
     // number of nodes of element
-    const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t nen = CORE::FE::num_nodes<DISTYPE>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
     CORE::LINALG::SerialDenseMatrix esmoothedgradphi(nsd, nen);
@@ -587,7 +587,7 @@ namespace XFEM
     //    const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
     // number of nodes of element
-    const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t nen = CORE::FE::num_nodes<DISTYPE>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
     CORE::LINALG::SerialDenseMatrix ephinp(nen, 1);

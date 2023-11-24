@@ -286,138 +286,6 @@ namespace CORE::DRT::UTILS
    */
   int getNumberOfElementNodes(const CORE::FE::CellType& distype);
 
-  //! Template Meta Programming version of switch over discretization type
-  template <CORE::FE::CellType DISTYPE>
-  struct DisTypeToNumNodePerEle
-  {
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::point1>
-  {
-    static const int numNodePerElement = 1;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::line2>
-  {
-    static const int numNodePerElement = 2;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::line3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::line4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs2>
-  {
-    static const int numNodePerElement = 2;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::quad8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>
-  {
-    static const int numNodePerElement = 9;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs9>
-  {
-    static const int numNodePerElement = 9;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>
-  {
-    static const int numNodePerElement = 3;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::tri6>
-  {
-    static const int numNodePerElement = 6;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::hex16>
-  {
-    static const int numNodePerElement = 16;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::hex18>
-  {
-    static const int numNodePerElement = 18;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>
-  {
-    static const int numNodePerElement = 20;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>
-  {
-    static const int numNodePerElement = 27;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs8>
-  {
-    static const int numNodePerElement = 8;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs27>
-  {
-    static const int numNodePerElement = 27;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>
-  {
-    static const int numNodePerElement = 4;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>
-  {
-    static const int numNodePerElement = 10;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>
-  {
-    static const int numNodePerElement = 6;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::wedge15>
-  {
-    static const int numNodePerElement = 15;
-  };
-  template <>
-  struct DisTypeToNumNodePerEle<CORE::FE::CellType::pyramid5>
-  {
-    static const int numNodePerElement = 5;
-  };
-
-
   /*!
    * @brief Returns the number of corner nodes for an element of the given discretization type
    *
@@ -1267,8 +1135,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType DISTYPE>
   struct DisTypeToNumNodePerFace
   {
-    static const int numNodePerFace =
-        DisTypeToNumNodePerEle<DisTypeToFaceShapeType<DISTYPE>::shape>::numNodePerElement;
+    static const int numNodePerFace = CORE::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
   };
 
 

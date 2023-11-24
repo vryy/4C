@@ -25,8 +25,7 @@ namespace
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  inline static constexpr int num_nodes = CORE::FE::num_nodes<distype>;
 
   template <CORE::FE::CellType distype>
   CORE::LINALG::Matrix<num_dim<distype>, num_dim<distype>> EvaluateMulfDeformationGradientUpdate(

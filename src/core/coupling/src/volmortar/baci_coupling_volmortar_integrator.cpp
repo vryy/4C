@@ -450,10 +450,10 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(::DRT::Element& sele, ::DRT::Element* 
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //! ns_: number of slave element nodes
-  static const int ns_ = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+  static const int ns_ = ::CORE::FE::num_nodes<distypeS>;
 
   //! nm_: number of master element nodes
-  static const int nm_ = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+  static const int nm_ = ::CORE::FE::num_nodes<distypeM>;
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -2169,7 +2169,7 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(::DRT::Node* node, ::DRT::Element* el
     const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
 {
   //! ns_: number of slave element nodes
-  static const int n_ = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int n_ = ::CORE::FE::num_nodes<distype>;
 
   double xi[3] = {0.0, 0.0, 0.0};
   bool converged = true;

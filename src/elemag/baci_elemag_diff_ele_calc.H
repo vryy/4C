@@ -31,8 +31,7 @@ namespace DRT
     {
      public:
       /// nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       /// number of space dimensions
       static const unsigned int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;

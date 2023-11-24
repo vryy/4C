@@ -23,7 +23,7 @@ namespace CORE::GEO
   double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int numnode = CORE::FE::num_nodes<distype>;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<1, 1> eleCoord;
@@ -61,7 +61,7 @@ namespace CORE::GEO
   double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
-    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int numnode = CORE::FE::num_nodes<distype>;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
     CORE::LINALG::Matrix<2, 1> eleCoord;
@@ -105,7 +105,7 @@ namespace CORE::GEO
   )
   {
     // number of nodes for element
-    const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numnode = CORE::FE::num_nodes<distype>;
     // gaussian points
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 

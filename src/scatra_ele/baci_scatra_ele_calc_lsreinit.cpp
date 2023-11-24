@@ -1225,8 +1225,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
 )
 {
   // get number of vertices of cell
-  const unsigned numvertices =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+  const unsigned numvertices = CORE::FE::num_nodes<celldistype>;
   const unsigned nsd = 3;
   if (nsd_ != 3) dserror("Extend for other dimensions");
   const size_t nsd_cell = 2;  // nsd_-1;

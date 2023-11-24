@@ -409,7 +409,7 @@ namespace CORE::GEO
       template <int probdim, CORE::FE::CellType distype>
       double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
       {
-        const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int nen = CORE::FE::num_nodes<distype>;
         const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
         CORE::LINALG::Matrix<probdim, nen> xyze;
         CORE::LINALG::Matrix<probdim, 1> xei;
@@ -636,8 +636,7 @@ namespace CORE::GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, CORE::FE::CellType elementtype,
-        unsigned numNodesElement =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement,
+        unsigned numNodesElement = CORE::FE::num_nodes<elementtype>,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim>
     class ConcreteElement : public Element
     {

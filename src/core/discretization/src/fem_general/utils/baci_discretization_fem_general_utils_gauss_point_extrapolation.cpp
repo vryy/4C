@@ -115,8 +115,7 @@ namespace
     CORE::LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
 
     // Obtain weights and knot vector of element
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
-        weights(true);
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> weights(true);
     std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
 
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
@@ -210,12 +209,9 @@ namespace
     constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
 
-    CORE::LINALG::SerialDenseMatrix matrix_base_to_dis(
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, base_numnod);
+    CORE::LINALG::SerialDenseMatrix matrix_base_to_dis(CORE::FE::num_nodes<distype>, base_numnod);
 
-    for (int dis_inode = 0;
-         dis_inode < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-         ++dis_inode)
+    for (int dis_inode = 0; dis_inode < CORE::FE::num_nodes<distype>; ++dis_inode)
     {
       CORE::LINALG::SerialDenseMatrix reference_nodes =
           CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
@@ -251,8 +247,7 @@ namespace
     }
 
     CORE::LINALG::SerialDenseMatrix matrix_gp_to_nodes(
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        matrix_gp_to_base.numCols());
+        CORE::FE::num_nodes<distype>, matrix_gp_to_base.numCols());
 
     // extend matrix from base_distype to distype
     CORE::LINALG::multiply(matrix_gp_to_nodes, matrix_base_to_dis, matrix_gp_to_base);
@@ -414,8 +409,7 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
     const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
     bool nodal_average, const GaussIntegration& integration)
 {
-  CORE::LINALG::SerialDenseMatrix nodal_quantity(
-      ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
+  CORE::LINALG::SerialDenseMatrix nodal_quantity(::CORE::FE::num_nodes<distype>, gp_data.numCols());
   CORE::LINALG::multiply(
       nodal_quantity, EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data);
 
@@ -428,8 +422,7 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNURBSKnotsAndAssemble(
     const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
     const GaussIntegration& integration)
 {
-  CORE::LINALG::SerialDenseMatrix nodal_quantity(
-      ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
+  CORE::LINALG::SerialDenseMatrix nodal_quantity(::CORE::FE::num_nodes<distype>, gp_data.numCols());
   CORE::LINALG::multiply(nodal_quantity,
       EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix<distype>(dis, ele, integration), gp_data);
 

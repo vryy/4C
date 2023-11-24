@@ -35,12 +35,8 @@ namespace DRT
         const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
         CORE::LINALG::Matrix<probdim, 1>& coord)
     {
-      static CORE::LINALG::Matrix<
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
-          funct(true);
-      static CORE::LINALG::Matrix<probdim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-          nodecoords(true);
+      static CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> funct(true);
+      static CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>> nodecoords(true);
 
       CORE::DRT::UTILS::shape_function<distype>(xi, funct);
 
@@ -57,7 +53,7 @@ namespace DRT
             "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
       }
 
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {
@@ -85,11 +81,9 @@ namespace DRT
     {
       static CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToDim<distype>::dim> gxieta(true);
       static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+          CORE::FE::num_nodes<distype>>
           deriv(true);
-      static CORE::LINALG::Matrix<3,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-          nodecoords(true);
+      static CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> nodecoords(true);
 
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
 
@@ -105,7 +99,7 @@ namespace DRT
         dserror("ERROR: Only implemented for 3D cases so far!");
       }
 
-      for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement; ++i)
+      for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
       {
         for (int j = 0; j < nodedim; ++j)
         {

@@ -73,7 +73,7 @@ namespace DRT
     {
      public:
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
       static const int nsd_ = probdim;
@@ -89,9 +89,7 @@ namespace DRT
         double elediam = 0.0;
 
         // number of nodes of this element
-        //  const size_t numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::;
-        const size_t numnode =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+        const size_t numnode = CORE::FE::num_nodes<pdistype>;
 
         // check all possible connections between nodes of an element
         // node 1 to 2
@@ -205,17 +203,12 @@ namespace DRT
       template <CORE::FE::CellType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
           int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,

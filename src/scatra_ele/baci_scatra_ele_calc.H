@@ -139,8 +139,7 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const unsigned nen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static const unsigned nsd_ = probdim;

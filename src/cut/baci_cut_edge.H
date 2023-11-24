@@ -283,8 +283,7 @@ namespace CORE::GEO
     /*--------------------------------------------------------------------------*/
     template <unsigned probDim, CORE::FE::CellType edgeType,
         unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-        unsigned numNodesEdge =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>
+        unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>>
     class ConcreteEdge : public Edge
     {
      public:

@@ -12882,8 +12882,7 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
     MORTAR::MortarElement& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin)
 {
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-  static const int numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
+  static const int numnodes = CORE::FE::num_nodes<parentdistype>;
 
   CORE::DRT::UTILS::CollectedGaussPoints intpoints =
       CORE::DRT::UTILS::CollectedGaussPoints(1);  // reserve just for 1 entry ...

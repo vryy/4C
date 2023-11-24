@@ -119,9 +119,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   if (bnsd != nsd_ele_) dserror("dimension do not match!");
 
   // number of parent element nodes
-  const int pnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  const int pnen = CORE::FE::num_nodes<pdistype>;
   // number of (boundary) element nodes
-  static const int bnen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int bnen = CORE::FE::num_nodes<bdistype>;
 
   if (bnen != nen_) dserror("Number of element nodes do not match!");
 

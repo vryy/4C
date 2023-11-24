@@ -56,7 +56,7 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::BoundaryCell::TransformLocalCoords" );
 
 
-  const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+  const int numnodes = CORE::FE::num_nodes<celldistype>;
   CORE::LINALG::Matrix<3, numnodes> xyzeGlo(this->xyz_, true), xyze;
 
   for (int i = 0; i < numnodes; i++)
@@ -109,8 +109,7 @@ double CORE::GEO::CUT::Line2BoundaryCell::Area() { return CORE::GEO::ElementArea
  *----------------------------------------------------------------------------*/
 double CORE::GEO::CUT::Tri3BoundaryCell::Area()
 {
-  const int numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
+  const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
 
   const std::vector<Point*> points = this->Points();
 
@@ -259,8 +258,7 @@ void CORE::GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
 {
   file.precision(16);
 
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
 
   file << "VP(";
   CORE::LINALG::Matrix<3, 1> midpoint(true);
@@ -546,8 +544,7 @@ std::vector<std::vector<double>> CORE::GEO::CUT::BoundaryCell::CoordinatesV()
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 {
-  const int numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
+  const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
 
   const std::vector<Point*> points = this->Points();
 

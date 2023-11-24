@@ -63,7 +63,7 @@ namespace CORE::DRT::UTILS
           derxy2)
   {
     // some numbers already known during compilation
-    const int numnode = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const int numnode = ::CORE::FE::num_nodes<DISTYPE>;
     dsassert(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
     const int nsd = ProbDim;
     const int numderiv2 = ::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2;

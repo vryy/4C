@@ -16,12 +16,11 @@
 
 template <CORE::FE::CellType distype>
 void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
     FIBER::NodalFiberHolder& gpFiberHolder)
 {
   // number of nodes per element
-  constexpr int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr int nen = CORE::FE::num_nodes<distype>;
   std::array<const DRT::FIBER::FiberNode*, nen> fiberNodes;
   std::vector<std::array<std::array<double, 3>, nen>> fibers;
   std::map<DRT::FIBER::CoordinateSystemDirection, std::array<std::array<double, 3>, nen>>
@@ -141,17 +140,14 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
 
 template <CORE::FE::CellType distype, std::size_t dim>
 void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions(
-    const std::array<std::array<double, dim>,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+    const std::array<std::array<double, dim>, CORE::FE::num_nodes<distype>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
     std::vector<CORE::LINALG::Matrix<dim, 1>>& quantityProjected)
 {
   quantityProjected.resize(shapefcts.size());
 
   // number of nodes per element
-  constexpr std::size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr std::size_t nen = CORE::FE::num_nodes<distype>;
 
   // spatial dimension
   constexpr std::size_t nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -178,16 +174,14 @@ void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions(
 
 template <CORE::FE::CellType distype>
 void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions(
-    const std::array<double, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+    const std::array<double, CORE::FE::num_nodes<distype>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
     std::vector<double>& quantityProjected)
 {
   quantityProjected.resize(shapefcts.size());
 
   // number of nodes per element
-  constexpr int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr int nen = CORE::FE::num_nodes<distype>;
 
   // number of gauss points
   const int ngp = shapefcts.size();
@@ -259,8 +253,7 @@ void DRT::FIBER::UTILS::SetupCardiacFibers(
 template <CORE::FE::CellType distype>
 bool DRT::FIBER::UTILS::HaveNodalFibers(const DRT::Node* const* nodes)
 {
-  constexpr int numberOfNodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  constexpr int numberOfNodes = CORE::FE::num_nodes<distype>;
 
   // check whether node can be casted to FiberNode
   auto nodeHasFibers = [](const Node* n)
@@ -269,112 +262,77 @@ bool DRT::FIBER::UTILS::HaveNodalFibers(const DRT::Node* const* nodes)
 }
 
 template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<CORE::FE::CellType::tet4>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement, 1>>&
+    const std::array<double, CORE::FE::num_nodes<CORE::FE::CellType::tet4>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet4>, 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
 template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<CORE::FE::CellType::tet10>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement, 1>>&
+    const std::array<double, CORE::FE::num_nodes<CORE::FE::CellType::tet10>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet10>, 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
 template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<CORE::FE::CellType::hex8>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement, 1>>&
+    const std::array<double, CORE::FE::num_nodes<CORE::FE::CellType::hex8>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex8>, 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
 template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<CORE::FE::CellType::tri3>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement>
-        quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>>&
+    const std::array<double, CORE::FE::num_nodes<CORE::FE::CellType::tri3>> quantity,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
 
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tet4>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet4>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tet10>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet10>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex8>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex8>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex18>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex18>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex18>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex20>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex20>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::hex27>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex27>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::nurbs27>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs27>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::nurbs27>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tri3>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::quad4>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::quad9>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad9>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad9>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::pyramid5>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::pyramid5>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::wedge6>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, 1>>&,
     FIBER::NodalFiberHolder&);
 template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::nurbs9>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::nurbs9>::numNodePerElement,
-        1>>&,
+    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::nurbs9>, 1>>&,
     FIBER::NodalFiberHolder&);
 
 template bool DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet4>(

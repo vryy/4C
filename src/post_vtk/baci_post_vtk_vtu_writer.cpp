@@ -565,7 +565,7 @@ template <CORE::FE::CellType nurbs_type>
 void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
 
   const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
@@ -726,7 +726,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
 
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
@@ -908,7 +908,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
-  const unsigned NUMNODES = CORE::DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
 
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();

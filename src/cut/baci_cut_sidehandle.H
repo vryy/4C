@@ -64,7 +64,7 @@ namespace CORE::GEO
       template <CORE::FE::CellType distype>
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CreateProjected(BoundaryCell* bc)
       {
-        const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const unsigned nen = CORE::FE::num_nodes<distype>;
 
         CORE::LINALG::Matrix<2, nen> xie;
 

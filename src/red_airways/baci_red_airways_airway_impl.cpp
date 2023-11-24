@@ -44,7 +44,7 @@ namespace
   {
     double length = 0.0;
     // get node coordinates and number of elements per node
-    static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int numnode = CORE::FE::num_nodes<distype>;
     DRT::Node** nodes = ele->Nodes();
     // get airway length
     CORE::LINALG::Matrix<3, numnode> xyze;

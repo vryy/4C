@@ -66,8 +66,7 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;

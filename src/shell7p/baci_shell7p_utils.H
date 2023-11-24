@@ -52,8 +52,7 @@ namespace STR::ELEMENTS
 namespace DRT::ELEMENTS::SHELL::DETAIL
 {
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_node =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  inline static constexpr int num_node = CORE::FE::num_nodes<distype>;
   inline static constexpr int num_dim = 3;
   inline static constexpr int node_dof = 6;
   inline static constexpr int num_internal_variables = 12;

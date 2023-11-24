@@ -3164,12 +3164,10 @@ namespace CORE::DRT::UTILS
    */
   template <CORE::FE::CellType distype, int probdim>
   void EvaluateShapeFunctionSpatialDerivativeInProbDim(
-      CORE::LINALG::Matrix<probdim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv_xyz,
+      CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& deriv_xyz,
       const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
-      const CORE::LINALG::Matrix<
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xyze,
+          CORE::FE::num_nodes<distype>>& deriv,
+      const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
       const CORE::LINALG::Matrix<probdim, 1>& normal);
 }  // namespace CORE::DRT::UTILS
 

@@ -40,8 +40,7 @@ namespace DRT::ELEMENTS
 namespace DRT::ELEMENTS::DETAIL
 {
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  inline static constexpr int num_nodes = CORE::FE::num_nodes<distype>;
 
   template <CORE::FE::CellType distype>
   inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;

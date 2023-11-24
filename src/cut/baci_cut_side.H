@@ -654,8 +654,7 @@ namespace CORE::GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, CORE::FE::CellType sidetype,
-        unsigned numNodesSide =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
+        unsigned numNodesSide = CORE::FE::num_nodes<sidetype>,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim>
     class ConcreteSide : public Side, public ConcreteElement<probdim, sidetype>
     {

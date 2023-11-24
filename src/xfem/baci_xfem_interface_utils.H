@@ -119,12 +119,8 @@ namespace XFEM
 
     //! evaluate element volume
     template <CORE::FE::CellType distype>
-    double EvalElementVolume(
-        CORE::LINALG::Matrix<3,
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-            xyze,
-        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-            1>* nurbs_weights = nullptr,
+    double EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>* nurbs_weights = nullptr,
         std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = nullptr);
 
     //! compute characteristic element length h_k

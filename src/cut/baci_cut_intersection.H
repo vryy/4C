@@ -390,10 +390,8 @@ namespace CORE::GEO
     template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype,
         bool debug = false, unsigned dimedge = CORE::DRT::UTILS::DisTypeToDim<edgetype>::dim,
         unsigned dimside = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim,
-        unsigned numNodesEdge =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
-        unsigned numNodesSide =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement>
+        unsigned numNodesEdge = CORE::FE::num_nodes<edgetype>,
+        unsigned numNodesSide = CORE::FE::num_nodes<sidetype>>
     class Intersection : public IntersectionBase
     {
      public:

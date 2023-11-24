@@ -85,7 +85,7 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
-    static const int n_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int n_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
     static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
@@ -290,10 +290,10 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
-    static const int ns_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int ns_ = CORE::FE::num_nodes<distypeS>;
 
     //! nm_: number of master element nodes
-    static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
     static const int ndim_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;

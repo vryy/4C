@@ -65,7 +65,7 @@ namespace DRT
 
      public:
       //! number of nodes
-      static const int iel_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel_ = CORE::FE::num_nodes<distype>;
 
       /*!
        * \brief  calculate element length

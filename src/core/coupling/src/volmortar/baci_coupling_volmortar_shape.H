@@ -379,7 +379,7 @@ namespace CORE::VOLMORTAR
     double Jacobian(const double* xi, const ::DRT::Element& ele)
     {
       //! nn_: number of master element nodes
-      static const int nn = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nn = ::CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions ("+1" due to considering only interface elements)
       static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -519,7 +519,7 @@ namespace CORE::VOLMORTAR
     )
     {
       //! nn_: number of master element nodes
-      static const int nn = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nn = ::CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions ("+1" due to considering only interface elements)
       static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1128,8 +1128,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1206,8 +1205,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1304,8 +1302,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1380,8 +1377,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1468,8 +1464,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1559,8 +1554,7 @@ namespace CORE::VOLMORTAR
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
           //! number of element nodes
-          static const int nnodes =
-              ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+          static const int nnodes = ::CORE::FE::num_nodes<distype>;
 
           // get gauss rule
           const ::CORE::DRT::UTILS::IntPointsAndWeights<ndim> intpoints(
@@ -1847,7 +1841,7 @@ namespace CORE::VOLMORTAR
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
       if (IsNurbs<distype>()) dserror("ERROR: Lagr. LocalToGlobal called for NURBS!");
 
-      static const int n = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int n = ::CORE::FE::num_nodes<distype>;
       static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       const ::DRT::Node* const* mynodes = ele.Nodes();

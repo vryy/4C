@@ -613,10 +613,9 @@ namespace CORE::DRT::UTILS
   //! normal vector at the Gauss-point (template)
   template <CORE::FE::CellType DISTYPE, int probdim, typename valueType = double>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<probdim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& xyze,
+      const CORE::LINALG::Matrix<probdim, ::CORE::FE::num_nodes<DISTYPE>, valueType>& xyze,
       const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& deriv,
+          ::CORE::FE::num_nodes<DISTYPE>, valueType>& deriv,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
       valueType& sqrtdetg, const bool throw_error,
@@ -752,9 +751,9 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType DISTYPE>
   void ComputeMetricTensorForBoundaryEle(
       const CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim),
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
+          ::CORE::FE::num_nodes<DISTYPE>>& xyze,
       const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& deriv,
+          ::CORE::FE::num_nodes<DISTYPE>>& deriv,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
       double& sqrtdetg,
@@ -1585,16 +1584,14 @@ namespace CORE::DRT::UTILS
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
-  void EvalShapeFuncAtBouIntPoint(
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-          1>& funct,
+  void EvalShapeFuncAtBouIntPoint(CORE::LINALG::Matrix<::CORE::FE::num_nodes<distype>, 1>& funct,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+          ::CORE::FE::num_nodes<distype>>& deriv,
       double& fac,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
       double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
+          ::CORE::FE::num_nodes<distype>>& xyze,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>&
           intpoints,
       const int gpid, const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
@@ -1639,16 +1636,14 @@ namespace CORE::DRT::UTILS
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
-  void ElementNodeNormal(
-      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-          1>& funct,
+  void ElementNodeNormal(CORE::LINALG::Matrix<::CORE::FE::num_nodes<distype>, 1>& funct,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+          ::CORE::FE::num_nodes<distype>>& deriv,
       double& fac,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
       double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
-          ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
+          ::CORE::FE::num_nodes<distype>>& xyze,
       ::DRT::Element* ele, ::DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
@@ -1663,8 +1658,7 @@ namespace CORE::DRT::UTILS
     static const int nsd = bdrynsd + 1;
 
     // Number of nodes of boundary element
-    static const int bdrynen =
-        ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int bdrynen = ::CORE::FE::num_nodes<distype>;
 
     // Number of degrees of freedom per node
     int numdofpernode = nsd + 1;  // standard case is 'fluid'

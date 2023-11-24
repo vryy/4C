@@ -262,7 +262,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 {
   auto electrode_ele = electrode_quantities.element;
 
-  const int num_ele_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int num_ele_nodes = CORE::FE::num_nodes<distype>;
   const int ele_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
   dsassert(num_ele_nodes == electrode_ele->NumNode(),

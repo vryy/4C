@@ -53,8 +53,7 @@ namespace GEOMETRYPAIR
     static const unsigned int n_val_ = values_per_node;
 
     //! Number of nodes for this element.
-    static const unsigned int n_nodes_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<discretization_>::numNodePerElement;
+    static const unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
 
     //! Number of unknowns for this element.
     static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;

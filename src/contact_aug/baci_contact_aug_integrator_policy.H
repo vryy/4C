@@ -27,8 +27,7 @@ namespace CONTACT
     {
      protected:
       static const unsigned SLAVEDIM = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
-      static const unsigned SLAVENUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+      static const unsigned SLAVENUMNODE = CORE::FE::num_nodes<slavetype>;
 
      public:
       /// constructor
@@ -104,8 +103,7 @@ namespace CONTACT
 
      protected:
       static const unsigned MASTERDIM = CORE::DRT::UTILS::DisTypeToDim<mastertype>::dim;
-      static const unsigned MASTERNUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement;
+      static const unsigned MASTERNUMNODE = CORE::FE::num_nodes<mastertype>;
 
      public:
       /// constructor

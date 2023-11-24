@@ -101,11 +101,8 @@ namespace CORE::GEO
       template <CORE::FE::CellType celldistype>
       void AssignOffset(int idx, double offset)
       {
-        CORE::LINALG::Matrix<3,
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
-            xyz_mat(xyz_, true);
-        for (unsigned int n = 0;
-             n < CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement; ++n)
+        CORE::LINALG::Matrix<3, CORE::FE::num_nodes<celldistype>> xyz_mat(xyz_, true);
+        for (unsigned int n = 0; n < CORE::FE::num_nodes<celldistype>; ++n)
           xyz_mat(idx, n) += offset;
       }
 
@@ -169,8 +166,7 @@ namespace CORE::GEO
       void Transform(const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
           CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
-        const int numnodes =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+        const int numnodes = CORE::FE::num_nodes<celldistype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(xyz_, true);
         if (referencepos) xyze = CORE::LINALG::Matrix<3, numnodes>(xyz_ref_, true);
 
@@ -234,7 +230,7 @@ namespace CORE::GEO
       template <CORE::FE::CellType distype>
       double MyArea()
       {
-        const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int numnodes = CORE::FE::num_nodes<distype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
         CORE::LINALG::Matrix<numnodes, 1> funct;
         CORE::LINALG::Matrix<2, numnodes> deriv;
@@ -264,7 +260,7 @@ namespace CORE::GEO
       template <CORE::FE::CellType distype>
       void MyElementCenter(CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
       {
-        const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        const int numnodes = CORE::FE::num_nodes<distype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
         CORE::LINALG::Matrix<numnodes, 1> funct;
         CORE::DRT::UTILS::shape_function<distype>(center, funct);

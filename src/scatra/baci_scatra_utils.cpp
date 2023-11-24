@@ -346,7 +346,7 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid)
 {
   // number of nodes of this element for interpolation
-  const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const int numnode = CORE::FE::num_nodes<DISTYPE>;
   CORE::LINALG::Matrix<dim, 1> node_gradphi_smoothed(true);
 
   // number of elements located around this node

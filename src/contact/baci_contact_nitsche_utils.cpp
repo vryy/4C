@@ -17,13 +17,10 @@
 template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::MortarElement* mele,
-    const CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-            num_dof_per_node,
-        1>& rhs,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
     std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc)
 {
-  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+  const int nen = CORE::FE::num_nodes<parent_distype>;
 
   if (num_dof_per_node * nen > dofs.size())
     dserror("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
@@ -41,13 +38,11 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Morta
 template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
-    const std::unordered_map<int, CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-                                                           parent_distype>::numNodePerElement *
-                                                           num_dof_per_node,
-                                      1>>& k,
+    const std::unordered_map<int,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
     std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
-  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+  const int nen = CORE::FE::num_nodes<parent_distype>;
 
   if (kc != Teuchos::null)
   {

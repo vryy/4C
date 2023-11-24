@@ -551,8 +551,7 @@ template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
-  const unsigned slavenumnode =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+  const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
   const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
@@ -679,8 +678,7 @@ template <CORE::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
-  const unsigned slavenumnode =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+  const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
   const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 

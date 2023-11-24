@@ -577,15 +577,12 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
  | evaluate element volume                                              |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double XFEM::UTILS::EvalElementVolume(
-    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-        xyze,
-    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
-        *nurbs_weights,
+double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> *nurbs_weights,
     std::vector<CORE::LINALG::SerialDenseVector> *nurbs_knots)
 {
   static const int nsd = 3;
-  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::FE::num_nodes<distype>;
 
   // use one-point Gauss rule
   CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
@@ -677,8 +674,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
   static const int nsd = 3;
   // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::ComputeCharEleLength");
 
-  CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-      xyze(ele_xyze, true);
+  CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
   const INPAR::XFEM::AveragingStrategy averaging_strategy =
       cond_manager->GetAveragingStrategy(coup_sid, ele->Id());
@@ -1070,8 +1066,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
       }
     }
 
-    const int numnodes =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
+    const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
     static CORE::LINALG::Matrix<numnodes, 1> funct(false);
     CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
     vel_s.Multiply(vels, funct);
@@ -1082,51 +1077,32 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
 
 
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex8>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement, 1> *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex8>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex8>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex20>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement, 1>
-        *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex20>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex20>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex27>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex27>::numNodePerElement, 1>
-        *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex27>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex27>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::tet4>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet4>::numNodePerElement, 1> *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::tet4>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet4>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::tet10>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tet10>::numNodePerElement, 1>
-        *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::tet10>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet10>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::wedge6>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge6>::numNodePerElement, 1>
-        *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::wedge6>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::wedge15>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge15>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::wedge15>::numNodePerElement, 1>
-        *,
+    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::wedge15>>,
+    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(DRT::Element *,
