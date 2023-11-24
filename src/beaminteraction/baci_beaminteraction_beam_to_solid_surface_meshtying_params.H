@@ -18,7 +18,7 @@
 // Forward declaration.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams;
+  class BeamToSolidSurfaceVisualizationOutputParams;
 }
 
 namespace BEAMINTERACTION
@@ -109,14 +109,14 @@ namespace BEAMINTERACTION
      * \brief Returns a pointer to the vtk output parameters.
      * @return Pointer to vtk output parameters.
      */
-    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> GetVtkOuputParamsPtr();
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> GetVtkOuputParamsPtr();
 
    private:
     //! How the coupling should be evaluated.
     INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type_;
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
-    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
 
     //! If rotational coupling should be activated.
     bool rotational_coupling_;

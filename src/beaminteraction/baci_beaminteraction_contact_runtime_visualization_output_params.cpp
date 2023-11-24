@@ -15,7 +15,8 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::BeamContactRuntimeVtkOutputParams()
+BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
+    BeamContactRuntimeVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
@@ -30,7 +31,7 @@ BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::BeamContactRuntimeVtkOutputP
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Init()
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Init()
 {
   issetup_ = false;
   // empty for now
@@ -40,7 +41,7 @@ void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Init()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 {
   ThrowErrorIfNotInit();
 
@@ -70,14 +71,15 @@ void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInitAndSetup()
+    const
 {
   if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }

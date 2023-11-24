@@ -95,9 +95,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
       visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
   if (visualization_discret.is_null() and visualization_continuous.is_null()) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-          "btsvc-output_params_ptr");
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
+      visualization_params
+          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              "btsvc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
 
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
@@ -194,7 +195,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsvc-output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;

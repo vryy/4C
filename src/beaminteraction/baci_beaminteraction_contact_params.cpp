@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToBeamContactParams()
 void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeVtkOutputParams()
 {
   beam_contact_runtime_vtk_output_params_ =
-      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVtkOutputParams());
+      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams());
   beam_contact_runtime_vtk_output_params_->Init();
   beam_contact_runtime_vtk_output_params_->Setup();
 }

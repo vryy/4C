@@ -18,7 +18,7 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
+void STR::TIMINT::ParamsRuntimeOutput::Init(
     const Teuchos::ParameterList& IO_vtk_structure_paramslist)
 {
   // We have to call Setup() after Init()
@@ -72,7 +72,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtkOutput::Setup()
+void STR::TIMINT::ParamsRuntimeOutput::Setup()
 {
   dsassert(IsInit(), "Init() has not been called, yet!");
 
@@ -83,7 +83,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtkOutput::CheckInitSetup() const
+void STR::TIMINT::ParamsRuntimeOutput::CheckInitSetup() const
 {
   dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }

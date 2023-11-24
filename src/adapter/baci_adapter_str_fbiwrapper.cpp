@@ -113,7 +113,7 @@ void ADAPTER::FBIStructureWrapper::SetupMultiMapExtractor()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> ADAPTER::FBIStructureWrapper::GetIOData()
+Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> ADAPTER::FBIStructureWrapper::GetIOData()
 {
   return FSIModelEvaluator()->GetInOutput().GetRuntimeVtkOutputParams();
 }

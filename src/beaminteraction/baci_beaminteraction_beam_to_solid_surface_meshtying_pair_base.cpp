@@ -124,8 +124,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   std::vector<double>& projection_direction =
       visualization_data.GetPointData<double>("projection_direction");
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
   std::vector<double>* pair_beam_id = nullptr;

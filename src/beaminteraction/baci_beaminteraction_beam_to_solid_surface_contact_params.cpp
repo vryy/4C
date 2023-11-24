@@ -54,8 +54,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::Init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ =
-        Teuchos::rcp<BeamToSolidSurfaceVtkOutputParams>(new BeamToSolidSurfaceVtkOutputParams());
+    output_params_ptr_ = Teuchos::rcp<BeamToSolidSurfaceVisualizationOutputParams>(
+        new BeamToSolidSurfaceVisualizationOutputParams());
     output_params_ptr_->Init();
     output_params_ptr_->Setup();
   }

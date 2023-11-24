@@ -19,14 +19,14 @@ namespace BEAMINTERACTION
 {
   /*!
    *  */
-  class BeamToBeamPotentialRuntimeVtkParams
+  class BeamToBeamPotentialRuntimeOutputParams
   {
    public:
     //! constructor
-    BeamToBeamPotentialRuntimeVtkParams();
+    BeamToBeamPotentialRuntimeOutputParams();
 
     //! destructor
-    virtual ~BeamToBeamPotentialRuntimeVtkParams() = default;
+    virtual ~BeamToBeamPotentialRuntimeOutputParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(const Teuchos::ParameterList& beam_contact_vtk_paramslist);

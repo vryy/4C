@@ -155,8 +155,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
             ->GetOutputFlag())
     {
       beam_to_solid_volume_meshtying_vtk_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter);
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter);
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
@@ -181,8 +181,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
             ->GetOutputFlag())
     {
       beam_to_solid_surface_vtk_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter);
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter);
       beam_to_solid_surface_vtk_writer_ptr_->Init();
       beam_to_solid_surface_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
           beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()->GetVtkOuputParamsPtr(),

@@ -21,18 +21,18 @@
 
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVolumeMeshtyingVtkOutputParams
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidVolumeMeshtyingVtkOutputParams();
+    BeamToSolidVolumeMeshtyingVisualizationOutputParams();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingVtkOutputParams() = default;
+    virtual ~BeamToSolidVolumeMeshtyingVisualizationOutputParams() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.

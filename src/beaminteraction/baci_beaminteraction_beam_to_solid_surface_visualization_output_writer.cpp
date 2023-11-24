@@ -35,7 +35,8 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::BeamToSolidSurfaceVtkOutputWriter()
+BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
+    BeamToSolidSurfaceVisualizationOutputWriter()
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -46,7 +47,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::BeamToSolidSurfaceVtkOutputW
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -55,9 +56,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams> output_params_ptr,
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+        output_params_ptr,
     double restart_time)
 {
   CheckInit();
@@ -172,7 +174,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRuntime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
   CheckInitSetup();
@@ -189,7 +191,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntime(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntimeIteration(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRuntimeIteration(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   CheckInitSetup();
@@ -206,13 +208,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntimeItera
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidSurface(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputBeamToSolidSurface(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
     double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+  visualization_params.set<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
       "btssc-output_params_ptr", output_params_ptr_);
 
 
@@ -381,7 +383,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInitSetup() const
 {
   if (!isinit_ or !issetup_) dserror("Call Init() and Setup() first!");
 }
@@ -389,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInitSetup() const
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInit() const
 {
   if (!isinit_) dserror("Init() has not been called, yet!");
 }

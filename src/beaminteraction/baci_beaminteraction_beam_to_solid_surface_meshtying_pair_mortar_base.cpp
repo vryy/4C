@@ -53,8 +53,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       visualization_nodal_forces.is_null())
     return;
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
 
@@ -154,7 +154,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>("btssc-output_params_ptr")
+              .get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+                  "btssc-output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
       auto& visualization_data = visualization_continuous->GetVisualizationData();

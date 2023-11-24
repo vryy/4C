@@ -167,7 +167,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   if (vtk_output_)
   {
     params_runtime_vtk_BTB_potential_ =
-        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams);
+        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams);
 
     params_runtime_vtk_BTB_potential_->Init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));

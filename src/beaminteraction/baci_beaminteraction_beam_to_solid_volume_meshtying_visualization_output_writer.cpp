@@ -33,8 +33,8 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
-    BeamToSolidVolumeMeshtyingVtkOutputWriter()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
+    BeamToSolidVolumeMeshtyingVisualizationOutputWriter()
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -54,9 +54,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup(
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr,
     double restart_time)
 {
@@ -154,7 +154,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::WriteOutputRuntime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
   CheckInitSetup();
@@ -171,8 +171,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRuntimeIteration(
-    const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
+    WriteOutputRuntimeIteration(
+        const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   CheckInitSetup();
 
@@ -188,14 +189,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     WriteOutputBeamToSolidVolumeMeshTying(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
       "btsvc-output_params_ptr", output_params_ptr_);
 
 
@@ -264,7 +265,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::CheckInitSetup() const
 {
   if (!isinit_ or !issetup_) dserror("Call Init() and Setup() first!");
 }
@@ -272,7 +273,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::CheckInitSetup(
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::CheckInit() const
 {
   if (!isinit_) dserror("Init() has not been called, yet!");
 }

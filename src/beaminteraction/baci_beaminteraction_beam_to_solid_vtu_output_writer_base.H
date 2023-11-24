@@ -28,7 +28,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 
@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
      * @param restart_time (in) Time at creation of this object.
      */
     BeamToSolidVtuOutputWriterBase(const std::string& base_output_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time);
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
 
     /**
      * \brief Destructor.
@@ -100,7 +100,7 @@ namespace BEAMINTERACTION
         visualization_writers_;
 
     //! Pointer to the global vtk input file options.
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Time at which a restart simulation is started.
     const double restart_time_;

@@ -32,8 +32,8 @@ namespace BEAMINTERACTION
   class BeamContactParams;
   class BeamContactPair;
   class BeamInteractionConditions;
-  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
-  class BeamToSolidSurfaceVtkOutputWriter;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputWriter;
+  class BeamToSolidSurfaceVisualizationOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -276,11 +276,11 @@ namespace BEAMINTERACTION
       Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
           beam_to_solid_volume_meshtying_vtk_writer_ptr_;
 
       //! This object handles all beam to solid surface related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
           beam_to_solid_surface_vtk_writer_ptr_;
 
       //! This object handles all geometric search related visualization output.

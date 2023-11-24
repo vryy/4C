@@ -18,7 +18,7 @@
 namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams
-      : public BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams
+      : public BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams
   {
    public:
     /**

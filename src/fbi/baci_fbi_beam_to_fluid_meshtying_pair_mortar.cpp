@@ -225,7 +225,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     {
       const unsigned int mortar_segments =
           visualization_params
-              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;

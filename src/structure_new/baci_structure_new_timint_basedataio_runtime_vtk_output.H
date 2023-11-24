@@ -36,11 +36,11 @@ namespace STR
     /** \brief Input data container for VTK output at runtime for the structural (time) integration
      *
      * \author Maximilian Grill */
-    class ParamsRuntimeVtkOutput
+    class ParamsRuntimeOutput
     {
      public:
       /// destructor
-      virtual ~ParamsRuntimeVtkOutput() = default;
+      virtual ~ParamsRuntimeOutput() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_structure_paramslist);

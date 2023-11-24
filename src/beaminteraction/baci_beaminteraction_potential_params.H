@@ -16,7 +16,7 @@
 // forward declaration
 namespace BEAMINTERACTION
 {
-  class BeamToBeamPotentialRuntimeVtkParams;
+  class BeamToBeamPotentialRuntimeOutputParams;
 
   /*!
    *  */
@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
     }
 
     //! get the data container for parameters regarding vtk output
-    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
+    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
     GetBeamPotentialVtkParams() const
     {
       ThrowErrorIfNotInitAndSetup();
@@ -171,7 +171,7 @@ namespace BEAMINTERACTION
     bool vtk_output_;
 
     //! data container for input parameters related to VTK output of beam contact at runtime
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
         params_runtime_vtk_BTB_potential_;
   };
 

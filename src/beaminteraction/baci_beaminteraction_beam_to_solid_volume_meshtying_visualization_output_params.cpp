@@ -16,8 +16,8 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
-    BeamToSolidVolumeMeshtyingVtkOutputParams()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::
+    BeamToSolidVolumeMeshtyingVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Init()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Setup()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Setup()
 {
   CheckInit();
 

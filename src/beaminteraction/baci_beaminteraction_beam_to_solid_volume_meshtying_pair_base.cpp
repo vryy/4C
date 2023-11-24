@@ -148,9 +148,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
           visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
 
-  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
-          "btsvc-output_params_ptr");
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
+      visualization_params
+          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              "btsvc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
 
   if (visualization_segmentation != Teuchos::null)

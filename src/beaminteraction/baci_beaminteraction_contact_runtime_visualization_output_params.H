@@ -16,14 +16,14 @@
 
 namespace BEAMINTERACTION
 {
-  class BeamContactRuntimeVtkOutputParams
+  class BeamContactRuntimeVisualizationOutputParams
   {
    public:
     //! constructor
-    BeamContactRuntimeVtkOutputParams();
+    BeamContactRuntimeVisualizationOutputParams();
 
     //! destructor
-    virtual ~BeamContactRuntimeVtkOutputParams() = default;
+    virtual ~BeamContactRuntimeVisualizationOutputParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

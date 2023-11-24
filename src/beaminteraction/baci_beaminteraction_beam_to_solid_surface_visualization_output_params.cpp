@@ -16,7 +16,8 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::BeamToSolidSurfaceVtkOutputParams()
+BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
+    BeamToSolidSurfaceVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
@@ -39,7 +40,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::BeamToSolidSurfaceVtkOutputP
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -48,7 +49,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Setup()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Setup()
 {
   CheckInit();
 

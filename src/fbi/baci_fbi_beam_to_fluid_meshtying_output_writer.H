@@ -24,7 +24,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace ADAPTER
@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> visualization_output_params,
+    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
         double restart_time);
 

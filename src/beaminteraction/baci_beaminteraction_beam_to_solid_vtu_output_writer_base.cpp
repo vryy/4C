@@ -21,7 +21,7 @@
  */
 BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::BeamToSolidVtuOutputWriterBase(
     const std::string& base_output_name,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time)
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     : base_output_name_(base_output_name), vtk_params_(vtk_params), restart_time_(restart_time)
 {
 }

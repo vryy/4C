@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> visualization_output_params,
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
     double restart_time)
 {
@@ -122,7 +122,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
       "output_params_ptr", output_params_ptr_);
 
 

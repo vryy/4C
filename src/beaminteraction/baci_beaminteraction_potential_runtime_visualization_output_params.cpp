@@ -16,7 +16,7 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::BeamToBeamPotentialRuntimeVtkParams()
+BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRuntimeOutputParams()
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
@@ -32,7 +32,7 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::BeamToBeamPotentialRuntime
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Init(
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Init(
     const Teuchos::ParameterList& beam_contact_vtk_paramslist)
 {
   issetup_ = false;
@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Setup()
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Setup()
 {
   ThrowErrorIfNotInit();
 
@@ -73,14 +73,14 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotInitAndSetup() const
 {
   if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }

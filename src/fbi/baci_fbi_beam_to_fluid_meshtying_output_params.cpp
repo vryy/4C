@@ -14,7 +14,8 @@
 #include "baci_lib_globalproblem.H"
 
 FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
-    : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams(), constraint_violation_(false)
+    : BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams(),
+      constraint_violation_(false)
 {
   // empty constructor
 }

@@ -19,18 +19,18 @@
 
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams
+  class BeamToSolidSurfaceVisualizationOutputParams
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidSurfaceVtkOutputParams();
+    BeamToSolidSurfaceVisualizationOutputParams();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputParams() = default;
+    virtual ~BeamToSolidSurfaceVisualizationOutputParams() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.

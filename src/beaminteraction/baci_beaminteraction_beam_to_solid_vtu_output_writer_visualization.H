@@ -23,7 +23,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace DRT
@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
      * @param restart_time (in) Initial time of the simulation.
      */
     BeamToSolidVtuOutputWriterVisualization(const std::string& writer_full_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time);
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
 
     /**
      * \brief Destructor.
@@ -91,7 +91,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Global parameters of vtk output.
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Full name of this visualization.
     const std::string writer_full_name_;

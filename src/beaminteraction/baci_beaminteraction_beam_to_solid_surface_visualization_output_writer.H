@@ -19,7 +19,7 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams;
+  class BeamToSolidSurfaceVisualizationOutputParams;
   class BeamToSolidVtuOutputWriterBase;
   namespace SUBMODELEVALUATOR
   {
@@ -30,7 +30,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 
@@ -41,18 +41,18 @@ namespace BEAMINTERACTION
    * \brief This class manages and creates all visualization output for beam to solid surface
    * interactions.
    */
-  class BeamToSolidSurfaceVtkOutputWriter
+  class BeamToSolidSurfaceVisualizationOutputWriter
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidSurfaceVtkOutputWriter();
+    BeamToSolidSurfaceVisualizationOutputWriter();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputWriter() = default;
+    virtual ~BeamToSolidSurfaceVisualizationOutputWriter() = default;
 
     /**
      * \brief Initialize the object.
@@ -65,8 +65,9 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams> output_params_ptr,
+    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+            output_params_ptr,
         double restart_time);
 
     /**
@@ -119,7 +120,7 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Parameter container for output.
-    Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
+    Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;
