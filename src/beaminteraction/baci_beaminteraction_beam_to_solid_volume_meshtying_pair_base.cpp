@@ -12,7 +12,7 @@
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_contact_pair.H"

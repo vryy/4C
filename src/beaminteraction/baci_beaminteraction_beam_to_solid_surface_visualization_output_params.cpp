@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Object to store the beam to solid volume meshtying output (visualization) parameters.
+\brief Object to store the beam to solid surface output (visualization) parameters.
 
 \level 3
 
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 
 #include "baci_lib_globalproblem.H"
 
@@ -16,8 +16,7 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
-    BeamToSolidVolumeMeshtyingVtkOutputParams()
+BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::BeamToSolidSurfaceVtkOutputParams()
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
@@ -26,6 +25,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
       output_every_iteration_(false),
       output_flag_(false),
       nodal_forces_(false),
+      averaged_normals_(false),
       mortar_lambda_discret_(false),
       mortar_lambda_continuous_(false),
       mortar_lambda_continuous_segments_(0),
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Setup()
+void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Setup()
 {
   CheckInit();
 
@@ -56,7 +56,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Setup()
   const Teuchos::ParameterList& beam_to_solid_volume_meshtying_vtk_paramslist =
       DRT::Problem::Instance()
           ->BeamInteractionParams()
-          .sublist("BEAM TO SOLID VOLUME MESHTYING")
+          .sublist("BEAM TO SOLID SURFACE")
           .sublist("RUNTIME VTK OUTPUT");
   const Teuchos::ParameterList& global_vtk_paramslist =
       DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
@@ -67,12 +67,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Setup()
       (bool)DRT::INPUT::IntegralValue<int>(global_vtk_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
-  // Get beam to solid volume mesh tying specific parameters.
+  // Get beam to solid surface specific parameters.
   output_flag_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "WRITE_OUTPUT");
 
   nodal_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "NODAL_FORCES");
+
+  averaged_normals_ = (bool)DRT::INPUT::IntegralValue<int>(
+      beam_to_solid_volume_meshtying_vtk_paramslist, "AVERAGED_NORMALS");
 
   mortar_lambda_discret_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "MORTAR_LAMBDA_DISCRET");

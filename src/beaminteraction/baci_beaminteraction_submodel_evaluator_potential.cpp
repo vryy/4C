@@ -16,7 +16,7 @@
 #include "baci_beaminteraction_crosslinker_handler.H"
 #include "baci_beaminteraction_potential_pair.H"
 #include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_potential_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_io.H"
 #include "baci_io_control.H"

@@ -8,10 +8,10 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_writer.H"
 
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"

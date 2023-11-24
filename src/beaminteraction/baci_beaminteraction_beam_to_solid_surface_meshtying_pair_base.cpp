@@ -10,7 +10,7 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
