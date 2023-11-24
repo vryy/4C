@@ -36,7 +36,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }  // namespace BEAMINTERACTION
 
 
@@ -84,7 +84,7 @@ namespace BEAMINTERACTION
     void PreEvaluate() override;
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * Create segmentation and integration points output.
      *
@@ -92,7 +92,8 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
@@ -144,7 +145,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list with visualization parameters.
      */
     void AddVisualizationIntegrationPoints(
-        const Teuchos::RCP<BeamToSolidVtuOutputWriterVisualization>& visualization_writer,
+        const Teuchos::RCP<BeamToSolidOutputWriterVisualization>& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const;
 

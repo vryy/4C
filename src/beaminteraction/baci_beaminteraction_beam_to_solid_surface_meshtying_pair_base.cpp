@@ -11,8 +11,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_faces.H"
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase>
+    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -76,9 +76,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation =
-          visualization_writer->GetVisualizationWriter("btssc-segmentation");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
+      visualization_writer->GetVisualizationWriter("btssc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
@@ -88,7 +87,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
     AddVisualizationIntegrationPoints(visualization_segmentation, points, visualization_params);
   }
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->GetVisualizationWriter("btssc-integration-points");
   if (visualization_integration_points != Teuchos::null)
@@ -108,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::
     AddVisualizationIntegrationPoints(
-        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
+        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
             visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const

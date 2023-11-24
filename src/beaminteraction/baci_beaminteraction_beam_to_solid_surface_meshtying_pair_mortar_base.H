@@ -48,13 +48,14 @@ namespace BEAMINTERACTION
     inline bool IsAssemblyDirect() const override { return false; };
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
-     * add mortar specific data to the output.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
+     * This will add mortar specific data to the output.
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**

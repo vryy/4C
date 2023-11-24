@@ -67,7 +67,8 @@ namespace BEAMINTERACTION
      * to fluid pairs
      * @param visualization_params Parameter list
      */
-    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:

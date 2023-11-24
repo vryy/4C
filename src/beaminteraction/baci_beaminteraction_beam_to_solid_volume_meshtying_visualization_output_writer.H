@@ -20,7 +20,7 @@
 namespace BEAMINTERACTION
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVisualizationOutputWriterBase;
   namespace SUBMODELEVALUATOR
   {
     class BeamContact;
@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

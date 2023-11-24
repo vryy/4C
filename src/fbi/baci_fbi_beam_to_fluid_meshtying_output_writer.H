@@ -18,7 +18,7 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVisualizationOutputWriterBase;
 }  // namespace BEAMINTERACTION
 namespace STR
 {
@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

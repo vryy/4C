@@ -284,8 +284,8 @@ namespace CORE::GEO
       ///< box edge lengths in x, y, z direction
       double edgelength_[3];
 
-      //! bounding box discretization runtime vtu writer
-      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
+      //! bounding box discretization runtime visualization writer
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> visualization_output_writer_ptr_;
     };
 
   }  // namespace MESHFREE

@@ -11,8 +11,8 @@
 #include "baci_fbi_beam_to_fluid_meshtying_output_writer.H"
 
 #include "baci_adapter_str_fsiwrapper.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
@@ -59,8 +59,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
   output_params_ptr_ = output_params_ptr;
 
   // Initialize the writer base object and add the desired visualizations.
-  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
-      new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
+  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
           "beam-to-fluid", visualization_output_params, restart_time));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
@@ -69,7 +69,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
   {
     if (output_params_ptr_->GetNodalForceOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("velocity", 3);
@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("integration-points");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -128,7 +128,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->GetVisualizationWriter("nodal-forces");
   if (visualization != Teuchos::null)
   {

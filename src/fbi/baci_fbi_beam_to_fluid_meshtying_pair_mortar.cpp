@@ -9,8 +9,8 @@ functions.
 
 #include "baci_fbi_beam_to_fluid_meshtying_pair_mortar.H"
 
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_fbi_beam_to_fluid_mortar_manager.H"
 #include "baci_geometry_pair_element_functions.H"
@@ -145,7 +145,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
  */
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
@@ -153,9 +153,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
       visualization_writer, visualization_params);
 
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("mortar-continuous");
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {

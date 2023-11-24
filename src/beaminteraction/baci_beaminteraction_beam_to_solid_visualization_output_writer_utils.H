@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Utility functions for the beam-to-solid vtu output writers.
+\brief Utility functions for the beam-to-solid visualization output writers.
 
 \level 3
 
@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_UTILS_H
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_UTILS_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_UTILS_H
+#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_UTILS_H
 
 
 #include <Teuchos_ParameterList.hpp>
@@ -33,7 +33,7 @@ namespace DRT
 }
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }
 namespace GEOMETRYPAIR
 {
@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void AddBeamInteractionNodalForces(
-      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>& visualization,
+      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
       const Teuchos::RCP<const ::DRT::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
       const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void AddAveragedNodalNormals(
-      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
+      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
           output_writer_base_ptr,
       const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
       const int condition_coupling_id, const bool write_unique_ids = false);

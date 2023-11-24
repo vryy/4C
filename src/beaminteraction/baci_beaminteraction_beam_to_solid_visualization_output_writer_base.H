@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_BASE_H
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_BASE_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_H
+#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -22,7 +22,7 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }
 namespace STR
 {
@@ -41,7 +41,7 @@ namespace BEAMINTERACTION
    * The way this object is designed it can be passed to a GetVisualization function and all
    * visualization output can be written stored through this object.
    */
-  class BeamToSolidVtuOutputWriterBase
+  class BeamToSolidVisualizationOutputWriterBase
   {
    public:
     /**
@@ -50,14 +50,14 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) RCP to the global visualization parameter list.
      * @param restart_time (in) Time at creation of this object.
      */
-    BeamToSolidVtuOutputWriterBase(const std::string& base_output_name,
+    BeamToSolidVisualizationOutputWriterBase(const std::string& base_output_name,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
         double restart_time);
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVtuOutputWriterBase() = default;
+    virtual ~BeamToSolidVisualizationOutputWriterBase() = default;
 
     /**
      * \brief Create a new visualization writer in this object.
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
      * @param writer_name_key (in) Key for the new writer in the writer map.
      * @return RCP to the newly created writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> AddVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> AddVisualizationWriter(
         const std::string& writer_name, const std::string& writer_name_key);
 
     /**
@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
      * @param writer_name (in) Name of the new writer. If the name already exists, throw an error.
      * @return RCP to the newly created writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> AddVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> AddVisualizationWriter(
         const std::string& writer_name);
 
     /**
@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
      * be returned.
      * @return RCP to the writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> GetVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> GetVisualizationWriter(
         const std::string& writer_name);
 
     /**
@@ -97,7 +97,7 @@ namespace BEAMINTERACTION
     std::string base_output_name_;
 
     //! Map of the sub output writers.
-    std::map<std::string, Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>>
+    std::map<std::string, Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>>
         visualization_writers_;
 
     //! Pointer to the global visualization input file options.

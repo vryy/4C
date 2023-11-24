@@ -40,7 +40,7 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterVisualization;
+  class BeamToSolidOutputWriterVisualization;
 }  // namespace BEAMINTERACTION
 
 

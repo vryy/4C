@@ -12,8 +12,8 @@
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
 #include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_surface.H"
 
@@ -36,19 +36,19 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, su
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
-    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                      visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("btssc-mortar");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("btssc-mortar-continuous");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_nodal_forces =
-          visualization_writer->GetVisualizationWriter("btssc-nodal-forces");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_nodal_forces =
+      visualization_writer->GetVisualizationWriter("btssc-nodal-forces");
   if (visualization_discret.is_null() and visualization_continuous.is_null() and
       visualization_nodal_forces.is_null())
     return;

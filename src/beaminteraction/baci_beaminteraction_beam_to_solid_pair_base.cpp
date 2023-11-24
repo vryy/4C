@@ -12,8 +12,8 @@
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_scalar_types.H"
 

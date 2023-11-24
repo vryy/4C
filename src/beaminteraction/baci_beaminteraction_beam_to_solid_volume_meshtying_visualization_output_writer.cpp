@@ -11,10 +11,10 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_writer.H"
 
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
@@ -66,8 +66,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
   output_params_ptr_ = output_params_ptr;
 
   // Initialize the writer base object and add the desired visualizations.
-  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
-      new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
+  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
           "beam-to-solid-volume", visualization_output_params, restart_time));
 
   // Whether or not to write unique cell and node IDs.
@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
   {
     if (output_params_ptr_->GetNodalForceOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btsvc-nodal-forces");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -90,7 +90,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btsvc-mortar");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -104,7 +104,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
 
     if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "mortar-continuous", "btsvc-mortar-continuous");
       auto& visualization_data = visualization_writer->GetVisualizationData();
@@ -121,7 +121,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "integration-points", "btsvc-integration-points");
       auto& visualization_data = visualization_writer->GetVisualizationData();
@@ -136,7 +136,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
 
     if (output_params_ptr_->GetSegmentationOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btsvc-segmentation");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -202,7 +202,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->GetVisualizationWriter("btsvc-nodal-forces");
   if (visualization != Teuchos::null)
     AddBeamInteractionNodalForces(visualization, beam_contact->DiscretPtr(),

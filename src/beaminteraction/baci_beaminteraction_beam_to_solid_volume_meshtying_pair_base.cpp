@@ -11,10 +11,10 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_geometry_pair_element_functions.H"
@@ -133,17 +133,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestar
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
-    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
   // Get the writers.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_segmentation =
-          visualization_writer->GetVisualizationWriter("btsvc-segmentation");
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
+      visualization_writer->GetVisualizationWriter("btsvc-segmentation");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
