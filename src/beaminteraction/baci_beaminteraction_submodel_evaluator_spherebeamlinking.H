@@ -127,10 +127,10 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output in VTP format
-      void InitOutputRuntimeVtp();
+      void InitOutputRuntime();
 
       //! writes output for discretization structure in VTP format
-      void WriteOutputRuntimeVtp() const;
+      void WriteOutputRuntime() const;
 
       /// get neighboring eles in discret
       virtual void FindAndStoreNeighboringElements(

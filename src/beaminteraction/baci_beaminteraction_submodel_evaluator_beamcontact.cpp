@@ -99,14 +99,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
-  // build runtime vtp writer if desired
+  // build runtime visualization writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
     beam_contact_params_ptr_->BuildBeamContactRuntimeOutputParams();
 
-    InitOutputRuntimeVtpBeamContact();
+    InitOutputRuntimeBeamContact();
   }
 
 
@@ -375,7 +375,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(bool 
                                  ->OutputIntervalInSteps() ==
           0)
   {
-    WriteTimeStepOutputRuntimeVtpBeamContact();
+    WriteTimeStepOutputRuntimeBeamContact();
   }
   if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
     beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->WriteOutputRuntime(this);
@@ -441,7 +441,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RuntimeOutputStepState() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamContact()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeBeamContact()
 {
   CheckInit();
 
@@ -454,8 +454,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteTimeStepOutputRuntimeVtpBeamContact()
-    const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteTimeStepOutputRuntimeBeamContact() const
 {
   CheckInitSetup();
 
@@ -464,12 +463,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteTimeStepOutputRuntime
                                                .BeamContactRuntimeVisualizationOutputParams()
                                                ->GetVisualizationParameters(),
           GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtpBeamContact(output_step, output_time);
+  WriteOutputRuntimeBeamContact(output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteIterationOutputRuntimeVtpBeamContact(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteIterationOutputRuntimeBeamContact(
     int iteration_number) const
 {
   CheckInitSetup();
@@ -479,12 +478,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteIterationOutputRuntim
                                                .BeamContactRuntimeVisualizationOutputParams()
                                                ->GetVisualizationParameters(),
           GState().GetTimeN(), GState().GetStepN(), iteration_number);
-  WriteOutputRuntimeVtpBeamContact(output_step, output_time);
+  WriteOutputRuntimeBeamContact(output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamContact(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeBeamContact(
     int timestep_number, double time) const
 {
   CheckInitSetup();
@@ -638,7 +637,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
   if (visualization_manager_ptr_ != Teuchos::null and
       BeamContactParams().BeamContactRuntimeVisualizationOutputParams()->OutputEveryIteration())
   {
-    WriteIterationOutputRuntimeVtpBeamContact(solver.getNumIterations());
+    WriteIterationOutputRuntimeBeamContact(solver.getNumIterations());
   }
   if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
   {

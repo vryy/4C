@@ -47,7 +47,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking()
     : crosslinking_params_ptr_(Teuchos::null),
       cl_exporter_(Teuchos::null),
       beam_exporter_(Teuchos::null),
-      vtp_writer_ptr_(Teuchos::null),
+      visualization_output_writer_ptr_(Teuchos::null),
       linker_disnp_(Teuchos::null),
       dis_at_last_redistr_(Teuchos::null),
       half_interaction_distance_(0.0),
@@ -80,8 +80,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
   // add crosslinker to bin discretization
   AddCrosslinkerToBinDiscretization();
 
-  // build runtime vtp writer
-  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntimeVtpStructure();
+  // build runtime visualization output writer
+  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntimeStructure();
 
   // store old maps prior to redistribution
   cl_noderowmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*BinDiscret().NodeRowMap()));
@@ -1114,22 +1114,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RuntimeOutputStepState() 
       "BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::"
       "RuntimeOutputStepState");
 
-  if (vtp_writer_ptr_ != Teuchos::null) WriteOutputRuntimeVtpStructure();
+  if (visualization_output_writer_ptr_ != Teuchos::null) WriteOutputRuntimeStructure();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeVtpStructure()
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeStructure()
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(
+  visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(
       BinDiscretPtr(), GInOutput().GetRuntimeVtpOutputParams()->GetVisualizationParameters()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStructure() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeStructure() const
 {
   CheckInitSetup();
 
@@ -1137,7 +1137,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   // this section compiles and seems to do the job correctly :-)
 
   // initialize the writer object
-  vtp_writer_ptr_->SetGeometryFromDiscretization();
+  visualization_output_writer_ptr_->SetGeometryFromDiscretization();
 
   // append all desired node and dof output data to the writer object's storage
   DRT::Discretization const& bindis = BinDiscret();
@@ -1155,26 +1155,27 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   // append displacement vector if desired
   // append displacement if desired
   //   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputDisplacementState() )
-  //     vtp_writer_ptr_-->AppendDofBasedResultDataVector( dis, 3, "displacement" );
+  //     visualization_output_writer_ptr_-->AppendDofBasedResultDataVector( dis, 3, "displacement"
+  //     );
 
   // append owner if desired
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputOwner())
-    vtp_writer_ptr_->AppendNodeBasedResultDataVector(owner, 1, "owner");
+    visualization_output_writer_ptr_->AppendNodeBasedResultDataVector(owner, 1, "owner");
 
   // append orientation vector if desired
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputOrientationAndLength())
-    vtp_writer_ptr_->AppendDofBasedResultDataVector(orientation, 3, "orientation");
+    visualization_output_writer_ptr_->AppendDofBasedResultDataVector(orientation, 3, "orientation");
 
   // append number of bonds if desired
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputNumberOfBonds())
-    vtp_writer_ptr_->AppendNodeBasedResultDataVector(numbond, 1, "numberofbonds");
+    visualization_output_writer_ptr_->AppendNodeBasedResultDataVector(numbond, 1, "numberofbonds");
 
   // append number of bonds if desired
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputLinkingForce())
-    vtp_writer_ptr_->AppendDofBasedResultDataVector(force, 3, "force");
+    visualization_output_writer_ptr_->AppendDofBasedResultDataVector(force, 3, "force");
 
   // finalize everything and write all required files to file system
-  vtp_writer_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());
+  visualization_output_writer_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());
 
   // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 2: DIRECTLY *********
   // this section is just to get the idea and needs some minor modifications (indicated by Fixme)

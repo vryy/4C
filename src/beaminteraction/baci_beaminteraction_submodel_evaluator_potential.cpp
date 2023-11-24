@@ -53,8 +53,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
 
   PrintConsoleWelcomeMessage(std::cout);
 
-  // build runtime vtp writer if desired
-  if (BeamPotentialParams().RuntimeOutput()) InitOutputRuntimeVtpBeamPotential();
+  // build runtime visualization writer if desired
+  if (BeamPotentialParams().RuntimeOutput()) InitOutputRuntimeBeamPotential();
 
   // set flag
   issetup_ = true;
@@ -431,7 +431,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(bool r
                                  ->OutputIntervalInSteps() ==
           0)
   {
-    WriteTimeStepOutputRuntimeVtpBeamPotential();
+    WriteTimeStepOutputRuntimeBeamPotential();
   }
 
   nearby_elements_map_.clear();
@@ -529,7 +529,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
   if (visualization_manager_ != Teuchos::null and
       BeamPotentialParams().GetBeamPotentialVisualizationOutputParams()->OutputEveryIteration())
   {
-    WriteIterationOutputRuntimeVtpBeamPotential(solver.getNumIterations());
+    WriteIterationOutputRuntimeBeamPotential(solver.getNumIterations());
   }
 }
 
@@ -858,7 +858,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintConsoleWelcomeMessa
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeamPotential()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeBeamPotential()
 {
   CheckInit();
 
@@ -871,7 +871,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeam
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRuntimeVtpBeamPotential()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRuntimeBeamPotential()
     const
 {
   CheckInitSetup();
@@ -881,12 +881,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRunti
                                                .GetBeamPotentialVisualizationOutputParams()
                                                ->GetVisualizationParameters(),
           GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
+  WriteOutputRuntimeBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRuntimeVtpBeamPotential(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRuntimeBeamPotential(
     int iteration_number) const
 {
   CheckInitSetup();
@@ -896,12 +896,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRunt
                                                .GetBeamPotentialVisualizationOutputParams()
                                                ->GetVisualizationParameters(),
           GState().GetTimeN(), GState().GetStepN(), iteration_number);
-  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
+  WriteOutputRuntimeBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBeamPotential(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeBeamPotential(
     int timestep_number, double time) const
 {
   CheckInitSetup();
