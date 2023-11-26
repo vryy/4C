@@ -8,7 +8,7 @@
       "cacheVariables": {
         "CMAKE_CXX_FLAGS": "-march=native",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS": "-march=native -mfpmath=sse -msse3",
+        "CMAKE_C_FLAGS": "-march=native", 
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
