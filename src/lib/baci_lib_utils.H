@@ -12,7 +12,6 @@
 #ifndef BACI_LIB_UTILS_H
 #define BACI_LIB_UTILS_H
 
-#include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -221,6 +220,13 @@ namespace DRT
       return;
     }
 
+    enum class L2ProjectionSystemType
+    {
+      l2_proj_system_std,
+      l2_proj_system_lumped,
+      l2_proj_system_dual
+    };
+
     /*!
       \brief compute L2 projection of a dof based field onto a node based field in a least
       squares sense.
@@ -238,22 +244,20 @@ namespace DRT
         const int& numvec,                      ///< number of entries per node to project
         Teuchos::ParameterList& params,         ///< parameter list that contains the element action
         const int& solvernumber,  ///< solver number for solving the resulting global system
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type =
-            INPAR::SCATRA::l2_proj_system_std);
+        const enum L2ProjectionSystemType& l2_proj_type =
+            L2ProjectionSystemType::l2_proj_system_std);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
         const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = nullptr,
+        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
         const std::map<int, int>* slavetomastercolnodesmap = nullptr,
         Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
         const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = nullptr,
+        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
         const std::map<int, int>* slavetomastercolnodesmap = nullptr,
         Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 

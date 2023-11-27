@@ -14,6 +14,7 @@
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_gauss.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -195,9 +196,8 @@ void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Node* node,
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretization& dis,
     const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap,
-    Epetra_Vector* const sys_mat_diagonal_ptr)
+    const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap,
+    const std::map<int, int>* slavetomastercolnodesmap, Epetra_Vector* const sys_mat_diagonal_ptr)
 {
   // extract the desired element pointers
   std::vector<DRT::Element*> coleles(elecolmap.NumMyElements(), nullptr);
@@ -213,13 +213,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretization& dis,
     const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap,
-    Epetra_Vector* const sys_mat_diagonal_ptr)
+    const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap,
+    const std::map<int, int>* slavetomastercolnodesmap, Epetra_Vector* const sys_mat_diagonal_ptr)
 {
-  // set l2-projection type
-  params.set<INPAR::SCATRA::L2ProjectionSystemType>("l2 proj system", l2_proj_type);
-
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(noderowmap, 108, false, true));
@@ -298,7 +294,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   // finalize the matrix
   massmatrix->Complete();
 
-  if (l2_proj_type != INPAR::SCATRA::l2_proj_system_std)
+  if (l2_proj_type != L2ProjectionSystemType::l2_proj_system_std)
     return SolveDiagonalNodalL2Projection(*massmatrix, *rhs, numvec, noderowmap, fullnoderowmap,
         slavetomastercolnodesmap, sys_mat_diagonal_ptr);
 
@@ -315,7 +311,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     Teuchos::RCP<DRT::Discretization> dis, const std::string& statename, const int& numvec,
     Teuchos::ParameterList& params, const int& solvernumber,
-    const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type)
+    const enum L2ProjectionSystemType& l2_proj_type)
 {
   // check if the statename has been set
   if (!dis->HasState(statename))

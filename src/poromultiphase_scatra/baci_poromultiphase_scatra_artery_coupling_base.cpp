@@ -9,6 +9,7 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_base.H"
 
+#include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 

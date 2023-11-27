@@ -23,6 +23,7 @@ functionality
 #ifndef BACI_W1_PORO_P1_SCATRA_H
 #define BACI_W1_PORO_P1_SCATRA_H
 
+#include "baci_inpar_scatra.H"
 #include "baci_w1_poro_p1.H"
 
 namespace DRT

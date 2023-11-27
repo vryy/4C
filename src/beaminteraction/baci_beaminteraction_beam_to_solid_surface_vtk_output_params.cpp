@@ -10,6 +10,7 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
 
+#include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_globalproblem.H"
 
 
