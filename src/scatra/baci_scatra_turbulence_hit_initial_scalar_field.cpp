@@ -18,7 +18,7 @@ transport
 #include <fftw3.h>
 #endif
 
-#include "baci_lib_exporter.H"
+#include "baci_comm_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_scatra_timint_implicit.H"
@@ -105,7 +105,7 @@ namespace SCATRA
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      DRT::Exporter exporter(discret_->Comm());
+      CORE::COMM::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)

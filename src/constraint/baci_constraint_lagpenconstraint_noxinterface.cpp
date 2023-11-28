@@ -14,6 +14,8 @@
 
 #include "baci_constraint_lagpenconstraint_noxinterface.H"
 
+#include "baci_lib_condition.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_solver_nonlin_nox_aux.H"
 

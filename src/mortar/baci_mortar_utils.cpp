@@ -9,7 +9,7 @@
 
 #include "baci_mortar_utils.H"
 
-#include "baci_lib_exporter.H"
+#include "baci_comm_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
@@ -196,7 +196,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  DRT::Exporter ex(inmat->DomainMap(), inmat->ColMap(), inmat->Comm());
+  CORE::COMM::Exporter ex(inmat->DomainMap(), inmat->ColMap(), inmat->Comm());
   for (int i = 0; i < inmat->DomainMap().NumMyElements(); ++i)
     gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
   ex.Export(gidmap);
@@ -255,7 +255,7 @@ void MORTAR::CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  DRT::Exporter exDomain2Col(mat.DomainMap(), mat.ColMap(), mat.Comm());
+  CORE::COMM::Exporter exDomain2Col(mat.DomainMap(), mat.ColMap(), mat.Comm());
 
   const int nummyelements = mat.DomainMap().NumMyElements();
   if (nummyelements != newdomainmap.NumMyElements())
@@ -321,7 +321,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  DRT::Exporter ex(inmat->DomainMap(), inmat->ColMap(), inmat->Comm());
+  CORE::COMM::Exporter ex(inmat->DomainMap(), inmat->ColMap(), inmat->Comm());
   for (int i = 0; i < inmat->DomainMap().NumMyElements(); ++i)
     gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
   ex.Export(gidmap);

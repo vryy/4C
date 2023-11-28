@@ -162,7 +162,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
   {
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(sourcedis.Comm());
+    CORE::COMM::Exporter exporter(sourcedis.Comm());
 
     // necessary variables
     MPI_Request request;
@@ -461,7 +461,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
-    DRT::Exporter& exporter, MPI_Request& request)
+    CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // necessary variables
 
@@ -503,7 +503,7 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char>& sblock,
-    DRT::Exporter& exporter, MPI_Request& request)
+    CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // Send block to next proc.
   int tag = myrank;

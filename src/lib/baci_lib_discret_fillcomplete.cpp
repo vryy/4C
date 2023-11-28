@@ -11,7 +11,6 @@
 
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"

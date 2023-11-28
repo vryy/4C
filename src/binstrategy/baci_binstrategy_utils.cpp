@@ -12,8 +12,8 @@
 
 #include "baci_beam3_base.H"
 #include "baci_bele_bele3.H"
+#include "baci_comm_exporter.H"
 #include "baci_fluid_ele.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance_utils.H"
 #include "baci_rigidsphere.H"
@@ -115,7 +115,7 @@ namespace BINSTRATEGY
         std::map<int, std::vector<DRT::Element*>> const& toranktosendeles)
     {
       // build exporter
-      DRT::Exporter exporter(discret->Comm());
+      CORE::COMM::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------
@@ -215,7 +215,7 @@ namespace BINSTRATEGY
         std::map<int, std::set<int>>& bintorowelemap)
     {
       // build exporter
-      DRT::Exporter exporter(discret->Comm());
+      CORE::COMM::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------

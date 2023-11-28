@@ -13,6 +13,7 @@
 #include "baci_xfem_xfluid_timeInt_base.H"
 
 #include "baci_bele_bele3.H"
+#include "baci_comm_exporter.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_intersection.H"
@@ -25,7 +26,6 @@
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -787,7 +787,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
 #endif
 
   // exporter for sending
-  DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;

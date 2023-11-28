@@ -115,7 +115,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   // get exporter
-  DRT::Exporter exporter(idiscret_->Comm());
+  CORE::COMM::Exporter exporter(idiscret_->Comm());
 
   // create data buffer
   DRT::PackBuffer dataeles;
@@ -231,7 +231,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   std::vector<char> rdatanodes;
 
   // get exporter
-  DRT::Exporter exportern(idiscret_->Comm());
+  CORE::COMM::Exporter exportern(idiscret_->Comm());
 
   DRT::PackBuffer datanodes;
 

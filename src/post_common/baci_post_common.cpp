@@ -13,12 +13,12 @@
 
 #include "baci_post_common.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_dofset_independent.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_nurbs_discret.H"
@@ -504,7 +504,7 @@ void PostProblem::read_meshes()
         // read periodic boundary conditions if available
         if (std::string(condname) == "LinePeriodic")
         {
-          DRT::Exporter exporter(*comm_);
+          CORE::COMM::Exporter exporter(*comm_);
 
           cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
@@ -548,7 +548,7 @@ void PostProblem::read_meshes()
         }
         else if (std::string(condname) == "SurfacePeriodic")
         {
-          DRT::Exporter exporter(*comm_);
+          CORE::COMM::Exporter exporter(*comm_);
 
           cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
@@ -619,7 +619,7 @@ void PostProblem::read_meshes()
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
           {
-            DRT::Exporter exporter(nurbsdis->Comm());
+            CORE::COMM::Exporter exporter(nurbsdis->Comm());
 
             if (comm_->MyPID() == 0)
             {
@@ -798,7 +798,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       {
         dserror("periodic boundary conditions with changing geometries have never been tested");
 
-        DRT::Exporter exporter(*comm_);
+        CORE::COMM::Exporter exporter(*comm_);
 
         cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
@@ -842,7 +842,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       }
       else if (std::string(condname) == "SurfacePeriodic")
       {
-        DRT::Exporter exporter(*comm_);
+        CORE::COMM::Exporter exporter(*comm_);
 
         cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
@@ -913,7 +913,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         // distribute knots to all procs
         if (comm_->NumProc() > 1)
         {
-          DRT::Exporter exporter(nurbsdis->Comm());
+          CORE::COMM::Exporter exporter(nurbsdis->Comm());
 
           if (comm_->MyPID() == 0)
           {
@@ -1315,7 +1315,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
   }
 
   const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
-  DRT::Exporter ex(*elemap, elecolmap, *comm);
+  CORE::COMM::Exporter ex(*elemap, elecolmap, *comm);
   ex.Export(*mapdata);
 
   return mapdata;

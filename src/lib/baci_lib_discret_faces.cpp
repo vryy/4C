@@ -11,9 +11,9 @@
 
 #include "baci_lib_discret_faces.H"
 
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 

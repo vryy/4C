@@ -9,10 +9,10 @@
 
 #include "baci_cut_parallel.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_output.H"
 #include "baci_cut_volumecell.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_pack_buffer.H"
 
 #include <Teuchos_Time.hpp>
@@ -1202,7 +1202,7 @@ void CORE::GEO::CUT::Parallel::sendData(
 #endif
 
   // exporter for sending
-  ::DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;

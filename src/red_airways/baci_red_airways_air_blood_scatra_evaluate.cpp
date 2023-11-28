@@ -14,17 +14,13 @@ routines called during the possible actions is contained in red_air_blood_scatra
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_list.H"
-#include "baci_mat_newtonianfluid.H"
 #include "baci_red_airways_air_blood_scatra_impl.H"
 #include "baci_red_airways_elementbase.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
-
-using namespace DRT::UTILS;
 
 
 /*---------------------------------------------------------------------*

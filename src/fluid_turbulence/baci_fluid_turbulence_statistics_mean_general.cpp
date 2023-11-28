@@ -13,6 +13,7 @@ means are computed as time averages
 
 #include "baci_fluid_turbulence_statistics_mean_general.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
@@ -408,7 +409,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   std::map<double, int, doublecomp>::iterator y_and_i;
 
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(avgcomm);
+  CORE::COMM::Exporter exporter(avgcomm);
 
   // necessary variables
   MPI_Request request;

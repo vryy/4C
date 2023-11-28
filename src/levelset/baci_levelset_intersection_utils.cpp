@@ -10,6 +10,7 @@
 
 #include "baci_levelset_intersection_utils.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_integrationcell.H"
 #include "baci_cut_levelsetintersection.H"
 #include "baci_cut_volumecell.H"
@@ -18,7 +19,6 @@
 #include "baci_discretization_geometry_integrationcell.H"
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -418,7 +418,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
 
   int size_one = 1;
 
-  DRT::Exporter exporter(comm);
+  CORE::COMM::Exporter exporter(comm);
 
   // destination proc (the "next" one)
   int dest = myrank + 1;

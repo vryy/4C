@@ -9,6 +9,7 @@ turbulent flow over a backward-facing step
 
 */
 /*----------------------------------------------------------------------*/
+#include "baci_comm_exporter.H"
 #include "baci_fluid_turbulence_statistics_bfs.H"
 
 #include <fstream>
@@ -155,7 +156,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    DRT::Exporter exporter(discret_->Comm());
+    CORE::COMM::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)

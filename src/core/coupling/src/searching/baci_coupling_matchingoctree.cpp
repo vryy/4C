@@ -12,8 +12,8 @@
 
 #include "baci_coupling_matchingoctree.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 
 
@@ -214,7 +214,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
   //--------------------------------------------------------------------
   // -> 2) round robin loop
   // create an exporter for point to point comunication
-  ::DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -466,7 +466,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const ::DRT::Discretization& slav
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  ::DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -622,7 +622,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  ::DRT::Exporter exporter(discret_->Comm());
+  CORE::COMM::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {

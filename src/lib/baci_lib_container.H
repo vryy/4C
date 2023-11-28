@@ -48,7 +48,7 @@ namespace DRT
 
   You can store arrays of integer, double, and strings in this container
   and access the data by keys. As the Container implements ParObject
-  everything stored in here can easily be communicated using the DRT::Exporter.
+  everything stored in here can easily be communicated using the CORE::COMM::Exporter.
 
   The intention of this class is to store rather 'small' units of data. Though possible,
   it is not meant to be used at the system level to store huge data sets such as sparse matrices or

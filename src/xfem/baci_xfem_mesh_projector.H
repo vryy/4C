@@ -12,6 +12,7 @@
 #ifndef BACI_XFEM_MESH_PROJECTOR_H
 #define BACI_XFEM_MESH_PROJECTOR_H
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_fixedsizematrix.H"
 
@@ -91,10 +92,11 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     /// receive a block in the round robin communication pattern
-    void ReceiveBlock(std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request);
+    void ReceiveBlock(
+        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
+    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// pack values in the round robin communication pattern
     void PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,

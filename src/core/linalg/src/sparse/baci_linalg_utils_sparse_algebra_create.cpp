@@ -9,6 +9,7 @@
 
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
+#include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*

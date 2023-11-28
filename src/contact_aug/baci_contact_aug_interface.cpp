@@ -432,7 +432,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 
   /*--------------------------------------------------------------------------*/
   // (1) Export normals
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(normals);
 
   /*--------------------------------------------------------------------------*/
@@ -488,7 +488,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
   /*--------------------------------------------------------------------------*/
   // (1) Export the 1-st order derivatives
 
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_d_normals);
 
   /*--------------------------------------------------------------------------*/
@@ -539,7 +539,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
   /*--------------------------------------------------------------------------*/
   // (1) Export the 2-nd order derivatives
 
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  CORE::COMM::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_dd_normals);
 
   /*--------------------------------------------------------------------------*/

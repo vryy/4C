@@ -12,6 +12,7 @@
 #include "baci_structure_new_nln_linearsystem_scaling.H"
 
 #include "baci_inpar_structure.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"

@@ -11,6 +11,7 @@
 
 #include "baci_xfem_mesh_projector.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_position.H"
 #include "baci_discretization_geometry_searchtree.H"
@@ -18,7 +19,6 @@
 #include "baci_io_gmsh.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -476,7 +476,7 @@ void XFEM::MeshProjector::CommunicateNodes(
   std::vector<int> allproc(numproc);
 
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(sourcedis_->Comm());
+  CORE::COMM::Exporter exporter(sourcedis_->Comm());
 
   // necessary variables
   MPI_Request request;
@@ -520,7 +520,7 @@ void XFEM::MeshProjector::CommunicateNodes(
 }
 
 void XFEM::MeshProjector::ReceiveBlock(
-    std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->Comm().NumProc();
@@ -553,7 +553,7 @@ void XFEM::MeshProjector::ReceiveBlock(
 }
 
 void XFEM::MeshProjector::SendBlock(
-    std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = sourcedis_->Comm().NumProc();

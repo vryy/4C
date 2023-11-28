@@ -7,6 +7,7 @@
 
 #include "baci_shell7p_ele_neumann_evaluator.H"
 
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_shell7p_ele_calc_lib.H"

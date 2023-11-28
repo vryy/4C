@@ -12,6 +12,7 @@
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_condition_selector.H"
+#include "baci_lib_discret.H"
 #include "baci_linalg_matrixtransform.H"
 
 /*----------------------------------------------------------------------*

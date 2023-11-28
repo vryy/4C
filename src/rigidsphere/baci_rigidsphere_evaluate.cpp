@@ -8,15 +8,12 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_discretization_geometric_search_params.H"
 #include "baci_inpar_browniandyn.H"
-#include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"

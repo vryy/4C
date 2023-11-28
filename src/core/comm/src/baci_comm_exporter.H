@@ -9,10 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_EXPORTER_H
-#define BACI_LIB_EXPORTER_H
+#ifndef BACI_COMM_EXPORTER_H
+#define BACI_COMM_EXPORTER_H
 
-#include "baci_lib_parobject.H"
 #include "baci_lib_utils_factory.H"
 
 #include <Epetra_Comm.h>
@@ -25,7 +24,7 @@
 #include <vector>
 
 
-namespace DRT
+namespace CORE::COMM
 {
   /*!
   \brief A class to manage explicit mpi communications
@@ -67,7 +66,7 @@ namespace DRT
     \brief Copy Constructor (default)
 
     */
-    Exporter(const DRT::Exporter& old) = default;
+    Exporter(const Exporter& old) = default;
 
     /*!
     \brief Destructor (default)
@@ -222,14 +221,13 @@ namespace DRT
     /*!
     \brief Send data from one processor to another (nonblocking)
 
-    The method will send an array of chars in a nonblocking way meaning that this method
-    will return immediately on the calling processor - even if communcation has not
-    finished yet. The char array must not be altered or destroyed as long as the
-    communication might still be in progress. This can be tested for using DRT::Exporter::Wait
-    and the request handle returned.
-    The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
-    Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
-    they will arrive in the order they have been sent.
+    The method will send an array of chars in a nonblocking way meaning that this method will return
+    immediately on the calling processor - even if communcation has not finished yet. The char array
+    must not be altered or destroyed as long as the communication might still be in progress. This
+    can be tested for using Exporter::Wait and the request handle returned. The receiving processor
+    should call Exporter::ReceiveAny to receive the message. Note that messages from one explicit
+    proc to another explicit proc are non-overtaking meaning they will arrive in the order they have
+    been sent.
 
     \note This is an individual call.
 
@@ -240,7 +238,7 @@ namespace DRT
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use DRT::Exporter::Wait for this.
+                           communcation finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */
@@ -250,14 +248,13 @@ namespace DRT
     /*!
     \brief Send data from one processor to another (nonblocking)
 
-    The method will send an array of ints in a nonblocking way meaning that this method
-    will return immediately on the calling processor - even if communcation has not
-    finished yet. The int array must not be altered or destroyed as long as the
-    communication might still be in progress. This can be tested for using DRT::Exporter::Wait
-    and the request handle returned.
-    The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
-    Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
-    they will arrive in the order they have been sent.
+    The method will send an array of ints in a nonblocking way meaning that this method will return
+   immediately on the calling processor - even if communcation has not finished yet. The int array
+   must not be altered or destroyed as long as the communication might still be in progress. This
+   can be tested for using Exporter::Wait and the request handle returned. The receiving processor
+   should call Exporter::ReceiveAny to receive the message. Note that messages from one explicit
+   proc to another explicit proc are non-overtaking meaning they will arrive in the order they have
+    been sent.
 
     \note This is an individual call.
 
@@ -268,7 +265,7 @@ namespace DRT
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use DRT::Exporter::Wait for this.
+                           communcation finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */
@@ -278,14 +275,13 @@ namespace DRT
     /*!
     \brief Send data from one processor to another (nonblocking)
 
-    The method will send an array of doubles in a nonblocking way meaning that this method
-    will return immediately on the calling processor - even if communcation has not
-    finished yet. The double array must not be altered or destroyed as long as the
-    communication might still be in progress. This can be tested for using DRT::Exporter::Wait
-    and the request handle returned.
-    The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
-    Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
-    they will arrive in the order they have been sent.
+    The method will send an array of doubles in a nonblocking way meaning that this method will
+    return immediately on the calling processor - even if communcation has not finished yet. The
+    double array must not be altered or destroyed as long as the communication might still be in
+    progress. This can be tested for using Exporter::Wait and the request handle returned. The
+    receiving processor should call DRT::Exporter::ReceiveAny to receive the message. Note that
+    messages from one explicit proc to another explicit proc are non-overtaking meaning they will
+    arrive in the order they have been sent.
 
     \note This is an individual call.
 
@@ -296,7 +292,7 @@ namespace DRT
     \param tag (in)      : tag to be used with message
     \param request (out) : mpi request handle to be used for testing completion of the
                            communication. data may not be altered or destroyed before
-                           communcation finalized! One can use DRT::Exporter::Wait for this.
+                           communcation finalized! One can use Exporter::Wait for this.
 
     \note This is an individual call
     */
@@ -500,7 +496,7 @@ namespace DRT
         Get the object by gid, pack it and append it to the sendblock. We only
         pack it if we know about it.
        */
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock) = 0;
+      virtual bool PackObject(int gid, ::DRT::PackBuffer& sendblock) = 0;
 
       /// Unpack one object
       /*!
@@ -533,19 +529,19 @@ namespace DRT
         if (curr != parobjects_.end())
         {
           T* ptr = curr->second.get();
-          auto* tester = dynamic_cast<ParObject*>(ptr);
+          auto* tester = dynamic_cast<::DRT::ParObject*>(ptr);
           if (!tester)
             dserror(
                 "typename T in template does not implement class ParObject (dynamic_cast failed)");
         }
       }
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
         {
-          ParObject::AddtoPack(sendblock, *curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -555,9 +551,9 @@ namespace DRT
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         std::vector<char> data;
-        ParObject::ExtractfromPack(index, recvblock, data);
+        ::DRT::ParObject::ExtractfromPack(index, recvblock, data);
 
-        DRT::ParObject* o = DRT::UTILS::Factory(data);
+        ::DRT::ParObject* o = ::DRT::UTILS::Factory(data);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
@@ -600,12 +596,12 @@ namespace DRT
 
       void PreExportTest(Exporter* exporter) override {}
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::AddtoPack(sendblock, *curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -615,7 +611,7 @@ namespace DRT
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
-        ParObject::ExtractfromPack(index, recvblock, *obj);
+        ::DRT::ParObject::ExtractfromPack(index, recvblock, *obj);
 
         // add object to my map
         objects_[gid] = obj;
@@ -649,12 +645,12 @@ namespace DRT
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, T>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::AddtoPack(sendblock, curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -696,12 +692,12 @@ namespace DRT
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::vector<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::AddtoPack(sendblock, curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -710,7 +706,7 @@ namespace DRT
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override
@@ -739,12 +735,12 @@ namespace DRT
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::set<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::AddtoPack(sendblock, curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -753,7 +749,7 @@ namespace DRT
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override
@@ -783,12 +779,12 @@ namespace DRT
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::map<T, U>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::AddtoPack(sendblock, curr->second);
+          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -797,7 +793,7 @@ namespace DRT
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override
@@ -815,34 +811,34 @@ namespace DRT
     };
 
   };  // class Exporter
-}  // namespace DRT
+}  // namespace CORE::COMM
 
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template <typename T>
-void DRT::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
+void CORE::COMM::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   GenericExport(helper);
 }
 
 template <typename T>
-void DRT::Exporter::Export(std::map<int, std::vector<T>>& data)
+void CORE::COMM::Exporter::Export(std::map<int, std::vector<T>>& data)
 {
   PODVectorExporterHelper<T> helper(data);
   GenericExport(helper);
 }
 
 template <typename T>
-void DRT::Exporter::Export(std::map<int, std::set<T>>& data)
+void CORE::COMM::Exporter::Export(std::map<int, std::set<T>>& data)
 {
   PODSetExporterHelper<T> helper(data);
   GenericExport(helper);
 }
 
 template <typename T, typename U>
-void DRT::Exporter::Export(std::map<int, std::map<T, U>>& data)
+void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
 {
   PODMapExporterHelper<T, U> helper(data);
   GenericExport(helper);

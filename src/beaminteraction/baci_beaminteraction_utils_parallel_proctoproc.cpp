@@ -11,8 +11,8 @@
 
 #include "baci_beaminteraction_utils_parallel_proctoproc.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
@@ -25,7 +25,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<::DRT::Discretization> const& disc
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {
   // build exporter
-  DRT::Exporter exporter(discret->Comm());
+  CORE::COMM::Exporter exporter(discret->Comm());
   int const numproc = discret->Comm().NumProc();
   int const myrank = discret->Comm().MyPID();
 

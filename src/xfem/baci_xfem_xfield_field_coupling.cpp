@@ -13,8 +13,8 @@
 
 #include "baci_xfem_xfield_field_coupling.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_coupling_adapter.H"
-#include "baci_lib_exporter.H"
 
 #include <Epetra_Export.h>
 
@@ -280,7 +280,7 @@ void XFEM::XFieldField::Coupling::BuildMinDofMaps(const DRT::Discretization& min
 
   dofmapvec.clear();
 
-  DRT::Exporter exportdofs(min_nodemap, min_permnodemap, min_dis.Comm());
+  CORE::COMM::Exporter exportdofs(min_nodemap, min_permnodemap, min_dis.Comm());
   exportdofs.Export(dofs);
 
   const int* permngids = min_permnodemap.MyGlobalElements();
@@ -358,7 +358,7 @@ void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::Discretization& max
 
   dofmapvec.clear();
 
-  DRT::Exporter exportdofs(max_nodemap, max_permnodemap, max_dis.Comm());
+  CORE::COMM::Exporter exportdofs(max_nodemap, max_permnodemap, max_dis.Comm());
   exportdofs.Export(dofs);
 
   const int* permngids = max_permnodemap.MyGlobalElements();

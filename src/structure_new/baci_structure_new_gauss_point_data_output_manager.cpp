@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*/
 #include "baci_structure_new_gauss_point_data_output_manager.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_structure_new_model_evaluator.H"
 
@@ -174,7 +174,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PostEvaluate()
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::DistributeQuantities(const Epetra_Comm& comm)
 {
-  const DRT::Exporter exporter(comm);
+  const CORE::COMM::Exporter exporter(comm);
 
   int max_quantities = quantities_.size();
   comm.MaxAll(&max_quantities, &max_quantities, 1);
@@ -210,7 +210,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::DistributeQuantities(cons
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::SendMyQuantitiesToProc(
-    const DRT::Exporter& exporter, int to_proc) const
+    const CORE::COMM::Exporter& exporter, int to_proc) const
 {
   // Pack quantities
   std::vector<char> sdata(0);
@@ -223,7 +223,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::SendMyQuantitiesToProc(
 
 std::unique_ptr<std::unordered_map<std::string, int>>
 STR::MODELEVALUATOR::GaussPointDataOutputManager::ReceiveQuantitiesFromProc(
-    const DRT::Exporter& exporter, int from_proc) const
+    const CORE::COMM::Exporter& exporter, int from_proc) const
 {
   std::vector<char> rdata(0);
   int size;
@@ -239,7 +239,7 @@ STR::MODELEVALUATOR::GaussPointDataOutputManager::ReceiveQuantitiesFromProc(
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::BroadcastMyQuantitites(
-    const DRT::Exporter& exporter)
+    const CORE::COMM::Exporter& exporter)
 {
   std::vector<char> data(0);
   if (exporter.Comm().MyPID() == 0)

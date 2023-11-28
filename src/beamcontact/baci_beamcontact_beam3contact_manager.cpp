@@ -918,7 +918,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   BTSolDiscret().FillComplete(true, false, false);
 
   // communicate the map nodedofs to all proccs
-  DRT::Exporter ex(*(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
+  CORE::COMM::Exporter ex(*(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
   ex.Export(nodedofs);
 
   // Determine offset between the IDs of problem discretization and BTSol discretization

@@ -8,6 +8,7 @@
 #ifndef BACI_SHELL7P_UTILS_H
 #define BACI_SHELL7P_UTILS_H
 
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"

@@ -10,6 +10,7 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_H
 
+#include "baci_lib_condition.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_Vector.h>

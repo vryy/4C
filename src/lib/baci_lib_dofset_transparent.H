@@ -13,9 +13,9 @@
 #define BACI_LIB_DOFSET_TRANSPARENT_H
 
 
+#include "baci_comm_exporter.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
-#include "baci_lib_exporter.H"
 
 
 namespace DRT
@@ -77,12 +77,12 @@ namespace DRT
     void SetSourceDofsAvailableOnThisProc(std::map<int, std::vector<int>>& gid_to_dofs);
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
-    void SendBlock(int numproc, int myrank, std::vector<char>& sblock, DRT::Exporter& exporter,
-        MPI_Request& request);
+    void SendBlock(int numproc, int myrank, std::vector<char>& sblock,
+        CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
-    void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock, DRT::Exporter& exporter,
-        MPI_Request& request);
+    void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
+        CORE::COMM::Exporter& exporter, MPI_Request& request);
 
    protected:
     Teuchos::RCP<DRT::Discretization> sourcedis_;  ///< source discretization

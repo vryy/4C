@@ -85,7 +85,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
   const int torank = (myrank + 1) % numproc;                      // to
   const int fromrank = (myrank + numproc - 1) % numproc;          // from
 
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
 
   for (int irobin = 0; irobin < numproc; ++irobin)
   {
@@ -252,7 +252,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- send ----
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -352,7 +352,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   }
 
   // ---- send ----
-  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  CORE::COMM::Exporter exporter(binstrategy_->BinDiscret()->Comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -393,8 +393,8 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(
-    int const numrec, DRT::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
+void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int const numrec,
+    CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   // ---- receive ----
   for (int rec = 0; rec < numrec; ++rec)

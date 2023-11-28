@@ -13,6 +13,7 @@
 
 #include "baci_xfem_xfluid_timeInt.H"
 
+#include "baci_comm_exporter.H"
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_element.H"
@@ -29,7 +30,6 @@
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_serialdensevector.H"
@@ -2216,7 +2216,7 @@ void XFEM::XFluidTimeInt::sendData(
 #endif
 
   // exporter for sending
-  DRT::Exporter exporter(dis_->Comm());
+  CORE::COMM::Exporter exporter(dis_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;

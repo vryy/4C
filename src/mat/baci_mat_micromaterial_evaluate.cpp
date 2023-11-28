@@ -8,10 +8,10 @@
 /*----------------------------------------------------------------------*/
 
 
+#include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_lib_container.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_mat_micromaterial.H"
@@ -114,7 +114,7 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  DRT::Exporter exporter(*oldmap, *newmap, *subcomm);
+  CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
   exporter.Export<DRT::Container>(condnamemap);
 
   // standard evaluation of the micro material
@@ -265,7 +265,7 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  DRT::Exporter exporter(*oldmap, *newmap, *subcomm);
+  CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
   exporter.Export<DRT::Container>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())

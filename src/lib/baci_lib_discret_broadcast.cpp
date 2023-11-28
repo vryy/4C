@@ -9,10 +9,10 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_nurbs_discret.H"
@@ -83,7 +83,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
       if (gcomm->MyPID() == bcaster) snummyelements = 1;
       Epetra_Map source(-1, snummyelements, &myelements, 0, *gcomm);
       Epetra_Map target(-1, rnummyelements, &myelements, 0, *gcomm);
-      DRT::Exporter exporter(source, target, *gcomm);
+      CORE::COMM::Exporter exporter(source, target, *gcomm);
       std::map<int, std::vector<char>> smap;
       if (gcomm->MyPID() == bcaster) smap[0] = data;
       exporter.Export<char>(smap);
@@ -278,7 +278,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
-    DRT::Exporter exporter(smap, rmap, *icomm);
+    CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
   }
@@ -562,7 +562,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     myelements.resize(nummyelements);
     for (int i = 0; i < nummyelements; ++i) myelements[i] = i;
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
-    DRT::Exporter exporter(smap, rmap, *icomm);
+    CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
     exporter.Export<DRT::Container>(condnamemap);
   }

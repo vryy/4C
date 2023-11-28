@@ -26,6 +26,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_mapextractor.H"

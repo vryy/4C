@@ -12,7 +12,7 @@
 
 #include "baci_lib_dofset_pbc.H"
 #include "baci_lib_dofset_proxy.H"
-#include "baci_lib_exporter.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_exceptions.H"
