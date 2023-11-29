@@ -9,10 +9,10 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
         "CMAKE_C_COMPILER": "/usr/bin/mpicc",
-        "CMAKE_CXX_FLAGS": "-msse3",
+        "CMAKE_CXX_FLAGS": "-msse3 -Werror",
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_CXX_FLAGS_DEBUG": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS": "-msse3",
+        "CMAKE_C_FLAGS": "-msse3 -Werror",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_C_FLAGS_DEBUG": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
@@ -63,6 +63,18 @@
       "cacheVariables": {
         "BACI_WITH_ADDRESS_SANITIZER": "ON",
         "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=lld"
+      }
+    },
+    {
+      "name": "docker_codeclimate",
+      "displayName": "Code climate job with clang-tidy",
+      "description": "Configure BACI for code climate checks",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-msse3",
+        "CMAKE_C_FLAGS": "-msse3"
       }
     },
     {
