@@ -6,13 +6,15 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_config.H"
+#include "baci_config_mpi.H"
+
 #include "baci_cut_element.H"
 #include "baci_cut_mesh.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_globalproblem.H"
 
 #include <fenv.h>
-#include <mpi.h>
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include <map>

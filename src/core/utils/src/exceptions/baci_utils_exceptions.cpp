@@ -9,10 +9,11 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_config_mpi.H"
+
 #include "baci_utils_exceptions.H"
 
 #include <execinfo.h>
-#include <mpi.h>
 #include <stdio.h>
 #include <string.h>
 

@@ -12,7 +12,6 @@
 
 // this ensures we always obtain the C++ version of mpi and
 // not its C version included by pss_table.h
-#include <mpi.h>
 
 #ifdef __cplusplus
 extern "C"

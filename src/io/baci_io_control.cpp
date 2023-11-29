@@ -6,11 +6,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_config_compile_settings.H"
+#include "baci_config.H"
+#include "baci_config_revision.H"
 
 #include "baci_io_control.H"
 
-#include "baci_config_revision.H"
 #include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"  // access to legacy parser module
 #include "baci_io_pstream.H"

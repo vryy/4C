@@ -9,11 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 #
-#include "baci_config_compile_settings.H"
+#include "baci_config_mpi.H"
 
 #include "baci_create_rtdfiles_wrapper.H"
-
-#include <Epetra_MpiComm.h>
 
 #include <cstring>
 #include <iostream>

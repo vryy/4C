@@ -1,8 +1,6 @@
 # configure a header file to pass some of the CMake settings
 # to the source code
-configure_file(
-  "baci_config_compile_settings.H.in" "${CMAKE_CURRENT_BINARY_DIR}/baci_config_compile_settings.H"
-  )
+configure_file("baci_config.H.in" "${CMAKE_CURRENT_BINARY_DIR}/baci_config.H")
 
 baci_get_git_revision_information()
 # configure revision file to pass git revision information to the source code
@@ -15,14 +13,16 @@ configure_file(
   )
 
 set(_headers
-    ${CMAKE_CURRENT_BINARY_DIR}/baci_config_compile_settings.H
+    ${CMAKE_CURRENT_BINARY_DIR}/baci_config.H
     ${CMAKE_CURRENT_BINARY_DIR}/baci_config_revision.H
     ${CMAKE_CURRENT_BINARY_DIR}/baci_config_trilinos_version.H
     )
 
-add_library(config INTERFACE)
+baci_auto_define_module()
+
+# Manually add the configured headers to the config target
 target_sources(
-  config
+  ${AUTO_DEFINED_MODULE_NAME}
   INTERFACE FILE_SET
             HEADERS
             BASE_DIRS
