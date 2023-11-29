@@ -101,7 +101,7 @@ namespace CORE::GEN
      *  @param[in] type   Apply this copy type.
      *
      *  \author hiermeier \date 05/17 */
-    pairedvector(const pairedvector<Key, T>& source, enum GEN::CopyType type = DeepCopy)
+    pairedvector(const pairedvector& source, enum GEN::CopyType type = DeepCopy)
         : _m(0, pair_type()), _entries(0)
 
     {

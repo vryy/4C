@@ -223,6 +223,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::update_secondary_solution:
       updateonly = true;  // no break here!!!
+      [[fallthrough]];
     case ELEMAG::update_secondary_solution_and_calc_residual:
     {
       // bool errormaps = params.get<bool>("errormaps");

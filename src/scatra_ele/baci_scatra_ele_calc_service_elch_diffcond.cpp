@@ -607,7 +607,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
       // convective flux contribution
       q.Update(VarManager()->Phinp(k), VarManager()->ConVel(k));
 
-      // no break statement here!
+      [[fallthrough]];
     case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
       q.Update(-DiffManager()->GetIsotropicDiff(k) * DiffManager()->GetPhasePoroTort(0),

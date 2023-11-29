@@ -276,8 +276,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
             {
               const double e_ikj = INTEGRATOR::LeviCivitaSymbol(n_dof, k, j);
               d_nn_var_jdof += e_ikj * normal_fac * deriv(1, n_j) * tau(k, 0);
+              [[fallthrough]];
             }
-            // no break
             // --- 3-D and 2-D case -------------------------------------------
             case 1:
             {

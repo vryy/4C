@@ -52,8 +52,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
-    //! Empty constructor
-    TimIntExpl() : TimInt() { ; }
 
     //! Copy constructor
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }

@@ -289,6 +289,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         newmanmultiscale->SetTimeStepping(
             iquad, params.get<double>("dt"), params.get<double>("time"), params.get<int>("step"));
+      [[fallthrough]];
     }
 
     default:

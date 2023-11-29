@@ -49,7 +49,8 @@ namespace STR
       {
        public:
         //! Constructor.
-        StcScaling(STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState);
+        StcScaling(
+            const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState);
 
 
         //! Scales the linear system.

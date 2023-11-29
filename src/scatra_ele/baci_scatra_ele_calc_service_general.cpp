@@ -1143,7 +1143,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(
         // convective flux contribution
         q.Update(densnp[k] * scatravarmanager_->Phinp(k), convelint);
 
-        // no break statement here!
+        [[fallthrough]];
       case INPAR::SCATRA::flux_diffusive:
         // diffusive flux contribution
         q.Update(-(diffmanager_->GetIsotropicDiff(k)), gradphi, 1.0);

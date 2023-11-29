@@ -613,7 +613,6 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                 default:
                   dserror("Wrong element type for surface element.");
               }
-              break;
             }
             else if (surface_normal_strategy ==
                      INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
@@ -636,6 +635,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                   dserror("Wrong element type for surface element.");
               }
             }
+            dserror("Unknown surface normal strategy.");
           }
 
           default:

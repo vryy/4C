@@ -46,9 +46,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
-    //! Empty constructor
-    TimIntAB2() : TimIntExpl() { ; }
-
     //! Copy constructor
     TimIntAB2(const TimIntAB2& old) : TimIntExpl(old) { ; }
 

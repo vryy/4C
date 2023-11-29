@@ -595,6 +595,9 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   res[0] = Evaluate(xp, t, component);
 
   // add the 1st time derivative at time t
+
+  // NOTE: the complete implementation is likely garbage, given that we fall
+  // through the different cases in the switch statements below.
   if (deg >= 1)
   {
     switch (component)
@@ -604,16 +607,19 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
                  (exp(a * xp[0]) * sin(a * xp[1] + d * xp[2]) +
                      exp(a * xp[2]) * cos(a * xp[0] + d * xp[1])) *
                  der1tempfac;
+        [[fallthrough]];
       case 1:
         res[1] = -a *
                  (exp(a * xp[1]) * sin(a * xp[2] + d * xp[0]) +
                      exp(a * xp[0]) * cos(a * xp[1] + d * xp[2])) *
                  der1tempfac;
+        [[fallthrough]];
       case 2:
         res[1] = -a *
                  (exp(a * xp[2]) * sin(a * xp[0] + d * xp[1]) +
                      exp(a * xp[1]) * cos(a * xp[2] + d * xp[0])) *
                  der1tempfac;
+        [[fallthrough]];
       case 3:
         res[1] = -a * a / 2 * dens *
                  (exp(2 * a * xp[0]) + exp(2 * a * xp[1]) + exp(2 * a * xp[2]) +
@@ -624,6 +630,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
                      2 * sin(a * xp[2] + d * xp[0]) * cos(a * xp[1] + d * xp[2]) *
                          exp(a * (xp[0] + xp[1]))) *
                  der1tempfac;
+        [[fallthrough]];
       default:
         res[1] = 1.0;
     }
@@ -639,16 +646,19 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
                  (exp(a * xp[0]) * sin(a * xp[1] + d * xp[2]) +
                      exp(a * xp[2]) * cos(a * xp[0] + d * xp[1])) *
                  der2tempfac;
+        [[fallthrough]];
       case 1:
         res[2] = -a *
                  (exp(a * xp[1]) * sin(a * xp[2] + d * xp[0]) +
                      exp(a * xp[0]) * cos(a * xp[1] + d * xp[2])) *
                  der2tempfac;
+        [[fallthrough]];
       case 2:
         res[2] = -a *
                  (exp(a * xp[2]) * sin(a * xp[0] + d * xp[1]) +
                      exp(a * xp[1]) * cos(a * xp[2] + d * xp[0])) *
                  der2tempfac;
+        [[fallthrough]];
       case 3:
         res[2] = -a * a / 2 * dens *
                  (exp(2 * a * xp[0]) + exp(2 * a * xp[1]) + exp(2 * a * xp[2]) +
@@ -659,6 +669,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
                      2 * sin(a * xp[2] + d * xp[0]) * cos(a * xp[1] + d * xp[2]) *
                          exp(a * (xp[0] + xp[1]))) *
                  der2tempfac;
+        [[fallthrough]];
       default:
         res[2] = 1.0;
     }
@@ -6779,13 +6790,11 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[1] = 0;
       case 1:
-        res[1] = 0;
       case 2:
-        res[1] = 0;
       case 3:
         res[1] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -6798,13 +6807,11 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[2] = 0;
       case 1:
-        res[2] = 0;
       case 2:
-        res[2] = 0;
       case 3:
         res[2] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -6887,23 +6894,16 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[1] = 0;
       case 1:
-        res[1] = 0;
       case 2:
-        res[1] = 0;
       case 3:
-        res[1] = 0;
       case 4:
-        res[1] = 0;
       case 5:
-        res[1] = 0;
       case 6:
-        res[1] = 0;
       case 7:
-        res[1] = 0;
       case 8:
         res[1] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -6916,23 +6916,16 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[2] = 0;
       case 1:
-        res[2] = 0;
       case 2:
-        res[2] = 0;
       case 3:
-        res[2] = 0;
       case 4:
-        res[2] = 0;
       case 5:
-        res[2] = 0;
       case 6:
-        res[2] = 0;
       case 7:
-        res[2] = 0;
       case 8:
         res[2] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7023,11 +7016,10 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[1] = 0;
       case 1:
-        res[1] = 0;
       case 2:
         res[1] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7040,11 +7032,10 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
     switch (component)
     {
       case 0:
-        res[2] = 0;
       case 1:
-        res[2] = 0;
       case 2:
         res[2] = 0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7147,12 +7138,16 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
     {
       case 0:
         res[1] = -cos(a_pi_x) * sin(a_pi_y) * gu;
+        [[fallthrough]];
       case 1:
         res[1] = sin(a_pi_x) * cos(a_pi_y) * gu;
+        [[fallthrough]];
       case 2:
         res[1] = 0.0;
+        [[fallthrough]];
       case 3:
         res[1] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7180,12 +7175,16 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
     {
       case 0:
         res[2] = -cos(a_pi_x) * sin(a_pi_y) * gu;
+        [[fallthrough]];
       case 1:
         res[2] = sin(a_pi_x) * cos(a_pi_y) * gu;
+        [[fallthrough]];
       case 2:
         res[2] = 0.0;
+        [[fallthrough]];
       case 3:
         res[2] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7293,26 +7292,37 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
            exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
     }
 
+    // NOTE: the implementation is likely wrong given that we fall through the switch statements
+
     switch (component)
     {
       case 0:  // u,x
         res[1] = sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 1:  // u,y
         res[1] = -cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 2:  // u,z
         res[1] = 0.0;
+        [[fallthrough]];
       case 3:  // v,x
         res[1] = cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 4:  // v,y
         res[1] = -sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 5:  // v,z
         res[1] = 0.0;
+        [[fallthrough]];
       case 6:  // w,x
         res[1] = 0.0;
+        [[fallthrough]];
       case 7:  // w,y
         res[1] = 0.0;
+        [[fallthrough]];
       case 8:  // w,z
         res[1] = 0.0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7336,22 +7346,31 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
     {
       case 0:  // u,x
         res[2] = sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 1:  // u,y
         res[2] = -cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 2:  // u,z
         res[2] = 0.0;
+        [[fallthrough]];
       case 3:  // v,x
         res[2] = cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 4:  // v,y
         res[2] = -sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        [[fallthrough]];
       case 5:  // v,z
         res[2] = 0.0;
+        [[fallthrough]];
       case 6:  // w,x
         res[2] = 0.0;
+        [[fallthrough]];
       case 7:  // w,y
         res[2] = 0.0;
+        [[fallthrough]];
       case 8:  // w,z
         res[2] = 0.0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7486,14 +7505,18 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
+    // NOTE: likely wrong given that we fall through the switch statments
     switch (component)
     {
       case 0:
         res[1] = 0.5 * a * M_PI * sin(2. * a_pi_x) * gp + conv_x * gu;
+        [[fallthrough]];
       case 1:
         res[1] = 0.5 * a * M_PI * sin(2. * a_pi_y) * gp + conv_y * gu;
+        [[fallthrough]];
       case 2:
         res[1] = 0.0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;
@@ -7532,14 +7555,18 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
+    // NOTE: this is likely wrong given that we fall through the switch statement
     switch (component)
     {
       case 0:
         res[2] = 0.5 * a * M_PI * sin(2. * a_pi_x) * gp + conv_x * gu;
+        [[fallthrough]];
       case 1:
         res[2] = 0.5 * a * M_PI * sin(2. * a_pi_y) * gp + conv_y * gu;
+        [[fallthrough]];
       case 2:
         res[2] = 0.0;
+        [[fallthrough]];
       default:
         dserror("wrong component %d", component);
         break;

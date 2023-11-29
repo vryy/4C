@@ -74,6 +74,8 @@ namespace DRT
     */
     Node(const DRT::Node& old);
 
+    Node& operator=(const DRT::Node&) = default;
+
     /*!
     \brief Deep copy the derived class and return pointer to it
 

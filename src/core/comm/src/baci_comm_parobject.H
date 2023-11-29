@@ -142,13 +142,6 @@ namespace CORE::COMM
     ParObject() = default;
 
     /*!
-     * \brief Copy Constructor
-     *
-     * Makes a deep copy of a ParObject
-     */
-    ParObject(const ParObject& old) = default;
-
-    /*!
      * \brief Destructor
      */
     virtual ~ParObject() = default;

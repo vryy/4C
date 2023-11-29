@@ -221,7 +221,7 @@ bool BEAMINTERACTION::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, doub
 bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
     CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
     CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
-    std::pair<double, double>& closestpoints, bool etaset)
+    std::pair<double, double>& closestpoints, bool& etaset)
 {
   CORE::LINALG::Matrix<3, 1, double> t1(true);
   CORE::LINALG::Matrix<3, 1, double> t2(true);

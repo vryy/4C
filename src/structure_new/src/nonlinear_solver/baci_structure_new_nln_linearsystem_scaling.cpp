@@ -27,7 +27,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::NLN::LinSystem::StcScaling::StcScaling(
-    STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState)
+    const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState)
     : stcscale_(DataSDyn.GetSTCAlgoType()),
       stclayer_(DataSDyn.GetSTCLayer()),
       stcmat_(Teuchos::null)

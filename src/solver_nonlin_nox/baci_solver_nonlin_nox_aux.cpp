@@ -141,7 +141,6 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
       dserror(
           "There is no capable linear system type for the given linear "
           "solver combination ( 2 linear solvers )!");
-      exit(EXIT_FAILURE);
     }
     case 3:
     {
@@ -151,11 +150,10 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
           linsolvers.find(NOX::NLN::sol_meshtying) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_structure_contact;
-
-        dserror(
-            "There is no capable linear system type for the given linear "
-            "solver combination ( 3 linear solvers )!");
       }
+      dserror(
+          "There is no capable linear system type for the given linear "
+          "solver combination ( 3 linear solvers )!");
     }
     default:
     {
