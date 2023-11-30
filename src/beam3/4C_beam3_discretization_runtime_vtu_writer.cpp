@@ -115,6 +115,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
   // need to adjust order of filling in the coordinates).
   auto& visualization_data = visualization_manager_->get_visualization_data();
 
+  // Clear the visualization data, especially the cell connectivity such that it is rebuilt later.
   visualization_data.clear_data();
 
   std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();

@@ -12,6 +12,7 @@
 #include "4C_io_visualization_data.hpp"
 
 #include <algorithm>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -85,6 +86,15 @@ void Core::IO::VisualizationData::consistency_check() const
   if (cell_connectivity_.size() < n_cells)
     FOUR_C_THROW("The number of cells is %d, however, there are fewer connectivity entries (%d)",
         n_cells, cell_connectivity_.size());
+  if (!cell_offsets_.empty() &&
+      cell_connectivity_.size() <
+          static_cast<std::vector<index_type>::size_type>(cell_offsets_.back()))
+  {
+    FOUR_C_THROW(
+        "The last entry in the cell offset data is %d, however, there are fewer connectivity "
+        "entries (%d)",
+        cell_offsets_.back(), cell_connectivity_.size());
+  }
   if (n_cells == 0 && cell_connectivity_.size() > 0)
     FOUR_C_THROW(
         "There are no cells, but there are %d connectivity entries", cell_connectivity_.size());
