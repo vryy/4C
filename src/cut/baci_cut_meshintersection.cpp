@@ -10,7 +10,6 @@
 
 #include "baci_cut_selfcut.H"
 
-#include <mpi.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 /*-----------------------------------------------------------------------------------------*

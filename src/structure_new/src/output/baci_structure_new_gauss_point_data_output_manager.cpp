@@ -16,7 +16,6 @@
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-#include <mpi.h>
 #include <Teuchos_RCPDecl.hpp>
 
 STR::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(

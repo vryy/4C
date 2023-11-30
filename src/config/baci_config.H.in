@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------*/
-/*!
-
+/*! \file
 \brief the configured options and settings for baci, populated by cmake
-
 \level 0
-
-
 */
 /*---------------------------------------------------------------------*/
+
+#ifndef BACI_CONFIG_H
+#define BACI_CONFIG_H
 
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
@@ -22,4 +21,6 @@
 
 #ifndef TRAP_FE
 #cmakedefine TRAP_FE
+#endif
+
 #endif

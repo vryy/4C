@@ -9,12 +9,11 @@
 \level 0
 */
 
-#include "baci_config_compile_settings.H"
+#include "baci_config_revision.H"
 
 #include "baci_create_rtdfiles_wrapper.H"
 
 #include "baci_comm_utils.H"
-#include "baci_config_revision.H"
 #include "baci_create_rtdfiles_utils.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"

@@ -8,11 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_config_compile_settings.H"
-
-#include "baci_comm_utils.H"
+#include "baci_config.H"
+#include "baci_config_mpi.H"
 #include "baci_config_revision.H"
 #include "baci_config_trilinos_version.H"
+
+#include "baci_comm_utils.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"

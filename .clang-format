@@ -26,8 +26,8 @@ IncludeCategories:
   - Regex: "gmock/gmock.h"
     Priority: -2
 
-  # make sure to include config before other BACI headers:
-  - Regex: "baci_config_compile_settings.H"
+  # make sure to include config headers before other BACI headers:
+  - Regex: "baci_config.*.H"
     Priority: -1
 
   # the header associated with a cpp file has priority zero and would come here

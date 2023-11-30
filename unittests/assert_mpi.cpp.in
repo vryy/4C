@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <mpi.h>
+#include "baci_config_mpi.H"
 
 // GENERATED FILE! Make sure to edit the template in the source directory.
 
