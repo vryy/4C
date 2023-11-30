@@ -43,7 +43,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
     class ParamsRuntimeVtpOutput;
     class ParamsMonitorDBC;
 
@@ -95,7 +95,7 @@ namespace STR
       }
 
       /// get the data container for parameters regarding VTK output at runtime
-      Teuchos::RCP<const ParamsRuntimeVtkOutput> GetRuntimeVtkOutputParams() const
+      Teuchos::RCP<const ParamsRuntimeOutput> GetRuntimeVtkOutputParams() const
       {
         CheckInitSetup();
         return params_runtime_vtk_output_;
@@ -361,7 +361,7 @@ namespace STR
       Teuchos::RCP<IO::EveryIterationWriter> writer_every_iter_;
 
       /// data container for input parameters related to VTK output at runtime
-      Teuchos::RCP<ParamsRuntimeVtkOutput> params_runtime_vtk_output_;
+      Teuchos::RCP<ParamsRuntimeOutput> params_runtime_vtk_output_;
 
       /// data container for input parameters related to VTP output at runtime
       Teuchos::RCP<ParamsRuntimeVtpOutput> params_runtime_vtp_output_;

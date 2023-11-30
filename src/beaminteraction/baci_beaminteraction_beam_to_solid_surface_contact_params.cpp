@@ -9,7 +9,7 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
 
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
 
@@ -54,8 +54,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactParams::Init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ =
-        Teuchos::rcp<BeamToSolidSurfaceVtkOutputParams>(new BeamToSolidSurfaceVtkOutputParams());
+    output_params_ptr_ = Teuchos::rcp<BeamToSolidSurfaceVisualizationOutputParams>(
+        new BeamToSolidSurfaceVisualizationOutputParams());
     output_params_ptr_->Init();
     output_params_ptr_->Setup();
   }

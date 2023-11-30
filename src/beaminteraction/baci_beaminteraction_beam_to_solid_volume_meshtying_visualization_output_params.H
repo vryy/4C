@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Object to store the beam to solid surface output (visualization) parameters.
+\brief Object to store the beam to solid volume meshtying output (visualization) parameters.
 
 \level 3
 
@@ -9,28 +9,30 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_PARAMS_H
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_PARAMS_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_PARAMS_H
+#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_PARAMS_H
 
 
 #include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
 
+#include <memory>
+
 
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidSurfaceVtkOutputParams();
+    BeamToSolidVolumeMeshtyingVisualizationOutputParams();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputParams() = default;
+    virtual ~BeamToSolidVolumeMeshtyingVisualizationOutputParams() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.
@@ -73,11 +75,6 @@ namespace BEAMINTERACTION
      * \brief Return the nodal forces flag.
      */
     bool GetNodalForceOutputFlag() const { return nodal_forces_; }
-
-    /**
-     * \brief Return the averaged nodal normals flag.
-     */
-    bool GetAveragedNormalsOutputFlag() const { return nodal_forces_; }
 
     /**
      * \brief Return the mortar lambda discrete flag.
@@ -149,9 +146,6 @@ namespace BEAMINTERACTION
 
     //! Flag whether or not to output resulting nodal forces.
     bool nodal_forces_;
-
-    //! Flag whether or not to output averaged nodal normals.
-    bool averaged_normals_;
 
     //! Flag whether or not to output resulting discrete Lagrange multiplier values for mortar
     //! pairs.

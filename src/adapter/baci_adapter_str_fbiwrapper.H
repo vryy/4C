@@ -17,7 +17,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace CORE::LINALG
@@ -27,7 +27,7 @@ namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }
 namespace ADAPTER
 {
@@ -80,7 +80,7 @@ namespace ADAPTER
     virtual void SetupMultiMapExtractor();
 
     /// Get Runtime VTK Output data
-    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> GetIOData();
+    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> GetIOData();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements

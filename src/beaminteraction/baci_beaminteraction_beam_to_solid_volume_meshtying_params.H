@@ -18,7 +18,7 @@
 // Forward declaration.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVolumeMeshtyingVtkOutputParams;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }
 
 
@@ -78,10 +78,11 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Returns a pointer to the vtk output parameters.
-     * @return Pointer to vtk output parameters.
+     * \brief Returns a pointer to the visualization output parameters.
+     * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> GetVtkOuputParamsPtr();
+    Teuchos::RCP<BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+    GetVisualizationOutputParamsPtr();
 
     /**
      * \brief Returns if the restart configuration should be coupled.
@@ -102,8 +103,8 @@ namespace BEAMINTERACTION
     //! Penalty parameter for rotational coupling.
     double rotational_coupling_penalty_parameter_;
 
-    //! Pointer to the vtk output parameters for beam to solid volume meshtying.
-    Teuchos::RCP<BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_ptr_;
+    //! Pointer to the visualization output parameters for beam to solid volume meshtying.
+    Teuchos::RCP<BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! If the coupling terms should be evaluated with the restart configuration.
     bool couple_restart_state_;

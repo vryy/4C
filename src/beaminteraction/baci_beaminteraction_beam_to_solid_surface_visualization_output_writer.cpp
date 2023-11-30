@@ -8,14 +8,14 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_writer.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_writer.H"
 
 #include "baci_beaminteraction_beam_to_solid_conditions.H"
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
@@ -35,7 +35,8 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::BeamToSolidSurfaceVtkOutputWriter()
+BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
+    BeamToSolidSurfaceVisualizationOutputWriter()
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -46,7 +47,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::BeamToSolidSurfaceVtkOutputW
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Init()
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -55,9 +56,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Init()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams> output_params_ptr,
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+        output_params_ptr,
     double restart_time)
 {
   CheckInit();
@@ -66,9 +68,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
   output_params_ptr_ = output_params_ptr;
 
   // Initialize the writer base object and add the desired visualizations.
-  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
-      new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
-          "beam-to-solid-surface", vtk_params, restart_time));
+  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+      new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
+          "beam-to-solid-surface", visualization_output_params, restart_time));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
@@ -79,7 +81,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
   {
     if (output_params_ptr_->GetNodalForceOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btssc-nodal-forces");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -94,7 +96,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetAveragedNormalsOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "averaged-normals", "btssc-averaged-normals");
       auto& visualization_data = visualization_writer->GetVisualizationData();
@@ -107,7 +109,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btssc-mortar");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -121,7 +123,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "mortar-continuous", "btssc-mortar-continuous");
       auto& visualization_data = visualization_writer->GetVisualizationData();
@@ -138,7 +140,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "integration-points", "btssc-integration-points");
       auto& visualization_data = visualization_writer->GetVisualizationData();
@@ -153,7 +155,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetSegmentationOutputFlag())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btssc-segmentation");
       auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
@@ -172,7 +174,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRuntime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
   CheckInitSetup();
@@ -189,7 +191,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntime(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntimeIteration(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRuntimeIteration(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   CheckInitSetup();
@@ -206,18 +208,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntimeItera
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidSurface(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputBeamToSolidSurface(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
     double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
-  visualization_params.set<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+  visualization_params.set<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
       "btssc-output_params_ptr", output_params_ptr_);
 
 
   // Add the averaged nodal normal output.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_averaged_normals =
           output_writer_base_ptr_->GetVisualizationWriter("btssc-averaged-normals");
   if (visualization_averaged_normals != Teuchos::null)
@@ -247,7 +249,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and
   // solid nodes.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> nodal_force_visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> nodal_force_visualization =
       output_writer_base_ptr_->GetVisualizationWriter("btssc-nodal-forces");
   if (nodal_force_visualization != Teuchos::null)
     AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->DiscretPtr(),
@@ -332,7 +334,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
             solid_resultant.numRows() * solid_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
 
-        // Add to the vtk output writer.
+        // Add to the visualization output writer.
         auto& visualization_data = nodal_force_visualization->GetVisualizationData();
         std::vector<double>& field_data_beam_force =
             visualization_data.GetFieldData<double>("sum_coupling_force_beam");
@@ -381,7 +383,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInitSetup() const
 {
   if (!isinit_ or !issetup_) dserror("Call Init() and Setup() first!");
 }
@@ -389,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInitSetup() const
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInit() const
 {
   if (!isinit_) dserror("Init() has not been called, yet!");
 }

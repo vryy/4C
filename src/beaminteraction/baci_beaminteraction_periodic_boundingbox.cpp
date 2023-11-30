@@ -38,7 +38,7 @@ CORE::GEO::MESHFREE::BoundingBox::BoundingBox()
       haveperiodicbc_(false),
       havedirichletbc_(false),
       box_(true),
-      vtu_writer_ptr_(Teuchos::null)
+      visualization_output_writer_ptr_(Teuchos::null)
 {
   // initialize arrays
   for (int idim = 0; idim < 3; ++idim)
@@ -613,7 +613,7 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
-  vtu_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
+  visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       boxdiscret_, IO::VisualizationParametersFactory(
                        ::DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
 }
@@ -624,14 +624,14 @@ void CORE::GEO::MESHFREE::BoundingBox::RuntimeOutputStepState(double timen, int 
 {
   ThrowIfNotInitOrSetup();
 
-  if (vtu_writer_ptr_ == Teuchos::null) return;
+  if (visualization_output_writer_ptr_ == Teuchos::null) return;
 
   // reset the writer object
-  vtu_writer_ptr_->Reset();
-  vtu_writer_ptr_->AppendDofBasedResultDataVector(disn_col_, 3, 0, "displacement");
+  visualization_output_writer_ptr_->Reset();
+  visualization_output_writer_ptr_->AppendDofBasedResultDataVector(disn_col_, 3, 0, "displacement");
 
   // finalize everything and write all required VTU files to filesystem
-  vtu_writer_ptr_->WriteToDisk(timen, stepn);
+  visualization_output_writer_ptr_->WriteToDisk(timen, stepn);
 }
 
 /*----------------------------------------------------------------------------*

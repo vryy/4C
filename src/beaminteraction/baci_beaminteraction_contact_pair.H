@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
 {
   // forward declaration ...
   class BeamContactParams;
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVisualizationOutputWriterBase;
   class BeamInteractionConditions;
   class BeamToSolidMortarManager;
 
@@ -309,7 +309,7 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
      *
      * This is currently only implemented for beam to solid pairs, if in the future we also want to
      * use this function in other type of pairs, the name should be adapted accordingly.
@@ -320,7 +320,7 @@ namespace BEAMINTERACTION
      * visualization in the pairs.
      */
     virtual void GetPairVisualization(
-        Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const
     {
     }

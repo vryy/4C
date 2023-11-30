@@ -14,16 +14,16 @@
 #include "baci_beam3_base.H"
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_writer.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_writer.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_writer.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_conditions.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_contact_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_contact_runtime_visualization_output_params.H"
 #include "baci_beaminteraction_data.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
@@ -64,8 +64,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
       geometric_search_params_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null),
       assembly_managers_(Teuchos::null),
-      beam_to_solid_volume_meshtying_vtk_writer_ptr_(Teuchos::null),
-      beam_to_solid_surface_vtk_writer_ptr_(Teuchos::null)
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_(Teuchos::null),
+      beam_to_solid_surface_visualization_output_writer_ptr_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -99,14 +99,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
-  // build runtime vtp writer if desired
+  // build runtime visualization writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
-    beam_contact_params_ptr_->BuildBeamContactRuntimeVtkOutputParams();
+    beam_contact_params_ptr_->BuildBeamContactRuntimeOutputParams();
 
-    InitOutputRuntimeVtpBeamContact();
+    InitOutputRuntimeBeamContact();
   }
 
 
@@ -151,15 +151,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
     // Build the beam to solid volume meshtying output writer if desired.
     if (beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
-            ->GetVtkOuputParamsPtr()
+            ->GetVisualizationOutputParamsPtr()
             ->GetOutputFlag())
     {
-      beam_to_solid_volume_meshtying_vtk_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter);
-      beam_to_solid_volume_meshtying_vtk_writer_ptr_->Init();
-      beam_to_solid_volume_meshtying_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
-          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter);
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
+      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
+          GInOutput().GetRuntimeVtkOutputParams(),
+          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
+              ->GetVisualizationOutputParamsPtr(),
           GState().GetTimeN());
     }
   }
@@ -177,15 +179,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
     // Build the beam to solid surface output writer if desired.
     if (beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
-            ->GetVtkOuputParamsPtr()
+            ->GetVisualizationOutputParamsPtr()
             ->GetOutputFlag())
     {
-      beam_to_solid_surface_vtk_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter);
-      beam_to_solid_surface_vtk_writer_ptr_->Init();
-      beam_to_solid_surface_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
-          beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()->GetVtkOuputParamsPtr(),
+      beam_to_solid_surface_visualization_output_writer_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter);
+      beam_to_solid_surface_visualization_output_writer_ptr_->Init();
+      beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
+          GInOutput().GetRuntimeVtkOutputParams(),
+          beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
+              ->GetVisualizationOutputParamsPtr(),
           GState().GetTimeN());
     }
   }
@@ -366,16 +370,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(bool 
    * write previously computed and (locally) stored data at this point. Like
    * this, it works in SUBMODELEVALUATOR::BeamPotential */
   if (visualization_manager_ptr_ != Teuchos::null and
-      GState().GetStepNp() %
-              BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputIntervalInSteps() ==
+      GState().GetStepNp() % BeamContactParams()
+                                 .BeamContactRuntimeVisualizationOutputParams()
+                                 ->OutputIntervalInSteps() ==
           0)
   {
-    WriteTimeStepOutputRuntimeVtpBeamContact();
+    WriteTimeStepOutputRuntimeBeamContact();
   }
-  if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
-    beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntime(this);
-  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
-    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntime(this);
+  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
+    beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->WriteOutputRuntime(this);
+  if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
+    beam_to_solid_surface_visualization_output_writer_ptr_->WriteOutputRuntime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -436,44 +441,49 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RuntimeOutputStepState() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamContact()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeBeamContact()
 {
   CheckInit();
 
-  visualization_manager_ptr_ = Teuchos::rcp(new IO::VisualizationManager(
-      BeamContactParams().BeamContactRuntimeVtkOutputParams()->GetVisualizationParameters(),
-      Discret().Comm(), "beam-contact"));
+  visualization_manager_ptr_ =
+      Teuchos::rcp(new IO::VisualizationManager(BeamContactParams()
+                                                    .BeamContactRuntimeVisualizationOutputParams()
+                                                    ->GetVisualizationParameters(),
+          Discret().Comm(), "beam-contact"));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteTimeStepOutputRuntimeVtpBeamContact()
-    const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteTimeStepOutputRuntimeBeamContact() const
 {
   CheckInitSetup();
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      BeamContactParams().BeamContactRuntimeVtkOutputParams()->GetVisualizationParameters(),
-      GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtpBeamContact(output_step, output_time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(BeamContactParams()
+                                               .BeamContactRuntimeVisualizationOutputParams()
+                                               ->GetVisualizationParameters(),
+          GState().GetTimeN(), GState().GetStepN());
+  WriteOutputRuntimeBeamContact(output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteIterationOutputRuntimeVtpBeamContact(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteIterationOutputRuntimeBeamContact(
     int iteration_number) const
 {
   CheckInitSetup();
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      BeamContactParams().BeamContactRuntimeVtkOutputParams()->GetVisualizationParameters(),
-      GState().GetTimeN(), GState().GetStepN(), iteration_number);
-  WriteOutputRuntimeVtpBeamContact(output_step, output_time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(BeamContactParams()
+                                               .BeamContactRuntimeVisualizationOutputParams()
+                                               ->GetVisualizationParameters(),
+          GState().GetTimeN(), GState().GetStepN(), iteration_number);
+  WriteOutputRuntimeBeamContact(output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamContact(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeBeamContact(
     int timestep_number, double time) const
 {
   CheckInitSetup();
@@ -566,12 +576,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
 
 
   // append all desired output data to the writer object's storage
-  if (BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteContactForces())
+  if (BeamContactParams().BeamContactRuntimeVisualizationOutputParams()->IsWriteContactForces())
   {
     visualization_manager_ptr_->GetVisualizationData().SetPointDataVector(
         "force", contact_force_vector, num_spatial_dimensions);
   }
-  if (BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteGaps())
+  if (BeamContactParams().BeamContactRuntimeVisualizationOutputParams()->IsWriteGaps())
   {
     visualization_manager_ptr_->GetVisualizationData().SetPointDataVector("gap", gaps, 1);
   }
@@ -625,18 +635,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
   CheckInitSetup();
 
   if (visualization_manager_ptr_ != Teuchos::null and
-      BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration())
+      BeamContactParams().BeamContactRuntimeVisualizationOutputParams()->OutputEveryIteration())
   {
-    WriteIterationOutputRuntimeVtpBeamContact(solver.getNumIterations());
+    WriteIterationOutputRuntimeBeamContact(solver.getNumIterations());
   }
-  if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
   {
-    beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntimeIteration(
+    beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->WriteOutputRuntimeIteration(
         this, solver.getNumIterations());
   }
-  if (beam_to_solid_surface_vtk_writer_ptr_ != Teuchos::null)
+  if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
   {
-    beam_to_solid_surface_vtk_writer_ptr_->WriteOutputRuntimeIteration(
+    beam_to_solid_surface_visualization_output_writer_ptr_->WriteOutputRuntimeIteration(
         this, solver.getNumIterations());
   }
 }

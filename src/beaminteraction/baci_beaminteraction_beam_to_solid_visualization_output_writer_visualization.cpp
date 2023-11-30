@@ -8,7 +8,7 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 
 #include "baci_comm_utils.H"
 #include "baci_io_visualization_manager.H"
@@ -20,12 +20,13 @@
 /**
  *
  */
-BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWriterVisualization(
+BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
     const std::string& writer_full_name,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time)
-    : IO::VisualizationManager(vtk_params->GetVisualizationParameters(),
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    double restart_time)
+    : IO::VisualizationManager(visualization_output_params->GetVisualizationParameters(),
           *(DRT::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
-      vtk_params_(vtk_params),
+      visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
       node_gid_map_(Teuchos::null)
@@ -35,9 +36,8 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWr
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
-    AddDiscretizationNodalReferencePosition(
-        const Teuchos::RCP<const ::DRT::Discretization>& discret)
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalReferencePosition(
+    const Teuchos::RCP<const ::DRT::Discretization>& discret)
 {
   auto& visualization_data = GetVisualizationData();
 
@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddDiscretizationNodalData(
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalData(
     const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector)
 {
   if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
@@ -111,7 +111,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddDiscretization
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::Write(
     const unsigned int timestep_number, const double time)
 {
   // Finalize everything and write all required vtk files to filesystem.

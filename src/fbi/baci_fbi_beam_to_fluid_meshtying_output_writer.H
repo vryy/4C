@@ -18,13 +18,13 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVisualizationOutputWriterBase;
 }  // namespace BEAMINTERACTION
 namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace ADAPTER
@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> visualization_output_params,
+    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
         double restart_time);
 
@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

@@ -70,8 +70,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
   BEAMINTERACTION::UTILS::SetFilamentBindingSpotPositions(
       DiscretPtr(), spherebeamlinking_params_ptr_);
 
-  // build runtime vtp writer
-  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntimeVtp();
+  // build runtime visualization output writer
+  if (GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null) InitOutputRuntime();
 
   // set flag
   issetup_ = true;
@@ -477,7 +477,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::RuntimeOutputStepSta
 {
   CheckInitSetup();
 
-  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntimeVtp();
+  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntime();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -589,7 +589,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetHalfInteractionDi
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntimeVtp()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntime()
 {
   CheckInit();
 
@@ -600,7 +600,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntimeVtp
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVtp() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntime() const
 {
   CheckInitSetup();
 

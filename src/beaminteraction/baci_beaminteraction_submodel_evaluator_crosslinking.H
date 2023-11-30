@@ -169,10 +169,10 @@ namespace BEAMINTERACTION
 
      private:
       //! writes output for discretization structure in VTP format
-      void WriteOutputRuntimeVtpStructure() const;
+      void WriteOutputRuntimeStructure() const;
 
       //! init output for discretization structure in VTP format
-      void InitOutputRuntimeVtpStructure();
+      void InitOutputRuntimeStructure();
 
       //! @name Small data structs for faster access and better structure
       //! @{
@@ -502,7 +502,7 @@ namespace BEAMINTERACTION
       std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>> doublebondcl_;
 
       //! linker, i.e. crosslinker molecule discretization runtime vtp writer
-      Teuchos::RCP<IO::DiscretizationVisualizationWriterNodes> vtp_writer_ptr_;
+      Teuchos::RCP<IO::DiscretizationVisualizationWriterNodes> visualization_output_writer_ptr_;
 
       //! current linker displacement
       Teuchos::RCP<Epetra_Vector> linker_disnp_;

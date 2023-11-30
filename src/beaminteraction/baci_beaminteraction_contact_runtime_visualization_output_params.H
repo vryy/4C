@@ -8,22 +8,22 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_CONTACT_RUNTIME_VTK_OUTPUT_PARAMS_H
-#define BACI_BEAMINTERACTION_CONTACT_RUNTIME_VTK_OUTPUT_PARAMS_H
+#ifndef BACI_BEAMINTERACTION_CONTACT_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_H
+#define BACI_BEAMINTERACTION_CONTACT_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_H
 
 #include "baci_inpar_beamcontact.H"
 #include "baci_io_visualization_parameters.H"
 
 namespace BEAMINTERACTION
 {
-  class BeamContactRuntimeVtkOutputParams
+  class BeamContactRuntimeVisualizationOutputParams
   {
    public:
     //! constructor
-    BeamContactRuntimeVtkOutputParams();
+    BeamContactRuntimeVisualizationOutputParams();
 
     //! destructor
-    virtual ~BeamContactRuntimeVtkOutputParams() = default;
+    virtual ~BeamContactRuntimeVisualizationOutputParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

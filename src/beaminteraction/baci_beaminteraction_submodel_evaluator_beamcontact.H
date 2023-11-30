@@ -32,8 +32,8 @@ namespace BEAMINTERACTION
   class BeamContactParams;
   class BeamContactPair;
   class BeamInteractionConditions;
-  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
-  class BeamToSolidSurfaceVtkOutputWriter;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputWriter;
+  class BeamToSolidSurfaceVisualizationOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -201,16 +201,16 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output for contact forces in VTP format
-      void InitOutputRuntimeVtpBeamContact();
+      void InitOutputRuntimeBeamContact();
 
-      //! writes VTP output for contact forces at the end of a time step
-      void WriteTimeStepOutputRuntimeVtpBeamContact() const;
+      //! writes visualization output for contact forces at the end of a time step
+      void WriteTimeStepOutputRuntimeBeamContact() const;
 
-      //! writes VTP output for contact forces at the end of a nonlinear iteration
-      void WriteIterationOutputRuntimeVtpBeamContact(int iteration_number) const;
+      //! writes visualization output for contact forces at the end of a nonlinear iteration
+      void WriteIterationOutputRuntimeBeamContact(int iteration_number) const;
 
-      //! writes VTP output for contact forces
-      void WriteOutputRuntimeVtpBeamContact(int timestep_number, double time) const;
+      //! writes visualization output for contact forces
+      void WriteOutputRuntimeBeamContact(int timestep_number, double time) const;
 
 
       //! @}
@@ -272,16 +272,16 @@ namespace BEAMINTERACTION
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
 
-      //! runtime vtp writer for visualization of contact forces
+      //! runtime visualization writer for visualization of contact forces
       Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
-          beam_to_solid_volume_meshtying_vtk_writer_ptr_;
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
+          beam_to_solid_volume_meshtying_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>
-          beam_to_solid_surface_vtk_writer_ptr_;
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
+          beam_to_solid_surface_visualization_output_writer_ptr_;
 
       //! This object handles all geometric search related visualization output.
       Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchVisualization>

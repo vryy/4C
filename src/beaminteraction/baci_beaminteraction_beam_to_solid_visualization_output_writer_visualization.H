@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_VISUALIZATION_H
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_VISUALIZATION_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_VISUALIZATION_H
+#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_VISUALIZATION_H
 
 
 #include "baci_io_visualization_manager.H"
@@ -23,7 +23,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 namespace DRT
@@ -43,22 +43,23 @@ namespace BEAMINTERACTION
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
-  class BeamToSolidVtuOutputWriterVisualization : public IO::VisualizationManager
+  class BeamToSolidOutputWriterVisualization : public IO::VisualizationManager
   {
    public:
     /**
-     * \brief Constructor. The underlying RuntimeVtuWriter will be set up in this method.
+     * \brief Constructor. The underlying RuntimeVisualizationWriter will be set up in this method.
      * @param writer_full_name (in) Full name of this visualization on disc.
-     * @param vtk_params (in) Global VTK parameter pointer.
+     * @param visualization_output_params (in) Global visualization parameter pointer.
      * @param restart_time (in) Initial time of the simulation.
      */
-    BeamToSolidVtuOutputWriterVisualization(const std::string& writer_full_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time);
+    BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        double restart_time);
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVtuOutputWriterVisualization() = default;
+    virtual ~BeamToSolidOutputWriterVisualization() = default;
 
     /**
      * \brief Add all nodes of a discretization to the output.
@@ -90,8 +91,8 @@ namespace BEAMINTERACTION
     void Write(const unsigned int timestep_number, const double time);
 
    private:
-    //! Global parameters of vtk output.
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
+    //! Global parameters of visualization output.
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Full name of this visualization.
     const std::string writer_full_name_;

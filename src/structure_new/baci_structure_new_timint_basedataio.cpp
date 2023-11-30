@@ -123,7 +123,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     // check whether VTK output at runtime is desired
     if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtk_output_ = Teuchos::rcp(new ParamsRuntimeVtkOutput());
+      params_runtime_vtk_output_ = Teuchos::rcp(new ParamsRuntimeOutput());
 
       params_runtime_vtk_output_->Init(ioparams.sublist("RUNTIME VTK OUTPUT"));
       params_runtime_vtk_output_->Setup();

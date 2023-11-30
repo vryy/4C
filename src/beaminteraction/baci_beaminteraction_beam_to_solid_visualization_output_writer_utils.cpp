@@ -1,17 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Utility functions for the beam-to-solid vtu output writers.
+\brief Utility functions for the beam-to-solid visualization output writers.
 
 \level 3
 
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.H"
 
-#include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_geometry_pair_element_faces.H"
@@ -23,7 +23,7 @@
  *
  */
 void BEAMINTERACTION::AddBeamInteractionNodalForces(
-    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>& visualization,
+    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
     const Teuchos::RCP<const ::DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
     const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
@@ -72,7 +72,7 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
  *
  */
 void BEAMINTERACTION::AddAveragedNodalNormals(
-    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
+    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
         output_writer_base_ptr,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
     const int condition_coupling_id, const bool write_unique_ids)

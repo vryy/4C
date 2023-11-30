@@ -178,16 +178,16 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output for potential-based interactions in VTP format
-      void InitOutputRuntimeVtpBeamPotential();
+      void InitOutputRuntimeBeamPotential();
 
       //! writes VTP output for potential-based interactions at the end of a time step
-      void WriteTimeStepOutputRuntimeVtpBeamPotential() const;
+      void WriteTimeStepOutputRuntimeBeamPotential() const;
 
       //! writes VTP output for potential-based interactions at the end of a nonlinear iteration
-      void WriteIterationOutputRuntimeVtpBeamPotential(int iteration_number) const;
+      void WriteIterationOutputRuntimeBeamPotential(int iteration_number) const;
 
       //! writes VTP output for potential-based interactions
-      void WriteOutputRuntimeVtpBeamPotential(int timestep_number, double time) const;
+      void WriteOutputRuntimeBeamPotential(int timestep_number, double time) const;
 
       //! @}
 

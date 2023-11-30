@@ -16,7 +16,7 @@
 #include "baci_beaminteraction_crosslinker_handler.H"
 #include "baci_beaminteraction_potential_pair.H"
 #include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_potential_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
@@ -53,8 +53,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
 
   PrintConsoleWelcomeMessage(std::cout);
 
-  // build runtime vtp writer if desired
-  if (BeamPotentialParams().VtkRuntimeOutput()) InitOutputRuntimeVtpBeamPotential();
+  // build runtime visualization writer if desired
+  if (BeamPotentialParams().RuntimeOutput()) InitOutputRuntimeBeamPotential();
 
   // set flag
   issetup_ = true;
@@ -426,11 +426,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(bool r
    * move this to RuntimeOutputStepState as soon as we keep element pairs
    * from previous time step */
   if (visualization_manager_ != Teuchos::null and
-      GState().GetStepNp() %
-              BeamPotentialParams().GetBeamPotentialVtkParams()->OutputIntervalInSteps() ==
+      GState().GetStepNp() % BeamPotentialParams()
+                                 .GetBeamPotentialVisualizationOutputParams()
+                                 ->OutputIntervalInSteps() ==
           0)
   {
-    WriteTimeStepOutputRuntimeVtpBeamPotential();
+    WriteTimeStepOutputRuntimeBeamPotential();
   }
 
   nearby_elements_map_.clear();
@@ -526,9 +527,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
   CheckInitSetup();
 
   if (visualization_manager_ != Teuchos::null and
-      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
+      BeamPotentialParams().GetBeamPotentialVisualizationOutputParams()->OutputEveryIteration())
   {
-    WriteIterationOutputRuntimeVtpBeamPotential(solver.getNumIterations());
+    WriteIterationOutputRuntimeBeamPotential(solver.getNumIterations());
   }
 }
 
@@ -857,44 +858,50 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintConsoleWelcomeMessa
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeamPotential()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeBeamPotential()
 {
   CheckInit();
 
-  visualization_manager_ = Teuchos::rcp(new IO::VisualizationManager(
-      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
-      Discret().Comm(), "beam-potential"));
+  visualization_manager_ =
+      Teuchos::rcp(new IO::VisualizationManager(BeamPotentialParams()
+                                                    .GetBeamPotentialVisualizationOutputParams()
+                                                    ->GetVisualizationParameters(),
+          Discret().Comm(), "beam-potential"));
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRuntimeVtpBeamPotential()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRuntimeBeamPotential()
     const
 {
   CheckInitSetup();
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
-      GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(BeamPotentialParams()
+                                               .GetBeamPotentialVisualizationOutputParams()
+                                               ->GetVisualizationParameters(),
+          GState().GetTimeN(), GState().GetStepN());
+  WriteOutputRuntimeBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRuntimeVtpBeamPotential(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRuntimeBeamPotential(
     int iteration_number) const
 {
   CheckInitSetup();
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
-      GState().GetTimeN(), GState().GetStepN(), iteration_number);
-  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(BeamPotentialParams()
+                                               .GetBeamPotentialVisualizationOutputParams()
+                                               ->GetVisualizationParameters(),
+          GState().GetTimeN(), GState().GetStepN(), iteration_number);
+  WriteOutputRuntimeBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBeamPotential(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeBeamPotential(
     int timestep_number, double time) const
 {
   CheckInitSetup();
@@ -904,7 +911,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   // estimate for number of interacting Gauss points = number of row points for writer object
   unsigned int num_row_points = 0;
 
-  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair())
+  if (BeamPotentialParams()
+          .GetBeamPotentialVisualizationOutputParams()
+          ->IsWriteForcesMomentsPerElementPair())
   {
     num_row_points = 2 * beam_potential_element_pairs_.size() *
                      BeamPotentialParams().NumberIntegrationSegments() *
@@ -990,7 +999,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
 
 
       // this is easier, since data is computed and stored in this 'element-pairwise' format
-      if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair())
+      if (BeamPotentialParams()
+              .GetBeamPotentialVisualizationOutputParams()
+              ->IsWriteForcesMomentsPerElementPair())
       {
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         {
@@ -1121,13 +1132,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
 
 
   // append all desired output data to the writer object's storage
-  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces())
+  if (BeamPotentialParams().GetBeamPotentialVisualizationOutputParams()->IsWriteForces())
   {
     visualization_manager_->GetVisualizationData().SetPointDataVector(
         "force", potential_force_vector, num_spatial_dimensions);
   }
 
-  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments())
+  if (BeamPotentialParams().GetBeamPotentialVisualizationOutputParams()->IsWriteMoments())
   {
     visualization_manager_->GetVisualizationData().SetPointDataVector(
         "moment", potential_moment_vector, num_spatial_dimensions);

@@ -18,7 +18,7 @@
 // Forward declaration.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams;
+  class BeamToSolidSurfaceVisualizationOutputParams;
 }
 
 namespace BEAMINTERACTION
@@ -72,10 +72,10 @@ namespace BEAMINTERACTION
     inline double GetPenaltyParameterG0() const { return penalty_parameter_g0_; }
 
     /**
-     * \brief Returns a pointer to the vtk output parameters.
-     * @return Pointer to vtk output parameters.
+     * \brief Returns a pointer to the visualization output parameters.
+     * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> GetVtkOuputParamsPtr()
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> GetVisualizationOutputParamsPtr()
     {
       return output_params_ptr_;
     }
@@ -90,8 +90,8 @@ namespace BEAMINTERACTION
     //! Regularization parameter for the penalty law.
     double penalty_parameter_g0_;
 
-    //! Pointer to the vtk output parameters for beam to solid surface problems.
-    Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
+    //! Pointer to the visualization output parameters for beam to solid surface problems.
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

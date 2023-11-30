@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Object to handle beam to solid surface output creation.
+\brief Object to handle beam to solid volume meshtying output creation.
 
 \level 3
 
@@ -9,8 +9,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_WRITER_H
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VTK_OUTPUT_WRITER_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_WRITER_H
+#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_WRITER_H
 
 
 #include <Teuchos_RCP.hpp>
@@ -19,8 +19,8 @@
 // Forward declarations.
 namespace BEAMINTERACTION
 {
-  class BeamToSolidSurfaceVtkOutputParams;
-  class BeamToSolidVtuOutputWriterBase;
+  class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
+  class BeamToSolidVisualizationOutputWriterBase;
   namespace SUBMODELEVALUATOR
   {
     class BeamContact;
@@ -30,7 +30,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    class ParamsRuntimeVtkOutput;
+    class ParamsRuntimeOutput;
   }
 }  // namespace STR
 
@@ -38,21 +38,21 @@ namespace STR
 namespace BEAMINTERACTION
 {
   /**
-   * \brief This class manages and creates all visualization output for beam to solid surface
-   * interactions.
+   * \brief This class manages and creates all visualization output for beam to solid volume
+   * meshtying.
    */
-  class BeamToSolidSurfaceVtkOutputWriter
+  class BeamToSolidVolumeMeshtyingVisualizationOutputWriter
   {
    public:
     /**
      * \brief Constructor.
      */
-    BeamToSolidSurfaceVtkOutputWriter();
+    BeamToSolidVolumeMeshtyingVisualizationOutputWriter();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputWriter() = default;
+    virtual ~BeamToSolidVolumeMeshtyingVisualizationOutputWriter() = default;
 
     /**
      * \brief Initialize the object.
@@ -61,12 +61,14 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup the output writer base and the desired field data.
-     * @param vtk_params (in) RCP to parameter container for global vtk options.
+     * @param visualization_output_params (in) RCP to parameter container for global visualization
+     * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      * @param restart_time (in) This is needed in case the simulation is a restart.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams> output_params_ptr,
+    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+            output_params_ptr,
         double restart_time);
 
     /**
@@ -90,14 +92,14 @@ namespace BEAMINTERACTION
 
    private:
     /**
-     * \brief Gather all output data after for beam to solid surface interactions and write the
-     * files to disc.
+     * \brief Gather all output data after for beam to solid volume mesh tying and write the files
+     * to disc.
      * @param beam_contact (in) Pointer to the beam contact sub model evaluator.
      * @param i_step (in) Number of this visualization step (does not have to be continuous, e.g. in
      * iteration visualization).
      * @param time (in) Scalar time value for this visualization step.
      */
-    void WriteOutputBeamToSolidSurface(
+    void WriteOutputBeamToSolidVolumeMeshTying(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const;
 
@@ -119,10 +121,10 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Parameter container for output.
-    Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
+    Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase> output_writer_base_ptr_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
   };
 
 }  // namespace BEAMINTERACTION

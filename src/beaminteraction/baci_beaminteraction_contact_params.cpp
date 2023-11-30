@@ -16,7 +16,7 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_sphere_contact_params.H"
-#include "baci_beaminteraction_contact_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_contact_runtime_visualization_output_params.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
       beam_to_solid_volume_meshtying_params_(Teuchos::null),
       beam_to_solid_surface_meshtying_params_(Teuchos::null),
       beam_to_solid_surface_contact_params_(Teuchos::null),
-      beam_contact_runtime_vtk_output_params_(Teuchos::null)
+      beam_contact_runtime_output_params_(Teuchos::null)
 {
   // empty constructor
 }
@@ -44,12 +44,12 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToBeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeVtkOutputParams()
+void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeOutputParams()
 {
-  beam_contact_runtime_vtk_output_params_ =
-      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVtkOutputParams());
-  beam_contact_runtime_vtk_output_params_->Init();
-  beam_contact_runtime_vtk_output_params_->Setup();
+  beam_contact_runtime_output_params_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams());
+  beam_contact_runtime_output_params_->Init();
+  beam_contact_runtime_output_params_->Setup();
 }
 
 
