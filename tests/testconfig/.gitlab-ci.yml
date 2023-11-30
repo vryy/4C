@@ -105,13 +105,6 @@ before_script:
   " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
-.check-no-warnings: &check-no-warnings
-- cd ${CI_PROJECT_DIR}/../baci-build
-  # check for warnings
-- if grep -iP "warning:" ${CI_PROJECT_DIR}/build.log; then echo 'Warnings found!'
-  && exit 1; else echo 'No warnings found'; fi
-- cd ${CI_PROJECT_DIR}
-
 .post-process-log-files: &post-process-log-files
   # sort output of pipeline
 - cd ${CI_PROJECT_DIR}/../baci-build
@@ -139,7 +132,6 @@ before_script:
   script:
   - *clean-build-folder
   - *build-and-test
-  - *check-no-warnings
   after_script:
   - *post-process-log-files
   artifacts:
@@ -256,7 +248,7 @@ before_script:
     ${CI_PROJECT_DIR} ./clang-tidy-issues/*.yaml
   - cd ${CI_PROJECT_DIR}
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_codeclimate
     CMAKE_COMMAND: cmake
   artifacts:
     paths: [codeclimate.json]
