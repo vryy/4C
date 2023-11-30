@@ -221,11 +221,11 @@ namespace CORE::GEO
       bool AtEdge(const T& xsi, const double& tol)
       {
         // sanity check
-        if (xsi.Rows() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.Rows() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < Dim <===> %d<%d",
-              xsi.Rows(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.Rows(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -281,11 +281,11 @@ namespace CORE::GEO
       template <CORE::FE::CellType elementType, class T, class floatType, unsigned int dim>
       bool WithinLimits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
       {
-        if (xsi.M() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.M() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < eleDim <===> %d<%d",
-              xsi.M(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.M(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -378,11 +378,11 @@ namespace CORE::GEO
       template <CORE::FE::CellType elementType, class T, class floatType>
       bool WithinLimits(const T& xsi, const floatType& tol)
       {
-        if (xsi.M() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
+        if (xsi.M() < CORE::FE::dim<elementType>)
           dserror(
               "The given local coordinate has the wrong dimension!\n"
               "xsi.Rows() < eleDim <===> %d<%d",
-              xsi.M(), CORE::DRT::UTILS::DisTypeToDim<elementType>::dim);
+              xsi.M(), CORE::FE::dim<elementType>);
 
         switch (elementType)
         {
@@ -466,7 +466,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier */
       template <unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim, class T>
+          unsigned dimSide = CORE::FE::dim<sideType>, class T>
       bool WithinLimitsEmbeddedManifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
       {
         if (probDim == 1) dserror("probDim is not allowed to be equal 1!");
@@ -892,10 +892,8 @@ namespace CORE::GEO
 
       // Static data storage of ComputePosition data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double>
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double>
       struct ComputePositionStaticMembers
       {
         /// nodal shape function values at the position xsi_
@@ -915,10 +913,8 @@ namespace CORE::GEO
 
       // Data storage of ComputePosition data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double>
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double>
       struct ComputePositionNoStaticMembers
       {
         CORE::LINALG::Matrix<numNodesElement, 1, floatType> funct_;
@@ -944,10 +940,8 @@ namespace CORE::GEO
        *      ^^^^^^^^^^^^^^^^^^^^^^^
        */
       template <bool debug, unsigned probDim, CORE::FE::CellType elementType,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim,
-          typename floatType = double,
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, unsigned, unsigned, typename>
           class MemberStoragePolicy = ComputePositionStaticMembers>
       class ComputePositionStrategy : public EmptyNewtonStrategy,
@@ -1320,9 +1314,8 @@ namespace CORE::GEO
        *      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        */
       template <class Strategy, unsigned probDim, CORE::FE::CellType elementType,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>>
       class ComputePositionAdaptivePrecision : Strategy
 #ifdef DEBUG_MEMORY_ALLOCATION
           ,
@@ -1484,17 +1477,14 @@ namespace CORE::GEO
         // and global coordinates based on loc coordinates calculated in the ComputePosition,
         // using conversion to very high reference precision
         ClnWrapper ComputeError(
-            const CORE::LINALG::Matrix<probDim,
-                CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement>&
-                ref_shape_xyz,
+            const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>>& ref_shape_xyz,
             const CORE::LINALG::Matrix<probDim, 1>& glob_init,
             const CORE::LINALG::Matrix<dim, 1, ClnWrapper>& loc_calc, int prec)
         {
           unsigned int prev_prec = ClnWrapper::GetPrecision();
           ClnWrapper::SetPrecision(prec);
           // Converting input data into higher precision floating point format
-          CORE::LINALG::Matrix<probDim,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement, ClnWrapper>
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>, ClnWrapper>
               cln_ref_shape_xyz;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_init;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc;
@@ -1504,14 +1494,9 @@ namespace CORE::GEO
           ConvDoubleCLN(glob_init, cln_glob_init, prec);
 
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc;
-          CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement, 1,
-              ClnWrapper>
-              shapeFunct;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<elementType>, 1, ClnWrapper> shapeFunct;
           CORE::DRT::UTILS::shape_function<elementType>(cln_loc_calc, shapeFunct);
-          for (unsigned int inode = 0;
-               inode < CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement;
-               ++inode)
+          for (unsigned int inode = 0; inode < CORE::FE::num_nodes<elementType>; ++inode)
           {
             for (unsigned int isd = 0; isd < probDim; ++isd)
             {
@@ -1609,10 +1594,8 @@ namespace CORE::GEO
        *  --> ComputePositionStrategy --> EmptyNewtonStrategy
        */
       template <class Strategy, unsigned probDim, CORE::FE::CellType elementType,
-          bool computeCln = false,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          bool computeCln = false, unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>>
       class GenericComputePosition : Strategy
       {
        public:
@@ -1688,9 +1671,8 @@ namespace CORE::GEO
        *  --> ComputePositionStrategy --> EmptyNewtonStrategy
        */
       template <unsigned probDim, CORE::FE::CellType elementType, bool computeCln = false,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>>
       class ComputePosition
           : public GenericComputePosition<
                 NewtonSolve<ComputePositionStrategy<false, probDim, elementType>, dim>, probDim,
@@ -1712,9 +1694,8 @@ namespace CORE::GEO
 
       /*--------------------------------------------------------------------------*/
       template <unsigned probDim, CORE::FE::CellType elementType,
-          unsigned numNodesElement =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-          unsigned dim = CORE::DRT::UTILS::DisTypeToDim<elementType>::dim>
+          unsigned numNodesElement = CORE::FE::num_nodes<elementType>,
+          unsigned dim = CORE::FE::dim<elementType>>
       class DebugComputePosition
           : public GenericComputePosition<
                 NewtonSolve<
@@ -1737,10 +1718,8 @@ namespace CORE::GEO
 
       // Static storage class of ComputeDistance data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double>
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeDistanceStaticMembers
       {
         /// nodal shape function values at \c xsi
@@ -1785,10 +1764,8 @@ namespace CORE::GEO
 
       // Static storage class of ComputeDistance data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double>
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeDistanceNoStaticMembers
       {
         CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
@@ -1813,10 +1790,8 @@ namespace CORE::GEO
       };
 
       template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, unsigned, unsigned, typename>
           class MemberStoragePolicy = ComputeDistanceStaticMembers>
       class ComputeDistanceStrategy
@@ -2425,9 +2400,8 @@ namespace CORE::GEO
        *                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeDistanceAdaptivePrecision : Strategy
 #ifdef DEBUG_MEMORY_ALLOCATION
           ,
@@ -2638,10 +2612,8 @@ namespace CORE::GEO
         // Evaluate difference between inital global coordinates passed to ComputeDistance and
         // and global coordinates based on loc coordinates and distance  calculated in the
         // ComputeDistance, using conversion to very high reference precision
-        ClnWrapper ComputeError(
-            const CORE::LINALG::Matrix<probDim,
-                CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>&
-                refshape_xyze,                          // referenape
+        ClnWrapper ComputeError(const CORE::LINALG::Matrix<probDim,
+                                    CORE::FE::num_nodes<sideType>>& refshape_xyze,  // referenape
             const CORE::LINALG::Matrix<probDim, 1>& p,  // global position of the point
             const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>&
                 loc_calc,  // calculated wrt reference shape local position
@@ -2655,9 +2627,7 @@ namespace CORE::GEO
           ClnWrapper::SetPrecision(prec);
           // Converting input arrays  to higher precision floating points
           ClnWrapper clndistance;
-          CORE::LINALG::Matrix<probDim,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, ClnWrapper>
-              xyze_side;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, ClnWrapper> xyze_side;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnxi;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> n1;
@@ -2672,9 +2642,7 @@ namespace CORE::GEO
             n1(i) = cln::cl_float(nvec(i, 0), cln::float_format(prec));
           }
 
-          CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
-              surfaceFunct;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> surfaceFunct;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> b;
 
           CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> clnxiside(clnxi.A(), true);
@@ -2910,9 +2878,8 @@ namespace CORE::GEO
        *                      ^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType sideType,
-          bool computeCln = false, unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          bool computeCln = false, unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class GenericComputeDistance : Strategy
       {
        public:
@@ -3107,16 +3074,13 @@ namespace CORE::GEO
         // and global coordinates based on loc coordinates and distance  calculated in the
         // ComputeDistance
         double ComputeError(
-            const CORE::LINALG::Matrix<probDim,
-                CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& xyze_side,
             const CORE::LINALG::Matrix<probDim, 1>& px)
         {
           const CORE::LINALG::Matrix<probDim, 1>& xsi = this->LocalCoordinates();
           const CORE::LINALG::Matrix<probDim, 2>& n_vec = this->GetNormalVector();
           const double* distance = this->SignedDistance();
-          CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1>
-              surfaceFunct;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1> surfaceFunct;
           CORE::LINALG::Matrix<probDim, 1> b;
           CORE::LINALG::Matrix<probDim, 1> n1(n_vec.A(), true);
 
@@ -3228,9 +3192,8 @@ namespace CORE::GEO
        *  ^^^^^^^^^^^^^^^
        *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
       template <unsigned probDim, CORE::FE::CellType sideType, bool computeCln = false,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeDistance
           : public GenericComputeDistance<
                 NewtonSolve<ComputeDistanceStrategy<false, probDim, sideType>, probDim>, probDim,
@@ -3248,9 +3211,8 @@ namespace CORE::GEO
 
       /*--------------------------------------------------------------------------*/
       template <unsigned probDim, CORE::FE::CellType sideType,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class DebugComputeDistance
           : public GenericComputeDistance<
                 NewtonSolve<
@@ -3272,14 +3234,10 @@ namespace CORE::GEO
 
       // Static storage class of ComputeIntersection data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double>
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeIntersectionStaticMembers
       {
         static CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
@@ -3299,14 +3257,10 @@ namespace CORE::GEO
 
       // Storage class of ComputeIntersection data members to inherit from
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double>
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
       struct ComputeIntersectionNoStaticMembers
       {
         CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
@@ -3331,14 +3285,10 @@ namespace CORE::GEO
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy
        *      ^^^^^^^^^^^^^^^^^^^^^^^^^^^  */
       template <bool debug, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement,
-          typename floatType = double,
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double,
           template <bool, unsigned, CORE::FE::CellType, CORE::FE::CellType, unsigned, unsigned,
               unsigned, unsigned, typename>
           class MemberStoragePolicy = ComputeIntersectionStaticMembers>
@@ -3876,13 +3826,10 @@ namespace CORE::GEO
        *                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType edgeType,
-          CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          CORE::FE::CellType sideType, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeIntersectionAdaptivePrecision : Strategy
 #ifdef DEBUG_MEMORY_ALLOCATION
           ,
@@ -4132,22 +4079,16 @@ namespace CORE::GEO
         // Evaluate difference between global coordinates in the intersection when computed based on
         // side and based on edge using conversion to very high reference precision
         ClnWrapper ComputeError(
-            const CORE::LINALG::Matrix<probDim,
-                CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>& refside_xyz,
-            const CORE::LINALG::Matrix<probDim,
-                CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>& refedge_xyz,
+            const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& refside_xyz,
+            const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>>& refedge_xyz,
             const CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& loc_calc, int prec)
         {
           unsigned int prev_prec = ClnWrapper::GetPrecision();
           ClnWrapper::SetPrecision(prec);
 
           // Converting input arrays  to higher precision floating points
-          CORE::LINALG::Matrix<probDim,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, ClnWrapper>
-              cln_refside_xyz;
-          CORE::LINALG::Matrix<probDim,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement, ClnWrapper>
-              cln_refedge_xyz;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, ClnWrapper> cln_refside_xyz;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>, ClnWrapper> cln_refedge_xyz;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc;
 
           ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
@@ -4155,17 +4096,13 @@ namespace CORE::GEO
           ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
 
           // Calculating interpolation from the shapefunction of the side
-          CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
-              sideFunct;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> sideFunct;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_glob_calc_side;
           CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc_side(
               cln_loc_calc.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(cln_loc_calc_side, sideFunct);
 
-          for (unsigned int inode = 0;
-               inode < CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement;
-               ++inode)
+          for (unsigned int inode = 0; inode < CORE::FE::num_nodes<sideType>; ++inode)
           {
             for (unsigned int isd = 0; isd < (dimEdge + dimSide); ++isd)
             {
@@ -4175,16 +4112,12 @@ namespace CORE::GEO
 
           // Calculating interpolation from the shapefunction of the edge
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc_edge;
-          CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
-              edgeFunct;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> edgeFunct;
           CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
-              cln_loc_calc.A() + CORE::DRT::UTILS::DisTypeToDim<sideType>::dim, true);
+              cln_loc_calc.A() + CORE::FE::dim<sideType>, true);
 
           CORE::DRT::UTILS::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
-          for (unsigned int inode = 0;
-               inode < CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement;
-               ++inode)
+          for (unsigned int inode = 0; inode < CORE::FE::num_nodes<edgeType>; ++inode)
           {
             for (unsigned int isd = 0; isd < (dimEdge + dimSide); ++isd)
             {
@@ -4346,12 +4279,9 @@ namespace CORE::GEO
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <class Strategy, unsigned probDim, CORE::FE::CellType edgeType,
           CORE::FE::CellType sideType, bool computeCln = false,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          unsigned dimEdge = CORE::FE::dim<edgeType>, unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class GenericComputeIntersection : Strategy
       {
        public:
@@ -4621,12 +4551,10 @@ namespace CORE::GEO
        *  ^^^^^^^^^^^^^^^^^^^
        *  --> ComputeIntersectionStrategy --> EmptyNewtonStrategy  */
       template <unsigned probDim, CORE::FE::CellType edgeType, CORE::FE::CellType sideType,
-          bool computeCln = false, unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          bool computeCln = false, unsigned dimEdge = CORE::FE::dim<edgeType>,
+          unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class ComputeIntersection
           : public GenericComputeIntersection<
                 NewtonSolve<ComputeIntersectionStrategy<false, probDim, edgeType, sideType>,
@@ -4649,12 +4577,9 @@ namespace CORE::GEO
       /** \brief most derived strategy class for debugging intersection of side
        *  and line */
       template <unsigned probDim, CORE::FE::CellType edgeType, CORE::FE::CellType sideType,
-          unsigned dimEdge = CORE::DRT::UTILS::DisTypeToDim<edgeType>::dim,
-          unsigned dimSide = CORE::DRT::UTILS::DisTypeToDim<sideType>::dim,
-          unsigned numNodesEdge =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement,
-          unsigned numNodesSide =
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>
+          unsigned dimEdge = CORE::FE::dim<edgeType>, unsigned dimSide = CORE::FE::dim<sideType>,
+          unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>,
+          unsigned numNodesSide = CORE::FE::num_nodes<sideType>>
       class DebugComputeIntersection
           : public GenericComputeIntersection<
                 NewtonSolve<DebugNewtonStrategy<

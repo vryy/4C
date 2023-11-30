@@ -51,8 +51,7 @@ template <CORE::FE::CellType distype>
 std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
-  const int numNodesPerElement =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int numNodesPerElement = CORE::FE::num_nodes<distype>;
 
   CORE::LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
   CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);

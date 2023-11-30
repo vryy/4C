@@ -1438,8 +1438,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-    THR::DisTypeToNumGaussPoints<distype>::nquad>
+CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, THR::DisTypeToNumGaussPoints<distype>::nquad>
 DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 {
   // extrapolation matrix

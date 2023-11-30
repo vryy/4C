@@ -844,18 +844,16 @@ namespace SCATRA
 
    protected:
     //! number of slave element nodes
-    static const int nen_slave_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+    static const int nen_slave_ = CORE::FE::num_nodes<distypeS>;
 
     //! number of master element nodes
-    static const int nen_master_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+    static const int nen_master_ = CORE::FE::num_nodes<distypeM>;
 
     //! spatial dimensionality of slave elements
-    static const int nsd_slave_ = CORE::DRT::UTILS::DisTypeToDim<distypeS>::dim;
+    static const int nsd_slave_ = CORE::FE::dim<distypeS>;
 
     //! spatial dimensionality of master elements
-    static const int nsd_master_ = CORE::DRT::UTILS::DisTypeToDim<distypeM>::dim;
+    static const int nsd_master_ = CORE::FE::dim<distypeM>;
 
     //! protected constructor for singletons
     MortarCellCalc(const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method

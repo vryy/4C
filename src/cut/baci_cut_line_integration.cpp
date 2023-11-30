@@ -91,8 +91,7 @@ double LineIntegration::integrate_line()
 void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
     CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs)
 {
-  const int numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
+  const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
   CORE::LINALG::Matrix<numnodes, 1> funct;
   CORE::LINALG::Matrix<1, numnodes> deriv;
   CORE::LINALG::Matrix<1, 1> metrictensor;

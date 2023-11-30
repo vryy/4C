@@ -262,8 +262,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
 {
   auto electrode_ele = electrode_quantities.element;
 
-  const int num_ele_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  const int ele_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int num_ele_nodes = CORE::FE::num_nodes<distype>;
+  const int ele_dim = CORE::FE::dim<distype>;
 
   dsassert(num_ele_nodes == electrode_ele->NumNode(),
       "Number of nodes is not matching discretization type");

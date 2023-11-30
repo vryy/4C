@@ -94,11 +94,10 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       //! number of element nodes
-      static const int numnod_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
       static const int noddof_ = 3;
@@ -497,7 +496,7 @@ namespace DRT
           CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_global) const;
 
       // determine extrapolation matrix for postprocessing purposes
-      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>,
           THR::DisTypeToNumGaussPoints<distype>::nquad>
       mem_extrapolmat() const;
 
@@ -609,8 +608,8 @@ namespace DRT
       MembraneLine(const MembraneLine<distype2>& old);
 
       //! number of nodes per line
-      static const int numnod_line_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
-          CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>::numNodePerElement;
+      static const int numnod_line_ =
+          CORE::FE::num_nodes<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>;
 
       static const int noddof_ = 3;
 

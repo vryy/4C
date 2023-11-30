@@ -92,7 +92,7 @@ void XFEM::MeshProjector::FindSearchRadius()
   const DRT::Node* const* nodes = actele->Nodes();
 
   // problem dimension
-  const unsigned int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const unsigned int dim = CORE::FE::dim<distype>;
 
   // we are looking for the maximum diameter of the source element
   // as an estimate for the search radius
@@ -326,8 +326,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
     const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
-  const unsigned int src_numnodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned int src_numnodes = CORE::FE::num_nodes<distype>;
   // nodal coordinates
   CORE::LINALG::Matrix<3, src_numnodes> src_xyze(true);
 

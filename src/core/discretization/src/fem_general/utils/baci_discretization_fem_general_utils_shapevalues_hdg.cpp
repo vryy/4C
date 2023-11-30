@@ -596,7 +596,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   }
 
   // this is expensive and should not be done too often
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int nsd = CORE::FE::dim<distype>;
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =

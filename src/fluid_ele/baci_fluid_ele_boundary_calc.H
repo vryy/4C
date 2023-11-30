@@ -82,11 +82,10 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! number of element nodes
-      static const int bdrynen_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of spatial dimensions of parent element
       static const int nsd_ = bdrynsd_ + 1;

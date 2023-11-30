@@ -128,7 +128,7 @@ namespace DRT
       AirwayImpl() = default;
 
       //! number of nodes
-      static const int iel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int iel = CORE::FE::num_nodes<distype>;
 
 
       /// Evaluate

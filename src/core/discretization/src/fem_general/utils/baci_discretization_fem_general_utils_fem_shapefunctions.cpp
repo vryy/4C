@@ -17,16 +17,13 @@ the Baci guide in the Convention chapter.
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim(
-    CORE::LINALG::Matrix<probdim,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv_xyz,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
-    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        probdim>& xyze,
+    CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& deriv_xyz,
+    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
+    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
     const CORE::LINALG::Matrix<probdim, 1>& normal)
 {
-  const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  const int nsd_ele = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  const int nen = CORE::FE::num_nodes<distype>;
+  const int nsd_ele = CORE::FE::dim<distype>;
 
   dsassert(nsd_ele != probdim,
       "This method is designed to be used if the dimension of the element is smaller than the "

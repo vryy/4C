@@ -1034,7 +1034,7 @@ template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
     CORE::GEO::CUT::IntegrationCell* ic)
 {
-  const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const unsigned nen = CORE::FE::num_nodes<distype>;
 
   CORE::LINALG::Matrix<3, nen> xie;
 

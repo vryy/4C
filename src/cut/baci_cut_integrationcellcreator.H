@@ -50,7 +50,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 01/17 */
       template <CORE::FE::CellType celltype,
           CORE::FE::CellType facetype = CORE::DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape,
-          unsigned numfaces = CORE::DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces>
+          unsigned numfaces = CORE::FE::num_faces<celltype>>
       bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell

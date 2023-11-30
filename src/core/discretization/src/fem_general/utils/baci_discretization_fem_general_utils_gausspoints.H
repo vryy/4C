@@ -278,8 +278,7 @@ namespace CORE::DRT::UTILS
     /// Create Gauss integration rule of given degree
     template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> CreateProjected(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<::CORE::FE::dim<distype>, ::CORE::FE::num_nodes<distype>>& xie,
         int degree)
     {
       Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create(distype, degree);
@@ -297,12 +296,11 @@ namespace CORE::DRT::UTILS
     /// coordinate system
     template <CORE::FE::CellType distype>
     static void ProjectGaussPointsLocalToGlobal(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<::CORE::FE::dim<distype>, ::CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, Teuchos::RCP<CollectedGaussPoints>& cgp)
     {
-      const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const int nsd = ::CORE::FE::dim<distype>;
+      const int nen = ::CORE::FE::num_nodes<distype>;
 
       CORE::LINALG::Matrix<nen, 1> funct;
       CORE::LINALG::Matrix<nsd, nen> deriv;
@@ -336,12 +334,11 @@ namespace CORE::DRT::UTILS
     /// coordinate system
     template <CORE::FE::CellType distype>
     static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
-        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-            ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
+        const CORE::LINALG::Matrix<::CORE::FE::dim<distype>, ::CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, const bool& throw_error = true)
     {
-      const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const int nsd = ::CORE::FE::dim<distype>;
+      const int nen = ::CORE::FE::num_nodes<distype>;
 
       CORE::LINALG::Matrix<nen, 1> funct;
       CORE::LINALG::Matrix<nsd, nen> deriv;

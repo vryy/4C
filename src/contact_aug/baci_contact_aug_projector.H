@@ -81,13 +81,11 @@ namespace CONTACT
         CORE::FE::CellType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
-      static const unsigned REF_DIM = CORE::DRT::UTILS::DisTypeToDim<ref_type>::dim;
-      static const unsigned REF_NUMNODES =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<ref_type>::numNodePerElement;
+      static const unsigned REF_DIM = CORE::FE::dim<ref_type>;
+      static const unsigned REF_NUMNODES = CORE::FE::num_nodes<ref_type>;
 
-      static const unsigned TAR_DIM = CORE::DRT::UTILS::DisTypeToDim<tar_type>::dim;
-      static const unsigned TAR_NUMNODES =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<tar_type>::numNodePerElement;
+      static const unsigned TAR_DIM = CORE::FE::dim<tar_type>;
+      static const unsigned TAR_NUMNODES = CORE::FE::num_nodes<tar_type>;
 
      public:
       static ProjectorBase* Instance();
@@ -154,8 +152,7 @@ namespace CONTACT
        *  \return FALSE, if the shape function evaluation failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      template <CORE::FE::CellType type,
-          unsigned numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
+      template <CORE::FE::CellType type, unsigned numnodes = CORE::FE::num_nodes<type>>
       bool GetGlobalPosition(MORTAR::MortarElement& ele,
           const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
           CORE::LINALG::Matrix<probdim, 1>& pos) const;

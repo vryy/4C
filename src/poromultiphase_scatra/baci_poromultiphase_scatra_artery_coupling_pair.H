@@ -240,13 +240,11 @@ namespace POROMULTIPHASESCATRA
    private:
     // static variables
     //! number of nodes of 1D artery element
-    static const unsigned numnodesart_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeArt>::numNodePerElement;
+    static const unsigned numnodesart_ = CORE::FE::num_nodes<distypeArt>;
     //! number of nodes of 2D/3D continuous element
-    static const unsigned numnodescont_ =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeCont>::numNodePerElement;
+    static const unsigned numnodescont_ = CORE::FE::num_nodes<distypeCont>;
     //! number of nodes of spatial dimensions
-    static const unsigned numdim_ = CORE::DRT::UTILS::DisTypeToDim<distypeCont>::dim;
+    static const unsigned numdim_ = CORE::FE::dim<distypeCont>;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
     void SetTimeFacRhs(const double& arterydensity, Teuchos::RCP<MAT::MatList> contscatramat,

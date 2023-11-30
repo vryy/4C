@@ -763,8 +763,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
   Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace =
       CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-      intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+  const CORE::DRT::UTILS::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
+      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp(intpoints.IP().nquad);
   std::vector<CORE::LINALG::SerialDenseMatrix> massPartDW(
@@ -779,7 +779,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
     shape_gp[q].size(polySpace->Size());
 
     // gaussian points coordinates
-    for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
+    for (int idim = 0; idim < CORE::FE::dim<distype>; ++idim)
       gp_coord(idim) = intpoints.IP().qxg[q][idim];
     polySpace->Evaluate(gp_coord, shape_gp[q]);
   }

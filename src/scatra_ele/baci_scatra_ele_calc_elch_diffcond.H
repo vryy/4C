@@ -25,8 +25,7 @@ namespace DRT
     class ScaTraEleUtilsElchDiffCond;
 
     // class implementation
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype, probdim>
     {
      protected:

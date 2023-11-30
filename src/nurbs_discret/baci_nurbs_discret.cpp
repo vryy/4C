@@ -509,12 +509,12 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
 
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
@@ -650,11 +650,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  static const int dim = CORE::FE::dim<distype>;
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen = CORE::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;

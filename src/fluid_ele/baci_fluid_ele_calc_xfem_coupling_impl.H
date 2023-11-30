@@ -43,15 +43,13 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<slave_distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<slave_distype>;
         /// number of slave element's nodes
-        static const unsigned slave_nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<slave_distype>::numNodePerElement;
+        static const unsigned slave_nen_ = CORE::FE::num_nodes<slave_distype>;
 
         //! ctor
         SlaveElementRepresentation(CORE::LINALG::SerialDenseMatrix::Base& slave_xyze)
@@ -266,12 +264,11 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+        static const unsigned slave_nsd_ = CORE::FE::dim<distype>;
         /// just for compatibility...
         static const unsigned slave_nen_ = nen_;
 

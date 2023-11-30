@@ -240,8 +240,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -1806,8 +1805,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -2511,8 +2509,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -3257,8 +3254,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -3651,8 +3647,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -4241,8 +4236,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
@@ -4609,8 +4603,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
   // number of parentnodes
-  static const int nenparent =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   std::vector<double> parentdispnp;
   DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);

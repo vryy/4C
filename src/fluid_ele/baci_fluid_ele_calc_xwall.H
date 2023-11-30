@@ -111,8 +111,7 @@ namespace DRT
           ) override;
 
      private:
-      const static int enren_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      const static int enren_ = CORE::FE::num_nodes<distype>;
 
       /// private Constructor since we are a Singleton.
       FluidEleCalcXWall();

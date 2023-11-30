@@ -24,11 +24,10 @@
 namespace
 {
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  inline static constexpr int num_nodes = CORE::FE::num_nodes<distype>;
 
   template <CORE::FE::CellType distype>
-  inline static constexpr int num_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  inline static constexpr int num_dim = CORE::FE::dim<distype>;
 
   template <CORE::FE::CellType distype>
   inline static constexpr int num_str = num_dim<distype>*(num_dim<distype> + 1) / 2;
@@ -597,9 +596,7 @@ DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::SolidEleCalcEas()
 template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& data) const
 {
-  constexpr int num_dof_per_element =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement *
-      CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+  constexpr int num_dof_per_element = CORE::FE::num_nodes<distype> * CORE::FE::dim<distype>;
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_);
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(

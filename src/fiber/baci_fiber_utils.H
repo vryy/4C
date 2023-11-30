@@ -34,8 +34,7 @@ namespace DRT
        */
       template <CORE::FE::CellType distype>
       void ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           FIBER::NodalFiberHolder& gpFiberHolder);
 
       /*!
@@ -51,11 +50,8 @@ namespace DRT
        */
       template <CORE::FE::CellType distype, std::size_t dim>
       void ProjectQuantityWithShapeFunctions(
-          const std::array<std::array<double, dim>,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-              quantity,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::array<std::array<double, dim>, CORE::FE::num_nodes<distype>> quantity,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           std::vector<CORE::LINALG::Matrix<dim, 1>>& quantityProjected);
 
       /*!
@@ -69,11 +65,8 @@ namespace DRT
        */
       template <CORE::FE::CellType distype>
       void ProjectQuantityWithShapeFunctions(
-          const std::array<double,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
-              quantity,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
+          const std::array<double, CORE::FE::num_nodes<distype>> quantity,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           std::vector<double>& quantityProjected);
 
       /*!

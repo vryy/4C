@@ -424,8 +424,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       }
     }
 
-    const int numnodes =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
+    const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
     static CORE::LINALG::Matrix<numnodes, 1> funct(false);
     CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
     vel_s.Multiply(vels, funct);
@@ -667,8 +666,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   volumecell = nullptr;
   if (sele->Shape() == CORE::FE::CellType::quad4)
   {
-    const int numnodes =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
+    const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
 
     CORE::LINALG::SerialDenseMatrix xyze_m;
     CORE::LINALG::Matrix<numnodes, 1> funct(false);
@@ -1202,8 +1200,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
   if (!sh) dserror("Couldn't get SideHandle!");
   if (sh->Shape() != CORE::FE::CellType::quad4) dserror("Not a quad4!");
-  const int numnodes_sh =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
+  const int numnodes_sh = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
   CORE::LINALG::SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
   CORE::LINALG::Matrix<2, numnodes_sh> deriv(false);

@@ -654,9 +654,8 @@ namespace CORE::GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, CORE::FE::CellType sidetype,
-        unsigned numNodesSide =
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement,
-        unsigned dim = CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim>
+        unsigned numNodesSide = CORE::FE::num_nodes<sidetype>,
+        unsigned dim = CORE::FE::dim<sidetype>>
     class ConcreteSide : public Side, public ConcreteElement<probdim, sidetype>
     {
      public:
@@ -1044,7 +1043,7 @@ namespace CORE::GEO
       {
         Side* s = nullptr;
         // sanity check
-        if (probdim < CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim)
+        if (probdim < CORE::FE::dim<sidetype>)
           dserror("Problem dimension is smaller than the side dimension!");
 
         switch (probdim)

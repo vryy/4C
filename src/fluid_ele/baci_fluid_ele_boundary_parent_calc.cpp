@@ -603,10 +603,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     int pid = parent->Id();
 
     // number of parent spatial dimensions
-    static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+    static const int nsd = CORE::FE::dim<pdistype>;
 
     // number of parent element nodes
-    static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+    static const int piel = CORE::FE::num_nodes<pdistype>;
 
     // reshape element matrices and vectors and init to zero, construct views
     const int peledim = (nsd + 1) * piel;
@@ -631,10 +631,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     int bid = surfele->SurfaceNumber();
 
     // number of boundary spatial dimensions
-    static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+    static const int bnsd = CORE::FE::dim<bdistype>;
 
     // number of boundary element nodes
-    static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+    static const int biel = CORE::FE::num_nodes<bdistype>;
 
     // get local node coordinates
     CORE::LINALG::Matrix<nsd, biel> bxyze(true);
@@ -1262,10 +1262,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int piel = CORE::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
@@ -1290,10 +1290,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int biel = CORE::FE::num_nodes<bdistype>;
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, biel> bxyze(true);
@@ -1593,10 +1593,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int piel = CORE::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
@@ -1621,10 +1621,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int biel = CORE::FE::num_nodes<bdistype>;
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, biel> bxyze(true);
@@ -1931,10 +1931,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int piel = CORE::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
@@ -1959,10 +1959,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int biel = CORE::FE::num_nodes<bdistype>;
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, biel> bxyze(true);
@@ -3737,10 +3737,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int piel = CORE::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = nsd * piel;
@@ -3771,10 +3771,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   int bid = surfele->FaceMasterNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int biel = CORE::FE::num_nodes<bdistype>;
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, biel> bxyze(true);
@@ -4310,15 +4310,15 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     dserror("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
 
   /// number of parentnodes
-  static const int piel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+  static const int piel = CORE::FE::num_nodes<pdistype>;
 
   /// number of surfacenodes
-  static const int biel = CORE::DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+  static const int biel = CORE::FE::num_nodes<bdistype>;
 
   /// number of spatial dimensions
-  static const int nsd = CORE::DRT::UTILS::DisTypeToDim<pdistype>::dim;
+  static const int nsd = CORE::FE::dim<pdistype>;
 
-  static const int bnsd = CORE::DRT::UTILS::DisTypeToDim<bdistype>::dim;
+  static const int bnsd = CORE::FE::dim<bdistype>;
 
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_ = CORE::DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;

@@ -26,13 +26,6 @@ namespace STR::MODELEVALUATOR
 
 namespace DRT
 {
-  namespace UTILS
-  {
-    template <CORE::FE::CellType>
-    struct DisTypeToNumNodePerEle;
-    template <CORE::FE::CellType>
-    struct DisTypeToDim;
-  }  // namespace UTILS
 
   namespace ELEMENTS
   {
@@ -91,9 +84,8 @@ namespace DRT
 
      private:
       /// static values for matrix sizes
-      static constexpr int num_nodes_ =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int num_nodes_ = CORE::FE::num_nodes<distype>;
+      static constexpr int num_dim_ = CORE::FE::dim<distype>;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 

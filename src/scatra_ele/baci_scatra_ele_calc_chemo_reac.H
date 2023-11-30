@@ -21,8 +21,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcChemoReac : public ScaTraEleCalcChemo<distype, probdim>,
                                    public ScaTraEleCalcAdvReac<distype, probdim>
     {

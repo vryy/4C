@@ -21,8 +21,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
 
     // implementation of class ScaTraEleCalcElchDiffCondMultiScale
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      public:

@@ -35,7 +35,7 @@ namespace CORE::GEO
       XAABB(dim, 1) = xyze(dim, 0) + TOL7;
     }
     // remaining nodes
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    const int numNodes = CORE::FE::num_nodes<distype>;
     for (int i = 1; i < numNodes; ++i)
       for (int dim = 0; dim < ndim; dim++)
       {

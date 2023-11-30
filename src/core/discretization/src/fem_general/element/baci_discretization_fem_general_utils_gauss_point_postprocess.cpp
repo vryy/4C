@@ -18,8 +18,7 @@ namespace
   template <CORE::FE::CellType distype>
   const auto& GetGaussIntegration(unsigned numgp)
   {
-    static std::unordered_map<unsigned,
-        CORE::DRT::UTILS::IntegrationPoints<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>>
+    static std::unordered_map<unsigned, CORE::DRT::UTILS::IntegrationPoints<CORE::FE::dim<distype>>>
         gaussIntegrations = {};
 
     if (gaussIntegrations.find(numgp) == gaussIntegrations.end())

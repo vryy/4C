@@ -408,53 +408,35 @@ namespace DRT
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
       template <CORE::FE::CellType dt_vol>
-      void TraceEstimateVolMatrix(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
-                                   3,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& vol);
+      void TraceEstimateVolMatrix(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>&
+              vol);
 
       //! the surface stiffness matrix
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       void TraceEstimateSurfMatrix(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
-                                   3,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& surf);
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>&
+              surf);
 
       //! evaluate the kinematics
       template <CORE::FE::CellType dt_vol>
-      void Strains(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
+      void Strains(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           const CORE::LINALG::Matrix<3, 1>& xi, double& jac, CORE::LINALG::Matrix<3, 3>& defgrd,
           CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& rcg,
-          CORE::LINALG::Matrix<6,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& bop,
-          CORE::LINALG::Matrix<3,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& N_XYZ);
+          CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3>& bop,
+          CORE::LINALG::Matrix<3, CORE::FE::num_nodes<dt_vol>>& N_XYZ);
 
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
       template <CORE::FE::CellType dt_vol>
-      void SubspaceProjector(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
-                                   CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
-                      CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim -
-                  CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim*(
-                      CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim + 1) /
-                      2>& proj);
+      void SubspaceProjector(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>,
+              CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
+                  CORE::FE::dim<dt_vol>*(CORE::FE::dim<dt_vol> + 1) / 2>& proj);
 
 
       //! Templated version: parent and surface discretization type
@@ -465,29 +447,22 @@ namespace DRT
       //! unlike the "full" stiffness matrix we don't use the geometric term here
       template <CORE::FE::CellType dt_vol>
       void TraceEstimateVolMatrixTSI(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& vol);
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& vol);
 
       //! the surface stiffness matrix
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
       void TraceEstimateSurfMatrixTSI(
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xrefe,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>& xcurr,
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& surf);
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& surf);
 
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
       template <CORE::FE::CellType dt_vol>
       void SubspaceProjectorScalar(
-          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement - 1>& proj);
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol> - 1>& proj);
       //@}
 
     };  // class StructuralSurface : public DRT::Element

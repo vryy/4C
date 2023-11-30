@@ -86,10 +86,7 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::line2>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::line2>; };
 
       CORE::FE::CellType Shape() const override { return CORE::FE::CellType::line2; }
 
@@ -106,10 +103,7 @@ namespace CORE::GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::tri3>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::tri3>; };
 
       CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tri3; }
 
@@ -127,10 +121,7 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override
-      {
-        return CORE::DRT::UTILS::DisTypeToDim<CORE::FE::CellType::quad4>::dim;
-      };
+      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::quad4>; };
 
       CORE::FE::CellType Shape() const override { return CORE::FE::CellType::quad4; }
 

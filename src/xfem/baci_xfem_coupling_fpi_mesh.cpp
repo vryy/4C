@@ -976,8 +976,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     }
     if (coupl_ele->Shape() == CORE::FE::CellType::hex8)
     {
-      const size_t PARENT_NEN =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement;
+      const size_t PARENT_NEN = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
       CORE::LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system

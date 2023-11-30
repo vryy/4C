@@ -302,7 +302,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGloba
     MORTAR::MortarElement& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords,
     const double* xi, CORE::LINALG::Matrix<probdim, 1>& pos) const
 {
-  const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
+  const unsigned dim = CORE::FE::dim<type>;
   const CORE::LINALG::Matrix<dim, 1> mat_xi(xi, true);
 
   CORE::LINALG::Matrix<numnodes, 1> val(true);

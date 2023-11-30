@@ -90,7 +90,7 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
       static const int nsd_ = 3;
       //! number of dofs per node

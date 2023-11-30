@@ -32,8 +32,7 @@ namespace DRT
      linearizations \partial_c f(c) are done within the material MAT_matlist_reactions and
      MAT_scatra_reaction
      */
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
     class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:

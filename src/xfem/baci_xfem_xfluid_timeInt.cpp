@@ -1875,11 +1875,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   Teuchos::RCP<const Epetra_Vector> idisp_old = cutter_dis->GetState(state_old);
 
 
-  const int numnode_space_time =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement;
+  const int numnode_space_time = CORE::FE::num_nodes<space_time_distype>;
 
-  const int numnode_side =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement / 2;
+  const int numnode_side = CORE::FE::num_nodes<space_time_distype> / 2;
 
   // space time side coordinates
   CORE::LINALG::Matrix<3, numnode_space_time> xyze_st;
@@ -2046,7 +2044,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(
 {
   bool successful = true;
 
-  const int nsd = CORE::DRT::UTILS::DisTypeToDim<space_time_distype>::dim;
+  const int nsd = CORE::FE::dim<space_time_distype>;
 
   // use one-point Gauss rule
   CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(

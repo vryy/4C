@@ -425,8 +425,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Mesh::NewVolumeCell(const plain_face
 CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::point1>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::point1>;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, 1);
@@ -443,8 +442,7 @@ CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
 CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -547,8 +545,7 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
 CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::line2>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -567,8 +564,7 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
 CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::tri3>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -587,8 +583,7 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::quad4>::numNodePerElement;
+  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);

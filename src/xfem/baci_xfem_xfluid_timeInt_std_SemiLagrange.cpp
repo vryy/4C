@@ -1177,15 +1177,13 @@ void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointe
   {
     case CORE::FE::CellType::hex8:
     {
-      const int numnode =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex8>::numNodePerElement;
+      const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
       backTracking<numnode, CORE::FE::CellType::hex8>(ele, data, xi, backTrackingType);
     }
     break;
     case CORE::FE::CellType::hex20:
     {
-      const int numnode =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<CORE::FE::CellType::hex20>::numNodePerElement;
+      const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
       backTracking<numnode, CORE::FE::CellType::hex20>(ele, data, xi, backTrackingType);
     }
     break;

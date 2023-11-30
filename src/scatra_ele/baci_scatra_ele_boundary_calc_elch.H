@@ -22,8 +22,7 @@ namespace DRT
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype, probdim>
     {
       typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;

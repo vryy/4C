@@ -26,9 +26,8 @@ namespace CONTACT
     class BaseSlaveIntPolicy
     {
      protected:
-      static const unsigned SLAVEDIM = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
-      static const unsigned SLAVENUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement;
+      static const unsigned SLAVEDIM = CORE::FE::dim<slavetype>;
+      static const unsigned SLAVENUMNODE = CORE::FE::num_nodes<slavetype>;
 
      public:
       /// constructor
@@ -103,9 +102,8 @@ namespace CONTACT
       typedef BaseSlaveIntPolicy<probdim, slavetype> my;
 
      protected:
-      static const unsigned MASTERDIM = CORE::DRT::UTILS::DisTypeToDim<mastertype>::dim;
-      static const unsigned MASTERNUMNODE =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement;
+      static const unsigned MASTERDIM = CORE::FE::dim<mastertype>;
+      static const unsigned MASTERNUMNODE = CORE::FE::num_nodes<mastertype>;
 
      public:
       /// constructor

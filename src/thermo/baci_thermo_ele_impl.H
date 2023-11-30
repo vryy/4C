@@ -119,10 +119,10 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of nodes
-      static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int nsd_ = CORE::FE::dim<distype>;
 
       //! number of dof per node
       static const int numdofpernode_ = 1;

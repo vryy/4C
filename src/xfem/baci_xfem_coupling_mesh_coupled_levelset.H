@@ -169,8 +169,8 @@ namespace XFEM
       {
         const CORE::FE::CellType shape = CORE::FE::CellType::hex8;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
@@ -178,8 +178,8 @@ namespace XFEM
       {
         const CORE::FE::CellType shape = CORE::FE::CellType::hex27;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
@@ -187,8 +187,8 @@ namespace XFEM
       {
         const CORE::FE::CellType shape = CORE::FE::CellType::hex20;
         //
-        const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
-        const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
+        const size_t nsd = CORE::FE::dim<shape>;
+        const size_t nen = CORE::FE::num_nodes<shape>;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }

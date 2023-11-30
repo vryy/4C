@@ -20,8 +20,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template <CORE::FE::CellType distype,
-        int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1>
+    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
@@ -77,20 +76,13 @@ namespace DRT
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              emastertempnp,
-          const std::vector<CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
+          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
           double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,
-          const CORE::LINALG::Matrix<
-              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
           const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
           const CORE::LINALG::Matrix<nsd_, nen_>& shape_spatial_derivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
