@@ -7,8 +7,9 @@
 
 */
 
-#ifndef BACI_LIB_PRESTRESS_SERVICE_H
-#define BACI_LIB_PRESTRESS_SERVICE_H
+#ifndef BACI_SO3_PRESTRESS_SERVICE_H
+#define BACI_SO3_PRESTRESS_SERVICE_H
+
 
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
@@ -123,7 +124,12 @@ namespace UTILS
      * \return true Prestressing is set in the input file
      * \return false No prestressing is set in the input file
      */
-    static inline bool IsAny() { return GetType() != INPAR::STR::PreStress::none; }
+    static inline bool IsAny()
+    {
+      return Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+                 DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+             INPAR::STR::PreStress::none;
+    }
 
     /*!
      * \brief Returns whether prestressing is set in the given parameter.
@@ -147,7 +153,11 @@ namespace UTILS
      */
     static inline bool IsActive(const double currentTime)
     {
-      return IsAny() && currentTime <= GetPrestressTime() + 1.0e-15;
+      INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+          DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      const double pstime =
+          DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+      return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
     }
 
     /*!
@@ -162,7 +172,7 @@ namespace UTILS
     static inline bool IsActive(
         const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
     {
-      return IsAny(pstype) && currentTime <= pstime + 1.0e-15;
+      return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
     }
 
     /*!
@@ -176,19 +186,6 @@ namespace UTILS
     static inline bool IsMulfActive(const double currentTime)
     {
       return IsMulf() && currentTime <= GetPrestressTime() + 1.0e-15;
-    }
-
-    /*!
-     * \brief Returns true if material iterative prestressing method is currently active with the
-     * parameters of strtuctural dynamics.
-     *
-     * \param currentTimeCurrent time of the simulation
-     * \return true Material iterative prestressing method is active
-     * \return false Material iterative prestressing method is active
-     */
-    static inline bool IsMaterialIterativeActive(const double currentTime)
-    {
-      return IsMaterialIterative() && currentTime <= GetPrestressTime() + 1.0e-15;
     }
 
     /*!
@@ -211,4 +208,4 @@ namespace UTILS
   }  // namespace PRESTRESS
 }  // namespace UTILS
 
-#endif  // LIB_PRESTRESS_SERVICE_H
+#endif

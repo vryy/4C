@@ -16,7 +16,6 @@
 #include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_new_utils.H"
 
@@ -183,8 +182,10 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     itermin_ = sdynparams.get<int>("MINITER");
     itermax_ = sdynparams.get<int>("MAXITER");
     loadlin_ = (DRT::INPUT::IntegralValue<int>(sdynparams, "LOADLIN") == 1);
-    prestresstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
-    prestresstype_ = ::UTILS::PRESTRESS::GetType();
+    prestresstime_ =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+    prestresstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
     prestressDisplacementTolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
     prestressMinNumberOfLoadSteps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
     predtype_ = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");

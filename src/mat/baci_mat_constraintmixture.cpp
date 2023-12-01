@@ -32,7 +32,6 @@ For a detailed description see:
 #include "baci_io_gmsh.H"                                       // for debug plotting with gmsh
 #include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"  // for debug plotting with gmsh
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture_history.H"
@@ -483,10 +482,18 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   }
   minindex_ = 0;
 
-  // prestress time
-  if (::UTILS::PRESTRESS::IsMulfActive(params_->starttime_ + dt))
   {
-    dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+    const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    const double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+
+    const double currentTime = params_->starttime_ + dt;
+    // prestress time
+    if (pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15)
+    {
+      dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+    }
   }
 
   // basal mass production rate determined by DENS, PHIE and degradation function
