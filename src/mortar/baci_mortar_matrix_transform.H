@@ -12,7 +12,6 @@ distributions
 #define BACI_MORTAR_MATRIX_TRANSFORM_H
 
 #include "baci_contact_utils.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_pairedvector.H"
 

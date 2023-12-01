@@ -14,7 +14,6 @@
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 
 #include "baci_inpar_structure.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparseoperator.H"
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
@@ -78,6 +77,14 @@ namespace STR
     class BaseDataGlobalState
     {
      public:
+      /// enum, which specifies the desired global vector initialization during creation
+      enum class VecInitType
+      {
+        zero,               ///< fill the vector with zeros
+        last_time_step,     ///< use the last converged time step state
+        init_current_state  ///< use the current state
+      };
+
       /// constructor
       BaseDataGlobalState();
 
@@ -236,8 +243,7 @@ namespace STR
 
       /// Create the global solution vector
       Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector() const;
-      Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(
-          const enum DRT::UTILS::VecInitType& vecinittype,
+      Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(const enum VecInitType& vecinittype,
           const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
       /// Create the structural stiffness matrix block

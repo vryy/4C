@@ -12,7 +12,6 @@
 
 #include "baci_contact_utils.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
