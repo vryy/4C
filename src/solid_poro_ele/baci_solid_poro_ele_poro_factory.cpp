@@ -5,9 +5,8 @@
 \level 1
 */
 
-#include "baci_solid_ele_poro_factory.H"
-
-#include "baci_solid_ele_poro_calc_pressure_based.H"
+#include "baci_solid_poro_ele_calc_pressure_based.H"
+#include "baci_solid_poro_ele_factory.H"
 
 #include <memory>
 

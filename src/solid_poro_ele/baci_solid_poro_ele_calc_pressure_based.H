@@ -6,8 +6,8 @@ implementation
 \level 1
 */
 
-#ifndef BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
-#define BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
+#ifndef BACI_SOLID_PORO_ELE_CALC_PRESSURE_BASED_H
+#define BACI_SOLID_PORO_ELE_CALC_PRESSURE_BASED_H
 
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
@@ -63,4 +63,4 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
+#endif  // BACI_SOLID_PORO_ELE_CALC_PRESSURE_BASED_H

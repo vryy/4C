@@ -5,14 +5,14 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_ELE_PORO_FACTORY_H
-#define BACI_SOLID_ELE_PORO_FACTORY_H
+#ifndef BACI_SOLID_PORO_ELE_FACTORY_H
+#define BACI_SOLID_PORO_ELE_FACTORY_H
 
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_poro.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_factory_lib.H"
-#include "baci_solid_ele_poro_calc_pressure_based.H"
+#include "baci_solid_poro_ele_calc_pressure_based.H"
 
 #include <memory>
 #include <variant>
@@ -46,4 +46,4 @@ namespace DRT::ELEMENTS
 }  // namespace DRT::ELEMENTS
 
 
-#endif  // SOLID_ELE_PORO_FACTORY_H
+#endif  // BACI_SOLID_PORO_ELE_FACTORY_H

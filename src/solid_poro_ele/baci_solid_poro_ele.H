@@ -8,8 +8,8 @@ Pack, Unpack, NumDofPerNode etc.
 \level 1
 */
 
-#ifndef BACI_SOLID_ELE_PORO_H
-#define BACI_SOLID_ELE_PORO_H
+#ifndef BACI_SOLID_PORO_ELE_H
+#define BACI_SOLID_PORO_ELE_H
 
 #include "baci_inpar_poro.H"
 #include "baci_inpar_scatra.H"
@@ -18,7 +18,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_solid_ele_factory.H"
-#include "baci_solid_ele_poro_factory.H"
+#include "baci_solid_poro_ele_factory.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
 #include <memory>
@@ -232,4 +232,4 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
-#endif  // SO_PORO_ELE_H
+#endif  // BACI_SOLID_PORO_ELE_H

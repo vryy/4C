@@ -10,7 +10,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 
 #include "baci_mat_structporo.H"
 #include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 
 
 int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,

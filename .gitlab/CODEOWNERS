@@ -280,6 +280,8 @@ so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
 solid_ele/                 @baci/team_structure
 
+solid_poro_ele/             @baci/team_poro
+
 solver_nonlin_nox/         @baci/team_solvers
 
 ssi/                       @baci/team_scatra
