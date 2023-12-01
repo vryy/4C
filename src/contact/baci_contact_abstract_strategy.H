@@ -13,7 +13,6 @@
 #include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
-#include "baci_lib_utils_matrix_vector_enums.H"
 #include "baci_mortar_strategy_base.H"
 
 #include <Epetra_Operator.h>

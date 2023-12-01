@@ -247,7 +247,7 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector() const
 {
-  return CreateGlobalVector(DRT::UTILS::VecInitType::zero, Teuchos::null);
+  return CreateGlobalVector(VecInitType::zero, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
@@ -580,7 +580,7 @@ const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockEx
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector(
-    const enum DRT::UTILS::VecInitType& vecinittype,
+    const enum VecInitType& vecinittype,
     const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
   CheckInit();
@@ -590,7 +590,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
   switch (vecinittype)
   {
     /* use the last converged state to construct a new solution vector */
-    case DRT::UTILS::VecInitType::last_time_step:
+    case VecInitType::last_time_step:
     {
       dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
@@ -608,7 +608,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
       break;
     }
     /* use the current global state to construct a new solution vector */
-    case DRT::UTILS::VecInitType::init_current_state:
+    case VecInitType::init_current_state:
     {
       dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
@@ -625,7 +625,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
       break;
     }
     /* construct a new solution vector filled with zeros */
-    case DRT::UTILS::VecInitType::zero:
+    case VecInitType::zero:
     default:
     {
       // nothing to do.

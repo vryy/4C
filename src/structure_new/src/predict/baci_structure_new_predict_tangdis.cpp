@@ -78,7 +78,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
   Teuchos::RCP<NOX::Epetra::Vector> x_ptr = GlobalState().CreateGlobalVector(
-      DRT::UTILS::VecInitType::last_time_step, ImplInt().ModelEvalPtr());
+      TIMINT::BaseDataGlobalState::VecInitType::last_time_step, ImplInt().ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
   grp.setX(*x_ptr);
