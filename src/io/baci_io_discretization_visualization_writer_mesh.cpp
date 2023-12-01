@@ -85,7 +85,7 @@ namespace IO
       // equation. In structure problems, 1D beam and 3D solid elements are contained in the same
       // simulation but require fundamentally different output structures. Therefore, as long as 1D
       // beam and 3D solids are not split, beam output is done with the
-      // BeamDiscretizationRuntimeVtuWriter class.
+      // BeamDiscretizationRuntimeOutputWriter class.
       const auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
       if (beamele != nullptr)
@@ -177,7 +177,7 @@ namespace IO
       // interpolation
       const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
       if (beamele != nullptr)
         continue;
       else
@@ -241,7 +241,7 @@ namespace IO
       // interpolation
       const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
       if (beamele != nullptr) continue;
 
       const std::vector<int>& numbering =
@@ -318,7 +318,7 @@ namespace IO
       // interpolation
       const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
       if (beamele != nullptr) continue;
 
       for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
@@ -413,7 +413,7 @@ namespace IO
     // Loop over each element and add the node GIDs.
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
       auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beamele != nullptr) continue;
 

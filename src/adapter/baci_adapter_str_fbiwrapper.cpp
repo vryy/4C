@@ -119,7 +119,7 @@ void ADAPTER::FBIStructureWrapper::SetupMultiMapExtractor()
 
 Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> ADAPTER::FBIStructureWrapper::GetIOData()
 {
-  return FSIModelEvaluator()->GetInOutput().GetRuntimeVtkOutputParams();
+  return FSIModelEvaluator()->GetInOutput().GetRuntimeOutputParams();
 }
 
 BACI_NAMESPACE_CLOSE

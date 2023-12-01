@@ -27,8 +27,6 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_step_offset_ = IO_vtp_structure_paramslist.get<int>("STEP_OFFSET");
-
   output_every_iteration_ =
       (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
