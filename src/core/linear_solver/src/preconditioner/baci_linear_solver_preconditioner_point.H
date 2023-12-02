@@ -32,12 +32,10 @@ namespace CORE::LINEAR_SOLVER
 
     void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override
     {
-      return preconditioner_->PrecOperatorRCP();
+      return preconditioner_->PrecOperator();
     }
 
     void Print(std::ostream& stream) const override
@@ -73,12 +71,10 @@ namespace CORE::LINEAR_SOLVER
 
     void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) override;
 
-    Epetra_Operator* PrecOperator() const override { return preconditioner_->PrecOperator(); }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override
     {
-      return preconditioner_->PrecOperatorRCP();
+      return preconditioner_->PrecOperator();
     }
 
     void Print(std::ostream& stream) const override

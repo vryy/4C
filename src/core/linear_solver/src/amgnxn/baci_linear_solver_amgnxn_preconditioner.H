@@ -38,10 +38,8 @@ namespace CORE::LINEAR_SOLVER
 
     virtual void Setup(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A);
 
-    Epetra_Operator *PrecOperator() const override;
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override;
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
 
     void Print(std::ostream &stream) const override { stream << "AMGnxn"; }
     std::string getParameterListName() const override { return "AMGnxn Parameters"; }

@@ -74,13 +74,7 @@ namespace CORE::LINEAR_SOLVER
     virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) {}
 
     /// linear operator used for preconditioning
-    /*!
-      This is how the iterative solver sees the linear operator to be used for preconditioning.
-    */
-    virtual Epetra_Operator* PrecOperator() const = 0;
-
-    /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
 
     /// Apply inverse of the preconditioner
     int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
