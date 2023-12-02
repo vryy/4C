@@ -43,7 +43,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override;
 
-    void Print(std::ostream &stream) const override { stream << "AMGnxn"; }
     std::string getParameterListName() const override { return "AMGnxn Parameters"; }
 
    private:
