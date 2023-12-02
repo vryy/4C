@@ -38,8 +38,6 @@ namespace CORE::LINEAR_SOLVER
 
     virtual int Solve() = 0;
 
-    virtual int ApplyInverse(const VectorType& X, VectorType& Y) = 0;
-
     /// return number of iterations performed by solver
     virtual int getNumIters() const
     {

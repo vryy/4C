@@ -77,15 +77,6 @@ CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::ApplyInverse(
-    const VectorType& X, VectorType& Y)
-{
-  return preconditioner_->ApplyInverse(X, Y);
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
 bool CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::AllowReusePreconditioner(
     const int reuse, const bool reset)
 {
