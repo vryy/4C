@@ -167,8 +167,8 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   if (this->preconditioner_ != Teuchos::null)
   {
     // prepare preconditioner in preconditioner_->PrecOperator() for Belos
-    Teuchos::RCP<Belos::EpetraPrecOp> belosPrec = Teuchos::rcp(
-        new Belos::EpetraPrecOp(Teuchos::rcp(this->preconditioner_->PrecOperator(), false)));
+    Teuchos::RCP<Belos::EpetraPrecOp> belosPrec =
+        Teuchos::rcp(new Belos::EpetraPrecOp(this->preconditioner_->PrecOperator()));
     problem->setRightPrec(belosPrec);
   }
   bool set = problem->setProblem();

@@ -38,12 +38,7 @@ CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::AMGnxn_Preconditioner(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Epetra_Operator* CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperator() const { return &*P_; }
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperatorRCP() const
+Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::PrecOperator() const
 {
   return P_;
 }

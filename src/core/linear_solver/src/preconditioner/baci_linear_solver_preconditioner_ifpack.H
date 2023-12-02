@@ -31,11 +31,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    //! Access to preconditioner operator
-    Epetra_Operator* PrecOperator() const override { return &*prec_; }
-
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const override { return prec_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return prec_; }
 
     //! Print name of preconditioner
     void Print(std::ostream& stream) const override { stream << "IFPACK"; }

@@ -54,11 +54,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    //! Get the actual operator used for preconditioning
-    Epetra_Operator* PrecOperator() const final { return &*P_; }
-
     //! linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const final { return P_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const final { return P_; }
 
     void Print(std::ostream& stream) const override { stream << "MueLuPreconditioner"; }
 
