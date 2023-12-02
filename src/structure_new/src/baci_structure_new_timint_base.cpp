@@ -847,14 +847,6 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
     IO::cout << "====== Restart for field 'Structure' written in step "
              << dataglobalstate_->GetStepN() << IO::endl;
   }
-
-  // info dedicated to processor error file
-  if (dataio_->IsErrorFile())
-  {
-    fprintf(dataio_->ErrorFilePtr(), "====== Restart for field 'Structure' written in step %d\n",
-        dataglobalstate_->GetStepN());
-    fflush(dataio_->ErrorFilePtr());
-  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -884,14 +876,6 @@ void STR::TIMINT::Base::AddRestartToOutputState()
   {
     IO::cout << "====== Restart for field 'Structure' written in step "
              << dataglobalstate_->GetStepN() << IO::endl;
-  }
-
-  // info dedicated to processor error file
-  if (dataio_->IsErrorFile())
-  {
-    fprintf(dataio_->ErrorFilePtr(), "====== Restart for field 'Structure' written in step %d\n",
-        dataglobalstate_->GetStepN());
-    fflush(dataio_->ErrorFilePtr());
   }
 }
 

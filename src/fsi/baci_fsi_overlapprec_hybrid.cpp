@@ -28,11 +28,11 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
     std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
     std::vector<double>& aomega, std::vector<int>& aiterations, int analyze,
     INPAR::FSI::LinearBlockSolver strategy, std::list<int> interfaceprocs,
-    INPAR::FSI::Verbosity verbosity, FILE* err)
+    INPAR::FSI::Verbosity verbosity)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
           omega[0], iterations[0], somega[0],
           siterations[0] - 1,  // base class counts iterations starting from 0
-          fomega[0], fiterations[0] - 1, aomega[0], aiterations[0] - 1, err),
+          fomega[0], fiterations[0] - 1, aomega[0], aiterations[0] - 1),
       strategy_(strategy),
       ifpackprec_(Teuchos::null),
       amgprec_(Teuchos::null),
@@ -56,7 +56,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
   // create 'mulitplicative' part of hybrid preconditioner
   amgprec_ = Teuchos::rcp(new FSI::OverlappingBlockMatrixFSIAMG(maps, structure, fluid, ale,
       structuresplit, symmetric, blocksmoother, schuromega, omega, iterations, somega, siterations,
-      fomega, fiterations, aomega, aiterations, analyze, innerstrategy, verbosity, err, this));
+      fomega, fiterations, aomega, aiterations, analyze, innerstrategy, verbosity, this));
 
   return;
 }
@@ -66,7 +66,6 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 {
   Teuchos::Time timer("FSI SetupPreconditioner", true);
 
-  FILE outfile;  // ToDo (mayr) Specify output file
   Teuchos::ParameterList ifpacklist;
   Teuchos::ParameterList azlist;
 
@@ -104,8 +103,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
     }
   }
 
-  ifpackprec_ =
-      Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(&outfile, ifpacklist, azlist));
+  ifpackprec_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(ifpacklist, azlist));
 
   // get blocks of system matrix and save them in 2-dim array
   std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix>>> rows;

@@ -2014,8 +2014,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     else if (solvertype == INPAR::SOLVER::SolverType::superlu)
       solverparams->set("solver", "superlu");
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 
     return;
   }
@@ -2096,7 +2095,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
@@ -2151,7 +2150,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     {
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =

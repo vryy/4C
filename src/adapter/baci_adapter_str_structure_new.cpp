@@ -646,8 +646,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
   nox = *snox;
-  // add extra parameters (a kind of work-around)
-  xparams.set<FILE*>("err file", problem->ErrorFile()->Handle());
 
   /* overrule certain parameters
    *

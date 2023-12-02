@@ -42,7 +42,6 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       solver_(solver),
       params_(params),
       myrank_(actdis->Comm().MyPID()),
-      errfile_(extraparams->get<FILE*>("err file")),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
       modified_reynolds_(DRT::INPUT::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
@@ -792,12 +791,6 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
       // print finish line of convergence table to screen
       PrintConvergenceFinishLine();
 
-      // write info to error file
-      if (myrank_ == 0)
-        if (errfile_ != nullptr)
-          fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-              itemax, ittol, preresnorm, incprenorm_L2 / prenorm_L2);
-
       return true;
     }
   }
@@ -823,13 +816,6 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
       std::cout << "|            >>>>>> not converged in itemax steps!              |" << std::endl;
       std::cout << "+---------------------------------------------------------------+" << std::endl
                 << std::endl;
-
-      if (errfile_ != nullptr)
-      {
-        fprintf(errfile_,
-            "divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-            itemax, ittol, preresnorm, incprenorm_L2 / prenorm_L2);
-      }
     }
     // yes, we stop the iteration
     return true;

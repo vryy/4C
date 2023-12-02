@@ -29,9 +29,8 @@
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::AMGnxn_Preconditioner(
-    FILE* outfile, Teuchos::ParameterList& params)
-    : CORE::LINEAR_SOLVER::PreconditionerType(outfile), params_(params)
+CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::AMGnxn_Preconditioner(Teuchos::ParameterList& params)
+    : params_(params)
 {
 }
 

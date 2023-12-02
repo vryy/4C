@@ -47,9 +47,8 @@ using NO = Node;
  *----------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(
     Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& predict_list,
-    const Teuchos::ParameterList& correct_list, FILE* outfile)
-    : outfile_(outfile),
-      predictSolver_list_(predict_list),
+    const Teuchos::ParameterList& correct_list)
+    : predictSolver_list_(predict_list),
       schurSolver_list_(correct_list),
       alpha_(SIMPLER_ALPHA),
       vdw_(false),

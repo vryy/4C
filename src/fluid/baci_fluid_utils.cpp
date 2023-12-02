@@ -438,9 +438,8 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
     if (ML_solver == -1)
       dserror("If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
-    Teuchos::RCP<CORE::LINALG::Solver> solver =
-        Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(ML_solver),
-            discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+        DRT::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
 
     if (solver == Teuchos::null)
       dserror("The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");

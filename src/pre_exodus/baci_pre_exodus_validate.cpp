@@ -22,6 +22,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
@@ -166,10 +167,6 @@ void EXODUS::ValidateElementJacobian(
         if (rewcount == 0)
         {
           i_ele->second = RewindEle(i_ele->second, distype);
-          // write info to error file
-          FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-          fprintf(errfile, "GAUSS POINT %d: REWINDED ELEMENT %d\n", igp, i_ele->first);
-          fflush(errfile);
           numrewindedeles++;
         }
         // double check
@@ -284,11 +281,6 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 
     if (det < 0.0)
     {
-      // write info to the error log file
-      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-      fprintf(errfile, "NEGATIVE JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f -> REWIND\n", eleid,
-          det);
-      fflush(errfile);
       return false;
     }
   }

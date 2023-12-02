@@ -74,7 +74,7 @@ namespace POROFLUIDMULTIPHASE
     //! Standard Constructor
     TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-        FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
 
     //! initialize time integration
@@ -453,9 +453,6 @@ namespace POROFLUIDMULTIPHASE
 
     //! processor id
     int myrank_;
-
-    //! error file handle
-    FILE* errfile_;
 
     //! number of space dimensions
     int nsd_;

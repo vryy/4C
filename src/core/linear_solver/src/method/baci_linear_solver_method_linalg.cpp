@@ -25,17 +25,16 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(
-    Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile)
-    : comm_(comm), params_(params), outfile_(outfile)
+CORE::LINALG::Solver::Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm)
+    : comm_(comm), params_(params)
 {
   Setup();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
-    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
+CORE::LINALG::Solver::Solver(const Epetra_Comm& comm)
+    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
 {
   // set the default solver to umfpack
   Params().set("solver", "umfpack");
@@ -44,9 +43,8 @@ CORE::LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(
-    const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile)
-    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
+CORE::LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm)
+    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
 {
   *params_ = TranslateSolverParameters(inparams);
   Setup();
@@ -162,7 +160,7 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     {
       solver_ =
           Teuchos::rcp(new CORE::LINEAR_SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>(
-              comm_, Params(), outfile_));
+              comm_, Params()));
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {

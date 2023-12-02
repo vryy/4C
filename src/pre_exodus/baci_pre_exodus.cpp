@@ -135,19 +135,16 @@ int main(int argc, char** argv)
       dserror("CommandLineProcessor reported an error");
     }
 
-    // create error file (enforce the file opening!)
     if (datfile != "")
     {
       const std::string basename = datfile.substr(0, datfile.find_last_of(".")) + "_pre";
       IO::cout.setup(
           true, false, false, IO::standard, comm, 0, 0, basename);  // necessary setup of IO::cout
-      problem->OpenErrorFile(*comm, basename, true);
     }
     else
     {
       IO::cout.setup(
           true, false, false, IO::standard, comm, 0, 0, "xxx_pre");  // necessary setup of IO::cout
-      problem->OpenErrorFile(*comm, "xxx_pre", true);
     }
 
     // centerline related: transfer separate doubles into vector

@@ -22,7 +22,7 @@ namespace CORE::LINEAR_SOLVER
   class SimplePreconditioner : public PreconditionerType
   {
    public:
-    SimplePreconditioner(FILE* outfile, Teuchos::ParameterList& params);
+    SimplePreconditioner(Teuchos::ParameterList& params);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
@@ -49,8 +49,7 @@ namespace CORE::LINEAR_SOLVER
   class BGSPreconditioner : public PreconditionerType
   {
    public:
-    BGSPreconditioner(
-        FILE* outfile, Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
+    BGSPreconditioner(Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;

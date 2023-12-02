@@ -43,10 +43,8 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       params_runtime_vtp_output_(Teuchos::null),
       params_monitor_dbc_(Teuchos::null),
       energyfile_(Teuchos::null),
-      errfile_(nullptr),
       gmsh_out_(false),
       printlogo_(false),
-      printerrfile_(false),
       printiter_(false),
       outputeveryiter_(false),
       writesurfactant_(false),
@@ -86,9 +84,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
     printlogo_ = printscreen_ > 0;
-    errfile_ = xparams.get<FILE*>("err file");
     gmsh_out_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
-    printerrfile_ = errfile_ != nullptr;
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));

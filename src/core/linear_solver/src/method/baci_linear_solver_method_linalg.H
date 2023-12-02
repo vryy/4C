@@ -55,7 +55,7 @@ namespace CORE::LINALG
     \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
                          no output will be generated.
     */
-    Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile);
+    Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm);
 
     /*!
     \brief Destructor
@@ -72,10 +72,9 @@ namespace CORE::LINALG
      Trilinos build-in library.
 
     \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
-                         no output will be generated.
+
     */
-    Solver(const Epetra_Comm& comm, FILE* outfile = nullptr);
+    Solver(const Epetra_Comm& comm);
 
     /*!
     \brief Constructor taking a validated input parameter list for Solver
@@ -88,10 +87,9 @@ namespace CORE::LINALG
                           e.g. DRT::Problem::SolverParams(num) in case of solver for
                           structures and num according to STRUCTURAL DYNAMIC
     \param comm     (in): a reference to a Epetra communicator object
-    \param outfile  (in): pointer to an error file
 
     */
-    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile);
+    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm);
 
     /*!
     \brief Set-up of stuff common to all constructors
@@ -297,8 +295,6 @@ namespace CORE::LINALG
     const Epetra_Comm& comm_;
     //! (internal) parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
 
     /// internal solver strategy
     Teuchos::RCP<CORE::LINEAR_SOLVER::SolverType<Epetra_Operator, Epetra_MultiVector>> solver_;

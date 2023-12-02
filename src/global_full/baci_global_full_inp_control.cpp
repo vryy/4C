@@ -41,9 +41,6 @@ void ntainp_ccadiscret(
 
   SetupParallelOutput(outputfile_kenner, lcomm, group);
 
-  // create error files
-  problem->OpenErrorFile(*lcomm, outputfile_kenner);
-
   // create control file for output and read restart data if required
   problem->OpenControlFile(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
@@ -114,13 +111,6 @@ void ntainp_ccadiscret(
   if (lcomm->MyPID() == 0 && npType != CORE::COMM::NestedParallelismType::copy_dat_file)
     problem->WriteInputParameters();
 
-  /// dump input file contents to error file (DEBUG-mode only)
-  if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)
-  {
-    if (group == 0) reader.DumpInput();
-  }
-  else
-    reader.DumpInput();
 
   // before we destroy the reader we want to know about unused sections
   if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)

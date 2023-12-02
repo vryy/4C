@@ -69,7 +69,6 @@ namespace POROFLUIDMULTIPHASE
         const int linsolvernumber,                     //!< number of linear solver
         const Teuchos::ParameterList& probparams,      //!< parameter list of global problem
         const Teuchos::ParameterList& poroparams,      //!< paramter list of poro problem
-        FILE* errfile,                                 //!< error file
         Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     );
 

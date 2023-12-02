@@ -66,7 +66,7 @@ namespace ART
     Teuchos::RCP<ADAPTER::ArtNet> CreateAlgorithm(INPAR::ARTDYN::TimeIntegrationScheme timintscheme,
         Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! exchange material pointers of discretizations
     void AssignMaterialPointers(

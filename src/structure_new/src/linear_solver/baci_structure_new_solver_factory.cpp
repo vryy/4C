@@ -109,8 +109,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
   const Teuchos::ParameterList& linsolverparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-      linsolverparams, actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> linsolver =
+      Teuchos::rcp(new CORE::LINALG::Solver(linsolverparams, actdis.Comm()));
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(linsolverparams, "AZPREC");
@@ -266,9 +266,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       }
 
       // build meshtying/contact solver
-      linsolver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(lin_solver_id),
-              actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
 
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
 
@@ -310,9 +309,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
-      linsolver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(lin_solver_id),
-              actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
     }
     break;
@@ -343,9 +341,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
       linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
@@ -356,9 +353,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
       linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
           DRT::Problem::Instance()->SolverParams(linsolvernumber));
@@ -422,9 +418,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
-  linsolver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
   linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
       DRT::Problem::Instance()->SolverParams(linsolvernumber));

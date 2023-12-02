@@ -24,9 +24,8 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& mllist)
-    : PreconditionerType(outfile), mllist_(mllist)
+CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& mllist)
+    : mllist_(mllist)
 {
 }
 

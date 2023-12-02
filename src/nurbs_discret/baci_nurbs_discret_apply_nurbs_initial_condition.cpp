@@ -29,7 +29,7 @@
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* outfile,
+void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis,
     const Teuchos::ParameterList& solverparams, const int startfuncno,
     Teuchos::RCP<Epetra_Vector> initialvals)
 {
@@ -50,7 +50,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* o
   p.set("AZTOL", newtol);
 
   Teuchos::RCP<CORE::LINALG::Solver> lssolver =
-      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm(), outfile));
+      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm()));
   dis.ComputeNullSpaceIfNecessary(lssolver->Params());
 
   // get the processor ID from the communicator

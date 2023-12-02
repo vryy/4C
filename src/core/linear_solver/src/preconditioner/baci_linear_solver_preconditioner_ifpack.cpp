@@ -15,8 +15,8 @@
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist)
-    : PreconditionerType(outfile), ifpacklist_(ifpacklist), solverlist_(solverlist)
+    Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist)
+    : ifpacklist_(ifpacklist), solverlist_(solverlist)
 {
   return;
 }

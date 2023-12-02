@@ -35,7 +35,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-          comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+          comm))),
       scatrastructureoffdiagcoupling_(Teuchos::null),
       scatrathermooffdiagcoupling_(Teuchos::null),
       thermostructureoffdiagcoupling_(Teuchos::null),

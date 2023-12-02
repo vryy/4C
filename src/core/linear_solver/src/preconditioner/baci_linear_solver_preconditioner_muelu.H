@@ -32,7 +32,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuPreconditioner : public PreconditionerType
   {
    public:
-    MueLuPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -87,7 +87,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuFluidBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuFluidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuFluidBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -120,7 +120,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuTsiBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuTsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuTsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -158,7 +158,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuContactSpPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuContactSpPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuContactSpPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -202,7 +202,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuBeamSolidBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuBeamSolidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuBeamSolidBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *
@@ -246,7 +246,7 @@ namespace CORE::LINEAR_SOLVER
   class MueLuFsiBlockPreconditioner : public MueLuPreconditioner
   {
    public:
-    MueLuFsiBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+    MueLuFsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
 
     /*! \brief Create and compute the preconditioner
      *

@@ -158,7 +158,7 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
     INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
     Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = Teuchos::null;
@@ -174,7 +174,7 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
     {
       // create algorithm
       algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
-          dis, linsolvernumber, probparams, poroparams, errfile, output));
+          dis, linsolvernumber, probparams, poroparams, output));
       break;
     }
     default:

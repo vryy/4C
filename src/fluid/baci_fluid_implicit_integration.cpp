@@ -2447,15 +2447,6 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
     if (myrank_ == 0 and (inconsistent_ or (not inconsistent_ and itnum == 0)))
     {
       printf("+------------+-------------+-------------+-------------+-------------+\n");
-      FILE* errfile = params_->get<FILE*>("err file", nullptr);
-      if (errfile != nullptr)
-      {
-        fprintf(errfile,
-            "fluid solve:   %3d/%3d vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
-            "pinc=%10.3E\n",
-            itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-            incprenorm_L2_ / prenorm_L2_);
-      }
     }
     return true;
   }
@@ -2469,16 +2460,6 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file", nullptr);
-        if (errfile != nullptr)
-        {
-          fprintf(errfile,
-              "fluid unconverged solve:   %3d/%3d  vres=%10.3E  pres=%10.3E  "
-              "vinc=%10.3E  pinc=%10.3E\n",
-              itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
-        }
       }
       return true;
     }
@@ -4189,9 +4170,8 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
       params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
   if (scale_sep_solvernumber != (-1))  // create a dummy solver
   {
-    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-        new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
-            discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+        DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber), discret_->Comm()));
     // compute the null space,
     discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -4290,9 +4270,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
-    DRT::NURBS::apply_nurbs_initial_condition(*discret_,
-        DRT::Problem::Instance()->ErrorFile()->Handle(),
-        DRT::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
+    DRT::NURBS::apply_nurbs_initial_condition(
+        *discret_, DRT::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0, *velnp_, 0.0);

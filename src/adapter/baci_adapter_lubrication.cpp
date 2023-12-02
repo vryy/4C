@@ -53,8 +53,8 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, actdis->Comm()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
@@ -83,9 +83,6 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // (put here everything that is not available in lubricationdyn or its sublists)
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // ------------------------------pointer to the error file (for output)
-  extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);

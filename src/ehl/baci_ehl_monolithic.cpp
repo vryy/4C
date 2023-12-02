@@ -68,9 +68,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       solveradaptolbetter_(
           ((DRT::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC"))
               .get<double>("ADAPTCONV_BETTER")),
-      printiter_(true),      // ADD INPUT PARAMETER
-      printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(nullptr),
+      printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(
           DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
@@ -88,9 +86,6 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       sdyn_(structparams),
       timernewton_("EHL_Monolithic_newton", true)
 {
-  errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (errfile_) printerrfile_ = true;
-
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // --------------------------------- EHL solver: create a linear solver
@@ -108,8 +103,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = ehlsolverparams;
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        *solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*solverparams, Comm()));
   }  // end BlockMatrixMerge
 
 }  // Monolithic()
@@ -223,7 +217,7 @@ void EHL::Monolithic::CreateLinearSolver()
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -254,7 +248,7 @@ void EHL::Monolithic::CreateLinearSolver()
     {
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Comm()));
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
@@ -1123,15 +1117,6 @@ void EHL::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }  // PrintNewtonIter()
 
 

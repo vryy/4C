@@ -71,7 +71,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       extraparams_(extraparams),
       myrank_(actdis->Comm().MyPID()),
       splitter_(Teuchos::null),
-      errfile_(extraparams->get<FILE*>("err file")),
       strategy_(Teuchos::null),
       additional_model_evaluator_(nullptr),
       isale_(extraparams->get<bool>("isale")),
@@ -1728,7 +1727,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         }
 
         DRT::NURBS::apply_nurbs_initial_condition(
-            *discret_, errfile_, problem_->SolverParams(lstsolver), startfuncno, phin_);
+            *discret_, problem_->SolverParams(lstsolver), startfuncno, phin_);
       }
 
       // initialize also the solution vector. These values are a pretty good guess for the

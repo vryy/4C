@@ -72,9 +72,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp(
-      new CORE::LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
-          discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   INPAR::STR::PredEnum pred =
@@ -1059,8 +1058,8 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver =
+        Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
 
     // prescribe rigid body modes
     discret_->ComputeNullSpaceIfNecessary(solver->Params());

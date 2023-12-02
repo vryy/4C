@@ -117,10 +117,6 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   }
 
 
-  // REMARK:
-  // error files are opened by OpenErrorFile()
-  // called in ntainp_ccadiscret()
-  // inform user
   if (myrank == 0)
   {
     std::cout << "input is read from     " << infilename.str() << std::endl;

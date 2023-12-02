@@ -86,8 +86,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   // Create the solver
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle());
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
@@ -155,9 +154,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
     // Read the restart information, set vectors and variables
     airwayimplicit->ReadRestart(restart);
   }
-
-  // Handle errors
-  airwaystimeparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   if (!CoupledTo3D)
   {

@@ -31,7 +31,7 @@ namespace CORE::LINEAR_SOLVER
   class AMGnxn_Preconditioner : public PreconditionerType
   {
    public:
-    AMGnxn_Preconditioner(FILE *outfile, Teuchos::ParameterList &params);
+    AMGnxn_Preconditioner(Teuchos::ParameterList &params);
 
     void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
         Epetra_MultiVector *b) override;

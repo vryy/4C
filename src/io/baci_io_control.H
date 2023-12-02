@@ -141,43 +141,6 @@ namespace IO
   };
 
 
-  /// Controller for error files
-  ///
-  /// This object determines the names of error files #errname_, e.g. 'xxx2.err',
-  /// and attaches file handles #errfile_ to them.
-  ///
-  /// \author bborn
-  /// \date 11/08
-  class ErrorFileControl
-  {
-   public:
-    /// constructor
-    ErrorFileControl(const Epetra_Comm& comm,  ///< communicator
-        std::string outputname,                ///< output file name prefix
-        int restart,                           ///< restart step
-        int create_errorfiles                  // do we need to create errorfiles
-    );
-
-    /// destructor
-    ~ErrorFileControl();
-
-    /// the error file name
-    std::string Name() { return errname_; }
-
-    /// the error file handle
-    FILE* Handle() { return errfile_; }
-
-   private:
-    /// output file name prefix
-    std::string filename_;
-
-    /// name of error file on processor
-    std::string errname_;
-
-    /// file handle to error file
-    FILE* errfile_;
-  };
-
   /// find position of restart number in filename (if existing):
   /// for "outname-5" will return position of the "-"
   /// returns std::string::npos if not found

@@ -3404,8 +3404,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       }
       extendedsolver_ = Teuchos::rcp(
           new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(extendedsolver),
-              scatratimint_->Discretization()->Comm(),
-              DRT::Problem::Instance()->ErrorFile()->Handle()));
+              scatratimint_->Discretization()->Comm()));
     }
   }  // initialize scatra-scatra interface layer growth
 

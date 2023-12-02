@@ -40,7 +40,7 @@
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& poroparams, FILE* errfile,
+    const Teuchos::ParameterList& poroparams,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(Teuchos::null),
@@ -48,7 +48,6 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       params_(probparams),
       poroparams_(poroparams),
       myrank_(actdis->Comm().MyPID()),
-      errfile_(errfile),
       nsd_(DRT::Problem::Instance()->NDim()),
       isale_(false),
       skipinitder_(DRT::INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
@@ -294,7 +293,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // create a solver
   // -------------------------------------------------------------------
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
+      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
   strategy_->InitializeLinearSolver(solver_);
 
   return;
@@ -1141,12 +1140,6 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       // print finish line of convergence table to screen
       PrintConvergenceFinishLine();
 
-      // write info to error file
-      if (myrank_ == 0)
-        if (errfile_ != nullptr)
-          fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-              itemax, ittolinc_, maxres, maxrelinc);
-
       return true;
     }
   }
@@ -1180,25 +1173,11 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
           std::cout << "+---------------------------------------------------------------+"
                     << std::endl
                     << std::endl;
-
-          if (errfile_ != nullptr)
-          {
-            fprintf(errfile_,
-                "divergent solve continued:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  "
-                "pinc=%10.3E\n",
-                itnum, itemax, ittolinc_, maxres, maxrelinc);
-          }
         }
         break;
       }
       case INPAR::POROFLUIDMULTIPHASE::divcont_stop:
       {
-        if (errfile_ != nullptr)
-        {
-          fprintf(errfile_,
-              "divergent solve stoped:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n",
-              itnum, itemax, ittolinc_, maxres, maxrelinc);
-        }
         dserror("Porofluid multiphase solver not converged in itemax steps!");
         break;
       }

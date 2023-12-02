@@ -59,7 +59,6 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   ioflags->set("STDOUTEVRY", 0);
   //
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", problem->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = problem->StructuralNoxParams();
   //

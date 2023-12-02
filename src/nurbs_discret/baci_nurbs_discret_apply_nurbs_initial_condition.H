@@ -52,7 +52,7 @@ namespace DRT
 
     \date 08/11
     */
-    void apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* outfile,
+    void apply_nurbs_initial_condition(DRT::Discretization& dis,
         const Teuchos::ParameterList& solverparams, const int startfuncno,
         Teuchos::RCP<Epetra_Vector> initialvals);
 

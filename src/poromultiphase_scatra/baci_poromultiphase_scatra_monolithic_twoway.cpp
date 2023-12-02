@@ -280,8 +280,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
     const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
 {
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   // no need to do the rest for direct solvers
   if (solvertype == INPAR::SOLVER::SolverType::umfpack or
       solvertype == INPAR::SOLVER::SolverType::superlu)

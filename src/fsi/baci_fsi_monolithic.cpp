@@ -1200,7 +1200,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
           DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
+          verbosity_));
       break;
     }
     case INPAR::FSI::HybridSchwarz:
@@ -1210,7 +1210,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
           DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
           DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          interfaceprocs_, verbosity_, DRT::Problem::Instance()->ErrorFile()->Handle()));
+          interfaceprocs_, verbosity_));
       break;
     }
     case INPAR::FSI::LinalgSolver:
@@ -1270,8 +1270,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
       const Teuchos::ParameterList& fsisolverparams =
           DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-      auto solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          fsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      auto solver = Teuchos::rcp(new CORE::LINALG::Solver(fsisolverparams, Comm()));
 
       const auto azprectype =
           Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fsisolverparams, "AZPREC");

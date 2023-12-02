@@ -24,7 +24,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     //! Constructor
-    BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
+    BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
 
     /*! \brief Setup the solver object
      *

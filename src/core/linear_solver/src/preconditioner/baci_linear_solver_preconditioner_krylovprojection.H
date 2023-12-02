@@ -27,7 +27,7 @@ namespace CORE::LINEAR_SOLVER
   class KrylovProjectionPreconditioner : public PreconditionerType
   {
    public:
-    KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
+    KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }

@@ -537,10 +537,9 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-      systemmatrix_ =
-          Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(), *AleField(), true,
-              DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
-              fpcomega[0], fpciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
+      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(),
+          *AleField(), true, DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
+          pcomega[0], pciter[0], fpcomega[0], fpciter[0]));
       break;
     default:
       dserror("Unsupported type of monolithic free surface solver");

@@ -31,7 +31,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     //! Constructor
-    KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
+    KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
 
     int ApplyInverse(const VectorType& X, VectorType& Y) override;
 
@@ -78,9 +78,6 @@ namespace CORE::LINEAR_SOLVER
 
     //! (internal) parameter lists
     Teuchos::ParameterList& params_;
-
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
 
     //! initial guess and solution
     Teuchos::RCP<VectorType> x_;

@@ -66,9 +66,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
                           "ADAPTCONV") == 1),
       solveradaptolbetter_(((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC"))
                                .get<double>("ADAPTCONV_BETTER")),
-      printiter_(true),      // ADD INPUT PARAMETER
-      printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(nullptr),
+      printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP")),
       tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
@@ -107,9 +105,6 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   structure_->Setup();
   StructureField()->Discretization()->ClearState(true);
 
-  errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (errfile_) printerrfile_ = true;
-
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
@@ -134,8 +129,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        *solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*solverparams, Comm()));
   }  // end BlockMatrixMerge
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
@@ -283,8 +277,7 @@ void TSI::Monolithic::CreateLinearSolver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(tsisolverparams, Comm()));
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -1535,15 +1528,6 @@ void TSI::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }  // PrintNewtonIter()
 
 

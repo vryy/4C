@@ -35,10 +35,8 @@
 POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraBase(comm, timeparams),
-      printscreen_(true),   // ADD INPUT PARAMETER
-      printiter_(true),     // ADD INPUT PARAMETER
-      printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
+      printscreen_(true),  // ADD INPUT PARAMETER
+      printiter_(true),    // ADD INPUT PARAMETER
       timer_("PoroScatraMonoSolve", true),
       iterinc_(Teuchos::null),
       zeros_(Teuchos::null),
@@ -569,8 +567,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   }
   else
     // create a linear solver
@@ -684,14 +681,6 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  return;
 }  // PrintNewtonIter()
 
 

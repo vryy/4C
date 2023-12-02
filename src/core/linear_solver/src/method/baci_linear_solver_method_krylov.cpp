@@ -59,10 +59,9 @@ using NO = Node;
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::KrylovSolver(
-    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
+    const Epetra_Comm& comm, Teuchos::ParameterList& params)
     : comm_(comm),
       params_(params),
-      outfile_(outfile),
       ncall_(0),
       activeDofMap_(Teuchos::null),
       bAllowPermutation_(false),
@@ -188,23 +187,23 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     if (Params().isSublist("IFPACK Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
-          outfile_, Params().sublist("IFPACK Parameters"), solverlist));
+          Params().sublist("IFPACK Parameters"), solverlist));
     }
     else if (Params().isSublist("ML Parameters"))
     {
       preconditioner_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MLPreconditioner(outfile_, Params().sublist("ML Parameters")));
+          new CORE::LINEAR_SOLVER::MLPreconditioner(Params().sublist("ML Parameters")));
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuPreconditioner(
-          outfile_, Params().sublist("MueLu Parameters")));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
     }
     else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
 #ifdef BACI_WITH_TRILINOS_DEVELOP
-      preconditioner_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(outfile_, Params()));
+      preconditioner_ =
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(Params()));
 #else
       dserror("MueLu (BeamSolid) preconditioner only available in Trilinos_Develop.");
 #endif
@@ -234,8 +233,8 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
 
     if (projector != Teuchos::null)
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(
-          outfile_, preconditioner_, projector));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(preconditioner_, projector));
     }
   }
   else
@@ -246,43 +245,41 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
             "SIMPLER"))  // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
     {
       dserror("SIMPLER sublist not supported any more.");
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(
-          outfile_, Params()));  // Michael's SIMPLE for Fluid
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));  // Michael's SIMPLE for Fluid
     }
     else if (Params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(outfile_, Params()));
+      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));
     }
     else if (Params().isSublist("BGS Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::BGSPreconditioner(
-          outfile_, Params(), Params().sublist("BGS Parameters")));
+      preconditioner_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner(
-          outfile_, Params().sublist("MueLu (Fluid) Parameters")));
+          Params().sublist("MueLu (Fluid) Parameters")));
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
       preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(outfile_, Params()));
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(
-          outfile_, Params().sublist("MueLu (Contact) Parameters")));
+          Params().sublist("MueLu (Contact) Parameters")));
     }
     else if (Params().isSublist("MueLu (FSI) Parameters"))
     {
       preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(outfile_, Params()));
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(outfile_, Params()));
+      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(Params()));
     }
     else
     {

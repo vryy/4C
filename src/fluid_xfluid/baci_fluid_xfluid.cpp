@@ -2645,16 +2645,6 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
         }
         printf(")\n");
         printf("+------------+-------------+-------------+-------------+-------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file", nullptr);
-        if (errfile != nullptr)
-        {
-          fprintf(errfile,
-              "fluid solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
-              "pinc=%10.3E\n",
-              itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
-        }
       }
     }
     else  // if not yet converged
@@ -2683,16 +2673,6 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
       printf("+---------------------------------------------------------------+\n");
       printf("|            >>>>>> not converged in itemax steps!              |\n");
       printf("+---------------------------------------------------------------+\n");
-
-      FILE* errfile = params_->get<FILE*>("err file", nullptr);
-      if (errfile != nullptr)
-      {
-        fprintf(errfile,
-            "fluid unconverged solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  "
-            "vinc=%10.3E  pinc=%10.3E\n",
-            itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-            incprenorm_L2_ / prenorm_L2_);
-      }
     }
   }
 
@@ -4128,8 +4108,8 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
   solverlist.set<int>("reuse", 0);
   solverparams->sublist("IFPACK Parameters");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver_gp = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver_gp =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
 
   // ---------------------------------------------- new matrix and vectors
 

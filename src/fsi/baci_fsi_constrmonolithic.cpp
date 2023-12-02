@@ -537,8 +537,7 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
       systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
           DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
-          spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0],
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
+          spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
 
       break;
     default:

@@ -51,8 +51,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       residual_(Teuchos::null),
       dtele_(0.),
       dtsolve_(0.),
-      solver_(Teuchos::rcp(new CORE::LINALG::Solver(
-          solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+      solver_(Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm))),
       invrowsums_(Teuchos::null),
       icoupscatra_(Teuchos::null),
       icoupthermo_(Teuchos::null),

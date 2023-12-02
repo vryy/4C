@@ -93,8 +93,8 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::Cre
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(lin_sol_id);
   solver_type = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
 
   if (solver_type != INPAR::SOLVER::SolverType::umfpack and
       solver_type != INPAR::SOLVER::SolverType::superlu)

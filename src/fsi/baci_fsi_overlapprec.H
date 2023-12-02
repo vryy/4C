@@ -131,8 +131,7 @@ namespace FSI
         const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
         ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
         double omega = 1.0, int iterations = 1, double somega = 1.0, int siterations = 0,
-        double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0,
-        FILE* err = nullptr);
+        double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0);
 
     /** \name Attribute access functions */
     //@{

@@ -74,8 +74,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret->Comm()));
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -153,9 +152,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // (put here everything that is not available in scatradyn or its sublists)
   // -------------------------------------------------------------------
   auto extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // ------------------------------pointer to the error file (for output)
-  extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);
