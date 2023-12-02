@@ -33,8 +33,6 @@ namespace CORE::LINEAR_SOLVER
     //! Constructor
     KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-    int ApplyInverse(const VectorType& X, VectorType& Y) override;
-
     int Ncall() { return ncall_; }
 
     Teuchos::ParameterList& Params() const { return params_; }

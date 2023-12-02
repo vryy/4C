@@ -42,8 +42,6 @@ namespace CORE::LINEAR_SOLVER
     //! Actual call to the underlying amesos solver
     int Solve() override;
 
-    int ApplyInverse(const VectorType& X, VectorType& Y) override;
-
     bool IsFactored() { return factored_; }
 
    private:

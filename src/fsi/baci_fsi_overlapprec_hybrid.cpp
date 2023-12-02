@@ -333,7 +333,7 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
   z->Update(0.0, *b, 0.0);
 
   // apply 'additive' part
-  int err = ifpackprec_->ApplyInverse(*b, *z);
+  int err = ifpackprec_->PrecOperator()->ApplyInverse(*b, *z);
   if (err != 0) dserror("Preconditioning 1 failed.");
 
   Teuchos::RCP<Epetra_Vector> Az = Teuchos::rcp(new Epetra_Vector(Copy, X, 0));
@@ -363,7 +363,7 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
   tmpz->Update(0.0, *b, 0.0);
 
   // apply 'additive' part
-  err = ifpackprec_->ApplyInverse(*tmpb, *tmpz);
+  err = ifpackprec_->PrecOperator()->ApplyInverse(*tmpb, *tmpz);
   if (err != 0) dserror("Preconditioning 3 failed.");
 
   z->Update(1.0, *tmpz, 1.0);

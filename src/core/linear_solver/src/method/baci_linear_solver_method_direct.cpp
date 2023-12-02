@@ -167,19 +167,6 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::ApplyInverse(
-    const VectorType& X, VectorType& Y)
-{
-  x_->Update(1., X, 0.);
-  Solve();
-  Y.Update(1., *b_, 0.);
-
-  return 0;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
 int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
 {
   if (amesos_ == Teuchos::null) dserror("No solver allocated");
