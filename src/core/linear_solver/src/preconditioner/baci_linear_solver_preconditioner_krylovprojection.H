@@ -40,13 +40,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
-    void Print(std::ostream& stream) const override
-    {
-      stream << "krylov projection(";
-      preconditioner_->Print(stream);
-      stream << ")";
-    }
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "unknown"; }
 

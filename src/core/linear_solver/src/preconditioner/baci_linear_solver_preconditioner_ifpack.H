@@ -34,9 +34,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return prec_; }
 
-    //! Print name of preconditioner
-    void Print(std::ostream& stream) const override { stream << "IFPACK"; }
-
     //! return name of sublist in parameter list which contains parameters for preconditioner
     std::string getParameterListName() const override { return "IFPACK Parameters"; }
 

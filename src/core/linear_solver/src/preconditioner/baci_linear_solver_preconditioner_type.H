@@ -76,12 +76,8 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
 
-    /// debug output
-    virtual void Print(std::ostream& stream) const = 0;
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    /// e.g. "IFPACK parameters" for an Ifpack preconditioner
-    virtual std::string getParameterListName() const { return "unknown"; }
+    virtual std::string getParameterListName() const = 0;
 
    protected:
     //! a linear problem wrapper class used by Trilinos and for scaling of the system

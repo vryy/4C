@@ -38,13 +38,6 @@ namespace CORE::LINEAR_SOLVER
       return preconditioner_->PrecOperator();
     }
 
-    void Print(std::ostream& stream) const override
-    {
-      stream << "InfNorm(";
-      preconditioner_->Print(stream);
-      stream << ")";
-    }
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "unknown"; }
 
@@ -75,13 +68,6 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override
     {
       return preconditioner_->PrecOperator();
-    }
-
-    void Print(std::ostream& stream) const override
-    {
-      stream << "SymDiag(";
-      preconditioner_->Print(stream);
-      stream << ")";
     }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner

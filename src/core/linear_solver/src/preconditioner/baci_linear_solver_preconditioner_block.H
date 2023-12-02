@@ -30,8 +30,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
 
-    void Print(std::ostream& stream) const override { stream << "CheapSimple"; }
-
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
 
@@ -55,8 +53,6 @@ namespace CORE::LINEAR_SOLVER
 
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
-
-    void Print(std::ostream& stream) const override { stream << "BGS"; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "BGS Parameters"; }
