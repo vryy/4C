@@ -710,23 +710,6 @@ Teuchos::ParameterList CORE::LINALG::Solver::translate_four_c_to_belos(
       break;
   }
 
-  // set scaling of linear problem
-  switch (Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::ScalingStrategy>(inparams, "AZSCAL"))
-  {
-    case CORE::LINEAR_SOLVER::ScalingStrategy::none:
-      beloslist.set("scaling", "none");
-      break;
-    case CORE::LINEAR_SOLVER::ScalingStrategy::symmetric:
-      beloslist.set("scaling", "symmetric");
-      break;
-    case CORE::LINEAR_SOLVER::ScalingStrategy::infnorm:
-      beloslist.set("scaling", "infnorm");
-      break;
-    default:
-      FOUR_C_THROW(
-          "No valid scaling method selected. Choose between \"none\", \"sym\" or \"infnorm\".");
-  }
-
   // set parameters for Ifpack if used
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::ilu ||
       azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::icc)
