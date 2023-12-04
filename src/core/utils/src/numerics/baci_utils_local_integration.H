@@ -16,6 +16,23 @@
 namespace CORE::UTILS
 {
   /*!
+   * @brief Integrate the interval of equidistant 3 datapoints using the Simpson's rule.
+   *
+   * @tparam Number
+   * @param dt Timestep between each datapoint
+   * @param value1 Value at t_0
+   * @param value2 Value at t_1
+   * @param value3 Value at t_2
+   * @return auto Approximation of the integral from t_0 to t_1
+   */
+  template <typename Number>
+  auto IntegrateSimpsonStep(
+      const double dt, const Number value1, const Number value2, const Number value3)
+  {
+    return 1.0 / 3.0 * dt * (value1 + 4 * value2 + value3);
+  }
+
+  /*!
    * @brief Integrate the interval of 3 datapoints using the Simpson's rule.
    *
    * @tparam StepData A tuple or pair holding the time and the value of the evaluated function.

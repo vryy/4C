@@ -25,6 +25,19 @@ namespace
   template <int coeff0, int coeff1>
   constexpr auto LINEAR_FUNCTION = [](auto x) { return std::make_tuple(x, coeff1 * x + coeff0); };
 
+  TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonStep)
+  {
+    constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
+    auto value1 = CORE::UTILS::IntegrateSimpsonStep(
+        0.5, std::get<1>(f1(0.0)), std::get<1>(f1(0.5)), std::get<1>(f1(1.0)));
+    EXPECT_NEAR(value1, 7.0 / 3.0, 1e-8);
+
+    constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
+    auto value2 = CORE::UTILS::IntegrateSimpsonStep(
+        0.5, std::get<1>(f2(0.0)), std::get<1>(f2(0.5)), std::get<1>(f2(1.0)));
+    EXPECT_NEAR(value2, 8.0 / 3.0, 1e-8);
+  }
+
   TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonEquidistant)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;

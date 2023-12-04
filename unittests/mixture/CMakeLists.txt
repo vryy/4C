@@ -2,6 +2,7 @@ set(TESTNAME unittests_mixture)
 
 set(SOURCE_LIST
     # cmake-format: sortable
+    baci_mixture_full_constrained_mixture_fiber_adaptive_history_test.cpp
     baci_mixture_full_constrained_mixture_fiber_test.cpp
     baci_remodelfiber_test.cpp
     )

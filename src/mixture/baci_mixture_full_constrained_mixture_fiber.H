@@ -9,6 +9,7 @@
 #define BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_H
 
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 
 #include <Sacado.hpp>
@@ -47,6 +48,14 @@ namespace MIXTURE
            std::abs(inc1.deposition_time - inc2.deposition_time) < tolerance;
   }
 
+  enum class HistoryAdaptionStrategy
+  {
+    none,
+    window,
+    model_equation,
+    higher_order_integration
+  };
+
 
   template <typename Number>
   struct State
@@ -55,7 +64,12 @@ namespace MIXTURE
   };
 
   template <typename Number>
-  using DepositionHistoryInterval = std::vector<MassIncrement<Number>>;
+  struct DepositionHistoryInterval
+  {
+    std::vector<MassIncrement<Number>> timesteps = {};
+    TimestepAdaptivityInfo adaptivity_info = {};
+    double base_dt = 0.0;
+  };
 
   template <typename Number>
   using DepositionHistory = std::vector<DepositionHistoryInterval<Number>>;
@@ -82,7 +96,7 @@ namespace MIXTURE
    public:
     FullConstrainedMixtureFiber(std::shared_ptr<const RemodelFiberMaterial<Number>> material,
         LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
-        Number lambda_pre, bool adaptive_history, bool growth_enabled);
+        Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool growth_enabled);
 
     /*!
      * @brief Pack all internal data into tha #data
@@ -117,8 +131,10 @@ namespace MIXTURE
      * @note This method has to be called before any Evaluation
      *
      * @param lambda_f (in) : total stretch in fiber direction
+     * @param time (in) : Total time
+     * @param dt (in) : Timestep
      */
-    void RecomputeState(Number lambda_f, double time);
+    void RecomputeState(Number lambda_f, double time, double dt);
 
     /*!
      * @brief Reinitialize the history of the full constrained mixture fiber
@@ -263,8 +279,9 @@ namespace MIXTURE
     /// A current time shit that is resetted after each timestep
     double current_time_shift_ = 0.0;
 
-    bool adaptive_history_ = false;
+    HistoryAdaptionStrategy adaptive_history_strategy_ = HistoryAdaptionStrategy::none;
     DepositionHistory<Number> history_{};
+    std::size_t window_size = 0;
 
     /// current data
     double current_time_ = 0.0;

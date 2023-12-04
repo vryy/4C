@@ -4036,8 +4036,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
     ::INPUT::AddNamedInt(
         m, "INIT", "Initialization mode for fibers (1=element fibers, 3=nodal fibers)");
-    ::INPUT::AddNamedBool(m, "ADAPTIVE_HISTORY",
-        "Adaptively remove history snapshots based on a tolerance", false, true);
+    ::INPUT::AddNamedString(m, "ADAPTIVE_HISTORY_STRATEGY",
+        "Strategy for adaptive history integration (none, model_equation, higher_order)", "none",
+        true);
     ::INPUT::AddNamedReal(
         m, "ADAPTIVE_HISTORY_TOLERANCE", "Tolerance of the adaptive history", 1e-6, true);
 

@@ -56,6 +56,13 @@ namespace MIXTURE
       return std::exp(-delta_time / decay_time_);
     }
 
+    [[nodiscard]] inline double EvaluateSurvivalFunctionIntegration(
+        const double current_time, const double t1, const double t2) const
+    {
+      return decay_time_ * (std::exp(-(current_time - t2) / decay_time_) -
+                               std::exp(-(current_time - t1) / decay_time_));
+    }
+
     /// Gain-Parameter controlling the speed of the growth process
     double k_sig_;
 
