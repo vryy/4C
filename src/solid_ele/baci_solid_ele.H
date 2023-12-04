@@ -91,9 +91,6 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
-    //! Get kinematic type of element
-    [[nodiscard]] INPAR::STR::KinemType KinematicType() const { return kintype_; }
-
     void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
 
     [[nodiscard]] virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
