@@ -91,7 +91,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
-    void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
+    void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
 
     [[nodiscard]] virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
 
@@ -140,13 +140,16 @@ namespace DRT::ELEMENTS
 
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-    void SetEASType(STR::ELEMENTS::EasType type) { eastype_ = type; }
+    void SetEASType(STR::ELEMENTS::EasType type) { solid_ele_property_.eastype = type; }
 
-    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return eastype_; }
+    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return solid_ele_property_.eastype; }
 
-    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return kintype_; }
+    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return solid_ele_property_.kintype; }
 
-    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
+    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const
+    {
+      return solid_ele_property_.eletech;
+    }
 
     void VisNames(std::map<std::string, int>& names) override;
 
@@ -156,14 +159,8 @@ namespace DRT::ELEMENTS
     //! discretization type
     CORE::FE::CellType distype_ = CORE::FE::CellType::dis_none;
 
-    //! kinematic type
-    INPAR::STR::KinemType kintype_ = INPAR::STR::kinem_vague;
-
-    //! element technology
-    std::set<INPAR::STR::EleTech> eletech_;
-
-    //! specify EAS type in case contains enhanced assumed strains
-    STR::ELEMENTS::EasType eastype_ = STR::ELEMENTS::EasType::eastype_undefined;
+    //! solid element properties
+    SolidElementProperties solid_ele_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;

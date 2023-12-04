@@ -140,15 +140,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
-    : DRT::Element(id, owner),
-      distype_(CORE::FE::CellType::dis_none),
-      kintype_(INPAR::STR::kinem_vague),
-      eastype_(STR::ELEMENTS::EasType::eastype_undefined),
-      porotype_(INPAR::PORO::PoroType::undefined),
-      impltype_(INPAR::SCATRA::impltype_undefined)
-{
-}
+DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner) : DRT::Element(id, owner) {}
 
 DRT::Element* DRT::ELEMENTS::SolidPoro::Clone() const
 {
@@ -211,7 +203,8 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   {
     if (Shape() == CORE::FE::CellType::hex8)
     {
-      STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
+      STR::UTILS::READELEMENT::ReadAndSetEAS(
+          linedef, solid_ele_property_.eastype, solid_ele_property_.eletech);
     }
     else
       dserror("no EAS allowed for this element shape");
@@ -220,21 +213,21 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   // read scalar transport implementation type
   if (linedef->HaveNamed("POROTYPE"))
   {
-    porotype_ = STR::UTILS::READELEMENT::ReadPoroType(linedef);
+    poro_ele_property_.porotype = STR::UTILS::READELEMENT::ReadPoroType(linedef);
   }
   else
   {
-    porotype_ = INPAR::PORO::PoroType::undefined;
+    poro_ele_property_.porotype = INPAR::PORO::PoroType::undefined;
   }
 
   // read scalar transport implementation type
   if (linedef->HaveNamed("TYPE"))
   {
-    impltype_ = STR::UTILS::READELEMENT::ReadType(linedef);
+    poro_ele_property_.impltype = STR::UTILS::READELEMENT::ReadType(linedef);
   }
   else
   {
-    impltype_ = INPAR::SCATRA::impltype_undefined;
+    poro_ele_property_.impltype = INPAR::SCATRA::impltype_undefined;
   }
 
   ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
@@ -294,15 +287,15 @@ void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
 
   AddtoPack(data, (int)distype_);
 
-  AddtoPack(data, (int)kintype_);
+  AddtoPack(data, (int)solid_ele_property_.kintype);
 
-  AddtoPack(data, eletech_);
+  AddtoPack(data, solid_ele_property_.eletech);
 
-  AddtoPack(data, eastype_);
+  AddtoPack(data, solid_ele_property_.eastype);
 
-  AddtoPack(data, porotype_);
+  AddtoPack(data, poro_ele_property_.porotype);
 
-  AddtoPack(data, impltype_);
+  AddtoPack(data, poro_ele_property_.impltype);
 
   data.AddtoPack(material_post_setup_);
 
@@ -334,15 +327,15 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, eletech_);
+  DRT::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
-  eastype_ = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  solid_ele_property_.eastype = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
-  porotype_ = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
+  poro_ele_property_.porotype = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
 
-  impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
+  poro_ele_property_.impltype = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 

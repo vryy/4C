@@ -25,6 +25,21 @@ namespace STR::ELEMENTS
 }
 namespace DRT::ELEMENTS
 {
+  /*!
+   *  @brief struct for managing solid element properties
+   */
+  struct SolidElementProperties
+  {
+    //! kinematic type
+    INPAR::STR::KinemType kintype{INPAR::STR::kinem_vague};
+
+    //! element technology
+    std::set<INPAR::STR::EleTech> eletech;
+
+    //! specify EAS type in case contains enhanced assumed strains
+    STR::ELEMENTS::EasType eastype{STR::ELEMENTS::EasType::eastype_undefined};
+  };
+
   namespace DETAILS
   {
     using ImplementedSolidCellTypes = std::integer_sequence<CORE::FE::CellType,
