@@ -113,7 +113,7 @@ namespace DRT::ELEMENTS
 
     void Unpack(const std::vector<char>& data) override;
 
-    void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
+    void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
 
     [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
 
@@ -177,15 +177,15 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] MAT::So3Material& SolidPoroMaterial(int nummat = 0) const;
 
-    INPAR::PORO::PoroType GetElePoroType() { return porotype_; }
+    INPAR::PORO::PoroType GetElePoroType() { return poro_ele_property_.porotype; }
 
-    std::set<INPAR::STR::EleTech> GetEleTech() { return eletech_; }
+    std::set<INPAR::STR::EleTech> GetEleTech() { return solid_ele_property_.eletech; }
 
-    INPAR::STR::KinemType GetEleKinematicType() { return kintype_; }
+    INPAR::STR::KinemType GetEleKinematicType() { return solid_ele_property_.kintype; }
 
-    ::STR::ELEMENTS::EasType GetEAStype() { return eastype_; }
+    ::STR::ELEMENTS::EasType GetEAStype() { return solid_ele_property_.eastype; }
 
-    INPAR::SCATRA::ImplType GetImplType() { return impltype_; }
+    INPAR::SCATRA::ImplType GetImplType() { return poro_ele_property_.impltype; }
 
     void VisNames(std::map<std::string, int>& names) override;
 
@@ -193,22 +193,14 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    CORE::FE::CellType distype_;
+    CORE::FE::CellType distype_{CORE::FE::CellType::dis_none};
+    ;
 
-    //! kinematic type
-    INPAR::STR::KinemType kintype_;
+    //! solid element properties
+    SolidElementProperties solid_ele_property_{};
 
-    //! element techonology
-    std::set<INPAR::STR::EleTech> eletech_;
-
-    //! specify EAS type in case contains enhanced assumed strains
-    ::STR::ELEMENTS::EasType eastype_;
-
-    //! porosity implementation type (physics)
-    INPAR::PORO::PoroType porotype_;
-
-    //! scalar transport implementation type (physics)
-    INPAR::SCATRA::ImplType impltype_;
+    //! additional poro element properties
+    SolidPoroElementProperties poro_ele_property_{};
 
     //! directions for anisotropic permeability
     std::vector<std::vector<double>> anisotropic_permeability_directions_;
@@ -228,7 +220,7 @@ namespace DRT::ELEMENTS
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;
 
-  };  // class Solid
+  };  // class SolidPoro
 
 }  // namespace DRT::ELEMENTS
 

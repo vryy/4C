@@ -230,11 +230,11 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
 
   AddtoPack(data, (int)distype_);
 
-  AddtoPack(data, (int)kintype_);
+  AddtoPack(data, (int)solid_ele_property_.kintype);
 
-  AddtoPack(data, eletech_);
+  AddtoPack(data, solid_ele_property_.eletech);
 
-  AddtoPack(data, eastype_);
+  AddtoPack(data, solid_ele_property_.eastype);
 
   data.AddtoPack(material_post_setup_);
 
@@ -254,11 +254,11 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, eletech_);
+  DRT::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
-  eastype_ = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
   if (Shape() == CORE::FE::CellType::nurbs27)
   {
@@ -304,7 +304,8 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   {
     if (Shape() == CORE::FE::CellType::hex8)
     {
-      STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
+      STR::UTILS::READELEMENT::ReadAndSetEAS(
+          linedef, solid_ele_property_.eastype, solid_ele_property_.eletech);
     }
     else
       dserror("no EAS allowed for this element shape");
@@ -312,12 +313,12 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("FBAR"))
   {
-    eletech_.insert(INPAR::STR::EleTech::fbar);
+    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::fbar);
   }
 
   if (linedef->HaveNamed("MULF"))
   {
-    eletech_.insert(INPAR::STR::EleTech::ps_mulf);
+    solid_ele_property_.eletech.insert(INPAR::STR::EleTech::ps_mulf);
   }
 
   if (Shape() == CORE::FE::CellType::nurbs27)

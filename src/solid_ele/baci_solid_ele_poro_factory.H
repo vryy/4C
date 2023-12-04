@@ -10,6 +10,7 @@
 
 #include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_inpar_poro.H"
+#include "baci_inpar_scatra.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_factory_lib.H"
 #include "baci_solid_ele_poro_calc_pressure_based.H"
@@ -19,6 +20,18 @@
 
 namespace DRT::ELEMENTS
 {
+  /*!
+   *  @brief struct for managing solidporo element properties
+   */
+  struct SolidPoroElementProperties
+  {
+    //! porosity implementation type (physics)
+    INPAR::PORO::PoroType porotype{INPAR::PORO::PoroType::undefined};
+
+    //! scalar transport implementation type (physics)
+    INPAR::SCATRA::ImplType impltype{INPAR::SCATRA::ImplType::impltype_undefined};
+  };
+
   namespace DETAILS
   {
     using ImplementedSolidPoroCellTypes =
