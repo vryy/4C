@@ -15,8 +15,6 @@
 #include "baci_discretization_geometry_element_coordtrafo.H"
 #include "baci_discretization_geometry_element_volume.H"
 #include "baci_io_gmsh.H"
-#include "baci_lib_globalproblem.H"
-
 
 
 CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
