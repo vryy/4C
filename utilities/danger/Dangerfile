@@ -8,4 +8,9 @@ git_affected_files = git.modified_files + git.added_files + git.deleted_files + 
 codeowners, status = Open3.capture2("python3 ./utilities/danger/all_code_owners.py .gitlab/CODEOWNERS --exclude_owners @baci/baci_developers", :stdin_data=>git_affected_files.join("\n"))
 message("Mentioning the code owners of files affected by this MR: #{codeowners}")
 
+### Links to doxygen and readthedocs
+jobid_readthedocs = `python3 ./utilities/danger/get_job_id.py #{ENV["CI_SERVER_URL"]} #{ENV["ACCESS_TOKEN"]} #{ENV["CI_PROJECT_ID"]} #{ENV["CI_PIPELINE_ID"]} readthedocs`.strip
+jobid_doxygen = `python3 ./utilities/danger/get_job_id.py #{ENV["CI_SERVER_URL"]} #{ENV["ACCESS_TOKEN"]} #{ENV["CI_PROJECT_ID"]} #{ENV["CI_PIPELINE_ID"]} doxygen`.strip
+message("Once the respective jobs are finished, you can view [Doxygen](https://baci.pages.gitlab.lrz.de/-/baci/-/jobs/#{jobid_doxygen}/artifacts/doxygen/index.html) and [Readthedocs](https://baci.pages.gitlab.lrz.de/-/baci/-/jobs/#{jobid_readthedocs}/artifacts/readthedocs/index.html).")
+
 markdown("_Note: This comment will be updated when the job or pipeline is run again._")
