@@ -14,9 +14,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
 #include "baci_lib_container.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_utils_exceptions.H"
 
@@ -39,7 +39,7 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParMaterialType : public DRT::ParObjectType
+    class ParMaterialType : public CORE::COMM::ParObjectType
     {
      public:
       std::string Name() const override { return "ParMaterialType"; }
@@ -92,7 +92,7 @@ namespace MAT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this class
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///

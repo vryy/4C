@@ -261,14 +261,14 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::BroadcastMyQuantitites(
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::PackMyQuantities(
     std::vector<char>& data) const
 {
-  DRT::PackBuffer packBuffer;
+  CORE::COMM::PackBuffer packBuffer;
   packBuffer.StartPacking();
-  DRT::ParObject::AddtoPack(packBuffer, quantities_);
+  CORE::COMM::ParObject::AddtoPack(packBuffer, quantities_);
   std::swap(data, packBuffer());
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::UnpackQuantities(std::size_t pos,
     const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
 {
-  DRT::ParObject::ExtractfromPack(pos, data, quantities);
+  CORE::COMM::ParObject::ExtractfromPack(pos, data, quantities);
 }

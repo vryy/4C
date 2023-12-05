@@ -59,7 +59,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListChemotaxis::CreateMaterial()
 MAT::MatListChemotaxisType MAT::MatListChemotaxisType::instance_;
 
 
-DRT::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data)
 {
   MAT::MatListChemotaxis* MatListChemotaxis = new MAT::MatListChemotaxis();
   MatListChemotaxis->Unpack(data);
@@ -121,9 +121,9 @@ void MAT::MatListChemotaxis::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::Pack(DRT::PackBuffer& data) const
+void MAT::MatListChemotaxis::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

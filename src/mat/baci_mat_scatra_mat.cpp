@@ -48,7 +48,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
 
-DRT::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
   scatra_mat->Unpack(data);
@@ -68,9 +68,9 @@ MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

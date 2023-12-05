@@ -20,7 +20,7 @@ DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
 
 DRT::ELEMENTS::ArteryType& DRT::ELEMENTS::ArteryType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::ArteryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ArteryType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1, -1);
   object->Unpack(data);
@@ -112,9 +112,9 @@ CORE::FE::CellType DRT::ELEMENTS::Artery::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Artery::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

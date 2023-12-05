@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "baci_membrane.H"
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
@@ -131,9 +131,9 @@ int DRT::ELEMENTS::Membrane<distype>::NumLine() const
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Membrane<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -243,8 +243,8 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*

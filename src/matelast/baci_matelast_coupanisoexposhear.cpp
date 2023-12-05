@@ -20,21 +20,21 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotrop
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::PackAnisotropy(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, scalarProducts_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_stress_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_);
-  DRT::ParObject::AddtoPack(data, isInitialized_);
+  CORE::COMM::ParObject::AddtoPack(data, scalarProducts_);
+  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_stress_);
+  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_);
+  CORE::COMM::ParObject::AddtoPack(data, isInitialized_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  DRT::ParObject::ExtractfromPack(position, data, scalarProducts_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_);
-  isInitialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, scalarProducts_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_);
+  isInitialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 double MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int gp) const
@@ -198,7 +198,7 @@ void MAT::ELASTIC::CoupAnisoExpoShear::RegisterAnisotropyExtensions(MAT::Anisotr
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   anisotropyExtension_.PackAnisotropy(data);
 }

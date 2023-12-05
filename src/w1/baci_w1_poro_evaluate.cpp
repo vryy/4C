@@ -494,7 +494,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
 
         // pack the data for postprocessing
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           // get the size of stress
           Wall1::AddtoPack(data, couplstress);
           data.StartPacking();

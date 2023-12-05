@@ -30,7 +30,7 @@ DRT::ELEMENTS::So_hex8ThermoType& DRT::ELEMENTS::So_hex8ThermoType::Instance() {
  | create the new element type (public)                      dano 08/12 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex8ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
@@ -131,7 +131,7 @@ DRT::ELEMENTS::So_hex8fbarThermoType& DRT::ELEMENTS::So_hex8fbarThermoType::Inst
  | create the new element type (public)                      dano 05/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex8fbarThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8fbarThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>(-1, -1);
@@ -239,7 +239,7 @@ DRT::ELEMENTS::So_tet4ThermoType& DRT::ELEMENTS::So_tet4ThermoType::Instance() {
  | create the new element type (public)                      dano 08/12 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_tet4ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
@@ -338,7 +338,7 @@ DRT::ELEMENTS::So_tet10ThermoType& DRT::ELEMENTS::So_tet10ThermoType::Instance()
  | create the new element type (public)                     farah 05/14 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_tet10ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet10ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(-1, -1);
@@ -440,7 +440,7 @@ DRT::ELEMENTS::So_hex27ThermoType& DRT::ELEMENTS::So_hex27ThermoType::Instance()
  | create the new element type (public)                      dano 10/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex27ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(-1, -1);
@@ -542,7 +542,7 @@ DRT::ELEMENTS::So_hex20ThermoType& DRT::ELEMENTS::So_hex20ThermoType::Instance()
  | create the new element type (public)                     farah 05/14 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_hex20ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex20ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>(-1, -1);
@@ -645,7 +645,7 @@ DRT::ELEMENTS::So_nurbs27ThermoType& DRT::ELEMENTS::So_nurbs27ThermoType::Instan
  | create the new element type (public)                     seitz 12/15 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_nurbs27ThermoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27ThermoType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>* object =
       new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(

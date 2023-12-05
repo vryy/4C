@@ -72,9 +72,9 @@ DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Clone() const
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

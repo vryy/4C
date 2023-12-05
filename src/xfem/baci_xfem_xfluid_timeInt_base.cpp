@@ -774,7 +774,7 @@ void XFEM::XFLUID_TIMEINT_BASE::clearState(TimeIntData::state state  /// state o
  * basic function sending data to dest and receiving data from source                schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::sendData(
-    DRT::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
+    CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
   lengthSend[0] = dataSend().size();
@@ -820,12 +820,12 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
  * packing a node for parallel communication only with the basic nodal data                       *
  * without an underlying discretization fitting to the node's new prozessor          schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_TIMEINT_BASE::packNode(DRT::PackBuffer& dataSend, DRT::Node& node) const
+void XFEM::XFLUID_TIMEINT_BASE::packNode(CORE::COMM::PackBuffer& dataSend, DRT::Node& node) const
 {
   const int nsd = 3;
-  DRT::ParObject::AddtoPack(dataSend, node.Id());
-  DRT::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X().data()));
-  DRT::ParObject::AddtoPack(dataSend, node.Owner());
+  CORE::COMM::ParObject::AddtoPack(dataSend, node.Id());
+  CORE::COMM::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X().data()));
+  CORE::COMM::ParObject::AddtoPack(dataSend, node.Owner());
 }  // end packNode
 
 
@@ -842,9 +842,9 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
   CORE::LINALG::Matrix<nsd, 1> coords;  // coordinates
   int owner;                            // processor
 
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, id);
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, coords);
-  DRT::ParObject::ExtractfromPack(posinData, dataRecv, owner);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, id);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, coords);
+  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, owner);
 
   if (owner == myrank_)  // real node with all data
   {
@@ -3214,23 +3214,23 @@ void XFEM::XFLUID_STD::exportStartData()
   int source = myrank_ - 1;
   if (myrank_ == 0) source = numproc_ - 1;
 
-  DRT::PackBuffer dataSend;  // data to be sent
+  CORE::COMM::PackBuffer dataSend;  // data to be sent
 
   // packing the data
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
        data++)
   {
     packNode(dataSend, data->node_);
-    DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-    DRT::ParObject::AddtoPack(dataSend, data->vel_);
-    DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-    DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-    DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    DRT::ParObject::AddtoPack(dataSend, data->counter_);
-    DRT::ParObject::AddtoPack(dataSend, data->dMin_);
-    DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dMin_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
   }
 
   dataSend.StartPacking();
@@ -3239,16 +3239,16 @@ void XFEM::XFLUID_STD::exportStartData()
        data++)
   {
     packNode(dataSend, data->node_);
-    DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-    DRT::ParObject::AddtoPack(dataSend, data->vel_);
-    DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-    DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-    DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    DRT::ParObject::AddtoPack(dataSend, data->counter_);
-    DRT::ParObject::AddtoPack(dataSend, data->dMin_);
-    DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, data->dMin_);
+    CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
   }
 
   std::vector<char> dataRecv;
@@ -3277,16 +3277,16 @@ void XFEM::XFLUID_STD::exportStartData()
     int newtype;                                           // type of the data
 
     unpackNode(posinData, dataRecv, node);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, counter);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, dMin);
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, counter);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dMin);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
     timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, startpoint,
         searchedProcs, counter, dMin, (TimeIntData::type)newtype));
@@ -3344,18 +3344,18 @@ void XFEM::XFLUID_STD::exportFinalData()
     else if (source >= numproc_)
       source -= numproc_;
 
-    DRT::PackBuffer dataSend;
+    CORE::COMM::PackBuffer dataSend;
 
     // pack data to be sent
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      DRT::ParObject::AddtoPack(dataSend, data->node_.Id());
-      DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-      DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend, data->velValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->presValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->type_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->node_.Id());
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->velValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->presValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->type_);
     }
 
     dataSend.StartPacking();
@@ -3363,12 +3363,12 @@ void XFEM::XFLUID_STD::exportFinalData()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      DRT::ParObject::AddtoPack(dataSend, data->node_.Id());
-      DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-      DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend, data->velValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->presValues_);
-      DRT::ParObject::AddtoPack(dataSend, data->type_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->node_.Id());
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->velValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->presValues_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, data->type_);
     }
 
     // clear the no more needed data
@@ -3390,12 +3390,12 @@ void XFEM::XFLUID_STD::exportFinalData()
       std::vector<double> presValues;                       // pressure values
       int newtype;                                          // type of the data
 
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, gid);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, velValues);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, gid);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velValues);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       CORE::LINALG::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid

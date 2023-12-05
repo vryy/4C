@@ -38,7 +38,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FourierIso::CreateMaterial()
 MAT::FourierIsoType MAT::FourierIsoType::instance_;
 
 
-DRT::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data)
 {
   MAT::FourierIso* fourieriso = new MAT::FourierIso();
   fourieriso->Unpack(data);
@@ -59,9 +59,9 @@ MAT::FourierIso::FourierIso(MAT::PAR::FourierIso* params) : params_(params) {}
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Pack(DRT::PackBuffer& data) const
+void MAT::FourierIso::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

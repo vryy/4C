@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()
 
 MAT::ScatraMatAnisoType MAT::ScatraMatAnisoType::instance_;
 
-DRT::ParObject* MAT::ScatraMatAnisoType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatAnisoType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatAniso* scatra_mat_aniso = new MAT::ScatraMatAniso();
   scatra_mat_aniso->Unpack(data);
@@ -58,9 +58,9 @@ MAT::ScatraMatAniso::ScatraMatAniso(MAT::PAR::ScatraMatAniso* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatAniso::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatAniso::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

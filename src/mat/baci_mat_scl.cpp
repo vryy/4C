@@ -56,7 +56,7 @@ MAT::SclType MAT::SclType::instance_;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ParObject* MAT::SclType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SclType::Create(const std::vector<char>& data)
 {
   auto* scl = new MAT::Scl();
   scl->Unpack(data);
@@ -73,9 +73,9 @@ MAT::Scl::Scl(MAT::PAR::Scl* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Scl::Pack(DRT::PackBuffer& data) const
+void MAT::Scl::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_PAROBJECT_H
-#define BACI_LIB_PAROBJECT_H
+#ifndef BACI_COMM_PAROBJECT_H
+#define BACI_COMM_PAROBJECT_H
 
-#include "baci_lib_pack_buffer.H"
+#include "baci_comm_pack_buffer.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace DRT
+namespace CORE::COMM
 {
   /*!
   * \brief A virtual class with functionality to pack, unpack and communicate
@@ -146,7 +146,7 @@ namespace DRT
      *
      * Makes a deep copy of a ParObject
      */
-    ParObject(const DRT::ParObject& old) = default;
+    ParObject(const ParObject& old) = default;
 
     /*!
      * \brief Destructor
@@ -173,7 +173,7 @@ namespace DRT
      *
      * \param[in,out] data char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const = 0;
+    virtual void Pack(PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack data from a char vector into this class
@@ -945,7 +945,7 @@ namespace DRT
     //@}
   };
   // class ParObject
-}  // namespace DRT
+}  // namespace CORE::COMM
 
 
 namespace CORE::COMM

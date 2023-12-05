@@ -46,7 +46,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
 MAT::ArrheniusPVType MAT::ArrheniusPVType::instance_;
 
 
-DRT::ParObject* MAT::ArrheniusPVType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ArrheniusPVType::Create(const std::vector<char>& data)
 {
   MAT::ArrheniusPV* arrhenius_pv = new MAT::ArrheniusPV();
   arrhenius_pv->Unpack(data);
@@ -66,9 +66,9 @@ MAT::ArrheniusPV::ArrheniusPV(MAT::PAR::ArrheniusPV* params) : params_(params) {
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusPV::Pack(DRT::PackBuffer& data) const
+void MAT::ArrheniusPV::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

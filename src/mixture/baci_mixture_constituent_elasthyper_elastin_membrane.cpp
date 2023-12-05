@@ -152,13 +152,13 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
 
 // Pack the constituent
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PackConstituent(
-    DRT::PackBuffer& data) const
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_growth_);
+  CORE::COMM::ParObject::AddtoPack(data, current_reference_growth_);
 
-  DRT::ParObject::AddtoPack(data, mue_frac_);
+  CORE::COMM::ParObject::AddtoPack(data, mue_frac_);
 
   anisotropyExtension_.PackAnisotropy(data);
 
@@ -175,9 +175,9 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 
-  DRT::ParObject::ExtractfromPack(position, data, mue_frac_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, mue_frac_);
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
 

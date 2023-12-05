@@ -138,7 +138,7 @@ namespace MAT
 
     static ScatraMatMultiPoroFluidType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroFluidType instance_;
@@ -151,7 +151,7 @@ namespace MAT
 
     static ScatraMatMultiPoroVolFracType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroVolFracType instance_;
@@ -164,7 +164,7 @@ namespace MAT
 
     static ScatraMatMultiPoroSolidType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroSolidType instance_;
@@ -176,7 +176,7 @@ namespace MAT
 
     static ScatraMatMultiPoroTemperatureType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroTemperatureType instance_;
@@ -215,7 +215,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -296,7 +296,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -374,7 +374,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -449,7 +449,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

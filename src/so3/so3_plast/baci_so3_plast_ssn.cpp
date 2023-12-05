@@ -11,10 +11,10 @@
  *----------------------------------------------------------------------*/
 #include "baci_so3_plast_ssn.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_inpar_tsi.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_plasticelasthyper.H"
@@ -269,8 +269,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
 template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -279,17 +279,17 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines
 template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So3_Plast<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

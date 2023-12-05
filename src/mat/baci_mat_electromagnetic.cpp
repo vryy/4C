@@ -44,7 +44,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElectromagneticMat::CreateMaterial()
 MAT::ElectromagneticMatType MAT::ElectromagneticMatType::instance_;
 
 
-DRT::ParObject *MAT::ElectromagneticMatType::Create(const std::vector<char> &data)
+CORE::COMM::ParObject *MAT::ElectromagneticMatType::Create(const std::vector<char> &data)
 {
   MAT::ElectromagneticMat *soundprop = new MAT::ElectromagneticMat();
   soundprop->Unpack(data);
@@ -66,9 +66,9 @@ MAT::ElectromagneticMat::ElectromagneticMat(MAT::PAR::ElectromagneticMat *params
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::ElectromagneticMat::Pack(DRT::PackBuffer &data) const
+void MAT::ElectromagneticMat::Pack(CORE::COMM::PackBuffer &data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -40,7 +40,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::PermeableFluid::CreateMaterial()
 MAT::PermeableFluidType MAT::PermeableFluidType::instance_;
 
 
-DRT::ParObject* MAT::PermeableFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PermeableFluidType::Create(const std::vector<char>& data)
 {
   MAT::PermeableFluid* permeable_fluid = new MAT::PermeableFluid();
   permeable_fluid->Unpack(data);
@@ -59,9 +59,9 @@ MAT::PermeableFluid::PermeableFluid(MAT::PAR::PermeableFluid* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PermeableFluid::Pack(DRT::PackBuffer& data) const
+void MAT::PermeableFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

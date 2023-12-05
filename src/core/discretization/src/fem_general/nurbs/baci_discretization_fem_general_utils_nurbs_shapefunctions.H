@@ -3820,7 +3820,7 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (::CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::DRT::UTILS::getDimension(distype))
     {
       case 3:
       {
@@ -3849,7 +3849,7 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (::CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::DRT::UTILS::getDimension(distype))
     {
       case 3:
       {
@@ -3878,7 +3878,7 @@ namespace CORE::DRT::NURBS::UTILS
       const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const CORE::FE::CellType& distype)
   {
-    switch (::CORE::DRT::UTILS::getDimension(distype))
+    switch (CORE::DRT::UTILS::getDimension(distype))
     {
       case 3:
       {

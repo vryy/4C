@@ -16,7 +16,7 @@ the input line should read
 #ifndef BACI_MAT_AAA_MIXEDEFFECTS_H
 #define BACI_MAT_AAA_MIXEDEFFECTS_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_par_parameter.H"
@@ -56,14 +56,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class AAA_mixedeffectsType : public DRT::ParObjectType
+  class AAA_mixedeffectsType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "AAA_mixedeffectsType"; }
 
     static AAA_mixedeffectsType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAA_mixedeffectsType instance_;
@@ -105,7 +105,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class

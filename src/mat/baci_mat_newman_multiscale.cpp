@@ -36,7 +36,7 @@ MAT::NewmanMultiScaleType MAT::NewmanMultiScaleType::instance_;
 /*--------------------------------------------------------------------*
  | unpack instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-DRT::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>& data)
 {
   MAT::NewmanMultiScale* NewmanMultiScale = new MAT::NewmanMultiScale();
   NewmanMultiScale->Unpack(data);
@@ -63,9 +63,9 @@ MAT::NewmanMultiScale::NewmanMultiScale(MAT::PAR::NewmanMultiScale* params)
 /*--------------------------------------------------------------------*
  | pack material for communication purposes                fang 07/17 |
  *--------------------------------------------------------------------*/
-void MAT::NewmanMultiScale::Pack(DRT::PackBuffer& data) const
+void MAT::NewmanMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -41,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMateria
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
 {
   MAT::ParticleMaterialSPHBoundary* particlematsphboundary = new MAT::ParticleMaterialSPHBoundary();
   particlematsphboundary->Unpack(data);
@@ -69,9 +69,9 @@ MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHBoundary::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleMaterialSPHBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

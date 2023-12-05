@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LinearDensityViscosity::CreateMaterial()
 MAT::LinearDensityViscosityType MAT::LinearDensityViscosityType::instance_;
 
 
-DRT::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector<char>& data)
 {
   MAT::LinearDensityViscosity* fluid = new MAT::LinearDensityViscosity();
   fluid->Unpack(data);
@@ -62,9 +62,9 @@ MAT::LinearDensityViscosity::LinearDensityViscosity(MAT::PAR::LinearDensityVisco
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LinearDensityViscosity::Pack(DRT::PackBuffer& data) const
+void MAT::LinearDensityViscosity::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

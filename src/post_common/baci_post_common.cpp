@@ -14,12 +14,12 @@
 #include "baci_post_common.H"
 
 #include "baci_comm_exporter.H"
+#include "baci_comm_parobject.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_dofset_independent.H"
-#include "baci_lib_parobject.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rigidsphere.H"
@@ -1310,7 +1310,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
   {
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
+    CORE::COMM::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 

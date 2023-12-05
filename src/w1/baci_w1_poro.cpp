@@ -10,9 +10,9 @@
 
 #include "baci_w1_poro.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
@@ -65,9 +65,9 @@ DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(CORE::COMM::buildLines, *this);
 }
 
 template <CORE::FE::CellType distype>

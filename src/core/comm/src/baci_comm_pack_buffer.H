@@ -9,13 +9,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_PACK_BUFFER_H
-#define BACI_LIB_PACK_BUFFER_H
+#ifndef BACI_COMM_PACK_BUFFER_H
+#define BACI_COMM_PACK_BUFFER_H
 
 #include <cstring>
 #include <vector>
 
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer
   {
@@ -108,6 +108,6 @@ namespace DRT
     std::size_t size_;
     bool grow_;
   };
-}  // namespace DRT
+}  // namespace CORE::COMM
 
 #endif

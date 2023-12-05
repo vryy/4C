@@ -20,7 +20,7 @@ DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
 DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_shw6(-1, -1);
   object->Unpack(data);
@@ -124,9 +124,9 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

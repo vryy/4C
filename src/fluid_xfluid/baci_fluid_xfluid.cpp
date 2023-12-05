@@ -12,6 +12,7 @@ interface
 
 #include "baci_fluid_xfluid.H"
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_sidehandle.H"
@@ -37,7 +38,6 @@ interface
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_dofset_transparent_independent.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linalg_sparsematrix.H"

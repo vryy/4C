@@ -52,9 +52,9 @@ DRT::ELEMENTS::PreStress::PreStress(const DRT::ELEMENTS::PreStress& old)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::PreStress::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

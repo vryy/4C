@@ -30,7 +30,7 @@ DRT::ELEMENTS::So_sh18PlastType& DRT::ELEMENTS::So_sh18PlastType::Instance() { r
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh18Plast(-1, -1);
   object->Unpack(data);
@@ -131,9 +131,9 @@ DRT::Element* DRT::ELEMENTS::So_sh18Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh18Plast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -509,11 +509,11 @@ namespace XFEM
     /*========================================================================*/
 
     //! basic function for parallel sending of data
-    void sendData(
-        DRT::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const;
+    void sendData(CORE::COMM::PackBuffer& dataSend, int& dest, int& source,
+        std::vector<char>& dataRecv) const;
 
     //! packing a node
-    void packNode(DRT::PackBuffer& dataSend, DRT::Node& node) const;
+    void packNode(CORE::COMM::PackBuffer& dataSend, DRT::Node& node) const;
 
     //! unpacking a node
     void unpackNode(std::vector<char>::size_type& posinData, std::vector<char>& dataRecv,

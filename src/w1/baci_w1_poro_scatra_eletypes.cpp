@@ -24,7 +24,7 @@ DRT::ELEMENTS::WallQuad4PoroScatraType& DRT::ELEMENTS::WallQuad4PoroScatraType::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad4>(-1, -1);
@@ -86,7 +86,7 @@ DRT::ELEMENTS::WallQuad9PoroScatraType& DRT::ELEMENTS::WallQuad9PoroScatraType::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad9>(-1, -1);
@@ -148,7 +148,8 @@ DRT::ELEMENTS::WallNurbs4PoroScatraType& DRT::ELEMENTS::WallNurbs4PoroScatraType
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs4>* object =
       new DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs4>(-1, -1);
@@ -210,7 +211,8 @@ DRT::ELEMENTS::WallNurbs9PoroScatraType& DRT::ELEMENTS::WallNurbs9PoroScatraType
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
+    const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs9>* object =
       new DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs9>(-1, -1);
@@ -272,7 +274,7 @@ DRT::ELEMENTS::WallTri3PoroScatraType& DRT::ELEMENTS::WallTri3PoroScatraType::In
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallTri3PoroScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::tri3>(-1, -1);

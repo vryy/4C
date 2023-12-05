@@ -20,14 +20,14 @@ namespace CONTACT
   // forward declaration
   class CoNode;
 
-  class CoNodeType : public DRT::ParObjectType
+  class CoNodeType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const final { return "CoNodeType"; }
 
     static CoNodeType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CoNodeType instance_;
@@ -66,7 +66,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -428,7 +428,7 @@ namespace CONTACT
        *  This function packs the datacontainer. This is only called
        *  when the class has been initialized and the pointer to this
        *  class exists. */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*! \brief Unpack data from a vector into this class
        *
@@ -697,7 +697,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -820,7 +820,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -899,7 +899,7 @@ namespace CONTACT
     virtual ~CoNodeEhlDataContainer() = default;
 
     //! pack for parallel communication
-    virtual void Pack(DRT::PackBuffer& data) const {
+    virtual void Pack(CORE::COMM::PackBuffer& data) const {
         /* no need to pack, since terms are re-evaluated after parallel communication */};
 
     //! unpack and re-init after parallel comunication
@@ -1017,7 +1017,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

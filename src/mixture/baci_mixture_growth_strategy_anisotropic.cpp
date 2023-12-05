@@ -39,7 +39,8 @@ MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
   anisotropyExtension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(DRT::PackBuffer& data) const
+void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(
+    CORE::COMM::PackBuffer& data) const
 {
   MixtureGrowthStrategy::PackMixtureGrowthStrategy(data);
 

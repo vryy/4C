@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAA_mixedeffects::CreateMaterial()
 MAT::AAA_mixedeffectsType MAT::AAA_mixedeffectsType::instance_;
 
 
-DRT::ParObject* MAT::AAA_mixedeffectsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAA_mixedeffectsType::Create(const std::vector<char>& data)
 {
   MAT::AAA_mixedeffects* aaa = new MAT::AAA_mixedeffects();
   aaa->Unpack(data);
@@ -61,9 +61,9 @@ MAT::AAA_mixedeffects::AAA_mixedeffects(MAT::PAR::AAA_mixedeffects* params) : pa
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAA_mixedeffects::Pack(DRT::PackBuffer& data) const
+void MAT::AAA_mixedeffects::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

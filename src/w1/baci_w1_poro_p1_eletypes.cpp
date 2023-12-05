@@ -26,7 +26,7 @@ DRT::ELEMENTS::WallQuad4PoroP1Type& DRT::ELEMENTS::WallQuad4PoroP1Type::Instance
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
@@ -105,7 +105,7 @@ DRT::ELEMENTS::WallQuad9PoroP1Type& DRT::ELEMENTS::WallQuad9PoroP1Type::Instance
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
@@ -184,7 +184,7 @@ DRT::ELEMENTS::WallTri3PoroP1Type& DRT::ELEMENTS::WallTri3PoroP1Type::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::WallTri3PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroP1Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>(-1, -1);

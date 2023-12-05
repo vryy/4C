@@ -23,7 +23,7 @@ DRT::ELEMENTS::So_hex8PoroP1ScatraType& DRT::ELEMENTS::So_hex8PoroP1ScatraType::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8PoroP1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PoroP1ScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>* object =
       new DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(
@@ -79,7 +79,7 @@ DRT::ELEMENTS::So_tet4PoroP1ScatraType& DRT::ELEMENTS::So_tet4PoroP1ScatraType::
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_tet4PoroP1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PoroP1ScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>* object =
       new DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(

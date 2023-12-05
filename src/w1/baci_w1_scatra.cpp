@@ -17,7 +17,7 @@ DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 
 DRT::ELEMENTS::Wall1ScatraType& DRT::ELEMENTS::Wall1ScatraType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Wall1_Scatra* object = new DRT::ELEMENTS::Wall1_Scatra(-1, -1);
   object->Unpack(data);
@@ -91,9 +91,9 @@ DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
  |  Pack data                                                  (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1_Scatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

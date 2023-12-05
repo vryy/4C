@@ -11,8 +11,8 @@ function)
 #ifndef BACI_MAT_BEAM3R_PLASTICITY_H
 #define BACI_MAT_BEAM3R_PLASTICITY_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_beam_elasthyper.H"
 #include "baci_mat_beam_elasthyper_parameter.H"
@@ -99,7 +99,7 @@ namespace MAT
 
   //! singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
   template <typename T>
-  class BeamElastPlasticMaterialType : public DRT::ParObjectType
+  class BeamElastPlasticMaterialType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return typeid(this).name(); }
@@ -108,7 +108,7 @@ namespace MAT
     static BeamElastPlasticMaterialType& Instance() { return instance_; };
 
     //! create material object
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastPlasticMaterialType instance_;
@@ -155,7 +155,7 @@ namespace MAT
      *
      * @param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class

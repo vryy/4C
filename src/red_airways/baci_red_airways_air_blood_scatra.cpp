@@ -24,7 +24,7 @@ DRT::ELEMENTS::RedAirBloodScatraType& DRT::ELEMENTS::RedAirBloodScatraType::Inst
 }
 
 
-DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::RedAirBloodScatra* object = new DRT::ELEMENTS::RedAirBloodScatra(-1, -1);
   object->Unpack(data);
@@ -121,9 +121,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAirBloodScatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

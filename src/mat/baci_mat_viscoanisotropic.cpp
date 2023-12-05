@@ -53,7 +53,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoAnisotropic::CreateMaterial()
 MAT::ViscoAnisotropicType MAT::ViscoAnisotropicType::instance_;
 
 
-DRT::ParObject* MAT::ViscoAnisotropicType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoAnisotropicType::Create(const std::vector<char>& data)
 {
   MAT::ViscoAnisotropic* visco = new MAT::ViscoAnisotropic();
   visco->Unpack(data);
@@ -76,9 +76,9 @@ MAT::ViscoAnisotropic::ViscoAnisotropic(MAT::PAR::ViscoAnisotropic* params) : pa
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoAnisotropic::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

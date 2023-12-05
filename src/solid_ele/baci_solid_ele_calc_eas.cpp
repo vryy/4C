@@ -594,7 +594,7 @@ DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::SolidEleCalcEas()
 }
 
 template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   constexpr int num_dof_per_element = CORE::FE::num_nodes<distype> * CORE::FE::dim<distype>;
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
@@ -611,10 +611,10 @@ template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
 };
 
 template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
@@ -957,7 +957,8 @@ template class DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
 
 static_assert(DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
                   STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Pack(DRT::PackBuffer&) to be able to store history data!");
+    "EAS needs to implement the method Pack(CORE::COMM::PackBuffer&) to be able to store history "
+    "data!");
 static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
                   STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "

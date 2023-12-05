@@ -35,7 +35,7 @@ MAT::LinElast1DType MAT::LinElast1DType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::LinElast1DType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinElast1DType::Create(const std::vector<char>& data)
 {
   auto* stvenantk = new MAT::LinElast1D(nullptr);
   stvenantk->Unpack(data);
@@ -48,9 +48,9 @@ MAT::LinElast1D::LinElast1D(MAT::PAR::LinElast1D* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::LinElast1D::Pack(DRT::PackBuffer& data) const
+void MAT::LinElast1D::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -119,7 +119,7 @@ MAT::LinElast1DGrowthType MAT::LinElast1DGrowthType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::LinElast1DGrowthType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::LinElast1DGrowthType::Create(const std::vector<char>& data)
 {
   auto* stvk_growth = new MAT::LinElast1DGrowth(nullptr);
   stvk_growth->Unpack(data);
@@ -135,9 +135,9 @@ MAT::LinElast1DGrowth::LinElast1DGrowth(MAT::PAR::LinElast1DGrowth* params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::LinElast1DGrowth::Pack(DRT::PackBuffer& data) const
+void MAT::LinElast1DGrowth::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

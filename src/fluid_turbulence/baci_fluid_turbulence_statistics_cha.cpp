@@ -311,18 +311,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
       for (int np = 0; np < numprocs; ++np)
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
 
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          DRT::ParObject::AddtoPack(data, *plane);
+          CORE::COMM::ParObject::AddtoPack(data, *plane);
         }
         data.StartPacking();
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          DRT::ParObject::AddtoPack(data, *plane);
+          CORE::COMM::ParObject::AddtoPack(data, *plane);
         }
         swap(sblock, data());
 
@@ -364,7 +364,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
           while (index < rblock.size())
           {
             double onecoord;
-            DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
             availablecoords.insert(onecoord);
           }
         }

@@ -11,16 +11,16 @@
 
 #include "baci_lubrication_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
 DRT::ELEMENTS::LubricationType& DRT::ELEMENTS::LubricationType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::LubricationType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::LubricationType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Lubrication* object = new DRT::ELEMENTS::Lubrication(-1, -1);
   object->Unpack(data);
@@ -145,9 +145,9 @@ CORE::FE::CellType DRT::ELEMENTS::Lubrication::Shape() const { return distype_; 
  |  Pack data                                                  (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Lubrication::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Lubrication::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -235,7 +235,7 @@ void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
 {
-  return DRT::UTILS::GetElementLines<LubricationBoundary, Lubrication>(*this);
+  return CORE::COMM::GetElementLines<LubricationBoundary, Lubrication>(*this);
 }
 
 
@@ -244,7 +244,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
+  return CORE::COMM::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -314,7 +314,7 @@ CORE::FE::CellType DRT::ELEMENTS::LubricationBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::LubricationBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::LubricationBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("This LubricationBoundary element does not support communication");
 

@@ -59,9 +59,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     case CORE::FE::CellType::tri3:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_7point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -75,9 +75,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::tri6:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_12point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_12point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -91,9 +91,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::quad4:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -107,9 +107,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::quad8:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -123,9 +123,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::quad9:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::quad_64point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::quad_64point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -142,9 +142,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     case CORE::FE::CellType::tet4:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -159,9 +159,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::tet10:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -176,9 +176,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::hex8:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -193,9 +193,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::hex20:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -210,9 +210,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::hex27:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -227,9 +227,9 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     case CORE::FE::CellType::pyramid5:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -450,10 +450,10 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(::DRT::Element& sele, ::DRT::Element* 
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //! ns_: number of slave element nodes
-  static const int ns_ = ::CORE::FE::num_nodes<distypeS>;
+  static const int ns_ = CORE::FE::num_nodes<distypeS>;
 
   //! nm_: number of master element nodes
-  static const int nm_ = ::CORE::FE::num_nodes<distypeM>;
+  static const int nm_ = CORE::FE::num_nodes<distypeM>;
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -729,9 +729,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
   {
     case CORE::FE::CellType::tri3:
     {
-      ::CORE::DRT::UTILS::GaussRule2D mygaussrule = ::CORE::DRT::UTILS::GaussRule2D::tri_7point;
+      CORE::DRT::UTILS::GaussRule2D mygaussrule = CORE::DRT::UTILS::GaussRule2D::tri_7point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
@@ -745,9 +745,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::tet4:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -762,9 +762,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::tet10:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::tet_45point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -779,9 +779,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::hex8:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_27point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -796,9 +796,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::hex20:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -813,9 +813,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::hex27:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::hex_125point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::hex_125point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -830,9 +830,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     case CORE::FE::CellType::pyramid5:
     {
-      ::CORE::DRT::UTILS::GaussRule3D mygaussrule = ::CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
+      CORE::DRT::UTILS::GaussRule3D mygaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
 
-      const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+      const CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
       coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
@@ -2169,7 +2169,7 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(::DRT::Node* node, ::DRT::Element* el
     const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
 {
   //! ns_: number of slave element nodes
-  static const int n_ = ::CORE::FE::num_nodes<distype>;
+  static const int n_ = CORE::FE::num_nodes<distype>;
 
   double xi[3] = {0.0, 0.0, 0.0};
   bool converged = true;

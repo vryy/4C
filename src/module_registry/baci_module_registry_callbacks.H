@@ -22,7 +22,7 @@ namespace BACI
   struct ModuleCallbacks
   {
     /**
-     * Register all types defined in a module that are derived from DRT::ParObject and can be
+     * Register all types defined in a module that are derived from CORE::COMM::ParObject and can be
      * communicated over MPI.
      *
      * This call ensures that every ParObjectType listed within the corresponding source file

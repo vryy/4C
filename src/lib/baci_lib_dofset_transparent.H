@@ -70,7 +70,8 @@ namespace DRT
 
     /// helper for ParallelTransferDegreesOfFreedom; pack the current map
     /// node gid -> its dofs into a send block
-    void PackLocalSourceDofs(std::map<int, std::vector<int>>& gid_to_dofs, DRT::PackBuffer& sblock);
+    void PackLocalSourceDofs(
+        std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock);
 
     /// helper for ParallelTransferDegreesOfFreedom; add processor local information
     /// to the map unpack the received block to the current map node gid -> its dofs

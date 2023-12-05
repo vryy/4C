@@ -89,22 +89,22 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
     */
     int UniqueParObjectId() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
@@ -284,19 +284,19 @@ namespace MAT
   /*! \class GrowthVolumetricType
        \brief ParObjectType instance
 
-       \sa DRT::ParObjectType
+       \sa CORE::COMM::ParObjectType
 
     \author kehl
     \date 6/2015
   */
-  class GrowthVolumetricType : public DRT::ParObjectType
+  class GrowthVolumetricType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthVolumetricType"; }
 
     static GrowthVolumetricType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthVolumetricType instance_;
@@ -331,7 +331,7 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
     */
     int UniqueParObjectId() const override
     {
@@ -341,15 +341,15 @@ namespace MAT
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa DRT::ParObject
+      \sa CORE::COMM::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */

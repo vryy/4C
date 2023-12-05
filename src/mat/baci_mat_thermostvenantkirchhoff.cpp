@@ -54,7 +54,7 @@ MAT::ThermoStVenantKirchhoffType MAT::ThermoStVenantKirchhoffType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>& data)
 {
   auto* thrstvenantk = new MAT::ThermoStVenantKirchhoff();
   thrstvenantk->Unpack(data);
@@ -94,9 +94,9 @@ void MAT::ThermoStVenantKirchhoff::CreateThermoMaterialIfSet()
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoStVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -707,7 +707,7 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
 
 MAT::FluidPoroType MAT::FluidPoroType::instance_;
 
-DRT::ParObject* MAT::FluidPoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroType::Create(const std::vector<char>& data)
 {
   auto* fluid_poro = new MAT::FluidPoro();
   fluid_poro->Unpack(data);
@@ -721,9 +721,9 @@ MAT::FluidPoro::FluidPoro(MAT::PAR::FluidPoro* params) : params_(params)
   anisotropy_strategy_ = MAT::FLUIDPORO::CreateAnisotropyStrategy(params);
 }
 
-void MAT::FluidPoro::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

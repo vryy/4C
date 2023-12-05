@@ -55,7 +55,7 @@ namespace DRT::ELEMENTS
    public:
     SolidEleCalcMulf();
 
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 

@@ -171,7 +171,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
 {
-  DRT::PackBuffer buffer;
+  CORE::COMM::PackBuffer buffer;
 
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)

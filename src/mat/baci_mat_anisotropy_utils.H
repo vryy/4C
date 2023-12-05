@@ -20,14 +20,14 @@
 #include <string>
 
 // forward declaration
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+}
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 namespace MAT
 {
@@ -72,7 +72,7 @@ namespace MAT
    * \param vct vector
    */
   template <typename T>
-  void PackFiberVector(DRT::PackBuffer& buffer, const std::vector<std::vector<T>>& vct);
+  void PackFiberVector(CORE::COMM::PackBuffer& buffer, const std::vector<std::vector<T>>& vct);
 
   /*!
    * \brief Pack 2D vector of fibers and structural tensors
@@ -83,7 +83,8 @@ namespace MAT
    * \param vct vector
    */
   template <typename T, unsigned int numfib>
-  void PackFiberArray(DRT::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct);
+  void PackFiberArray(
+      CORE::COMM::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct);
 
   /*!
    * \brief Unpack 2D vector of fibers and structural tensors

@@ -301,7 +301,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
 
 
 bool CORE::LINALG::MatrixRowTransform::operator()(const CORE::LINALG::SparseMatrix& src,
-    double scale, const ::CORE::ADAPTER::CouplingConverter& converter,
+    double scale, const CORE::ADAPTER::CouplingConverter& converter,
     CORE::LINALG::SparseMatrix& dst, bool addmatrix)
 {
   return transformer(
@@ -312,7 +312,7 @@ bool CORE::LINALG::MatrixRowTransform::operator()(const CORE::LINALG::SparseMatr
 
 bool CORE::LINALG::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_Map&,
     const CORE::LINALG::SparseMatrix& src, double scale,
-    const ::CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
+    const CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
   return transformer(
@@ -322,8 +322,8 @@ bool CORE::LINALG::MatrixColTransform::operator()(const Epetra_Map&, const Epetr
 
 
 bool CORE::LINALG::MatrixRowColTransform::operator()(const CORE::LINALG::SparseMatrix& src,
-    double scale, const ::CORE::ADAPTER::CouplingConverter& rowconverter,
-    const ::CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
+    double scale, const CORE::ADAPTER::CouplingConverter& rowconverter,
+    const CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
   return transformer(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter, &colconverter, dst,

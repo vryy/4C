@@ -16,7 +16,7 @@
 #include <Teuchos_RCPDecl.hpp>
 
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -44,7 +44,7 @@ namespace MAT
      *
      * \param data
      */
-    virtual void PackAnisotropy(DRT::PackBuffer& data) const = 0;
+    virtual void PackAnisotropy(CORE::COMM::PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart

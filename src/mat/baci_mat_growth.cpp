@@ -10,8 +10,8 @@ growth laws.
 
 #include "baci_mat_growth.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_growth_law.H"
 #include "baci_mat_par_bundle.H"
@@ -175,9 +175,9 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Pack(DRT::PackBuffer& data) const
+void MAT::Growth::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -273,7 +273,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     auto* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel == nullptr) dserror("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
@@ -446,7 +446,7 @@ bool MAT::GrowthVolumetric::VisData(
 MAT::GrowthVolumetricType MAT::GrowthVolumetricType::instance_;
 
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
   auto* grow = new MAT::GrowthVolumetric();
   grow->Unpack(data);
@@ -794,9 +794,9 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
+void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

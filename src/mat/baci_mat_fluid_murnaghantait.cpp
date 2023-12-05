@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MurnaghanTaitFluid::CreateMaterial()
 MAT::MurnaghanTaitFluidType MAT::MurnaghanTaitFluidType::instance_;
 
 
-DRT::ParObject* MAT::MurnaghanTaitFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MurnaghanTaitFluidType::Create(const std::vector<char>& data)
 {
   MAT::MurnaghanTaitFluid* fluid = new MAT::MurnaghanTaitFluid();
   fluid->Unpack(data);
@@ -60,9 +60,9 @@ MAT::MurnaghanTaitFluid::MurnaghanTaitFluid(MAT::PAR::MurnaghanTaitFluid* params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MurnaghanTaitFluid::Pack(DRT::PackBuffer& data) const
+void MAT::MurnaghanTaitFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

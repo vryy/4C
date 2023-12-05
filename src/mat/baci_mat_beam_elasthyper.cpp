@@ -27,7 +27,7 @@ MAT::BeamElastHyperMaterialType<T> MAT::BeamElastHyperMaterialType<T>::instance_
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-DRT::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
 {
   MAT::Material* matobject = new MAT::BeamElastHyperMaterial<T>();
   matobject->Unpack(data);
@@ -92,9 +92,9 @@ void MAT::BeamElastHyperMaterial<T>::ComputeConstitutiveParameter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial<T>::Pack(DRT::PackBuffer& data) const
+void MAT::BeamElastHyperMaterial<T>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

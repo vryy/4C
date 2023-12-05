@@ -50,17 +50,17 @@ DRT::Element* DRT::ELEMENTS::MembraneScatra<distype>::Clone() const
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::MembraneScatra<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::MembraneScatra<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  DRT::ParObject::AddtoPack(data, type);
+  CORE::COMM::ParObject::AddtoPack(data, type);
 
   // pack scalar transport impltype_
-  DRT::ParObject::AddtoPack(data, impltype_);
+  CORE::COMM::ParObject::AddtoPack(data, impltype_);
 
   // add base class Element
   Membrane<distype>::Pack(data);
@@ -80,11 +80,12 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& dat
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype
-  impltype_ = static_cast<INPAR::SCATRA::ImplType>(DRT::ParObject::ExtractInt(position, data));
+  impltype_ =
+      static_cast<INPAR::SCATRA::ImplType>(CORE::COMM::ParObject::ExtractInt(position, data));
 
   // extract base class Element
   std::vector<char> basedata(0);
-  DRT::ParObject::ExtractfromPack(position, data, basedata);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, basedata);
   Membrane<distype>::Unpack(basedata);
 
   if (position != data.size())

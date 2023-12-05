@@ -433,7 +433,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
            << " elements available before export" << IO::endl;
 #endif
 
-  DRT::PackBuffer data;
+  CORE::COMM::PackBuffer data;
   packBoundaryIntCells(myinterface, data);
   data.StartPacking();
   packBoundaryIntCells(myinterface, data);
@@ -514,7 +514,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
-    const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap, DRT::PackBuffer& dataSend)
+    const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap, CORE::COMM::PackBuffer& dataSend)
 {
   // pack data on all processors
   // loop entries of map (groups of boundary integration cells)
@@ -523,25 +523,25 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
   {
     // pack data of all boundary integrations cells belonging to an element
     const int elegid = cellgroup->first;
-    DRT::ParObject::AddtoPack(dataSend, elegid);
+    CORE::COMM::ParObject::AddtoPack(dataSend, elegid);
 
     const int numcells = (cellgroup->second).size();
-    DRT::ParObject::AddtoPack(dataSend, numcells);
+    CORE::COMM::ParObject::AddtoPack(dataSend, numcells);
 
     for (int icell = 0; icell < numcells; ++icell)
     {
       CORE::GEO::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
       const CORE::FE::CellType distype = cell.Shape();
-      DRT::ParObject::AddtoPack(dataSend, distype);
+      CORE::COMM::ParObject::AddtoPack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
       const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
-      DRT::ParObject::AddtoPack(dataSend, vertices_xi);
+      CORE::COMM::ParObject::AddtoPack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
       const CORE::LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
-      DRT::ParObject::AddtoPack(dataSend, vertices_xyz);
+      CORE::COMM::ParObject::AddtoPack(dataSend, vertices_xyz);
     }
   }
 }
@@ -559,12 +559,12 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
   {
     // extract fluid element gid
     int elegid = -1;
-    DRT::ParObject::ExtractfromPack(posingroup, data, elegid);
+    CORE::COMM::ParObject::ExtractfromPack(posingroup, data, elegid);
     if (elegid < 0) dserror("extraction of element gid failed");
 
     // extract number of boundary integration cells for this element
     int numvecs = -1;
-    DRT::ParObject::ExtractfromPack(posingroup, data, numvecs);
+    CORE::COMM::ParObject::ExtractfromPack(posingroup, data, numvecs);
 
     // vector holding group of boundary integration cells belonging to this element
     CORE::GEO::BoundaryIntCells intcellvector;
@@ -577,17 +577,17 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       // distype of cell
       CORE::FE::CellType distype;
       int distypeint = -1;
-      DRT::ParObject::ExtractfromPack(posingroup, data, distypeint);
+      CORE::COMM::ParObject::ExtractfromPack(posingroup, data, distypeint);
       distype = (CORE::FE::CellType)distypeint;
       if (!(distype == CORE::FE::CellType::tri3 || distype == CORE::FE::CellType::quad4))
         dserror("unexpected distype %d", distypeint);
 
       CORE::LINALG::SerialDenseMatrix vertices_xi;
-      DRT::ParObject::ExtractfromPack(posingroup, data, vertices_xi);
+      CORE::COMM::ParObject::ExtractfromPack(posingroup, data, vertices_xi);
 
       // coordinates of cell vertices in physical space
       CORE::LINALG::SerialDenseMatrix vertices_xyz;
-      DRT::ParObject::ExtractfromPack(posingroup, data, vertices_xyz);
+      CORE::COMM::ParObject::ExtractfromPack(posingroup, data, vertices_xyz);
 
       // store boundary integration cells in boundaryintcelllist
       CORE::LINALG::SerialDenseMatrix dummyMat;

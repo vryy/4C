@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 09/13 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_material.H"

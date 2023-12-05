@@ -12,9 +12,9 @@ John Wiley & Sons, Ltd, 2008
 #ifndef BACI_MAT_PLASTICDRUCKERPRAGER_H
 #define BACI_MAT_PLASTICDRUCKERPRAGER_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_material.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 #include "baci_utils_local_newton.H"
@@ -63,12 +63,12 @@ namespace MAT
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };
   }  // namespace PAR
-  class PlasticDruckerPragerType : public DRT::ParObjectType
+  class PlasticDruckerPragerType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "PlasticDruckerPragerType"; }
     static PlasticDruckerPragerType& Instance() { return instance_; };
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticDruckerPragerType instance_;
@@ -84,7 +84,7 @@ namespace MAT
     {
       return PlasticDruckerPragerType::Instance().UniqueParObjectId();
     }
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
     void Unpack(const std::vector<char>& data) override;
     INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_pldruckprag; }
     void ValidKinematics(INPAR::STR::KinemType kinem) override

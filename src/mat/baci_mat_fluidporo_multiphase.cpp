@@ -181,7 +181,7 @@ MAT::FluidPoroMultiPhaseType MAT::FluidPoroMultiPhaseType::instance_;
 /*----------------------------------------------------------------------*
  | create material from data                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::FluidPoroMultiPhaseType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FluidPoroMultiPhaseType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroMultiPhase* FluidPoroMultiPhase = new MAT::FluidPoroMultiPhase();
   FluidPoroMultiPhase->Unpack(data);
@@ -241,9 +241,9 @@ void MAT::FluidPoroMultiPhase::Initialize()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::Pack(DRT::PackBuffer& data) const
+void MAT::FluidPoroMultiPhase::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

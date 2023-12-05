@@ -65,7 +65,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Combo::CreateMaterial()
 
 MAT::Muscle_ComboType MAT::Muscle_ComboType::instance_;
 
-DRT::ParObject* MAT::Muscle_ComboType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Muscle_ComboType::Create(const std::vector<char>& data)
 {
   auto* muscle_combo = new MAT::Muscle_Combo();
   muscle_combo->Unpack(data);
@@ -104,9 +104,9 @@ MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
   // cannot set activation_function here, because function manager did not yet read functions
 }
 
-void MAT::Muscle_Combo::Pack(DRT::PackBuffer& data) const
+void MAT::Muscle_Combo::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

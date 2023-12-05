@@ -53,7 +53,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::Cre
 MAT::MultiplicativeSplitDefgrad_ElastHyperType
     MAT::MultiplicativeSplitDefgrad_ElastHyperType::instance_;
 
-DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
+CORE::COMM::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
     const std::vector<char>& data)
 {
   auto* splitdefgrad_elhy = new MAT::MultiplicativeSplitDefgrad_ElastHyper();
@@ -95,9 +95,9 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

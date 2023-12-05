@@ -80,7 +80,7 @@ MAT::DamageType MAT::DamageType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::DamageType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::DamageType::Create(const std::vector<char>& data)
 {
   MAT::Damage* plastic = new MAT::Damage();
   plastic->Unpack(data);
@@ -103,9 +103,9 @@ MAT::Damage::Damage(MAT::PAR::Damage* params) : params_(params), plastic_step_(f
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::Pack(DRT::PackBuffer& data) const
+void MAT::Damage::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

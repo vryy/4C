@@ -9,11 +9,11 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -74,7 +74,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
   // for each type of element
   // for most element types, just the base class dummy is called
   // that does nothing
-  ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
+  CORE::COMM::ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
       strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
       strategy.Systemvector3());
 

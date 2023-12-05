@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
@@ -147,7 +147,7 @@ void DRT::Discretization::InitializeElements()
 {
   if (!Filled()) dserror("FillComplete was not called");
 
-  ParObjectFactory::Instance().InitializeElements(*this);
+  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*this);
 
   return;
 }

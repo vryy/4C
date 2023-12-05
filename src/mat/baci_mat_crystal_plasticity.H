@@ -159,7 +159,7 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 /*----------------------------------------------------------------------*
  | headers                                                  			|
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
@@ -269,14 +269,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
 
-  class CrystalPlasticityType : public DRT::ParObjectType
+  class CrystalPlasticityType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "CrystalPlasticityType"; }
 
     static CrystalPlasticityType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrystalPlasticityType instance_;
@@ -311,7 +311,7 @@ namespace MAT
     }
 
     //! Pack this class so it can be communicated
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     //! Unpack data from a char vector into this class
     void Unpack(const std::vector<char>& data) override;

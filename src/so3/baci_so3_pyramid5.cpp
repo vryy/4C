@@ -10,12 +10,12 @@
 
 #include "baci_so3_pyramid5.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -30,7 +30,7 @@ DRT::ELEMENTS::So_pyramid5Type DRT::ELEMENTS::So_pyramid5Type::instance_;
 DRT::ELEMENTS::So_pyramid5Type& DRT::ELEMENTS::So_pyramid5Type::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_pyramid5(-1, -1);
   object->Unpack(data);
@@ -164,9 +164,9 @@ CORE::FE::CellType DRT::ELEMENTS::So_pyramid5::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_pyramid5::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::So_pyramid5::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, time_);
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 
   return;
@@ -301,7 +301,7 @@ void DRT::ELEMENTS::So_pyramid5::Print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface>(DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface>(CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -309,8 +309,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*

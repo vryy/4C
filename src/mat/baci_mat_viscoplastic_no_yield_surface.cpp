@@ -60,7 +60,7 @@ MAT::ViscoPlasticNoYieldSurfaceType MAT::ViscoPlasticNoYieldSurfaceType::instanc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ViscoPlasticNoYieldSurfaceType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoPlasticNoYieldSurfaceType::Create(const std::vector<char>& data)
 {
   auto* visco_plastic_no_yield_surface = new MAT::ViscoPlasticNoYieldSurface();
   visco_plastic_no_yield_surface->Unpack(data);
@@ -86,9 +86,9 @@ MAT::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoPlasticNoYieldSurface::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoPlasticNoYieldSurface::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

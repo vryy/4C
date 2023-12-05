@@ -9,6 +9,7 @@
 
 #include "baci_scatra_ele_hdg.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_inpar_scatra.H"
@@ -16,7 +17,6 @@
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_list.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele_action.H"
@@ -48,7 +48,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceType& DRT::ELEMENTS::ScaTraHDGIntFaceType::Instan
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::ScaTraHDG* object = new DRT::ELEMENTS::ScaTraHDG(-1, -1);
   object->Unpack(data);
@@ -190,9 +190,9 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDG::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  PackMaterial data (public)                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::PackMaterial(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
 {
   // add material
   if (Material() != Teuchos::null)
@@ -368,7 +368,7 @@ bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
 {
-  return DRT::UTILS::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
+  return CORE::COMM::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
 
 
@@ -377,7 +377,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<ScaTraHDGBoundary>(*this);
+  return CORE::COMM::GetElementSurfaces<ScaTraHDGBoundary>(*this);
 }
 
 
@@ -399,7 +399,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
+  return CORE::COMM::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -574,9 +574,9 @@ CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -787,7 +787,7 @@ CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this ScaTraHDGIntFace element does not support communication");
   return;

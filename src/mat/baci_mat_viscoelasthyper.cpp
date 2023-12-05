@@ -49,7 +49,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
 MAT::ViscoElastHyperType MAT::ViscoElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::ViscoElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoElastHyperType::Create(const std::vector<char>& data)
 {
   MAT::ViscoElastHyper* elhy = new MAT::ViscoElastHyper();
   elhy->Unpack(data);
@@ -106,9 +106,9 @@ MAT::ViscoElastHyper::ViscoElastHyper(MAT::PAR::ViscoElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -969,7 +969,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // if slave=fluid, we are lucky because fluid elements do not
   // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
-  ::DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
+  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*slavedis);
 
   // print message
   if (comm.MyPID() == 0)

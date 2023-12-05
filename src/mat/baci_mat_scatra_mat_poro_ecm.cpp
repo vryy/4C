@@ -32,7 +32,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatPoroECM::CreateMaterial()
 
 MAT::ScatraMatPoroECMType MAT::ScatraMatPoroECMType::instance_;
 
-DRT::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatPoroECM* scatra_mat = new MAT::ScatraMatPoroECM();
   scatra_mat->Unpack(data);
@@ -54,9 +54,9 @@ MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatPoroECM::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

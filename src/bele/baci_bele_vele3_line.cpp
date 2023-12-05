@@ -76,7 +76,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Vele3Line element does not support communication");
 

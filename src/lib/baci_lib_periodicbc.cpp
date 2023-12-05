@@ -804,24 +804,24 @@ void PeriodicBoundaryConditions::AddConnectivity(
 
           // ---- pack data for sending -----
           {
-            DRT::PackBuffer data;
+            CORE::COMM::PackBuffer data;
 
             std::vector<int> mids;
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
-            DRT::ParObject::AddtoPack(data, mids);
+            CORE::COMM::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              DRT::ParObject::AddtoPack(data, iter->second);
+              CORE::COMM::ParObject::AddtoPack(data, iter->second);
 
             data.StartPacking();
 
-            DRT::ParObject::AddtoPack(data, mids);
+            CORE::COMM::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              DRT::ParObject::AddtoPack(data, iter->second);
+              CORE::COMM::ParObject::AddtoPack(data, iter->second);
 
             std::swap(sdata, data());
           }
@@ -844,12 +844,12 @@ void PeriodicBoundaryConditions::AddConnectivity(
             multiplecouplings.clear();
             size_t pos = 0;
             std::vector<int> mids;
-            DRT::ParObject::ExtractfromPack(pos, rdata, mids);
+            CORE::COMM::ParObject::ExtractfromPack(pos, rdata, mids);
 
             for (std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
             {
               std::vector<int> slvs;
-              DRT::ParObject::ExtractfromPack(pos, rdata, slvs);
+              CORE::COMM::ParObject::ExtractfromPack(pos, rdata, slvs);
               multiplecouplings[*iter] = slvs;
             }
           }

@@ -102,7 +102,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Weickenmeier::CreateMaterial()
 
 MAT::Muscle_WeickenmeierType MAT::Muscle_WeickenmeierType::instance_;
 
-DRT::ParObject* MAT::Muscle_WeickenmeierType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Muscle_WeickenmeierType::Create(const std::vector<char>& data)
 {
   auto* muscle_weickenmeier = new MAT::Muscle_Weickenmeier();
   muscle_weickenmeier->Unpack(data);
@@ -140,9 +140,9 @@ MAT::Muscle_Weickenmeier::Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* par
                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::Muscle_Weickenmeier::Pack(DRT::PackBuffer& data) const
+void MAT::Muscle_Weickenmeier::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

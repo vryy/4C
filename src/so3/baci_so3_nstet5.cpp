@@ -10,11 +10,11 @@
 
 #include "baci_so3_nstet5.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_prestress.H"
@@ -31,7 +31,7 @@ DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance() { return instan
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::NStet5(-1, -1);
   object->Unpack(data);
@@ -264,9 +264,9 @@ DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
  |  Pack data                                                  (public) |
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::NStet5::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, time_);
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
   {
-    DRT::ParObject::AddtoPack(data, *prestress_);
+    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
 }
 
@@ -392,8 +392,8 @@ void DRT::ELEMENTS::NStet5::Print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
-      DRT::UTILS::buildSurfaces, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -401,8 +401,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
-      DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      CORE::COMM::buildLines, *this);
 }
 
 

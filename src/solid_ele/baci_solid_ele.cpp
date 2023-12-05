@@ -7,9 +7,9 @@
 
 #include "baci_solid_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -158,7 +158,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(const int id, const 
   return Teuchos::rcp(new DRT::ELEMENTS::Solid(id, owner));
 }
 
-DRT::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Solid(-1, -1);
   object->Unpack(data);
@@ -210,17 +210,17 @@ int DRT::ELEMENTS::Solid::NumVolume() const
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
 {
-  return DRT::UTILS::GetElementLines<StructuralLine, Solid>(*this);
+  return CORE::COMM::GetElementLines<StructuralLine, Solid>(*this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<StructuralSurface, Solid>(*this);
+  return CORE::COMM::GetElementSurfaces<StructuralSurface, Solid>(*this);
 }
 
-void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Solid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
-  DRT::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
   solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
     SetNurbsElement() = true;
   }
 
-  DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
   solid_calc_variant_ =

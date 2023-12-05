@@ -614,7 +614,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         // pack the data for postprocessing
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           // get the size of stress
           so3_ele::AddtoPack(data, couplstress);
           data.StartPacking();

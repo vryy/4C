@@ -69,7 +69,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
       distype = problem.SpatialApproximationType();
       cont.Add("disname", name);
       cont.Add("distype", (int)distype);
-      DRT::PackBuffer buffer;
+      CORE::COMM::PackBuffer buffer;
       cont.Pack(buffer);
       buffer.StartPacking();
       cont.Pack(buffer);

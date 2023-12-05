@@ -92,7 +92,7 @@ namespace DRT::ELEMENTS
       return Shell7pLineType::Instance().UniqueParObjectId();
     };
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

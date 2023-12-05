@@ -46,7 +46,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_NeoHookean::CreateMateri
 MAT::Maxwell_0d_acinusNeoHookeanType MAT::Maxwell_0d_acinusNeoHookeanType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_NeoHookean* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_NeoHookean();
   mxwll_0d_acin->Unpack(data);
@@ -69,9 +69,9 @@ MAT::Maxwell_0d_acinus_NeoHookean::Maxwell_0d_acinus_NeoHookean(MAT::PAR::Maxwel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_NeoHookean::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject

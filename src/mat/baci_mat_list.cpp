@@ -71,7 +71,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatList::MaterialById(const int id) const
 MAT::MatListType MAT::MatListType::instance_;
 
 
-DRT::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
 {
   MAT::MatList* matlist = new MAT::MatList();
   matlist->Unpack(data);
@@ -130,9 +130,9 @@ void MAT::MatList::Clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Pack(DRT::PackBuffer& data) const
+void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

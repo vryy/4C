@@ -26,7 +26,7 @@ DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
   object->Unpack(data);
@@ -131,9 +131,9 @@ DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_pyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

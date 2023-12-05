@@ -45,9 +45,9 @@ DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_base::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

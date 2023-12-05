@@ -52,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElchPhase::CreateMaterial()
 MAT::ElchPhaseType MAT::ElchPhaseType::instance_;
 
 
-DRT::ParObject* MAT::ElchPhaseType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ElchPhaseType::Create(const std::vector<char>& data)
 {
   MAT::ElchPhase* elchphase = new MAT::ElchPhase();
   elchphase->Unpack(data);
@@ -111,9 +111,9 @@ void MAT::ElchPhase::Clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::Pack(DRT::PackBuffer& data) const
+void MAT::ElchPhase::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

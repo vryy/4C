@@ -105,7 +105,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::GrowthRemodel_ElastHyper::CreateMaterial()
 MAT::GrowthRemodel_ElastHyperType MAT::GrowthRemodel_ElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::GrowthRemodel_ElastHyperType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::GrowthRemodel_ElastHyperType::Create(const std::vector<char>& data)
 {
   MAT::GrowthRemodel_ElastHyper* gr_elhy = new MAT::GrowthRemodel_ElastHyper();
   gr_elhy->Unpack(data);
@@ -207,9 +207,9 @@ MAT::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::GrowthRemodel_ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

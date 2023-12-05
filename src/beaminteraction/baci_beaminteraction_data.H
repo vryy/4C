@@ -140,7 +140,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -285,7 +285,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -358,7 +358,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -426,7 +426,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container

@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_vele3.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_utils_exceptions.H"
 
 
@@ -76,7 +76,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Vele3Surface element does not support communication");
   return;
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Vele3Line, Vele3Surface>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3Surface>(CORE::COMM::buildLines, *this);
 }
 
 

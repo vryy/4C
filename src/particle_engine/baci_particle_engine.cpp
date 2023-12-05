@@ -11,11 +11,11 @@
 #include "baci_particle_engine.H"
 
 #include "baci_binstrategy.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_container.H"
@@ -118,10 +118,10 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
   while (position < particledata->size())
   {
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(position, *particledata, data);
+    CORE::COMM::ParObject::ExtractfromPack(position, *particledata, data);
 
     // this std::shared_ptr holds the memory
-    std::shared_ptr<DRT::ParObject> object(DRT::UTILS::Factory(data));
+    std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) dserror("received object is not a particle object!");
 
@@ -1175,10 +1175,10 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, ghostedbins_);
+  CORE::COMM::PackBuffer data;
+  CORE::COMM::ParObject::AddtoPack(data, ghostedbins_);
   data.StartPacking();
-  DRT::ParObject::AddtoPack(data, ghostedbins_);
+  CORE::COMM::ParObject::AddtoPack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
@@ -1204,7 +1204,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
 
     while (position < rmsg.size())
     {
-      DRT::ParObject::ExtractfromPack(position, rmsg, receivedbins);
+      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receivedbins);
 
       // iterate over received bins
       for (int receivedbin : receivedbins)
@@ -1704,7 +1704,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
 
     for (const auto& iter : particlestosend[torank])
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       iter->Pack(data);
       data.StartPacking();
       iter->Pack(data);
@@ -1729,10 +1729,10 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
     while (position < rmsg.size())
     {
       std::vector<char> data;
-      DRT::ParObject::ExtractfromPack(position, rmsg, data);
+      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, data);
 
       // this std::shared_ptr holds the memory
-      std::shared_ptr<DRT::ParObject> object(DRT::UTILS::Factory(data));
+      std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) dserror("received object is not a particle object!");
 
@@ -1763,10 +1763,10 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   // pack data for sending
   for (const auto& p : directghosting)
   {
-    DRT::PackBuffer data;
-    DRT::ParObject::AddtoPack(data, p.second);
+    CORE::COMM::PackBuffer data;
+    CORE::COMM::ParObject::AddtoPack(data, p.second);
     data.StartPacking();
-    DRT::ParObject::AddtoPack(data, p.second);
+    CORE::COMM::ParObject::AddtoPack(data, p.second);
     std::swap(sdata[p.first], data());
   }
 
@@ -1788,7 +1788,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
 
     while (position < rmsg.size())
     {
-      DRT::ParObject::ExtractfromPack(position, rmsg, receiveddirectghosting);
+      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receiveddirectghosting);
 
       // iterate over particle types
       for (const auto& typeIt : receiveddirectghosting)

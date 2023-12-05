@@ -20,7 +20,7 @@ DRT::MESHFREE::MeshfreeMultiBinType& DRT::MESHFREE::MeshfreeMultiBinType::Instan
   return instance_;
 }
 
-DRT::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create(const std::vector<char>& data)
 {
   DRT::MESHFREE::MeshfreeMultiBin* object = new DRT::MESHFREE::MeshfreeMultiBin(-1, -1);
   object->Unpack(data);
@@ -209,9 +209,9 @@ bool DRT::MESHFREE::MeshfreeMultiBin::BuildElePointers(
 /*--------------------------------------------------------------------------*
  | Pack data                                           (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::Pack(DRT::PackBuffer& data) const
+void DRT::MESHFREE::MeshfreeMultiBin::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

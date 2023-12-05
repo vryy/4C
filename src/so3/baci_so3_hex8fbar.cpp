@@ -23,7 +23,7 @@ DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
 DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
   object->Unpack(data);
@@ -128,9 +128,9 @@ DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_hex8fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

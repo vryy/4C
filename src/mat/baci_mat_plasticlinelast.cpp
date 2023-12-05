@@ -66,7 +66,7 @@ MAT::PlasticLinElastType MAT::PlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::PlasticLinElastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticLinElastType::Create(const std::vector<char>& data)
 {
   MAT::PlasticLinElast* plastic = new MAT::PlasticLinElast();
   plastic->Unpack(data);
@@ -89,9 +89,9 @@ MAT::PlasticLinElast::PlasticLinElast(MAT::PAR::PlasticLinElast* params) : param
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticLinElast::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticLinElast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

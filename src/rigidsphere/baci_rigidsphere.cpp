@@ -11,6 +11,7 @@
 #include "baci_rigidsphere.H"
 
 #include "baci_beaminteraction_link_pinjointed.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
@@ -19,7 +20,6 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
@@ -34,7 +34,7 @@ DRT::ELEMENTS::RigidsphereType& DRT::ELEMENTS::RigidsphereType::Instance() { ret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::RigidsphereType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Rigidsphere* object = new DRT::ELEMENTS::Rigidsphere(-1, -1);
   object->Unpack(data);
@@ -155,9 +155,9 @@ CORE::FE::CellType DRT::ELEMENTS::Rigidsphere::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Rigidsphere::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   {
     std::vector<char> tmp;
     ExtractfromPack(position, data, tmp);
-    Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(tmp), true);
+    Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(tmp), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) dserror("Received object is not a beam to beam linkage");

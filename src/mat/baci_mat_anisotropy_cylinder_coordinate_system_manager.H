@@ -15,15 +15,14 @@
 #include "baci_mat_anisotropy_cylinder_coordinate_system_provider.H"
 
 // forward declarations
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
-
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+}
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 namespace MAT
 {
@@ -46,7 +45,7 @@ namespace MAT
      *
      * @param data (in/out) : data object
      */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor

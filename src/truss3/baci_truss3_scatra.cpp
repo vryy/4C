@@ -24,7 +24,7 @@ DRT::ELEMENTS::Truss3ScatraType& DRT::ELEMENTS::Truss3ScatraType::Instance() { r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Truss3ScatraType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Truss3ScatraType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::Truss3Scatra(-1, -1);
   object->Unpack(data);
@@ -94,9 +94,9 @@ DRT::Element* DRT::ELEMENTS::Truss3Scatra::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Truss3Scatra::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -305,7 +305,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
         }
       }
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         AddtoPack(data, stress);
         data.StartPacking();
         AddtoPack(data, stress);

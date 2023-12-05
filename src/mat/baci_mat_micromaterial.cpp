@@ -41,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MicroMaterial::CreateMaterial()
 MAT::MicroMaterialType MAT::MicroMaterialType::instance_;
 
 
-DRT::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& data)
 {
   MAT::MicroMaterial* micro = new MAT::MicroMaterial();
   micro->Unpack(data);
@@ -60,9 +60,9 @@ MAT::MicroMaterial::MicroMaterial(MAT::PAR::MicroMaterial* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MicroMaterial::Pack(DRT::PackBuffer& data) const
+void MAT::MicroMaterial::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

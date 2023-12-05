@@ -9,14 +9,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::UTILS::Factory(const std::vector<char>& data)
+CORE::COMM::ParObject* CORE::COMM::Factory(const std::vector<char>& data)
 {
   return ParObjectFactory::Instance().Create(data);
 }
@@ -24,7 +24,7 @@ DRT::ParObject* DRT::UTILS::Factory(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::UTILS::Factory(
+Teuchos::RCP<DRT::Element> CORE::COMM::Factory(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   return ParObjectFactory::Instance().Create(eletype, eledistype, id, owner);

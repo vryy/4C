@@ -10,8 +10,8 @@
 
 #include "baci_w1_nurbs.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
@@ -21,7 +21,7 @@ DRT::ELEMENTS::NURBS::Wall1NurbsType& DRT::ELEMENTS::NURBS::Wall1NurbsType::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1, -1);
   object->Unpack(data);
@@ -158,7 +158,7 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*

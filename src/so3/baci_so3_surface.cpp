@@ -9,9 +9,9 @@
 
 #include "baci_so3_surface.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_line.H"
 
@@ -22,7 +22,7 @@ DRT::ELEMENTS::StructuralSurfaceType& DRT::ELEMENTS::StructuralSurfaceType::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::StructuralSurfaceType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::StructuralSurfaceType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::StructuralSurface(-1, -1);
   object->Unpack(data);
@@ -109,9 +109,9 @@ CORE::FE::CellType DRT::ELEMENTS::StructuralSurface::Shape() const { return dist
  |  Pack data                                                  (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::StructuralSurface::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -169,8 +169,8 @@ void DRT::ELEMENTS::StructuralSurface::Print(std::ostream& os) const
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::StructuralSurface::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<DRT::ELEMENTS::StructuralLine,
-      DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<DRT::ELEMENTS::StructuralLine,
+      DRT::ELEMENTS::StructuralSurface>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*

@@ -46,7 +46,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FerEchPV::CreateMaterial()
 MAT::FerEchPVType MAT::FerEchPVType::instance_;
 
 
-DRT::ParObject* MAT::FerEchPVType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::FerEchPVType::Create(const std::vector<char>& data)
 {
   MAT::FerEchPV* ferech_pv = new MAT::FerEchPV();
   ferech_pv->Unpack(data);
@@ -66,9 +66,9 @@ MAT::FerEchPV::FerEchPV(MAT::PAR::FerEchPV* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::FerEchPV::Pack(DRT::PackBuffer& data) const
+void MAT::FerEchPV::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

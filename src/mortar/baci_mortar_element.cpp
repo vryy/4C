@@ -25,7 +25,7 @@ MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
 MORTAR::MortarElementType& MORTAR::MortarElementType::Instance() { return instance_; }
 
-DRT::ParObject* MORTAR::MortarElementType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MORTAR::MortarElementType::Create(const std::vector<char>& data)
 {
   MORTAR::MortarElement* ele =
       new MORTAR::MortarElement(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
@@ -73,10 +73,10 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
  |  Pack data                                                  (public) |
  |                                                            popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarEleDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add area_
-  DRT::ParObject::AddtoPack(data, area_);
+  CORE::COMM::ParObject::AddtoPack(data, area_);
 
   return;
 }
@@ -89,7 +89,7 @@ void MORTAR::MortarEleDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // area_
-  DRT::ParObject::ExtractfromPack(position, data, area_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, area_);
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -179,9 +179,9 @@ void MORTAR::MortarElement::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarElement::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -205,10 +205,10 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
     AddtoPack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
-    DRT::ParObject::AddtoPack(data, nr);
+    CORE::COMM::ParObject::AddtoPack(data, nr);
     if (nr != 0)
     {
-      for (int i = 0; i < nr; i++) DRT::ParObject::AddtoPack(data, (mortarknots_[i]));
+      for (int i = 0; i < nr; i++) CORE::COMM::ParObject::AddtoPack(data, (mortarknots_[i]));
     }
   }
 
@@ -258,12 +258,13 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
     zero_sized_ = ExtractInt(position, data);
     // knots
     int nr;
-    DRT::ParObject::ExtractfromPack(position, data, nr);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, nr);
 
     if (nr != 0)
     {
       mortarknots_.resize(nr);
-      for (int i = 0; i < nr; i++) DRT::ParObject::ExtractfromPack(position, data, mortarknots_[i]);
+      for (int i = 0; i < nr; i++)
+        CORE::COMM::ParObject::ExtractfromPack(position, data, mortarknots_[i]);
     }
   }
 

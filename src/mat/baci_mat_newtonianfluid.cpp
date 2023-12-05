@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::NewtonianFluid::CreateMaterial()
 MAT::NewtonianFluidType MAT::NewtonianFluidType::instance_;
 
 
-DRT::ParObject* MAT::NewtonianFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::NewtonianFluidType::Create(const std::vector<char>& data)
 {
   MAT::NewtonianFluid* fluid = new MAT::NewtonianFluid();
   fluid->Unpack(data);
@@ -58,9 +58,9 @@ MAT::NewtonianFluid::NewtonianFluid(MAT::PAR::NewtonianFluid* params) : params_(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::NewtonianFluid::Pack(DRT::PackBuffer& data) const
+void MAT::NewtonianFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

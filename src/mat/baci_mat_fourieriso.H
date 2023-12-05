@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_thermo.H"
 
@@ -52,14 +52,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class FourierIsoType : public DRT::ParObjectType
+  class FourierIsoType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "FourierIsoType"; }
 
     static FourierIsoType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FourierIsoType instance_;
@@ -104,7 +104,7 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(DRT::PackBuffer& data  ///< (in/out): char vector to store class information
+    void Pack(CORE::COMM::PackBuffer& data  ///< (in/out): char vector to store class information
     ) const override;
 
     /// \brief Unpack data from a char vector into this class

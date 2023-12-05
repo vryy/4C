@@ -242,7 +242,7 @@ MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraReactionMat* scatra_reaction_mat = new MAT::ScatraReactionMat();
   scatra_reaction_mat->Unpack(data);
@@ -262,9 +262,9 @@ MAT::ScatraReactionMat::ScatraReactionMat(MAT::PAR::ScatraReactionMat* params) :
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraReactionMat::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

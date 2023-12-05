@@ -50,7 +50,8 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_DoubleExponential::Creat
 MAT::Maxwell_0d_acinusDoubleExponentialType MAT::Maxwell_0d_acinusDoubleExponentialType::instance_;
 
 
-DRT::ParObject* MAT::Maxwell_0d_acinusDoubleExponentialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell_0d_acinusDoubleExponentialType::Create(
+    const std::vector<char>& data)
 {
   MAT::Maxwell_0d_acinus_DoubleExponential* mxwll_0d_acin =
       new MAT::Maxwell_0d_acinus_DoubleExponential();
@@ -78,9 +79,9 @@ MAT::Maxwell_0d_acinus_DoubleExponential::Maxwell_0d_acinus_DoubleExponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_DoubleExponential::Pack(DRT::PackBuffer& data) const
+void MAT::Maxwell_0d_acinus_DoubleExponential::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject

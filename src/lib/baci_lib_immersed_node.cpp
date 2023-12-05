@@ -16,7 +16,7 @@ DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ImmersedNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   DRT::Node* object = new DRT::ImmersedNode(-1, dummycoord, -1);
@@ -96,9 +96,9 @@ void DRT::ImmersedNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ImmersedNode::Pack(DRT::PackBuffer& data) const
+void DRT::ImmersedNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

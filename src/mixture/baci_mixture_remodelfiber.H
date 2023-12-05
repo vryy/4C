@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
 }
@@ -51,10 +51,10 @@ namespace MIXTURE
      *
      * @param data (out) : buffer to serialize data to.
      */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
     /*!
-     * @brief Unpack all internal data that was previously packed by #Pack(DRT::PackBuffer&)
+     * @brief Unpack all internal data that was previously packed by #Pack(CORE::COMM::PackBuffer&)
      *
      * @param position (in/out) : Position, where to start reading
      * @param data (in) : Vector of chars to extract data from

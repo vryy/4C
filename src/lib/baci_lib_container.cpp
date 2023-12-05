@@ -19,7 +19,7 @@
 DRT::ContainerType DRT::ContainerType::instance_;
 
 
-DRT::ParObject* DRT::ContainerType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ContainerType::Create(const std::vector<char>& data)
 {
   DRT::Container* object = new DRT::Container();
   object->Unpack(data);
@@ -85,9 +85,9 @@ std::ostream& operator<<(std::ostream& os, const DRT::Container& cont)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Pack(DRT::PackBuffer& data) const
+void DRT::Container::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // no. of objects in maps

@@ -63,7 +63,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this Ale2Line element does not support communication");
 

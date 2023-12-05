@@ -51,7 +51,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::PlasticElastHyperVCU::CreateMaterial()
 MAT::PlasticElastHyperVCUType MAT::PlasticElastHyperVCUType::instance_;
 
 
-DRT::ParObject* MAT::PlasticElastHyperVCUType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticElastHyperVCUType::Create(const std::vector<char>& data)
 {
   MAT::PlasticElastHyperVCU* elhy = new MAT::PlasticElastHyperVCU();
   elhy->Unpack(data);
@@ -83,9 +83,9 @@ MAT::PlasticElastHyperVCU::PlasticElastHyperVCU(MAT::PAR::PlasticElastHyperVCU* 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyperVCU::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticElastHyperVCU::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

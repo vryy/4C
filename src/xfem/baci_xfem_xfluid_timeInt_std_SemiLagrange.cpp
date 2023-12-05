@@ -1795,7 +1795,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
        dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
-    DRT::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
+    CORE::COMM::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
 
     // Initialization
     int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets from
@@ -1812,15 +1812,15 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       if (data->state_ == TimeIntData::failedSL_)
       {
         packNode(dataSend, data->node_);
-        DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-        DRT::ParObject::AddtoPack(dataSend, data->vel_);
-        DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-        DRT::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -1832,15 +1832,15 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       if (data->state_ == TimeIntData::failedSL_)
       {
         packNode(dataSend, data->node_);
-        DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-        DRT::ParObject::AddtoPack(dataSend, data->vel_);
-        DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-        DRT::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -1869,15 +1869,15 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       int newtype;
 
       unpackNode(posinData, dataRecv, node);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
@@ -1918,11 +1918,11 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
    *-------------------------------------------*/
   for (int iproc = 0; iproc < numproc_ - 1; iproc++)
   {
-    DRT::PackBuffer dataSend;
+    CORE::COMM::PackBuffer dataSend;
 
-    DRT::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
     dataSend.StartPacking();
-    DRT::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     sendData(dataSend, dest, source, dataRecv);
@@ -1932,7 +1932,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
     int allProcsDone;
 
     // unpack received data
-    DRT::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
+    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
 
     if (allProcsDone == 0) procDone = 0;
 
@@ -1946,7 +1946,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
    *--------------------------------------*/
   if (!procDone)
   {
-    DRT::PackBuffer dataSend;
+    CORE::COMM::PackBuffer dataSend;
 
     // fill vectors with the data
     for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
@@ -1955,18 +1955,18 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
       if (data->state_ == TimeIntData::nextSL_)
       {
         packNode(dataSend, data->node_);
-        DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-        DRT::ParObject::AddtoPack(dataSend, data->vel_);
-        DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-        DRT::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-        DRT::ParObject::AddtoPack(dataSend, data->counter_);
-        DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -1978,18 +1978,18 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
       if (data->state_ == TimeIntData::nextSL_)
       {
         packNode(dataSend, data->node_);
-        DRT::ParObject::AddtoPack(dataSend, data->nds_np_);
-        DRT::ParObject::AddtoPack(dataSend, data->vel_);
-        DRT::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        DRT::ParObject::AddtoPack(dataSend, data->dispnp_);
-        DRT::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        DRT::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        DRT::ParObject::AddtoPack(dataSend, data->startpoint_);
-        DRT::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-        DRT::ParObject::AddtoPack(dataSend, data->counter_);
-        DRT::ParObject::AddtoPack(dataSend, (int)data->type_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
+        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -2020,18 +2020,18 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
       int newtype;
 
       unpackNode(posinData, dataRecv, node);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, iter);
-      DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, iter);
+      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       timeIntData_->push_back(
           TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,

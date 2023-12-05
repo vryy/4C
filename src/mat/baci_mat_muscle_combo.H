@@ -11,7 +11,7 @@ active strain approach) with variable time-dependent activation
 #ifndef BACI_MAT_MUSCLE_COMBO_H
 #define BACI_MAT_MUSCLE_COMBO_H
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
@@ -67,14 +67,14 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class Muscle_ComboType : public DRT::ParObjectType
+  class Muscle_ComboType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "Muscle_ComboType"; }
 
     static Muscle_ComboType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Muscle_ComboType instance_;
@@ -134,7 +134,7 @@ namespace MAT
       return Muscle_ComboType::Instance().UniqueParObjectId();
     }
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

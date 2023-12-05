@@ -36,7 +36,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ModPowerLaw::CreateMaterial()
 MAT::ModPowerLawType MAT::ModPowerLawType::instance_;
 
 
-DRT::ParObject* MAT::ModPowerLawType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ModPowerLawType::Create(const std::vector<char>& data)
 {
   MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
   powLaw->Unpack(data);
@@ -55,9 +55,9 @@ MAT::ModPowerLaw::ModPowerLaw(MAT::PAR::ModPowerLaw* params) : params_(params) {
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ModPowerLaw::Pack(DRT::PackBuffer& data) const
+void MAT::ModPowerLaw::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -16,21 +16,21 @@
 #ifndef BACI_NURBS_DISCRET_CONTROL_POINT_H
 #define BACI_NURBS_DISCRET_CONTROL_POINT_H
 
+#include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
-#include "baci_lib_parobjectfactory.H"
 
 namespace DRT
 {
   namespace NURBS
   {
-    class ControlPointType : public DRT::ParObjectType
+    class ControlPointType : public CORE::COMM::ParObjectType
     {
      public:
       std::string Name() const override { return "ControlPointType"; }
 
       static ControlPointType& Instance() { return instance_; };
 
-      DRT::ParObject* Create(const std::vector<char>& data) override;
+      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static ControlPointType instance_;
@@ -112,7 +112,7 @@ namespace DRT
       \param data (in/out): a char vector to pack the data into
 
       */
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class

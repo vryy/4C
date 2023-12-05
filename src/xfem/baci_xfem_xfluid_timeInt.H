@@ -25,14 +25,15 @@
 class Epetra_Map;
 class Epetra_Vector;
 
-
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
 
 namespace DRT
 {
   class Discretization;
   class Element;
-  class PackBuffer;
-  class Exporter;
   class Node;
 }  // namespace DRT
 
@@ -251,10 +252,10 @@ namespace XFEM
     /*!
     \brief Basic function sending data to destination and receiving data from source
      */
-    void sendData(DRT::PackBuffer& dataSend,  //!< pack buffer
-        int& dest,                            //!< destination proc
-        int& source,                          //!< source proc
-        std::vector<char>& dataRecv           //!< received data
+    void sendData(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+        int& dest,                                   //!< destination proc
+        int& source,                                 //!< source proc
+        std::vector<char>& dataRecv                  //!< received data
     ) const;
 
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step

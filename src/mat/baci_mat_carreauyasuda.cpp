@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::CarreauYasuda::CreateMaterial()
 MAT::CarreauYasudaType MAT::CarreauYasudaType::instance_;
 
 
-DRT::ParObject* MAT::CarreauYasudaType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::CarreauYasudaType::Create(const std::vector<char>& data)
 {
   MAT::CarreauYasuda* carYas = new MAT::CarreauYasuda();
   carYas->Unpack(data);
@@ -58,9 +58,9 @@ MAT::CarreauYasuda::CarreauYasuda(MAT::PAR::CarreauYasuda* params) : params_(par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CarreauYasuda::Pack(DRT::PackBuffer& data) const
+void MAT::CarreauYasuda::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

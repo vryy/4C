@@ -12,7 +12,7 @@
 #ifndef BACI_COMM_EXPORTER_H
 #define BACI_COMM_EXPORTER_H
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
@@ -496,7 +496,7 @@ namespace CORE::COMM
         Get the object by gid, pack it and append it to the sendblock. We only
         pack it if we know about it.
        */
-      virtual bool PackObject(int gid, ::DRT::PackBuffer& sendblock) = 0;
+      virtual bool PackObject(int gid, PackBuffer& sendblock) = 0;
 
       /// Unpack one object
       /*!
@@ -529,19 +529,19 @@ namespace CORE::COMM
         if (curr != parobjects_.end())
         {
           T* ptr = curr->second.get();
-          auto* tester = dynamic_cast<::DRT::ParObject*>(ptr);
+          auto* tester = dynamic_cast<ParObject*>(ptr);
           if (!tester)
             dserror(
                 "typename T in template does not implement class ParObject (dynamic_cast failed)");
         }
       }
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, *curr->second);
+          ParObject::AddtoPack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -551,9 +551,9 @@ namespace CORE::COMM
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         std::vector<char> data;
-        ::DRT::ParObject::ExtractfromPack(index, recvblock, data);
+        ParObject::ExtractfromPack(index, recvblock, data);
 
-        ::DRT::ParObject* o = ::DRT::UTILS::Factory(data);
+        ParObject* o = Factory(data);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
@@ -596,12 +596,12 @@ namespace CORE::COMM
 
       void PreExportTest(Exporter* exporter) override {}
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, *curr->second);
+          ParObject::AddtoPack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -611,7 +611,7 @@ namespace CORE::COMM
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
-        ::DRT::ParObject::ExtractfromPack(index, recvblock, *obj);
+        ParObject::ExtractfromPack(index, recvblock, *obj);
 
         // add object to my map
         objects_[gid] = obj;
@@ -645,12 +645,12 @@ namespace CORE::COMM
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, T>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
+          ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -692,12 +692,12 @@ namespace CORE::COMM
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::vector<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
+          ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -706,7 +706,7 @@ namespace CORE::COMM
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override
@@ -735,12 +735,12 @@ namespace CORE::COMM
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::set<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
+          ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -749,7 +749,7 @@ namespace CORE::COMM
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override
@@ -779,12 +779,12 @@ namespace CORE::COMM
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, ::DRT::PackBuffer& sendblock) override
+      bool PackObject(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::map<T, U>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ::DRT::ParObject::AddtoPack(sendblock, curr->second);
+          ParObject::AddtoPack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -793,7 +793,7 @@ namespace CORE::COMM
       void UnpackObject(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
-        ::DRT::ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
+        ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
       void PostExportCleanup(Exporter* exporter) override

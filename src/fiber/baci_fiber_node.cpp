@@ -15,7 +15,7 @@
 DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 
 
-DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummy_coords(3, 999.0);
   std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
@@ -54,9 +54,9 @@ DRT::FIBER::FiberNode* DRT::FIBER::FiberNode::Clone() const
   Pack and Unpack are used to communicate this fiber node
 
 */
-void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
+void DRT::FIBER::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -66,9 +66,9 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
   DRT::Node::Pack(data);
 
   // Add fiber data
-  DRT::ParObject::AddtoPack(data, fibers_);
-  DRT::ParObject::AddtoPack(data, coordinateSystemDirections_);
-  DRT::ParObject::AddtoPack(data, angles_);
+  CORE::COMM::ParObject::AddtoPack(data, fibers_);
+  CORE::COMM::ParObject::AddtoPack(data, coordinateSystemDirections_);
+  CORE::COMM::ParObject::AddtoPack(data, angles_);
 }
 
 /*
@@ -88,9 +88,9 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
   DRT::Node::Unpack(basedata);
 
   // extract fiber data
-  DRT::ParObject::ExtractfromPack(position, data, fibers_);
-  DRT::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
-  DRT::ParObject::ExtractfromPack(position, data, angles_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, fibers_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, angles_);
 }
 
 /*

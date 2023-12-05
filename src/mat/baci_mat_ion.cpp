@@ -37,7 +37,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Ion::CreateMaterial()
 MAT::IonType MAT::IonType::instance_;
 
 
-DRT::ParObject* MAT::IonType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::IonType::Create(const std::vector<char>& data)
 {
   MAT::Ion* ion = new MAT::Ion();
   ion->Unpack(data);
@@ -57,9 +57,9 @@ MAT::Ion::Ion(MAT::PAR::Ion* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Ion::Pack(DRT::PackBuffer& data) const
+void MAT::Ion::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

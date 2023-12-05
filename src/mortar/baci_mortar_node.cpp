@@ -17,7 +17,7 @@
 MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
 
 
-DRT::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MORTAR::MortarNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -46,18 +46,18 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 {
   // add n_
-  DRT::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, n_, 3 * sizeof(double));
   // add edgetangent_
-  DRT::ParObject::AddtoPack(data, edgeTangent_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, edgeTangent_, 3 * sizeof(double));
   // add lm_
-  DRT::ParObject::AddtoPack(data, lm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lm_, 3 * sizeof(double));
   // add lmold_
-  DRT::ParObject::AddtoPack(data, lmold_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lmold_, 3 * sizeof(double));
   // add lmuzawa_
-  DRT::ParObject::AddtoPack(data, lmuzawa_, 3 * sizeof(double));
+  CORE::COMM::ParObject::AddtoPack(data, lmuzawa_, 3 * sizeof(double));
 
   // no need to pack drows_, mrows_ and mmodrows_
   // (these will evaluated anew anyway)
@@ -70,15 +70,15 @@ void MORTAR::MortarNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // n_
-  DRT::ParObject::ExtractfromPack(position, data, n_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, n_, 3 * sizeof(double));
   // edgetangent_
-  DRT::ParObject::ExtractfromPack(position, data, edgeTangent_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, edgeTangent_, 3 * sizeof(double));
   // lm_
-  DRT::ParObject::ExtractfromPack(position, data, lm_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lm_, 3 * sizeof(double));
   // lmold_
-  DRT::ParObject::ExtractfromPack(position, data, lmold_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lmold_, 3 * sizeof(double));
   // lmuzawa_
-  DRT::ParObject::ExtractfromPack(position, data, lmuzawa_, 3 * sizeof(double));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, lmuzawa_, 3 * sizeof(double));
 }
 
 
@@ -172,9 +172,9 @@ void MORTAR::MortarNode::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
+void MORTAR::MortarNode::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

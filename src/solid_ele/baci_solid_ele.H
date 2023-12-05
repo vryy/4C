@@ -42,7 +42,7 @@ namespace DRT::ELEMENTS
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidType"; }
 
@@ -83,7 +83,7 @@ namespace DRT::ELEMENTS
       return SolidType::Instance().UniqueParObjectId();
     };
 
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

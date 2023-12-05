@@ -8,13 +8,13 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_list.H"
@@ -32,7 +32,7 @@ DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
 DRT::ELEMENTS::TransportType& DRT::ELEMENTS::TransportType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::TransportType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::TransportType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Transport* object = new DRT::ELEMENTS::Transport(-1, -1);
   object->Unpack(data);
@@ -582,9 +582,9 @@ CORE::FE::CellType DRT::ELEMENTS::Transport::Shape() const { return distype_; }
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Transport::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
 {
-  return DRT::UTILS::GetElementLines<TransportBoundary, Transport>(*this);
+  return CORE::COMM::GetElementLines<TransportBoundary, Transport>(*this);
 }
 
 
@@ -695,7 +695,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<TransportBoundary, Transport>(*this);
+  return CORE::COMM::GetElementSurfaces<TransportBoundary, Transport>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -860,7 +860,7 @@ CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::TransportBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("This TransportBoundary element does not support communication");
 

@@ -700,7 +700,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
     // assign nodes to elements
     Teuchos::RCP<DRT::Element> newele =
-        DRT::UTILS::Factory("VELE3", "Polynomial", ele->Id(), myrank_);
+        CORE::COMM::Factory("VELE3", "Polynomial", ele->Id(), myrank_);
     newele->SetNodeIds(nids.size(), nids.data());
     visbindis_->AddElement(newele);
   }
@@ -748,7 +748,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
       // assign nodes to elements
       Teuchos::RCP<DRT::Element> newele =
-          DRT::UTILS::Factory("VELE3", "Polynomial", newelegid, myrank_);
+          CORE::COMM::Factory("VELE3", "Polynomial", newelegid, myrank_);
       newele->SetNodeIds(nids.size(), nids.data());
       visbindis_->AddElement(newele);
     }
@@ -816,7 +816,7 @@ void BINSTRATEGY::BinningStrategy::FillBinsIntoBinDiscretization(
   for (int i = 0; i < rowbins->NumMyElements(); ++i)
   {
     const int gid = rowbins->GID(i);
-    Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
+    Teuchos::RCP<DRT::Element> bin = CORE::COMM::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
     bindis_->AddElement(bin);
   }
 }

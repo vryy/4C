@@ -21,7 +21,7 @@ DRT::ELEMENTS::Membrane_tri3Type DRT::ELEMENTS::Membrane_tri3Type::instance_;
 
 DRT::ELEMENTS::Membrane_tri3Type& DRT::ELEMENTS::Membrane_tri3Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(-1, -1);
@@ -89,7 +89,7 @@ DRT::ELEMENTS::Membrane_tri6Type DRT::ELEMENTS::Membrane_tri6Type::instance_;
 
 DRT::ELEMENTS::Membrane_tri6Type& DRT::ELEMENTS::Membrane_tri6Type::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(-1, -1);
@@ -160,7 +160,7 @@ DRT::ELEMENTS::Membrane_quad4Type& DRT::ELEMENTS::Membrane_quad4Type::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(-1, -1);
@@ -231,7 +231,7 @@ DRT::ELEMENTS::Membrane_quad9Type& DRT::ELEMENTS::Membrane_quad9Type::Instance()
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(-1, -1);

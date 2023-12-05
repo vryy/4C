@@ -35,7 +35,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MixFrac::CreateMaterial()
 MAT::MixFracType MAT::MixFracType::instance_;
 
 
-DRT::ParObject* MAT::MixFracType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MixFracType::Create(const std::vector<char>& data)
 {
   MAT::MixFrac* mixfrac = new MAT::MixFrac();
   mixfrac->Unpack(data);
@@ -55,9 +55,9 @@ MAT::MixFrac::MixFrac(MAT::PAR::MixFrac* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MixFrac::Pack(DRT::PackBuffer& data) const
+void MAT::MixFrac::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

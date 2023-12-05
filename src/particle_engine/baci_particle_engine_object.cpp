@@ -15,7 +15,7 @@
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_;
 
-DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
 {
   ParticleObject* my_particleobject = new ParticleObject();
   my_particleobject->Unpack(data);
@@ -35,9 +35,9 @@ PARTICLEENGINE::ParticleObject::ParticleObject(
   // empty constructor
 }
 
-void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
+void PARTICLEENGINE::ParticleObject::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

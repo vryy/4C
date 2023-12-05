@@ -289,7 +289,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Giantesio::CreateMaterial()
 
 MAT::Muscle_GiantesioType MAT::Muscle_GiantesioType::instance_;
 
-DRT::ParObject* MAT::Muscle_GiantesioType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Muscle_GiantesioType::Create(const std::vector<char>& data)
 {
   auto* muscle_giantesio = new MAT::Muscle_Giantesio();
   muscle_giantesio->Unpack(data);
@@ -330,9 +330,9 @@ MAT::Muscle_Giantesio::Muscle_Giantesio(MAT::PAR::Muscle_Giantesio* params)
                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::Muscle_Giantesio::Pack(DRT::PackBuffer& data) const
+void MAT::Muscle_Giantesio::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

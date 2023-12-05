@@ -278,7 +278,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
           dserror("unknown kinematic type");
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -286,7 +286,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          DRT::PackBuffer data;
+          CORE::COMM::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);

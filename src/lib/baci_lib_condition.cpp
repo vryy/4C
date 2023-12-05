@@ -17,7 +17,7 @@
 DRT::ConditionObjectType DRT::ConditionObjectType::instance_;
 
 
-DRT::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::Condition();
   object->Unpack(data);
@@ -658,9 +658,9 @@ void DRT::Condition::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Condition::Pack(DRT::PackBuffer& data) const
+void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

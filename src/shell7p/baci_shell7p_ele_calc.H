@@ -42,7 +42,7 @@ namespace DRT
           const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
 

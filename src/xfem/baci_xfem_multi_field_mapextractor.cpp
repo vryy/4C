@@ -14,10 +14,10 @@
 #include "baci_xfem_multi_field_mapextractor.H"
 
 #include "baci_comm_exporter.H"
+#include "baci_comm_parobject.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -181,14 +181,14 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   std::vector<int> receivedgid;
   std::vector<char> receivedset;
 
-  DRT::PackBuffer data;
+  CORE::COMM::PackBuffer data;
   // --------------------------------------------------------------------------
   // pack gids and std::set's separately
   // --------------------------------------------------------------------------
   // --- count set size
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
-    DRT::ParObject::AddtoPack(data, cit_map->second);
+    CORE::COMM::ParObject::AddtoPack(data, cit_map->second);
   }
 
   // --- activate packing
@@ -198,7 +198,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
     sendgid.push_back(cit_map->first);
-    DRT::ParObject::AddtoPack(data, cit_map->second);
+    CORE::COMM::ParObject::AddtoPack(data, cit_map->second);
   }
 
   // swap into std::vector<char>
@@ -298,7 +298,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       int gid = receivedgid[j];
       // the set gets cleared at the beginning of the ExtractfromPack routine!
       std::set<int> rs;
-      DRT::ParObject::ExtractfromPack(index, receivedset, rs);
+      CORE::COMM::ParObject::ExtractfromPack(index, receivedset, rs);
       g_coupled_sl_dis[gid].insert(rs.begin(), rs.end());
       ++j;
     }

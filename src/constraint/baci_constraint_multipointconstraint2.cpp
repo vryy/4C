@@ -203,7 +203,7 @@ UTILS::MPConstraint2::CreateDiscretizationFromCondition(Teuchos::RCP<DRT::Discre
     if (myrank == 0)
     {
       Teuchos::RCP<DRT::Element> constraintele =
-          DRT::UTILS::Factory(element_name, "Polynomial", j, myrank);
+          CORE::COMM::Factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), ngid.data());
 

@@ -24,9 +24,13 @@ namespace DRT
   class Discretization;
   class Element;
   class Node;
+}  // namespace DRT
+
+namespace CORE::COMM
+{
   class PackBuffer;
   class ParObject;
-}  // namespace DRT
+}  // namespace CORE::COMM
 
 namespace CORE::COUPLING
 {
@@ -110,7 +114,7 @@ namespace CORE::COUPLING
         const ::DRT::Discretization* dis, const int id, double* coord) = 0;
 
     //! calc unique coordinate of entity
-    virtual void CalcPointCoordinate(::DRT::ParObject* entity, double* coord) = 0;
+    virtual void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) = 0;
 
     //! check if entity is on calling proc
     virtual bool CheckHaveEntity(const ::DRT::Discretization* dis, const int id) = 0;
@@ -120,14 +124,14 @@ namespace CORE::COUPLING
 
     //! pack entity to PackPuffer
     virtual void PackEntity(
-        ::DRT::PackBuffer& data, const ::DRT::Discretization* dis, const int id) = 0;
+        CORE::COMM::PackBuffer& data, const ::DRT::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
     virtual void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
-    virtual int CheckValidEntityType(Teuchos::RCP<::DRT::ParObject> o) = 0;
+    virtual int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) = 0;
 
     //! create an octree element
     virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -275,7 +279,7 @@ namespace CORE::COUPLING
         const ::DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of Node
-    void CalcPointCoordinate(::DRT::ParObject* entity, double* coord) override;
+    void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if node with gid = id is on calling proc
     bool CheckHaveEntity(const ::DRT::Discretization* dis, const int id) override;
@@ -285,14 +289,14 @@ namespace CORE::COUPLING
 
     //! pack node to PackPuffer
     void PackEntity(
-        ::DRT::PackBuffer& data, const ::DRT::Discretization* dis, const int id) override;
+        CORE::COMM::PackBuffer& data, const ::DRT::Discretization* dis, const int id) override;
 
     //! unpack node from PackPuffer
     void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int CheckValidEntityType(Teuchos::RCP<::DRT::ParObject> o) override;
+    int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -314,7 +318,7 @@ namespace CORE::COUPLING
         const ::DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of entity
-    void CalcPointCoordinate(::DRT::ParObject* entity, double* coord) override;
+    void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if element with gid = id is on calling proc
     bool CheckHaveEntity(const ::DRT::Discretization* dis, const int id) override;
@@ -324,14 +328,14 @@ namespace CORE::COUPLING
 
     //! pack element to PackPuffer
     void PackEntity(
-        ::DRT::PackBuffer& data, const ::DRT::Discretization* dis, const int id) override;
+        CORE::COMM::PackBuffer& data, const ::DRT::Discretization* dis, const int id) override;
 
     //! unpack element from PackPuffer
     void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int CheckValidEntityType(Teuchos::RCP<::DRT::ParObject> o) override;
+    int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,

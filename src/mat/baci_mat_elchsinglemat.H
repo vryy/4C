@@ -100,7 +100,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const override = 0;
+    void Pack(CORE::COMM::PackBuffer& data) const override = 0;
 
     /*!
       \brief Unpack data from a char vector into this class

@@ -3084,7 +3084,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType1, class VectorType2>
   constexpr void shape_function(const VectorType1& xsi, VectorType2& f)
   {
-    shape_function_dim<VectorType1, VectorType2, ::CORE::FE::dim<distype>>(xsi, f, distype);
+    shape_function_dim<VectorType1, VectorType2, CORE::FE::dim<distype>>(xsi, f, distype);
   }
 
   /*!
@@ -3093,7 +3093,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv1(const VectorType& xsi, MatrixType& d)
   {
-    switch (::CORE::FE::dim<distype>)
+    switch (CORE::FE::dim<distype>)
     {
       case 1:
       {
@@ -3123,7 +3123,7 @@ namespace CORE::DRT::UTILS
   template <CORE::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv2(const VectorType& xsi, MatrixType& d2)
   {
-    switch (::CORE::FE::dim<distype>)
+    switch (CORE::FE::dim<distype>)
     {
       case 1:
       {

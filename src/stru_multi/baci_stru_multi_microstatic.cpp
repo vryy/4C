@@ -684,17 +684,17 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> emptyalpha =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
 
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
 
     for (int i = 0; i < discret_->ElementColMap()->NumMyElements(); ++i)
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, *emptyalpha);
+        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     data.StartPacking();
@@ -702,11 +702,11 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, *emptyalpha);
+        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());

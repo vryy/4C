@@ -259,7 +259,7 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
 
     //------------------------------------------------ do sending to tproc
     // gather all objects to be send
-    ::DRT::PackBuffer sendblock;
+    CORE::COMM::PackBuffer sendblock;
     std::vector<int> sendgid;
     sendgid.reserve(SendPlan()[tproc].size());
 

@@ -64,17 +64,17 @@ MIXTURE::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(DRT::PackBuffer& data) const
+void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(CORE::COMM::PackBuffer& data) const
 {
   MixtureConstituent::PackConstituent(data);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  DRT::ParObject::AddtoPack(data, matid);
+  CORE::COMM::ParObject::AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
-  DRT::ParObject::AddtoPack(data, prestretch_);
+  CORE::COMM::ParObject::AddtoPack(data, prestretch_);
 
   cosyAnisotropyExtension_.PackAnisotropy(data);
 
@@ -99,7 +99,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
 
   // matid and recover params_
   int matid;
-  DRT::ParObject::ExtractfromPack(position, data, matid);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, matid);
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -122,7 +122,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
 
   summandProperties_.Unpack(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, prestretch_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, prestretch_);
 
   cosyAnisotropyExtension_.UnpackAnisotropy(data, position);
 

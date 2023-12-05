@@ -27,7 +27,7 @@ DRT::ELEMENTS::Beam3ebType& DRT::ELEMENTS::Beam3ebType::Instance() { return inst
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Beam3eb* object = new DRT::ELEMENTS::Beam3eb(-1, -1);
   object->Unpack(data);
@@ -335,9 +335,9 @@ CORE::FE::CellType DRT::ELEMENTS::Beam3eb::Shape() const { return CORE::FE::Cell
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3eb::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -117,18 +117,18 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   // first, communicate coordinates in x1-direction
   for (int np = 0; np < numprocs; ++np)
   {
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
 
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      DRT::ParObject::AddtoPack(data, *zline);
+      CORE::COMM::ParObject::AddtoPack(data, *zline);
     }
     data.StartPacking();
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      DRT::ParObject::AddtoPack(data, *zline);
+      CORE::COMM::ParObject::AddtoPack(data, *zline);
     }
     std::swap(sblock, data());
 
@@ -171,7 +171,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
       while (index < rblock.size())
       {
         double onecoord;
-        DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+        CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
         zavcoords.insert(onecoord);
       }
     }
@@ -285,18 +285,18 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        DRT::ParObject::AddtoPack(data, *zline);
+        CORE::COMM::ParObject::AddtoPack(data, *zline);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        DRT::ParObject::AddtoPack(data, *zline);
+        CORE::COMM::ParObject::AddtoPack(data, *zline);
       }
       std::swap(sblock, data());
 
@@ -341,7 +341,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
         while (index < rblock.size())
         {
           double onecoord;
-          DRT::ParObject::ExtractfromPack(index, rblock, onecoord);
+          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
           ravcoords.insert(onecoord);
         }
       }

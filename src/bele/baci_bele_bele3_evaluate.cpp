@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
 
       // write dummy stress
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         AddtoPack(data, dummy);
         data.StartPacking();
         AddtoPack(data, dummy);
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
 
       // write dummy strain
       {
-        DRT::PackBuffer data;
+        CORE::COMM::PackBuffer data;
         AddtoPack(data, dummy);
         data.StartPacking();
         AddtoPack(data, dummy);

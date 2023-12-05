@@ -10,11 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody.H"
 
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_interface.H"
 #include "baci_particle_engine_unique_global_id.H"
@@ -497,7 +497,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<c
         rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
     // pack data for sending
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     data.StartPacking();
 
     data.AddtoPack(rigidbody_k);
@@ -520,7 +520,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
 
   while (position < buffer.size())
   {
-    const int rigidbody_k = DRT::ParObject::ExtractInt(position, buffer);
+    const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, buffer);
 
     // get global ids of rigid bodies owned by this processor
     ownedrigidbodies_.push_back(rigidbody_k);
@@ -535,14 +535,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
     std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
     std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
-    DRT::ParObject::ExtractfromPack(position, buffer, mass_k);
-    for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, buffer, inertia_k[i]);
-    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, pos_k[i]);
-    for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, buffer, rot_k[i]);
-    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, vel_k[i]);
-    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, angvel_k[i]);
-    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, acc_k[i]);
-    for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, buffer, angacc_k[i]);
+    CORE::COMM::ParObject::ExtractfromPack(position, buffer, mass_k);
+    for (int i = 0; i < 6; ++i)
+      CORE::COMM::ParObject::ExtractfromPack(position, buffer, inertia_k[i]);
+    for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, buffer, pos_k[i]);
+    for (int i = 0; i < 4; ++i) CORE::COMM::ParObject::ExtractfromPack(position, buffer, rot_k[i]);
+    for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, buffer, vel_k[i]);
+    for (int i = 0; i < 3; ++i)
+      CORE::COMM::ParObject::ExtractfromPack(position, buffer, angvel_k[i]);
+    for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, buffer, acc_k[i]);
+    for (int i = 0; i < 3; ++i)
+      CORE::COMM::ParObject::ExtractfromPack(position, buffer, angacc_k[i]);
   }
 
   if (position != buffer.size())
@@ -626,7 +629,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
     if (owner_k != myrank_)
     {
       // pack data for sending
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       data.StartPacking();
 
       data.AddtoPack(rigidbody_k);
@@ -648,7 +651,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       // insert processor id the gathered global id of rigid body is received from
       ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
@@ -687,7 +690,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
     if (owner_k != myrank_)
     {
       // pack data for sending
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       data.StartPacking();
 
       data.AddtoPack(rigidbody_k);
@@ -716,7 +719,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
       double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
@@ -728,14 +731,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
       std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
       std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
-      DRT::ParObject::ExtractfromPack(position, rmsg, mass_k);
-      for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
-      for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
+      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, mass_k);
+      for (int i = 0; i < 6; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+      for (int i = 0; i < 4; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
     }
 
     if (position != rmsg.size())
@@ -916,7 +922,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
     else
     {
       // pack data for sending
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       data.StartPacking();
 
       data.AddtoPack(rigidbody_k);
@@ -940,14 +946,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
-      double mass_k = DRT::ParObject::ExtractDouble(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
+      double mass_k = CORE::COMM::ParObject::ExtractDouble(position, rmsg);
 
       std::vector<double> inertia_k(6);
-      for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+      for (int i = 0; i < 6; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
 
       std::vector<double> pos_k(3);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
 
       // append to gathered partial mass quantities
       gatheredpartialmass[rigidbody_k].push_back(mass_k);
@@ -1143,7 +1150,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
     if (owner_k != myrank_)
     {
       // pack data for sending
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       data.StartPacking();
 
       data.AddtoPack(rigidbody_k);
@@ -1166,13 +1173,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       std::vector<double> tmp_force_k(3);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, tmp_force_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, tmp_force_k[i]);
 
       std::vector<double> tmp_torque_k(3);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, tmp_torque_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, tmp_torque_k[i]);
 
       // get pointer to rigid body states
       double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
@@ -1337,7 +1346,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
     const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
 
     // pack data for sending
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     data.StartPacking();
 
     data.AddtoPack(rigidbody_k);
@@ -1361,14 +1370,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
       std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
-      for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+      for (int i = 0; i < 4; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
     }
 
     if (position != rmsg.size())
@@ -1393,7 +1402,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
     const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
 
     // pack data for sending
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     data.StartPacking();
 
     data.AddtoPack(rigidbody_k);
@@ -1417,14 +1426,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
       std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
     }
 
     if (position != rmsg.size())
@@ -1450,7 +1460,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
         rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
     // pack data for sending
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     data.StartPacking();
 
     data.AddtoPack(rigidbody_k);
@@ -1474,14 +1484,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
 
     while (position < rmsg.size())
     {
-      const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
+      const int rigidbody_k = CORE::COMM::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
       std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
       std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
-      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
+      for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
+      for (int i = 0; i < 3; ++i)
+        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
     }
 
     if (position != rmsg.size())

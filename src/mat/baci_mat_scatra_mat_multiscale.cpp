@@ -36,7 +36,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiScale::CreateMaterial()
 MAT::ScatraMatMultiScaleType MAT::ScatraMatMultiScaleType::instance_;
 
 
-DRT::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatMultiScale* ScatraMatMultiScale = new MAT::ScatraMatMultiScale();
   ScatraMatMultiScale->Unpack(data);
@@ -63,9 +63,9 @@ MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* par
 /*--------------------------------------------------------------------*
  | pack material for communication purposes                fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
+void MAT::ScatraMatMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

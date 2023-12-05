@@ -38,7 +38,7 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
                                              FiberAnisotropyExtension<2>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   anisotropyExtension_.PackAnisotropy(data);
 }
@@ -136,12 +136,13 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::CoupAnisoExpoTwoCoupAnisoExten
 {
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::PackAnisotropy(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::PackAnisotropy(
+    CORE::COMM::PackBuffer& data) const
 {
   DefaultAnisotropyExtension::PackAnisotropy(data);
 
-  DRT::ParObject::AddtoPack(data, a1a2_);
-  DRT::ParObject::AddtoPack(data, A1A2_);
+  CORE::COMM::ParObject::AddtoPack(data, a1a2_);
+  CORE::COMM::ParObject::AddtoPack(data, A1A2_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
@@ -149,8 +150,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
 {
   DefaultAnisotropyExtension::UnpackAnisotropy(data, position);
 
-  DRT::ParObject::ExtractfromPack(position, data, a1a2_);
-  DRT::ParObject::ExtractfromPack(position, data, A1A2_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, a1a2_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, A1A2_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()

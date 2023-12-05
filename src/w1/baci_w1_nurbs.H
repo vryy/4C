@@ -26,7 +26,7 @@ namespace DRT
 
         static Wall1NurbsType& Instance();
 
-        DRT::ParObject* Create(const std::vector<char>& data) override;
+        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
         Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
             const int id, const int owner) override;

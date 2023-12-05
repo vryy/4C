@@ -39,7 +39,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Sutherland::CreateMaterial()
 MAT::SutherlandType MAT::SutherlandType::instance_;
 
 
-DRT::ParObject* MAT::SutherlandType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::SutherlandType::Create(const std::vector<char>& data)
 {
   MAT::Sutherland* sutherland = new MAT::Sutherland();
   sutherland->Unpack(data);
@@ -59,9 +59,9 @@ MAT::Sutherland::Sutherland(MAT::PAR::Sutherland* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Sutherland::Pack(DRT::PackBuffer& data) const
+void MAT::Sutherland::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

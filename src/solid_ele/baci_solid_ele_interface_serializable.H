@@ -6,7 +6,7 @@
 \level 1
 */
 
-#include "baci_lib_pack_buffer.H"
+#include "baci_comm_pack_buffer.H"
 
 #include <variant>
 #include <vector>
@@ -18,7 +18,8 @@
 namespace DRT::ELEMENTS
 {
   /*!
-   * @brief A type trait to check whether the type T supports the Pack(DRT::PackBuffer&) method.
+   * @brief A type trait to check whether the type T supports the Pack(CORE::COMM::PackBuffer&)
+   * method.
    *
    * @note T does not necessarily need to derive from some interface class
    * @{
@@ -27,9 +28,8 @@ namespace DRT::ELEMENTS
   constexpr bool IsPackable = false;
 
   template <typename T>
-  constexpr bool IsPackable<T,
-      std::void_t<decltype(std::declval<const T>()->Pack(std::declval<DRT::PackBuffer&>()))>> =
-      true;
+  constexpr bool IsPackable<T, std::void_t<decltype(std::declval<const T>()->Pack(
+                                   std::declval<CORE::COMM::PackBuffer&>()))>> = true;
   ///@}
 
   /*!
@@ -55,8 +55,8 @@ namespace DRT::ELEMENTS
      * @brief This struct should be used to serialize an item within a sum type (e.g.
      *std::variant).
      *
-     * The Pack(DRT::PackBuffer&) is called for those types that provide the method. Nothing is done
-     * for types that don't provide a Pack-method.
+     * The Pack(CORE::COMM::PackBuffer&) is called for those types that provide the method. Nothing
+     *is done for types that don't provide a Pack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
      * the Pack-member function is correct by asserting it with static_assert(IsPackable<T>); in
@@ -64,7 +64,7 @@ namespace DRT::ELEMENTS
      */
     struct PackAction
     {
-      PackAction(DRT::PackBuffer& buffer) : data(buffer) {}
+      PackAction(CORE::COMM::PackBuffer& buffer) : data(buffer) {}
 
       template <typename T, std::enable_if_t<IsPackable<T>, bool> = true>
       void operator()(const T& packable)
@@ -78,7 +78,7 @@ namespace DRT::ELEMENTS
         // do nothing if it is not packable
       }
 
-      DRT::PackBuffer& data;
+      CORE::COMM::PackBuffer& data;
     };
 
     /*!
@@ -121,7 +121,7 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : the data to pack the variant to
    */
   template <typename VariantType>
-  void Pack(const VariantType& variant, DRT::PackBuffer& data)
+  void Pack(const VariantType& variant, CORE::COMM::PackBuffer& data)
   {
     std::visit(DETAILS::PackAction(data), variant);
   }

@@ -1312,7 +1312,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
   // -------------------------------------------------------------------------
   // 1) write list of double bonded crosslinker on each proc
   // -------------------------------------------------------------------------
-  DRT::PackBuffer linker_buffer;
+  CORE::COMM::PackBuffer linker_buffer;
   for (auto const& iter : doublebondcl_)
   {
     Teuchos::RCP<BEAMINTERACTION::BeamLink> btbl = iter.second;
@@ -1331,7 +1331,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
   // -------------------------------------------------------------------------
   // 2) write crosslinker data
   // -------------------------------------------------------------------------
-  DRT::PackBuffer cldata_buffer;
+  CORE::COMM::PackBuffer cldata_buffer;
   unsigned int numrowcl = BinDiscret().NumMyRowNodes();
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
@@ -1357,7 +1357,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
   // -------------------------------------------------------------------------
   // 3) beam data
   // -------------------------------------------------------------------------
-  DRT::PackBuffer beamdata_buffer;
+  CORE::COMM::PackBuffer beamdata_buffer;
   unsigned int numrowbeam = EleTypeMapExtractor().BeamMap()->NumMyElements();
   for (unsigned int i = 0; i < numrowbeam; ++i)
   {
@@ -1418,8 +1418,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
   while (index < linkercharvec->size())
   {
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(index, *linkercharvec, data);
-    Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+    CORE::COMM::ParObject::ExtractfromPack(index, *linkercharvec, data);
+    Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
     if (beamtobeamlink == Teuchos::null) dserror("Failed to build a node from the node data");
@@ -1444,7 +1444,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    DRT::ParObject::ExtractfromPack(index, *cldata_charvec, recv_singlecontainer_data);
+    CORE::COMM::ParObject::ExtractfromPack(index, *cldata_charvec, recv_singlecontainer_data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> cl_data = Teuchos::rcp(
         BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::CrosslinkerData>(
@@ -1455,7 +1455,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
     read_node_ids.push_back(cl_gid);
 
     // repack it for communication to find owner
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     cl_data->Pack(data);
     data.StartPacking();
     cl_data->Pack(data);
@@ -1481,7 +1481,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
     // Fixme
     std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(position, iter.second, data);
+    CORE::COMM::ParObject::ExtractfromPack(position, iter.second, data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> cl_data = Teuchos::rcp(
         BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::CrosslinkerData>(data),
@@ -1505,7 +1505,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    DRT::ParObject::ExtractfromPack(index, *beamdata_charvec, recv_singlecontainer_data);
+    CORE::COMM::ParObject::ExtractfromPack(index, *beamdata_charvec, recv_singlecontainer_data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::BeamData> beam_data =
         Teuchos::rcp(BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::BeamData>(
@@ -1516,7 +1516,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
     read_ele_ids.push_back(beam_gid);
 
     // repack it for communication to find owner
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     beam_data->Pack(data);
     data.StartPacking();
     beam_data->Pack(data);
@@ -1542,7 +1542,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
     // Fixme
     std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(position, iter.second, data);
+    CORE::COMM::ParObject::ExtractfromPack(position, iter.second, data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::BeamData> beam_data = Teuchos::rcp(
         BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::BeamData>(data), true);
@@ -2058,7 +2058,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportCrosslinke
     Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> cl_data_i =
         crosslinker_data_[cl_nodecolmap_prior_redistr_->LID(clgid)];
 
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     cl_data_i->Pack(data);
     data.StartPacking();
     cl_data_i->Pack(data);
@@ -2076,7 +2076,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportCrosslinke
     // Fixme
     std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(position, iter.second, data);
+    CORE::COMM::ParObject::ExtractfromPack(position, iter.second, data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> cl_data = Teuchos::rcp(
         BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::CrosslinkerData>(data),
@@ -2163,7 +2163,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
       }
     }
 
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     beam_data_i->Pack(data);
     data.StartPacking();
     beam_data_i->Pack(data);
@@ -2182,7 +2182,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
     // Fixme
     std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    DRT::ParObject::ExtractfromPack(position, iter.second, data);
+    CORE::COMM::ParObject::ExtractfromPack(position, iter.second, data);
 
     Teuchos::RCP<BEAMINTERACTION::DATA::BeamData> beam_data = Teuchos::rcp(
         BEAMINTERACTION::DATA::CreateDataContainer<BEAMINTERACTION::DATA::BeamData>(data), true);
@@ -3932,7 +3932,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       (*iter)->Pack(data);
       data.StartPacking();
       (*iter)->Pack(data);
@@ -3976,9 +3976,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
     while (position < rdata.size())
     {
       std::vector<char> data;
-      DRT::ParObject::ExtractfromPack(position, rdata, data);
+      CORE::COMM::ParObject::ExtractfromPack(position, rdata, data);
       // this Teuchos::rcp holds the memory
-      Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data), true);
+      Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
       Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == Teuchos::null) dserror("Received object is not a beam to beam linkage");
@@ -4037,7 +4037,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(CORE::COMM::Exporte
 
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
-      DRT::PackBuffer data;
+      CORE::COMM::PackBuffer data;
       (*iter)->Pack(data);
       data.StartPacking();
       (*iter)->Pack(data);
@@ -4104,7 +4104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
     {
       std::vector<char> data;
 
-      DRT::ParObject::ExtractfromPack(position, rdata, data);
+      CORE::COMM::ParObject::ExtractfromPack(position, rdata, data);
 
       Teuchos::RCP<T> data_container =
           Teuchos::rcp(BEAMINTERACTION::DATA::CreateDataContainer<T>(data), true);

@@ -20,7 +20,7 @@ DRT::ELEMENTS::NURBS::Ale2_NurbsType& DRT::ELEMENTS::NURBS::Ale2_NurbsType::Inst
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Ale2Nurbs* object = new DRT::ELEMENTS::NURBS::Ale2Nurbs(-1, -1);
   object->Unpack(data);

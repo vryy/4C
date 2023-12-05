@@ -19,7 +19,7 @@ DRT::NodeType DRT::NodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::NodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::NodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   auto* object = new DRT::Node(-1, dummycoord, -1);
@@ -84,9 +84,9 @@ void DRT::Node::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::Pack(DRT::PackBuffer& data) const
+void DRT::Node::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

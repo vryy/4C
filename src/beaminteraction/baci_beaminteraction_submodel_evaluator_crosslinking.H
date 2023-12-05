@@ -21,6 +21,11 @@
 
 
 // forward declaration
+namespace CORE::COMM
+{
+  class PackBuffer;
+}
+
 namespace IO
 {
   class DiscretizationVisualizationWriterNodes;
@@ -32,9 +37,7 @@ namespace MAT
 }
 namespace DRT
 {
-  class Exporter;
   class Element;
-  class PackBuffer;
   class Node;
 }  // namespace DRT
 namespace CROSSLINKING

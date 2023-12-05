@@ -58,7 +58,7 @@ DRT::ELEMENTS::So_sh8PlastType& DRT::ELEMENTS::So_sh8PlastType::Instance() { ret
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh8Plast(-1, -1);
   object->Unpack(data);
@@ -342,9 +342,9 @@ DRT::Element* DRT::ELEMENTS::So_sh8Plast::Clone() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8Plast::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh8Plast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -50,7 +50,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialSPHFluid::CreateMaterial()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleMaterialSPHFluidType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ParticleMaterialSPHFluidType::Create(const std::vector<char>& data)
 {
   MAT::ParticleMaterialSPHFluid* particlematsph = new MAT::ParticleMaterialSPHFluid();
   particlematsph->Unpack(data);
@@ -77,9 +77,9 @@ MAT::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(MAT::PAR::ParticleMateri
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHFluid::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleMaterialSPHFluid::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

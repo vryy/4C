@@ -185,7 +185,6 @@ io/baci_io_material*              @baci/team_material
 levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
-lib/baci_lib_parobject*             @baci/team_infrastructure
 
 linalg/                    @baci/team_solvers
 

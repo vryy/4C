@@ -63,7 +63,7 @@ MAT::PlasticNlnLogNeoHookeType MAT::PlasticNlnLogNeoHookeType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
 {
   MAT::PlasticNlnLogNeoHooke* plasticneo = new MAT::PlasticNlnLogNeoHooke();
   plasticneo->Unpack(data);
@@ -89,9 +89,9 @@ MAT::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHook
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Pack(DRT::PackBuffer& data) const
+void MAT::PlasticNlnLogNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

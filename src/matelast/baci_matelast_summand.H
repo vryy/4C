@@ -9,24 +9,23 @@
 #ifndef BACI_MATELAST_SUMMAND_H
 #define BACI_MATELAST_SUMMAND_H
 
+#include "baci_comm_parobject.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_parobject.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Vector.h>
 
 // forward declarations
-
-namespace DRT
+namespace CORE::COMM
 {
   class PackBuffer;
+}
 
-  namespace INPUT
-  {
-    class LineDefinition;
-  }
-}  // namespace DRT
+namespace DRT::INPUT
+{
+  class LineDefinition;
+}
 
 
 namespace MAT
@@ -64,7 +63,7 @@ namespace MAT
      * and the case of anisotropy", European Journal of Mechanics 2007
      * </ul>
      */
-    class Summand : public DRT::ParObject
+    class Summand : public CORE::COMM::ParObject
     {
      public:
       /// standard constructor
@@ -75,11 +74,11 @@ namespace MAT
 
       int UniqueParObjectId() const override;
 
-      void Pack(DRT::PackBuffer& data) const override;
+      void Pack(CORE::COMM::PackBuffer& data) const override;
 
       void Unpack(const std::vector<char>& data) override;
 
-      virtual void PackSummand(DRT::PackBuffer& data) const { return; };
+      virtual void PackSummand(CORE::COMM::PackBuffer& data) const { return; };
 
       virtual void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position)

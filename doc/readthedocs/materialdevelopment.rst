@@ -61,7 +61,7 @@ Here the material type class is generated within the namespace ``MAT`` as
 
 ::
 
-  class MyNewMaterialType : public DRT::ParObjectType
+  class MyNewMaterialType : public CORE::COMM::ParObjectType
 
 This class is just to define the material itself, together with its respective parameter set.
 
@@ -76,7 +76,7 @@ and a few public methods:
 
 ::
 
-   DRT::ParObject* MAT::MyNewMaterialType::Create(const std::vector<char>& data)
+   CORE::COMM::ParObject* MAT::MyNewMaterialType::Create(const std::vector<char>& data)
    {
      MAT::MyNewMaterial* mymaterial = new MAT::MyNewMaterial();
      mymaterial->Unpack(data);

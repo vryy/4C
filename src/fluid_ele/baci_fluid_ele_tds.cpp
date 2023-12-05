@@ -45,9 +45,9 @@ sveln_      (old.sveln_      )
  |  Pack data                                                  (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Pack(DRT::PackBuffer& data) const
+void FLD::TDSEleData::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

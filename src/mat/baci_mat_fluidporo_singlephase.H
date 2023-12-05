@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------*
  | headers                                                              |
  *---------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_fluidporo_relpermeability_law.H"
 #include "baci_mat_fluidporo_viscosity_law.H"
 #include "baci_mat_material.H"
@@ -149,14 +149,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                                   vuong 08/16 |
    *----------------------------------------------------------------------*/
-  class FluidPoroSinglePhaseType : public DRT::ParObjectType
+  class FluidPoroSinglePhaseType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroSinglePhaseType"; }
 
     static FluidPoroSinglePhaseType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSinglePhaseType instance_;
@@ -165,14 +165,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                                   vuong 08/16 |
    *----------------------------------------------------------------------*/
-  class FluidPoroSingleVolFracType : public DRT::ParObjectType
+  class FluidPoroSingleVolFracType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroSingleVolFracType"; }
 
     static FluidPoroSingleVolFracType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleVolFracType instance_;
@@ -181,14 +181,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                              kremheller 02/18 |
    *----------------------------------------------------------------------*/
-  class FluidPoroVolFracPressureType : public DRT::ParObjectType
+  class FluidPoroVolFracPressureType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroVolFracPressureType"; }
 
     static FluidPoroVolFracPressureType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroVolFracPressureType instance_;
@@ -244,7 +244,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -389,7 +389,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -484,7 +484,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

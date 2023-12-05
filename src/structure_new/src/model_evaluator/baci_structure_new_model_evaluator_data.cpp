@@ -90,7 +90,7 @@ namespace
     {
       // the set gets cleared at the beginning of the ExtractfromPack routine!
       T rs;
-      DRT::ParObject::ExtractfromPack(index, receiveddata, rs);
+      CORE::COMM::ParObject::ExtractfromPack(index, receiveddata, rs);
       collected_data.insert(rs.begin(), rs.end());
       ++j;
     }
@@ -103,7 +103,8 @@ namespace
   }
 
   template <typename T>
-  static void RoundRobinLoop(const Epetra_Comm& comm, DRT::PackBuffer& pack_data, T& collected_data)
+  static void RoundRobinLoop(
+      const Epetra_Comm& comm, CORE::COMM::PackBuffer& pack_data, T& collected_data)
   {
     // collect the information over all procs
     std::vector<char> mydata;
@@ -154,11 +155,11 @@ namespace
   template <typename T>
   static void CollectData(const Epetra_Comm& comm, const T& my_data, T& collected_data)
   {
-    DRT::PackBuffer pack_data;
+    CORE::COMM::PackBuffer pack_data;
 
-    DRT::ParObject::AddtoPack(pack_data, my_data);
+    CORE::COMM::ParObject::AddtoPack(pack_data, my_data);
     pack_data.StartPacking();
-    DRT::ParObject::AddtoPack(pack_data, my_data);
+    CORE::COMM::ParObject::AddtoPack(pack_data, my_data);
 
     RoundRobinLoop(comm, pack_data, collected_data);
   }

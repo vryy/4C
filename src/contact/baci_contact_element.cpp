@@ -15,7 +15,7 @@ CONTACT::CoElementType CONTACT::CoElementType::instance_;
 
 CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
 
-DRT::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
 {
   CONTACT::CoElement* ele =
       new CONTACT::CoElement(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
@@ -97,9 +97,9 @@ void CONTACT::CoElement::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Pack(DRT::PackBuffer& data) const
+void CONTACT::CoElement::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -50,7 +50,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Mixture::CreateMaterial()
 MAT::MixtureType MAT::MixtureType::instance_;
 
 // Create a material instance from packed data
-DRT::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
 {
   auto* mix_elhy = new MAT::Mixture();
   mix_elhy->Unpack(data);
@@ -91,9 +91,9 @@ MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
 }
 
 // Pack data
-void MAT::Mixture::Pack(DRT::PackBuffer& data) const
+void MAT::Mixture::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -171,7 +171,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    DRT::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
+    CORE::COMM::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
     isPreEvaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {

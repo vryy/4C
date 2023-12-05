@@ -71,7 +71,7 @@ MAT::ThermoPlasticHyperElastType MAT::ThermoPlasticHyperElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::ThermoPlasticHyperElastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ThermoPlasticHyperElastType::Create(const std::vector<char>& data)
 {
   MAT::ThermoPlasticHyperElast* thrplhyper = new MAT::ThermoPlasticHyperElast();
   thrplhyper->Unpack(data);
@@ -97,9 +97,9 @@ MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast(MAT::PAR::ThermoPlasticHyp
 /*----------------------------------------------------------------------*
  | pack (public)                                             dano 03/13 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
+void MAT::ThermoPlasticHyperElast::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -10,7 +10,7 @@
 
 #include "baci_w1_poro_p1.H"
 
-#include "baci_lib_utils_factory.H"
+#include "baci_comm_utils_factory.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
 template <CORE::FE::CellType distype>
@@ -33,9 +33,9 @@ DRT::Element* DRT::ELEMENTS::Wall1_PoroP1<distype>::Clone() const
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_PoroP1<distype>::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1_PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Unpack(const std::vector<char>& data)
 template <CORE::FE::CellType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_PoroP1<distype>::Lines()
 {
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1_PoroP1>(DRT::UTILS::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1_PoroP1>(CORE::COMM::buildLines, *this);
 }
 
 template <CORE::FE::CellType distype>

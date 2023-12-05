@@ -60,7 +60,7 @@ namespace MIXTURE
     /// Returns the material type enum
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
 
-    void PackConstituent(DRT::PackBuffer& data) const override;
+    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;

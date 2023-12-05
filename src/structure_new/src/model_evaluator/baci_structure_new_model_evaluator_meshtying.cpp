@@ -468,7 +468,7 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
   }
 
   // re-initialize finite elements
-  DRT::ParObjectFactory::Instance().InitializeElements(Discret());
+  CORE::COMM::ParObjectFactory::Instance().InitializeElements(Discret());
 }
 
 /*----------------------------------------------------------------------*

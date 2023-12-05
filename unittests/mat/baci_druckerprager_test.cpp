@@ -8,8 +8,8 @@
 
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
+#include "baci_comm_pack_buffer.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_pack_buffer.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_bundle.H"
@@ -52,7 +52,7 @@ namespace
       DRT::Problem::Done();
     };
     Teuchos::RCP<MAT::PAR::PlasticDruckerPrager> param_druckprag_;
-    DRT::PackBuffer data;
+    CORE::COMM::PackBuffer data;
     Teuchos::RCP<MAT::PlasticDruckerPrager> druckprag_;
   };
 

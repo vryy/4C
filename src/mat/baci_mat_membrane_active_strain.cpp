@@ -16,8 +16,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_mat_membrane_active_strain.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_membrane_elasthyper.H"
 #include "baci_mat_par_bundle.H"
@@ -49,7 +49,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Membrane_ActiveStrain::CreateMaterial()
 
 MAT::Membrane_ActiveStrainType MAT::Membrane_ActiveStrainType::instance_;
 
-DRT::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<char>& data)
 {
   MAT::Membrane_ActiveStrain* membrane_activestrain = new MAT::Membrane_ActiveStrain();
   membrane_activestrain->Unpack(data);
@@ -88,9 +88,9 @@ MAT::Membrane_ActiveStrain::Membrane_ActiveStrain(MAT::PAR::Membrane_ActiveStrai
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Pack(DRT::PackBuffer& data) const
+void MAT::Membrane_ActiveStrain::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -168,7 +168,7 @@ void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, matpassive_data);
   if (matpassive_data.size() > 0)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(matpassive_data);  // Unpack is done here
+    CORE::COMM::ParObject* o = CORE::COMM::Factory(matpassive_data);  // Unpack is done here
     MAT::So3Material* matpassive = dynamic_cast<MAT::So3Material*>(o);
     if (matpassive == nullptr) dserror("failed to unpack passive material");
 

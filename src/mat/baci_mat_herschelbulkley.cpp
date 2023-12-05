@@ -38,7 +38,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::HerschelBulkley::CreateMaterial()
 MAT::HerschelBulkleyType MAT::HerschelBulkleyType::instance_;
 
 
-DRT::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>& data)
 {
   MAT::HerschelBulkley* herbul = new MAT::HerschelBulkley();
   herbul->Unpack(data);
@@ -57,9 +57,9 @@ MAT::HerschelBulkley::HerschelBulkley(MAT::PAR::HerschelBulkley* params) : param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::HerschelBulkley::Pack(DRT::PackBuffer& data) const
+void MAT::HerschelBulkley::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

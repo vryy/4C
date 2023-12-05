@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody_affiliation_pairs.H"
 
+#include "baci_comm_pack_buffer.H"
+#include "baci_comm_parobject.H"
 #include "baci_io.H"
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_interface.H"
 
@@ -155,8 +155,8 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::UnpackAffiliationPairs(
   while (position < buffer.size())
   {
     // get affiliation pair
-    const int globalid = DRT::ParObject::ExtractInt(position, buffer);
-    const int rigidbody = DRT::ParObject::ExtractInt(position, buffer);
+    const int globalid = CORE::COMM::ParObject::ExtractInt(position, buffer);
+    const int rigidbody = CORE::COMM::ParObject::ExtractInt(position, buffer);
 
     // add affiliation pair
     affiliationdata_[globalid] = rigidbody;
@@ -168,7 +168,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::UnpackAffiliationPairs(
 void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::AddAffiliationPairToBuffer(
     std::vector<char>& buffer, int globalid, int rigidbody) const
 {
-  DRT::PackBuffer data;
+  CORE::COMM::PackBuffer data;
   data.StartPacking();
 
   // add affiliation pair

@@ -52,7 +52,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAraghavanvorp_damage::CreateMaterial()
 MAT::AAAraghavanvorp_damageType MAT::AAAraghavanvorp_damageType::instance_;
 
 
-DRT::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector<char>& data)
 {
   MAT::AAAraghavanvorp_damage* aaadamage = new MAT::AAAraghavanvorp_damage();
   aaadamage->Unpack(data);
@@ -90,9 +90,9 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
+void MAT::AAAraghavanvorp_damage::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

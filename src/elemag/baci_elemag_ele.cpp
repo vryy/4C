@@ -11,13 +11,13 @@
 
 #include "baci_elemag_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_elemag_ele_boundary_calc.H"
 #include "baci_elemag_ele_intfaces_calc.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 
 
@@ -35,7 +35,7 @@ DRT::ELEMENTS::ElemagBoundaryType& DRT::ELEMENTS::ElemagBoundaryType::Instance()
 DRT::ELEMENTS::ElemagIntFaceType& DRT::ELEMENTS::ElemagIntFaceType::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Elemag* object = new DRT::ELEMENTS::Elemag(-1, -1);
   object->Unpack(data);
@@ -161,9 +161,9 @@ DRT::Element* DRT::ELEMENTS::Elemag::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Elemag::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Elemag::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -252,7 +252,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
 {
-  return DRT::UTILS::GetElementLines<ElemagBoundary, Elemag>(*this);
+  return CORE::COMM::GetElementLines<ElemagBoundary, Elemag>(*this);
 }
 
 
@@ -261,7 +261,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
+  return CORE::COMM::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -275,7 +275,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(DRT::Element
   DRT::ELEMENTS::Elemag* slave_pele = dynamic_cast<DRT::ELEMENTS::Elemag*>(parent_slave);
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
+  return CORE::COMM::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
       this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
 }
 
@@ -347,9 +347,9 @@ CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ElemagBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -542,7 +542,7 @@ CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
  |  Pack data                                                  (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
   dserror("this ElemagIntFace element does not support communication");
   return;

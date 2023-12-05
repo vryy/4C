@@ -43,7 +43,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoNeoHooke::CreateMaterial()
 MAT::ViscoNeoHookeType MAT::ViscoNeoHookeType::instance_;
 
 
-DRT::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& data)
 {
   MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
   visco->Unpack(data);
@@ -73,9 +73,9 @@ MAT::ViscoNeoHooke::ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params) : params_(par
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

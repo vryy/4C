@@ -31,7 +31,7 @@ MAT::ELASTIC::IsoAnisoExpo::IsoAnisoExpo(MAT::ELASTIC::PAR::IsoAnisoExpo* params
 {
 }
 
-void MAT::ELASTIC::IsoAnisoExpo::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::IsoAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);

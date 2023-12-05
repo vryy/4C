@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_material.H"
@@ -68,12 +68,12 @@ namespace MAT
     };  // class myocard
   }     // namespace PAR
 
-  class MyocardType : public DRT::ParObjectType
+  class MyocardType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "MyocardType"; }
     static MyocardType& Instance() { return instance_; };
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MyocardType instance_;
@@ -114,7 +114,7 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(DRT::PackBuffer& data)
+    void Pack(CORE::COMM::PackBuffer& data)
         const override;  ///< (in/out): char vector to store class information
 
     /// \brief Unpack data from a char vector into this class

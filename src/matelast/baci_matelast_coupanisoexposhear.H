@@ -38,7 +38,7 @@ namespace MAT
 
       ///@name Packing and Unpacking
       /// @{
-      void PackAnisotropy(DRT::PackBuffer& data) const override;
+      void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackAnisotropy(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -147,7 +147,7 @@ namespace MAT
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(DRT::PackBuffer& data) const override;
+      void PackSummand(CORE::COMM::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;

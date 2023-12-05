@@ -37,7 +37,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Air_0d_O2_saturation::CreateMaterial()
 MAT::Air_0d_O2_saturationType MAT::Air_0d_O2_saturationType::instance_;
 
 
-DRT::ParObject* MAT::Air_0d_O2_saturationType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Air_0d_O2_saturationType::Create(const std::vector<char>& data)
 {
   MAT::Air_0d_O2_saturation* air_0d_O2_sat = new MAT::Air_0d_O2_saturation();
   air_0d_O2_sat->Unpack(data);
@@ -60,9 +60,9 @@ MAT::Air_0d_O2_saturation::Air_0d_O2_saturation(MAT::PAR::Air_0d_O2_saturation* 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Air_0d_O2_saturation::Pack(DRT::PackBuffer& data) const
+void MAT::Air_0d_O2_saturation::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

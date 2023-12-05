@@ -10,8 +10,8 @@
 
 #include "baci_so3_sh18.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
@@ -26,7 +26,7 @@ namespace
   const std::string name = DRT::ELEMENTS::So_sh18Type::Instance().Name();
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
 {
   auto* object = new DRT::ELEMENTS::So_sh18(-1, -1);
   object->Unpack(data);
@@ -121,9 +121,9 @@ DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::So_sh18::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

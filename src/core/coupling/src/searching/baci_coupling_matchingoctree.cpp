@@ -184,7 +184,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
   sblockofnodes.clear();
   rblockofnodes.clear();
 
-  ::DRT::PackBuffer pack_data;
+  CORE::COMM::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids)
   {
@@ -270,11 +270,11 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      ::DRT::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<::DRT::ParObject> o = Teuchos::rcp(::DRT::UTILS::Factory(data));
+      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
       // check type of ParObject, and return gid
       const int id = CheckValidEntityType(o);
@@ -434,7 +434,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const ::DRT::Discretization& slav
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  ::DRT::PackBuffer pack_data;
+  CORE::COMM::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids)
   {
@@ -518,11 +518,11 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const ::DRT::Discretization& slav
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      ::DRT::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<::DRT::ParObject> o = Teuchos::rcp(::DRT::UTILS::Factory(data));
+      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
       // cast ParObject to specific type and return id
       const int id = CheckValidEntityType(o);
@@ -606,7 +606,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  ::DRT::PackBuffer pack_data;
+  CORE::COMM::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids) PackEntity(pack_data, &slavedis, slavenodeid);
 
@@ -678,7 +678,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<::DRT::ParObject> o = Teuchos::rcp(::DRT::UTILS::Factory(data));
+      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
       const int id = CheckValidEntityType(o);
 
@@ -764,7 +764,7 @@ void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 //! calc unique coordinate of entity
 void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
-    ::DRT::ParObject* entity, double* coord)
+    CORE::COMM::ParObject* entity, double* coord)
 {
   auto* actnode = dynamic_cast<::DRT::Node*>(entity);
   if (actnode == nullptr) dserror("dynamic_cast failed");
@@ -793,12 +793,12 @@ bool CORE::COUPLING::NodeMatchingOctree::CheckEntityOwner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::NodeMatchingOctree::PackEntity(
-    ::DRT::PackBuffer& data, const ::DRT::Discretization* dis, const int id)
+    CORE::COMM::PackBuffer& data, const ::DRT::Discretization* dis, const int id)
 {
   // get the slavenode
   ::DRT::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
-  ::DRT::ParObject::AddtoPack(data, actnode);
+  CORE::COMM::ParObject::AddtoPack(data, actnode);
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -806,12 +806,12 @@ void CORE::COUPLING::NodeMatchingOctree::PackEntity(
 void CORE::COUPLING::NodeMatchingOctree::UnPackEntity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
-  ::DRT::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
 }  // NodeMatchingOctree::UnPackEntity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<::DRT::ParObject> o)
+int CORE::COUPLING::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to Node
   auto* actnode = dynamic_cast<::DRT::Node*>(o.get());
@@ -861,7 +861,7 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
-    ::DRT::ParObject* entity, double* coord)
+    CORE::COMM::ParObject* entity, double* coord)
 {
   auto* actele = dynamic_cast<::DRT::Element*>(entity);
   if (actele == nullptr) dserror("dynamic_cast failed");
@@ -897,16 +897,16 @@ bool CORE::COUPLING::ElementMatchingOctree::CheckEntityOwner(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COUPLING::ElementMatchingOctree::PackEntity(
-    ::DRT::PackBuffer& data, const ::DRT::Discretization* dis, const int id)
+    CORE::COMM::PackBuffer& data, const ::DRT::Discretization* dis, const int id)
 {
   // get the slavenode
   ::DRT::Element* actele = dis->gElement(id);
   ::DRT::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
-  ::DRT::ParObject::AddtoPack(data, actele->NumNode());
-  ::DRT::ParObject::AddtoPack(data, actele);
+  CORE::COMM::ParObject::AddtoPack(data, actele->NumNode());
+  CORE::COMM::ParObject::AddtoPack(data, actele);
   for (int node = 0; node < actele->NumNode(); node++)
-    ::DRT::ParObject::AddtoPack(data, nodes[node]);
+    CORE::COMM::ParObject::AddtoPack(data, nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -915,14 +915,14 @@ void CORE::COUPLING::ElementMatchingOctree::UnPackEntity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   nodes_.clear();
-  int numnode = ::DRT::ParObject::ExtractInt(index, rblockofnodes);
-  ::DRT::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  int numnode = CORE::COMM::ParObject::ExtractInt(index, rblockofnodes);
+  CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
   for (int node = 0; node < numnode; node++)
   {
     std::vector<char> nodedata;
-    ::DRT::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
-    Teuchos::RCP<::DRT::ParObject> o = Teuchos::rcp(::DRT::UTILS::Factory(nodedata));
+    CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
+    Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(nodedata));
     Teuchos::RCP<::DRT::Node> actnode = Teuchos::rcp_dynamic_cast<::DRT::Node>(o);
     if (actnode == Teuchos::null) dserror("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, Teuchos::RCP<::DRT::Node>>(actnode->Id(), actnode));
@@ -932,7 +932,8 @@ void CORE::COUPLING::ElementMatchingOctree::UnPackEntity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(Teuchos::RCP<::DRT::ParObject> o)
+int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(
+    Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to element
   auto* actele = dynamic_cast<::DRT::Element*>(o.get());

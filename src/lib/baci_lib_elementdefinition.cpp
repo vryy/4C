@@ -13,7 +13,7 @@
 
 #include "baci_lib_elementdefinition.H"
 
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ void DRT::INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std:
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupValidElementLines()
 {
-  DRT::ParObjectFactory::Instance().SetupElementDefinition(definitions_);
+  CORE::COMM::ParObjectFactory::Instance().SetupElementDefinition(definitions_);
 }
 
 

@@ -53,7 +53,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Newman::CreateMaterial()
 MAT::NewmanType MAT::NewmanType::instance_;
 
 
-DRT::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
 {
   MAT::Newman* newman = new MAT::Newman();
   newman->Unpack(data);
@@ -73,9 +73,9 @@ MAT::Newman::Newman(MAT::PAR::Newman* params) : params_(params) { return; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Newman::Pack(DRT::PackBuffer& data) const
+void MAT::Newman::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

@@ -13,8 +13,8 @@
 #define BACI_LIB_CONTAINER_H
 
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_parobjectfactory.H"
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 
@@ -28,14 +28,14 @@ class Epetra_Vector;
 
 namespace DRT
 {
-  class ContainerType : public DRT::ParObjectType
+  class ContainerType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "ContainerType"; }
 
     static ContainerType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ContainerType instance_;
@@ -56,7 +56,7 @@ namespace DRT
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
 
   */
-  class Container : public DRT::ParObject
+  class Container : public CORE::COMM::ParObject
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -91,7 +91,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    void Pack(DRT::PackBuffer& data) const override;
+    void Pack(CORE::COMM::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class

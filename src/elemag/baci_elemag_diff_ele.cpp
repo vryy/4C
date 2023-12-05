@@ -12,11 +12,11 @@
 
 #include "baci_elemag_diff_ele.H"
 
+#include "baci_comm_utils_factory.H"
 #include "baci_elemag_ele_boundary_calc.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
-#include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::ElemagDiffType DRT::ELEMENTS::ElemagDiffType::instance_;
 DRT::ELEMENTS::ElemagDiffBoundaryType DRT::ELEMENTS::ElemagDiffBoundaryType::instance_;
@@ -37,7 +37,7 @@ DRT::ELEMENTS::ElemagDiffIntFaceType& DRT::ELEMENTS::ElemagDiffIntFaceType::Inst
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ElemagDiffType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::ElemagDiffType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::ElemagDiff* object = new DRT::ELEMENTS::ElemagDiff(-1, -1);
   object->Unpack(data);
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::ElemagDiff::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Lines()
 {
-  return DRT::UTILS::GetElementLines<ElemagDiffBoundary, ElemagDiff>(*this);
+  return CORE::COMM::GetElementLines<ElemagDiffBoundary, ElemagDiff>(*this);
 }
 
 
@@ -179,7 +179,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Surfaces()
 {
-  return DRT::UTILS::GetElementSurfaces<ElemagDiffBoundary, ElemagDiff>(*this);
+  return CORE::COMM::GetElementSurfaces<ElemagDiffBoundary, ElemagDiff>(*this);
 }
 
 
@@ -200,7 +200,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiff::CreateFaceElement(
   DRT::ELEMENTS::ElemagDiff* slave_pele = dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent_slave);
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ElemagDiffIntFace, ElemagDiff>(
+  return CORE::COMM::ElementIntFaceFactory<ElemagDiffIntFace, ElemagDiff>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -271,9 +271,9 @@ DRT::Element* DRT::ELEMENTS::ElemagDiffBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagDiffBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::ElemagDiffBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject

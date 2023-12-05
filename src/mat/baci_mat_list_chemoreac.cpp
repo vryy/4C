@@ -36,7 +36,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListChemoReac::CreateMaterial()
 MAT::MatListChemoReacType MAT::MatListChemoReacType::instance_;
 
 
-DRT::ParObject* MAT::MatListChemoReacType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MatListChemoReacType::Create(const std::vector<char>& data)
 {
   MAT::MatListChemoReac* MatListChemoReac = new MAT::MatListChemoReac();
   MatListChemoReac->Unpack(data);
@@ -96,9 +96,9 @@ void MAT::MatListChemoReac::Clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::Pack(DRT::PackBuffer& data) const
+void MAT::MatListChemoReac::Pack(CORE::COMM::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
