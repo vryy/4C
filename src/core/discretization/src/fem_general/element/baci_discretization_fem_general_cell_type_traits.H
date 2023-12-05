@@ -85,7 +85,7 @@ namespace CORE::FE
    * list for different cell types. You can do it like so:
    *
    * @code{.cpp}
-   * using CellTypes = std::integer_sequence<CellType, CellType::hex8, CellType::hex27>
+   * using CellTypes = CORE::FE::celltype_sequence<CellType, CellType::hex8, CellType::hex27>
    *
    * // results in BaseTypeList<Base<CellType::hex8>, Base<CellType::hex27>>
    * using BaseTypeList = apply_celltype_sequence<Base, CellTypes>;
@@ -132,12 +132,12 @@ namespace CORE::FE
       DETAILS::celltype_sequence_to_array<celltypes>::value;
 
   /*!
-   * @brief a std::integer_sequence holding all @p CellTypes including @p none and @p max
+   * @brief a CORE::FE::celltype_sequence holding all @p CellTypes including @p none and @p max
    */
   using all_celltypes = DETAILS::make_celltype_sequence<CellType::dis_none, CellType::max_distype>;
   /*!
-   * @brief a std::integer_sequence holding all physical @p CellTypes , i.e. all CellTypes except @p
-   * none and @p max
+   * @brief a CORE::FE::celltype_sequence holding all physical @p CellTypes , i.e. all CellTypes
+   * except @p none and @p max
    */
   using all_physical_celltypes = DETAILS::make_celltype_sequence<static_cast<CellType>(1),
       static_cast<CellType>(static_cast<std::size_t>(CellType::max_distype) - 1)>;
@@ -173,7 +173,7 @@ namespace CORE::FE
    * You can also pass a sequence of supported celltypes
    *
    * @code{.cpp}
-   * using hex_celltypes = std::integer_sequence<CellType, CellType::hex8, CellType::hex16,
+   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -188,7 +188,7 @@ namespace CORE::FE
    *
    * In order to throw a custom error message, do it like so:
    * @code{.cpp}
-   * using hex_celltypes = std::integer_sequence<CellType, CellType::hex8, CellType::hex16,
+   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -200,7 +200,7 @@ namespace CORE::FE
    *
    * In order to do a default operation, do it like so:
    * @code{.cpp}
-   * using hex_celltypes = std::integer_sequence<CellType, CellType::hex8, CellType::hex16,
+   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -221,8 +221,8 @@ namespace CORE::FE
    * celltype as argument for the default operation. The compile time celltype can be obtained with
    * the @p operator() . Typically, a lambda function with @p auto parameter is passed. either throw
    * an error or return a convertible type to @p fct return type.
-   * @tparam celltype_sequence : a std::integer_sequence holding a list of all implemented celltypes
-   * (default: all physical celltypes, i.e. all except none and max)
+   * @tparam celltype_sequence : a CORE::FE::celltype_sequence holding a list of all implemented
+   * celltypes (default: all physical celltypes, i.e. all except none and max)
    * @return returns the invoked result of @p fct
    */
   template <typename celltype_sequence = all_physical_celltypes, typename Function,
