@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_ELE_PORO_CALC_LIB_H
-#define BACI_SOLID_ELE_PORO_CALC_LIB_H
+#ifndef BACI_SOLID_PORO_ELE_CALC_LIB_H
+#define BACI_SOLID_PORO_ELE_CALC_LIB_H
 
 
 #include "baci_lib_element.H"
@@ -828,4 +828,4 @@ namespace DRT::ELEMENTS
   }
 }  // namespace DRT::ELEMENTS
 
-#endif  // SOLID_PORO_ELE_CALC_LIB_H
+#endif  // BACI_SOLID_PORO_ELE_CALC_LIB_H

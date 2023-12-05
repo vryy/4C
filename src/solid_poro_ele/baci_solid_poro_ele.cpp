@@ -5,7 +5,7 @@
 \level 1
 */
 
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_utils_factory.H"
@@ -16,9 +16,9 @@
 #include "baci_so3_surface.H"
 #include "baci_solid_ele_factory.H"
 #include "baci_solid_ele_interface_serializable.H"
-#include "baci_solid_ele_poro_factory.H"
-#include "baci_solid_ele_poro_utils.H"
 #include "baci_solid_ele_utils.H"
+#include "baci_solid_poro_ele_factory.H"
+#include "baci_solid_poro_ele_utils.H"
 
 #include <memory>
 

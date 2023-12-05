@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_ELE_PORO_UTILS_H
-#define BACI_SOLID_ELE_PORO_UTILS_H
+#ifndef BACI_SOLID_PORO_ELE_UTILS_H
+#define BACI_SOLID_PORO_ELE_UTILS_H
 
 #include "baci_inpar_poro.H"
 #include "baci_inpar_scatra.H"
@@ -71,4 +71,4 @@ namespace STR::UTILS::READELEMENT
 
 }  // namespace STR::UTILS::READELEMENT
 
-#endif  // SOLID_ELE_PORO_UTILS_H
+#endif  // BACI_SOLID_PORO_ELE_UTILS_H

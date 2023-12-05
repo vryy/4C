@@ -26,6 +26,8 @@ set(_dependencies
     scatra_ele
     shell7p
     so3
+    solid_ele
+    solid_poro_ele
     thermo
     torsion3
     truss3

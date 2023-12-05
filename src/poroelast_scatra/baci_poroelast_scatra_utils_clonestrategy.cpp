@@ -21,7 +21,7 @@
 #include "baci_so3_poro_p1_scatra.H"
 #include "baci_so3_poro_scatra.H"
 #include "baci_so3_scatra.H"
-#include "baci_solid_ele_poro.H"
+#include "baci_solid_poro_ele.H"
 #include "baci_w1_poro_p1_scatra.H"
 #include "baci_w1_poro_scatra.H"
 
