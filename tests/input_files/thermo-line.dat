@@ -24,8 +24,6 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial
 FILESTEPS                       1000
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2

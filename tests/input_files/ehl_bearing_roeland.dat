@@ -37,8 +37,6 @@ PREDICT                         ConstDis
 LINEAR_SOLVER                   3
 ABSTOLRES                       1.0e-7
 CONVTOL                         1.0e-4
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
 -----------------------------------------------ELASTO HYDRO DYNAMIC
 RESTARTEVRYTIME                 0
@@ -64,8 +62,6 @@ ITERNORM                        Rms
 NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   3
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  yes
 MERGE_EHL_BLOCK_MATRIX          yes
 ------------------------------------------------------------CONTACT DYNAMIC

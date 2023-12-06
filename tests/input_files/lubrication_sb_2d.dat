@@ -45,8 +45,6 @@ LINEAR_SOLVER                   3
 ITEMAX                          10
 ABSTOLRES                       1.0e-14
 CONVTOL                         1.0e-6
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
 GAP_OFFSET                      0.0
 ADD_SQUEEZE_TERM                No

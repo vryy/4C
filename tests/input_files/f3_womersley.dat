@@ -46,8 +46,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 TOLDISP                         1.0E-04
 TOLRES                          1.0E-04
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 MAXITER                         20
 UZAWAPARAM                      1.0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA

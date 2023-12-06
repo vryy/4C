@@ -50,8 +50,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-03
 TOLRES                          1.0E-03
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.01
 MAXITER                         20
 UZAWAPARAM                      1.0
 DIVERCONT                       repeat_simulation

@@ -40,8 +40,6 @@ WRITEFLUX_IDS                   1 2
 CONVTOL                         1e-10
 ITEMAX                          2
 ABSTOLRES                       1e-15
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins

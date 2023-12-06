@@ -14,8 +14,6 @@ RESTART_WITH_CARDVASC0D         No
 LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 DAMPING                         Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha

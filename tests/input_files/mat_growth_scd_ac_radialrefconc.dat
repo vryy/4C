@@ -62,8 +62,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX_IDS                   -1
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-10
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ITEMAX                          10
@@ -78,8 +76,6 @@ STABTYPE                        SUPG
 SUGRVEL                         no
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta

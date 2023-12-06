@@ -18,8 +18,6 @@ NUMALEDIS                       0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CALCERROR                       no
@@ -90,8 +88,6 @@ CONTIPARTINT                    no
 TRANSIENT_TERMS                 none
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
@@ -135,8 +131,6 @@ ITEMAX                          10
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ABSTOLRES                       1e-12
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   4
 SOLVERTYPE                      nonlinear

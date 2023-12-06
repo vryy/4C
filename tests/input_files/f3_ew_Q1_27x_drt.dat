@@ -32,8 +32,6 @@ ITEMAX                          5
 CONVCHECK                       L_2_norm
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
-ADAPTCONV                       no
-ADAPTCONV_BETTER                1.0
 SIMPLER                         no
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-6

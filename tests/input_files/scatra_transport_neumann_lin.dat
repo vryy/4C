@@ -63,8 +63,6 @@ VELOCITYFIELD                   function
 WRITEFLUX_IDS                   -1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-10
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     no
 ITEMAX                          10

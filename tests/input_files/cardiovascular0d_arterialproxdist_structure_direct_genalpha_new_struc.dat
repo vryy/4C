@@ -17,8 +17,6 @@ LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 DAMPING                         Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha

@@ -30,8 +30,6 @@ PROBLEMTYP                      Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2

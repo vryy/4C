@@ -22,8 +22,6 @@ NUMSTRUCDIS                     1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Belos
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         no
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta

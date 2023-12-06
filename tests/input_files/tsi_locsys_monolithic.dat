@@ -45,8 +45,6 @@ Outer Iteration = yes
 Outer Iteration StatusTest = no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
@@ -72,8 +70,6 @@ THETA                           0.66
 NAME                            STRUCT_SOLVER
 SOLVER                          UMFPACK
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1

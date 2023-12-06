@@ -292,7 +292,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatra_nonlin);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &scatra_nonlin);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,

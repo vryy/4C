@@ -33,8 +33,6 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 GAMMA                           0.66
 LIFTDRAG                        no
-ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 PREDICTOR                       steady_state
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
@@ -89,8 +87,6 @@ GAMMA                           0.66
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 EXPLPREDICT                     no
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
