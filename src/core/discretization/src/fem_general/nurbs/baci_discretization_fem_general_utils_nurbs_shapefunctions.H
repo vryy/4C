@@ -12,7 +12,6 @@
 
 #include "baci_discretization_fem_general_utils_bspline.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
