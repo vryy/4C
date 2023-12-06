@@ -1,4 +1,4 @@
-"Check that files are prefixed with module names and includes use correct style"
+"""Check that files have correct filenames and includes use correct style"""
 
 import argparse
 from baci_utils import common_utils as utils
@@ -38,7 +38,14 @@ def most_specific_module_root(file, module_roots):
     return next((m for m in module_roots if file.startswith(m)), None)
 
 
-def has_valid_prefix(path, module_roots):
+def has_valid_filename(path, module_roots):
+    """
+    Check that the file has a valid filename.
+
+    A valid filename
+    - is prefixed by 'baci' and the module name
+    - is postfixed by '_test' if it is a test file
+    """
     abs_path, file = os.path.split(os.path.abspath(path))
 
     my_module_root = most_specific_module_root(abs_path, module_roots)
@@ -87,7 +94,6 @@ def invalid_includes(path, module_names):
     for line_number, line in enumerate(utils.file_contents(path)):
         included_file, included_with_quotes = find_header_include(line)
         if included_file is not None:
-
             # a file that is part of a module's interface
             is_own_module_file = any(
                 is_prefixed_by_module(included_file, m) for m in module_names
@@ -130,13 +136,13 @@ def invalid_includes(path, module_names):
     return invalid_include_lines
 
 
-def check_cpp_files_for_prefix(look_cmd, module_roots):
-    wrongly_prefixed_files = [
+def check_cpp_files_filename(look_cmd, module_roots):
+    files_with_wrong_filename = [
         ff
         for ff in utils.files_changed(look_cmd)
-        if utils.is_source_file(ff) and not has_valid_prefix(ff, module_roots)
+        if utils.is_source_file(ff) and not has_valid_filename(ff, module_roots)
     ]
-    return wrongly_prefixed_files
+    return files_with_wrong_filename
 
 
 def check_include_style(look_cmd, module_roots):
@@ -163,7 +169,7 @@ def main():
     parser.add_argument(
         "paths",
         nargs="+",
-        help="The paths in which to check source files for the correct prefix.",
+        help="The paths in which to check source files for the correct filename.",
     )
 
     parser.add_argument(
@@ -194,22 +200,23 @@ def main():
     module_roots = find_all_module_roots(args.paths)
     module_roots.sort(reverse=True)
 
-    allerrors = check_cpp_files_for_prefix(look_cmd, module_roots)
+    errors_filename = check_cpp_files_filename(look_cmd, module_roots)
 
-    allerrors_include = check_include_style(look_cmd, module_roots)
+    errors_include_style = check_include_style(look_cmd, module_roots)
 
     utils.pretty_print_error_report(
-        "The following files are not prefixed by the module they reside in:",
-        allerrors,
+        "A valid filename looks like this: baci_<module_name>_<detailed_name>[_test].(H|cpp). "
+        + "The following files have incorrect filenames:",
+        errors_filename,
         errfile,
     )
     utils.pretty_print_error_report(
         "The following files use an invalid style for the #include directive:",
-        allerrors_include,
+        errors_include_style,
         errfile,
     )
 
-    return len(allerrors) + len(allerrors_include)
+    return len(errors_filename) + len(errors_include_style)
 
 
 if __name__ == "__main__":
