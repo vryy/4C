@@ -183,6 +183,15 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "time step",
       &ssidynmono);
 
+  DoubleParameter("RELAX_LIN_SOLVER_TOLERANCE", 1.0,
+      "relax the tolerance of the linear solver in case it is an iterative solver by scaling the "
+      "convergence tolerance with factor RELAX_LIN_SOLVER_TOLERANCE",
+      &ssidynmono);
+
+  IntParameter("RELAX_LIN_SOLVER_STEP", -1,
+      "relax the tolerance of the linear solver within the first RELAX_LIN_SOLVER_STEP steps",
+      &ssidynmono);
+
   /*----------------------------------------------------------------------*/
   /* parameters for SSI with manifold */
   /*----------------------------------------------------------------------*/

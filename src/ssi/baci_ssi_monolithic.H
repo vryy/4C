@@ -272,6 +272,13 @@ namespace SSI
     //! print system matrix, rhs, and map of system matrix to file
     const bool print_matlab_;
 
+    //! relax the tolerance of the linear solver in case it is an iterative solver by scaling the
+    //! convergence tolerance with factor @p relax_lin_solver_tolerance_
+    const double relax_lin_solver_tolerance_;
+
+    //! relax the tolerance of the linear solver within the first @p relax_lin_solver_step_ steps
+    const int relax_lin_solver_iter_step_;
+
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
 
