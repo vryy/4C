@@ -44,6 +44,15 @@ namespace CORE::FE
     max_distype  ///< end marker. must be the last entry
   };
 
+  /*!
+   * @brief A compile time sequence of celltypes.
+   *
+   * @tparam celltypes Celltypes in the sequence
+   */
+  template <CellType... celltypes>
+  struct celltype_sequence
+  {
+  };
 }  // namespace CORE::FE
 
 #endif
