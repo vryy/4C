@@ -12,6 +12,7 @@
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_utils_function.H"
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,

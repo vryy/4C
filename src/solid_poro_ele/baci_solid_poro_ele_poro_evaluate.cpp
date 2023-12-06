@@ -10,6 +10,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 
 #include "baci_mat_structporo.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_io.H"
 #include "baci_solid_poro_ele.H"
 
 

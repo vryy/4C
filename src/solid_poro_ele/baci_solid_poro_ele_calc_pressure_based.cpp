@@ -9,7 +9,9 @@ implementation
 
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_solid_poro_ele_calc_lib.H"
 
 #include <optional>

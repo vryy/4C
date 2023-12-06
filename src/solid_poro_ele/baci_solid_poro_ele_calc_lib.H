@@ -10,6 +10,7 @@
 
 
 #include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
