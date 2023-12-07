@@ -11,7 +11,6 @@
 
 #include "baci_io_control.H"
 
-#include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"  // access to legacy parser module
 #include "baci_io_pstream.H"
 
@@ -28,8 +27,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& outputname,
-    int ndim, int restart, int filesteps, int create_controlfile)
+    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
+    const std::string& outputname, int ndim, int restart, int filesteps, int create_controlfile)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
@@ -91,9 +90,9 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& restartname,
-    std::string outputname, int ndim, int restart, int filesteps, int create_controlfile,
-    bool adaptname)
+    CORE::FE::ShapeFunctionType spatial_approx, std::string inputfile,
+    const std::string& restartname, std::string outputname, int ndim, int restart, int filesteps,
+    int create_controlfile, bool adaptname)
     : problemtype_(std::move(problemtype)),
       inputfile_(std::move(inputfile)),
       ndim_(ndim),
@@ -213,7 +212,7 @@ IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -224,7 +223,8 @@ void IO::OutputControl::OverwriteResultFile(const ShapeFunctionType& spatial_app
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(
+    int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
   {
@@ -244,8 +244,8 @@ void IO::OutputControl::NewResultFile(int numb_run, const ShapeFunctionType& spa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(
-    const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(const std::string& name_appendix, int numb_run,
+    const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
@@ -256,7 +256,8 @@ void IO::OutputControl::NewResultFile(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType& spatial_approx)
+void IO::OutputControl::NewResultFile(
+    std::string name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
@@ -267,7 +268,7 @@ void IO::OutputControl::NewResultFile(std::string name, const ShapeFunctionType&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void IO::OutputControl::WriteHeader(
-    const std::string& control_file_name, const ShapeFunctionType& spatial_approx)
+    const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)
   {
@@ -292,7 +293,7 @@ void IO::OutputControl::WriteHeader(
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \""
-                 << INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
+                 << CORE::FE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 

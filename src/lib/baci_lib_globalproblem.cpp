@@ -162,12 +162,6 @@ double DRT::Problem::Walltime()
          1.0e-3;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::string DRT::Problem::SpatialApproximation() const
-{
-  return INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(shapefuntype_);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -401,7 +395,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   probtype_ = DRT::INPUT::IntegralValue<ProblemType>(type, "PROBLEMTYP");
 
   // 2) get the spatial approximation type
-  shapefuntype_ = DRT::INPUT::IntegralValue<ShapeFunctionType>(type, "SHAPEFCT");
+  shapefuntype_ = DRT::INPUT::IntegralValue<CORE::FE::ShapeFunctionType>(type, "SHAPEFCT");
 
   // 3) do the restart business with the four options we support (partially)
   if (restartstep_ == 0)
@@ -785,7 +779,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
-  ShapeFunctionType distype = SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = SpatialApproximationType();
 
   // get problem dimension
   int dim = NDim();
@@ -798,7 +792,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
   {
     Teuchos::RCP<DRT::Discretization> actdis = iter->second;
 
-    if (distype == ShapeFunctionType::shapefunction_nurbs)
+    if (distype == CORE::FE::ShapeFunctionType::nurbs)
     {
       // cast discretisation to nurbs variant to be able
       // to add the knotvector
@@ -931,7 +925,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
-  const ShapeFunctionType distype = SpatialApproximationType();
+  const CORE::FE::ShapeFunctionType distype = SpatialApproximationType();
 
   // the basic mesh reader. now add desired node and element readers to it!
   DRT::INPUT::MeshReader meshreader(reader.Comm());
@@ -943,7 +937,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case ProblemType::fsi_redmodels:
     case ProblemType::fsi_lung:
     {
-      if (distype == ShapeFunctionType::shapefunction_nurbs)
+      if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
         structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
@@ -999,7 +993,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           dserror("Nurbs discretization not possible for fs3i!");
           break;
@@ -1046,7 +1040,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           dserror("Nurbs discretization not possible for biofilm problems!");
           break;
@@ -1169,7 +1163,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
           break;
@@ -1193,14 +1187,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case ProblemType::fluid:
     case ProblemType::fluid_redmodels:
     {
-      if (distype == ShapeFunctionType::shapefunction_hdg)
+      if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       }
-      else if (distype == ShapeFunctionType::shapefunction_nurbs)
+      else if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
 
@@ -1252,13 +1246,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
           scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm()));
           break;
         }
-        case ShapeFunctionType::shapefunction_hdg:
+        case CORE::FE::ShapeFunctionType::hdg:
         {
           fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
           scatradis = Teuchos::rcp(new DRT::DiscretizationHDG("scatra", reader.Comm()));
@@ -1289,7 +1283,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case ProblemType::sti:
     {
       // safety checks
-      if (distype == ShapeFunctionType::shapefunction_nurbs)
+      if (distype == CORE::FE::ShapeFunctionType::nurbs)
         dserror("Scatra-thermo interaction does not work for nurbs discretizations yet!");
 
       // create empty discretizations for scalar and thermo fields
@@ -1313,12 +1307,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case ProblemType::fluid_ale:
     case ProblemType::freesurf:
     {
-      if (distype == ShapeFunctionType::shapefunction_hdg)
+      if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       }
-      else if (distype == ShapeFunctionType::shapefunction_nurbs)
+      else if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
@@ -1371,7 +1365,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
           thermdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("thermo", reader.Comm()));
@@ -1405,7 +1399,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           thermdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("thermo", reader.Comm()));
           break;
@@ -1431,7 +1425,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
           break;
@@ -1532,7 +1526,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create empty discretizations
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
           scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm()));
@@ -1579,7 +1573,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create empty discretizations
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           dserror("Nurbs Discretization not possible for artery");
           break;
@@ -1645,7 +1639,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create empty discretizations
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
           porofluiddis =
@@ -1688,7 +1682,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create empty discretizations
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", reader.Comm()));
           porofluiddis =
@@ -1743,7 +1737,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create empty discretizations
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           porofluiddis =
               Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("porofluid", reader.Comm()));
@@ -2047,7 +2041,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case ProblemType::fluid_ale:
     case ProblemType::fluid_redmodels:
     {
-      if (distype == ShapeFunctionType::shapefunction_polynomial)
+      if (distype == CORE::FE::ShapeFunctionType::polynomial)
       {
         // create empty discretizations
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));

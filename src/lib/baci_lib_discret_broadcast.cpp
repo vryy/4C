@@ -59,7 +59,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
   {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
     std::string name;
-    ShapeFunctionType distype;
+    CORE::FE::ShapeFunctionType distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
@@ -96,7 +96,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
     cont.Unpack(singledata);
     const std::string* rname = cont.Get<std::string>("disname");
     name = *rname;
-    distype = (ShapeFunctionType)cont.GetInt("distype");
+    distype = (CORE::FE::ShapeFunctionType)cont.GetInt("distype");
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -106,7 +106,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
     {
       switch (distype)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, lcomm));
           break;
@@ -178,7 +178,7 @@ void DRT::BroadcastDiscretizations(DRT::Problem& problem)
  *----------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-    ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
+    CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
 
@@ -206,7 +206,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");
@@ -463,7 +463,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
  *----------------------------------------------------------------------------*/
 void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
     Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-    ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
+    CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
 
@@ -489,7 +489,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
   Teuchos::RCP<DRT::Discretization> commondis;
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name, icomm));
       dserror("For Nurbs this method needs additional features!");

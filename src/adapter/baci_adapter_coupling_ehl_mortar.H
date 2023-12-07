@@ -47,7 +47,8 @@ namespace ADAPTER
     \brief Constructor.
     */
     CouplingEhlMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
-        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
+        Teuchos::ParameterList contact_dynamic_params,
+        CORE::FE::ShapeFunctionType shape_function_type);
 
     //@}
 

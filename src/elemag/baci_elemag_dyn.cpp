@@ -186,7 +186,7 @@ void electromagnetics_drt()
           scatradis->FillComplete();
 
           DRT::UTILS::CloneDiscretization<
-              ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_hdg>>(
+              ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>>(
               elemagdishdg, scatradis);
         }
         else
@@ -195,7 +195,7 @@ void electromagnetics_drt()
           scatradis->FillComplete();
 
           DRT::UTILS::CloneDiscretization<
-              ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_polynomial>>(
+              ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>>(
               elemagdishdg, scatradis);
         }
 

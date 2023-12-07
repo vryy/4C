@@ -158,7 +158,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   const std::string probtype(type);
   problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
 
-  spatial_approx_ = INPAR::PROBLEMTYPE::StringToShapeFunctionType(
+  spatial_approx_ = CORE::FE::StringToShapeFunctionType(
       map_read_string(&control_table_, "spatial_approximation"));
 
   /*--------------------------------------------------------------------*/
@@ -600,7 +600,7 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       switch (spatial_approx_)
       {
-        case ShapeFunctionType::shapefunction_nurbs:
+        case CORE::FE::ShapeFunctionType::nurbs:
         {
           // try a dynamic cast of the discretisation to a nurbs discretisation
           DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -894,7 +894,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     // read knot vectors for nurbs discretisations
     switch (spatial_approx_)
     {
-      case ShapeFunctionType::shapefunction_nurbs:
+      case CORE::FE::ShapeFunctionType::nurbs:
       {
         // try a dynamic cast of the discretisation to a nurbs discretisation
         DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1017,13 +1017,13 @@ PostField PostProblem::getfield(MAP* field_info)
 
   switch (spatial_approx_)
   {
-    case ShapeFunctionType::shapefunction_polynomial:
-    case ShapeFunctionType::shapefunction_hdg:
+    case CORE::FE::ShapeFunctionType::polynomial:
+    case CORE::FE::ShapeFunctionType::hdg:
     {
       dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
       break;
     }
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
       break;

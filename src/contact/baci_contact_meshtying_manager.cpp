@@ -372,7 +372,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   const int spatialDim = DRT::Problem::Instance()->NDim();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -558,7 +558,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // NURBS PROBLEM?
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       mtparams.set<bool>("NURBS", true);
       break;

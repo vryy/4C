@@ -64,13 +64,4 @@ enum class ProblemType
   tsi,                   // thermal structure interaction
 };
 
-/// Type of shape functions used in spatial discretization
-enum class ShapeFunctionType
-{
-  shapefunction_undefined,   ///< Undefined
-  shapefunction_polynomial,  ///< Polynomial shape functions
-  shapefunction_nurbs,       ///< NURBS shape functions
-  shapefunction_hdg          ///< Hybridizable Discontinuous Galerkin
-};
-
 #endif

@@ -13,6 +13,7 @@
 #define BACI_IO_H
 
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_io_hdf.H"
 #include "baci_linalg_serialdensematrix.H"
 
@@ -462,7 +463,7 @@ namespace IO
     //! do we want binary output
     bool binio_;
 
-    ShapeFunctionType spatial_approx_;
+    CORE::FE::ShapeFunctionType spatial_approx_;
   };
 
 

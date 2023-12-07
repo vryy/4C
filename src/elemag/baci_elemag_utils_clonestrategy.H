@@ -14,6 +14,8 @@
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
+#include "baci_discretization_fem_general_shape_function_type.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <map>
@@ -27,8 +29,6 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-enum class ShapeFunctionType;
-
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
 namespace ELEMAG
@@ -40,7 +40,7 @@ namespace ELEMAG
            of scatra from a given elemag discretization
 
     */
-    template <ShapeFunctionType sft>
+    template <CORE::FE::ShapeFunctionType sft>
     class ScatraCloneStrategy
     {
      public:

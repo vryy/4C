@@ -33,6 +33,7 @@ extern "C"
 #include "baci_io_legacy_types.h"
 }
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Map.h>
@@ -139,7 +140,7 @@ class PostProblem
   ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
+  CORE::FE::ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
 
   //! returns stress type
   std::string stresstype() { return stresstype_; }
@@ -209,7 +210,7 @@ class PostProblem
   ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
-  ShapeFunctionType spatial_approx_;
+  CORE::FE::ShapeFunctionType spatial_approx_;
 
   //! number of dimensions
   int ndim_;

@@ -21,7 +21,7 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <ShapeFunctionType sft>
+template <CORE::FE::ShapeFunctionType sft>
 std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy() const
 {
   return {{"Dirichlet", "Dirichlet"}};
@@ -29,7 +29,7 @@ std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::Cond
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <ShapeFunctionType sft>
+template <CORE::FE::ShapeFunctionType sft>
 void ELEMAG::UTILS::ScatraCloneStrategy<sft>::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
@@ -41,7 +41,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <ShapeFunctionType sft>
+template <CORE::FE::ShapeFunctionType sft>
 void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
@@ -50,7 +50,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
   {
     Transport->SetDisType(oldele->Shape());
     Transport->SetMaterial(matid);
-    if (sft == ShapeFunctionType::shapefunction_hdg)
+    if (sft == CORE::FE::ShapeFunctionType::hdg)
     {
       auto scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);
       scatraele->SetImplType(INPAR::SCATRA::impltype_std_hdg);
@@ -70,20 +70,20 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <ShapeFunctionType sft>
+template <CORE::FE::ShapeFunctionType sft>
 bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::DetermineEleType(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // Clone it now.
   if (ismyele)
   {
-    sft == ShapeFunctionType::shapefunction_hdg ? eletype.push_back("TRANSPHDG")
-                                                : eletype.push_back("TRANSP");
+    sft == CORE::FE::ShapeFunctionType::hdg ? eletype.push_back("TRANSPHDG")
+                                            : eletype.push_back("TRANSP");
   }
 
   return true;
 }
 
 // template classes
-template class ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_polynomial>;
-template class ELEMAG::UTILS::ScatraCloneStrategy<ShapeFunctionType::shapefunction_hdg>;
+template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>;
+template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>;

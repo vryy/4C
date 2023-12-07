@@ -681,7 +681,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   const int dim = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -1143,7 +1143,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       cparams.set<bool>("NURBS", true);
       break;

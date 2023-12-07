@@ -76,7 +76,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
   const int dim = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -323,7 +323,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_undefined &&
-        distype != ShapeFunctionType::shapefunction_nurbs)
+        distype != CORE::FE::ShapeFunctionType::nurbs)
     {
       dserror(
           "Consistent dual shape functions in boundary elements only for linear shape "
@@ -588,7 +588,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   // ---------------------------------------------------------------------
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       params.set<bool>("NURBS", true);
       break;

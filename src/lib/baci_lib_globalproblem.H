@@ -13,6 +13,7 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
@@ -235,11 +236,9 @@ namespace DRT
     /// current wall time in seconds with micro second precision
     static double Walltime();
 
-    //! Return string name of the basis function type (polynomial/nurbs)
-    std::string SpatialApproximation() const;
 
     //! Return type of the basis function encoded as enum
-    ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
+    CORE::FE::ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
 
     //! @}
 
@@ -628,7 +627,7 @@ namespace DRT
     ProblemType probtype_;
 
     /// Spatial approximation type
-    ShapeFunctionType shapefuntype_;
+    CORE::FE::ShapeFunctionType shapefuntype_;
 
     /// the restart step (given by command line or input file)
     int restartstep_;
