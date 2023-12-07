@@ -240,10 +240,6 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const
 
 // template classes
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex18>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex20>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::nurbs27>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::pyramid5>;

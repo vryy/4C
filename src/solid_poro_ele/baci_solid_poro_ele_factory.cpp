@@ -5,8 +5,9 @@
 \level 1
 */
 
-#include "baci_solid_poro_ele_calc_pressure_based.H"
 #include "baci_solid_poro_ele_factory.H"
+
+#include "baci_solid_poro_ele_calc_pressure_based.H"
 
 #include <memory>
 
@@ -22,15 +23,6 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
       break;
     case CORE::FE::CellType::hex27:
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex27>(porotype);
-      break;
-    case CORE::FE::CellType::hex20:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex20>(porotype);
-      break;
-    case CORE::FE::CellType::hex18:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex18>(porotype);
-      break;
-    case CORE::FE::CellType::pyramid5:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::pyramid5>(porotype);
       break;
     case CORE::FE::CellType::tet4:
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet4>(porotype);

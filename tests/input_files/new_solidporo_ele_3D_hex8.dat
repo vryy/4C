@@ -1,0 +1,110 @@
+-------------------------------------------------------------------------TITLE
+Simple test that tests a HEX8 pressure based solid poro element.
+One fluid phase in elastic porous medium.
+Monolithic algorithm.
+-------------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Multiphase_Poroelasticity
+RESTART                         0
+------------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+DYNAMICTYP                      OneStepTheta
+LINEAR_SOLVER                   1
+-----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1.0
+---------------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
+LINEAR_SOLVER                   1
+TIMEINTEGR                      One_Step_Theta
+THETA                           1.0
+INITIALFIELD                    zero_field
+INITFUNCNO                      -1
+--------------------------------------------------------POROMULTIPHASE DYNAMIC
+RESTARTEVRY                     1
+NUMSTEP                         25
+MAXTIME                         2.5
+TIMESTEP                        0.1
+RESULTSEVRY                     1
+ITEMAX                          100
+COUPALGO                        twoway_monolithic
+---------------------------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC
+LINEAR_SOLVER                   1
+TOLRES_GLOBAL                   1e-06
+TOLINC_GLOBAL                   1e-06
+FDCHECK                         none
+----------------------------------------------------------------------SOLVER 1
+NAME                            Solver
+SOLVER                          UMFPACK
+---------------------------------------------------------------------MATERIALS
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0e-3 NUMMAT 1 MATIDS 12 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 1 END
+
+MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 122 DENSITY 1.0e-9 RELPERMEABILITYLAWID 125
+MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 123
+MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible 
+MAT 123 MAT_PhaseLawConstraint
+MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 1.5e-8
+MAT 125 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0
+
+MAT 2 MAT_StructPoro MATID 3 POROLAWID 4 INITPOROSITY 0.4
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 1.0e-6
+MAT 4 MAT_PoroLawDensityDependent DENSITYLAWID 5
+MAT 5 MAT_PoroDensityLawExp BULKMODULUS 10.0e+15
+----------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
+------------------------------------------------------------------------FUNCT1
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.5e-1*(1-cos(pi*t*0.4))
+------------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 2.05187115425182545e-02 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 9.55437963110187041e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE -9.55437963110227460e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 2.05187115425182511e-02 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -9.55437963110208725e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE -9.55437963110217225e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 2.05187115425184106e-02 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE -9.55437963110218093e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 9.55437963110192245e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 2.05187115425186917e-02 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 9.55437963110201960e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 9.55437963110185133e-03 TOLERANCE 1e-08
+POROFLUIDMULTIPHASE DIS porofluid NODE 6 QUANTITY phi1 VALUE 5.0e-01 TOLERANCE 1e-08
+-------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
+DVOL  1
+// total volume
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
+-------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+// leftsurf
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+------------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        1
+NODES                           8
+DIM                             3
+MATERIALS                       9999
+-----------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 4 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 1 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 6 DSURFACE 2
+NODE 5 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 8 DSURFACE 2
+-----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+-------------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.0 0.0 0.0
+NODE 2 COORD 0.0 1.0 0.0
+NODE 3 COORD 0.0 0.0 1.0
+NODE 4 COORD 0.0 1.0 1.0
+NODE 5 COORD 1.0 0.0 0.0
+NODE 6 COORD 1.0 1.0 0.0
+NODE 7 COORD 1.0 0.0 1.0
+NODE 8 COORD 1.0 1.0 1.0
+------------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDPORO HEX8 1 5 6 2 3 7 8 4 MAT 2 KINEM nonlinear EAS none POROTYPE PressureBased
+---------------------------------------------------------------------------END
