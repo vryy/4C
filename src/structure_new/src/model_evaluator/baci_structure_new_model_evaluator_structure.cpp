@@ -20,7 +20,6 @@
 #include "baci_io_pstream.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
@@ -1390,8 +1389,8 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
   const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
-  bool isDuringPrestressing =
-      ::UTILS::PRESTRESS::IsActive(GState().GetTimeN(), prestress_type, prestress_time);
+  bool isDuringPrestressing = prestress_type != INPAR::STR::PreStress::none &&
+                              GState().GetTimeN() <= prestress_time + 1.0e-15;
 
   if (isDuringPrestressing && prestress_type == INPAR::STR::PreStress::mulf)
   {

@@ -11,11 +11,40 @@
 
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_prestress_service.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_new_model_evaluator.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
+
+
+namespace
+{
+  inline bool IsMaterialIterative()
+  {
+    return Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+               DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") ==
+           INPAR::STR::PreStress::material_iterative;
+  }
+
+  inline bool IsMaterialIterativeActive(const double currentTime)
+  {
+    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+    return pstype == INPAR::STR::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
+  }
+
+  static inline bool IsMulfActive(const double currentTime)
+  {
+    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+    return pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -68,7 +97,7 @@ void STR::IMPLICIT::PreStress::UpdateStepElement()
 void STR::IMPLICIT::PreStress::PostUpdate()
 {
   // Check for prestressing
-  if (::UTILS::PRESTRESS::IsMulfActive(GlobalState().GetTimeN()))
+  if (IsMulfActive(GlobalState().GetTimeN()))
 
   {
     if (GlobalState().GetMyRank() == 0) IO::cout << "====== Resetting Displacements" << IO::endl;
@@ -79,7 +108,7 @@ void STR::IMPLICIT::PreStress::PostUpdate()
     GlobalState().GetVelN()->PutScalar(0.0);
     GlobalState().GetAccN()->PutScalar(0.0);
   }
-  else if (::UTILS::PRESTRESS::IsMaterialIterativeActive(GlobalState().GetTimeN()))
+  else if (IsMaterialIterativeActive(GlobalState().GetTimeN()))
   {
     // Print prestress status update
     if (GlobalState().GetMyRank() == 0)
@@ -92,7 +121,7 @@ void STR::IMPLICIT::PreStress::PostUpdate()
 
 bool STR::IMPLICIT::PreStress::IsMaterialIterativePrestressConverged() const
 {
-  return ::UTILS::PRESTRESS::IsMaterialIterative() &&
+  return IsMaterialIterative() &&
          GlobalState().GetStepN() >= SDyn().GetPreStressMinimumNumberOfLoadSteps() &&
          absoluteDisplacementNorm_ < SDyn().GetPreStressDisplacementTolerance();
 }
@@ -116,7 +145,7 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
 
 void STR::IMPLICIT::PreStress::PostTimeLoop()
 {
-  if (::UTILS::PRESTRESS::IsMaterialIterative())
+  if (IsMaterialIterative())
   {
     if (absoluteDisplacementNorm_ > SDyn().GetPreStressDisplacementTolerance())
     {

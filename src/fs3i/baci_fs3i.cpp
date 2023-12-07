@@ -30,7 +30,6 @@
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linear_solver_method_linalg.H"
@@ -247,11 +246,12 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
             "since the velocity field in the structure is NOT divergence free!");
     }
   }
-
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
   if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
-      !::UTILS::PRESTRESS::IsMulf())
+      pstype != INPAR::STR::PreStress::mulf)
     dserror(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");

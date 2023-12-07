@@ -14,7 +14,6 @@
 
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
 #include "baci_structure_new_timint_explicit.H"
 #include "baci_structure_new_timint_implicit.H"
@@ -69,7 +68,10 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
   const enum INPAR::STR::DynamicType dyntype =
       DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
-  if (::UTILS::PRESTRESS::IsAny() or dyntype == INPAR::STR::dyna_statics or  // dynamic type
+  const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+                                DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+                            INPAR::STR::PreStress::none;
+  if (is_prestress or dyntype == INPAR::STR::dyna_statics or  // dynamic type
       dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
       dyntype == INPAR::STR::dyna_onesteptheta or dyntype == INPAR::STR::dyna_gemm)
     ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());

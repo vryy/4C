@@ -31,7 +31,6 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -512,7 +511,11 @@ void FSI::Monolithic::PrepareTimeloop()
   // check for prestressing,
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
-  if (::UTILS::PRESTRESS::IsActive(Time() + Dt()))
+  const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+  const double pstime =
+      DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+  if (pstype != INPAR::STR::PreStress::none && Time() + Dt() <= pstime + 1.0e-15)
     dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;

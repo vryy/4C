@@ -15,7 +15,6 @@
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_sparseoperator.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -281,7 +280,8 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
   const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
   const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
 
-  if (::UTILS::PRESTRESS::IsActive(GState().GetTimeNp(), prestress_type, prestress_time))
+  if (prestress_type != INPAR::STR::PreStress::none &&
+      GState().GetTimeNp() <= prestress_time + 1.0e-15)
   {
     switch (prestress_type)
     {

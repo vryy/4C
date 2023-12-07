@@ -11,7 +11,6 @@
 #include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
@@ -49,8 +48,10 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
   auto dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  const INPAR::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
 
-  if (::UTILS::PRESTRESS::IsAny() && dyntype != INPAR::STR::dyna_statics)
+  if (pre_stress_type != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
   {
     dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
@@ -59,7 +60,7 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (::UTILS::PRESTRESS::IsMulf())
+    if (pre_stress_type == INPAR::STR::PreStress::mulf)
       IO::cout << "with static MULF prestress" << IO::endl;
     else
       IO::cout << "with statics" << IO::endl;

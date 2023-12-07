@@ -11,7 +11,7 @@
 
 #include "baci_structure_new_factory.H"
 
-#include "baci_lib_prestress_service.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_structure_new_dbc.H"
 #include "baci_structure_new_expl_ab2.H"
 #include "baci_structure_new_expl_abx.H"
@@ -57,7 +57,8 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
   const enum INPAR::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
 
   // check if we have a problem that needs to be prestressed
-  if (::UTILS::PRESTRESS::IsAny(prestresstype))
+  const bool is_prestress = prestresstype != INPAR::STR::PreStress::none;
+  if (is_prestress)
   {
     impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::PreStress());
     return impl_int_ptr;

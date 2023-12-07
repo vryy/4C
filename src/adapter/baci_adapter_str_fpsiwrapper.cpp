@@ -12,9 +12,21 @@
 
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
+
+namespace
+{
+  bool PrestressIsActive(const double currentTime)
+  {
+    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+    const double pstime =
+        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+    return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
+  }
+}  // namespace
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -34,7 +46,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
   else
   {
     // prestressing business
-    if (UTILS::PRESTRESS::IsActive(TimeOld()))
+    if (PrestressIsActive(TimeOld()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
@@ -57,7 +69,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
   else
   {
     // prestressing business
-    if (UTILS::PRESTRESS::IsActive(Time()))
+    if (PrestressIsActive(Time()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }

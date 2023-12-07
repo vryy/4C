@@ -14,7 +14,6 @@
 #include "baci_io.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 /*======================================================================*/
@@ -40,7 +39,9 @@ void STR::TimIntPrestress::Setup()
 {
   STR::TimIntStatics::Setup();
   // Check for compatible prestressing algorithms
-  switch (::UTILS::PRESTRESS::GetType())
+  const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+  switch (pre_stress)
   {
     case INPAR::STR::PreStress::mulf:
       break;
@@ -59,10 +60,14 @@ void STR::TimIntPrestress::UpdateStepElement()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
+  const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
+      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+  const double pstime =
+      DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
   // MULF, Material iterative prestressing
-  if (::UTILS::PRESTRESS::IsMulf())
+  if (pre_stress == INPAR::STR::PreStress::mulf)
   {
-    if (::UTILS::PRESTRESS::IsActive((*time_)[0]))
+    if ((*time_)[0] <= pstime + 1e-15)
     {
       if (!discret_->Comm().MyPID()) IO::cout << "====== Entering MULF update" << IO::endl;
       // action for elements
@@ -87,7 +92,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (::UTILS::PRESTRESS::IsMulfActive((*time_)[0]))
+  if (pre_stress == INPAR::STR::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient
     // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
