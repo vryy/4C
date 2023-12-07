@@ -24,15 +24,6 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
     case CORE::FE::CellType::hex27:
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex27>(porotype);
       break;
-    case CORE::FE::CellType::hex20:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex20>(porotype);
-      break;
-    case CORE::FE::CellType::hex18:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex18>(porotype);
-      break;
-    case CORE::FE::CellType::pyramid5:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::pyramid5>(porotype);
-      break;
     case CORE::FE::CellType::tet4:
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet4>(porotype);
       break;
