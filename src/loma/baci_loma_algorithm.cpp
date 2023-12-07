@@ -195,8 +195,8 @@ void LOMA::Algorithm::Setup()
           linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(lomasolverparams,
-        FluidField()->Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    lomasolver_ = Teuchos::rcp(
+        new CORE::LINALG::Solver(lomasolverparams, FluidField()->Discretization()->Comm()));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");

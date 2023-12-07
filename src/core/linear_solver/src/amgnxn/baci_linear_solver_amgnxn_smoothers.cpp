@@ -195,7 +195,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
 
   // Create linear solver
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(A_->Comm(), nullptr));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(A_->Comm()));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);
@@ -768,7 +768,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
   if (solvertype != "umfpack" and solvertype != "superlu")
     dserror("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(params, A_->Comm(), nullptr));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(params, A_->Comm()));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);

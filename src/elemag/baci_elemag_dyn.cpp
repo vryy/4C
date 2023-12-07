@@ -93,8 +93,8 @@ void electromagnetics_drt()
         "There is not any linear solver defined for electromagnetic problem. Please set "
         "LINEAR_SOLVER in ELECTROMAGNETIC DYNAMIC to a valid number!");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      problem->SolverParams(linsolvernumber_elemag), comm, problem->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(problem->SolverParams(linsolvernumber_elemag), comm));
 
   // declare output writer
   Teuchos::RCP<IO::DiscretizationWriter> output = elemagdishdg->Writer();
@@ -257,8 +257,6 @@ void electromagnetics_drt()
             // create necessary extra parameter list for scatra
             Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
             scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
-            scatraextraparams->set<FILE*>(
-                "err file", DRT::Problem::Instance()->ErrorFile()->Handle());
             scatraextraparams->set<bool>("isale", false);
             const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
             scatraextraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
@@ -277,7 +275,7 @@ void electromagnetics_drt()
             // create solver
             Teuchos::RCP<CORE::LINALG::Solver> scatrasolver = Teuchos::rcp(new CORE::LINALG::Solver(
                 DRT::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
-                scatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+                scatradis->Comm()));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
             Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatraalgo;

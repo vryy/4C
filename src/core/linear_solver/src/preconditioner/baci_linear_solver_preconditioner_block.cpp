@@ -19,9 +19,8 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::SimplePreconditioner::SimplePreconditioner(
-    FILE* outfile, Teuchos::ParameterList& params)
-    : CORE::LINEAR_SOLVER::PreconditionerType(outfile), params_(params)
+CORE::LINEAR_SOLVER::SimplePreconditioner::SimplePreconditioner(Teuchos::ParameterList& params)
+    : params_(params)
 {
 }
 
@@ -87,7 +86,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 
       P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
-          params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"), outfile_));
+          params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
     else if (fl || elch)  // CheapSIMPLE for pure fluid problems
     {
@@ -179,7 +178,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 
       P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
-          params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"), outfile_));
+          params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
     // else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
     else if (gen)  // For a general 2x2 block matrix.  This uses MueLu for AMG, not ML.
@@ -230,8 +229,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
           dserror("xml file not provided for block 2 of 2");
       }
 
-      P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(
-          A, sublist1, sublist2, outfile_));
+      P_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A, sublist1, sublist2));
     }
     else
     {
@@ -251,8 +250,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::BGSPreconditioner::BGSPreconditioner(
-    FILE* outfile, Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist)
-    : CORE::LINEAR_SOLVER::PreconditionerType(outfile), params_(params), bgslist_(bgslist)
+    Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist)
+    : params_(params), bgslist_(bgslist)
 {
 }
 
@@ -287,7 +286,7 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
 
       P_ = Teuchos::rcp(new CORE::LINALG::BGS2x2_Operator(Teuchos::rcp(matrix, false),
           params_.sublist("Inverse1"), params_.sublist("Inverse2"), global_iter, global_omega,
-          block1_iter, block1_omega, block2_iter, block2_omega, fliporder, outfile_));
+          block1_iter, block1_omega, block2_iter, block2_omega, fliporder));
     }
     else
       dserror("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");

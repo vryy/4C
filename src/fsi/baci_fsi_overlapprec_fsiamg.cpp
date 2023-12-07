@@ -37,12 +37,12 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
     std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
     std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
     std::vector<double>& aomega, std::vector<int>& aiterations, int analyze,
-    INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity, FILE* err,
+    INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity,
     OverlappingBlockMatrixHybridSchwarz* hybridPrec)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
           omega[0], iterations[0], somega[0],
           siterations[0] - 1,  // base class counts iterations starting from 0
-          fomega[0], fiterations[0] - 1, aomega[0], aiterations[0] - 1, err),
+          fomega[0], fiterations[0] - 1, aomega[0], aiterations[0] - 1),
       sisml_(false),
       fisml_(false),
       aisml_(false),

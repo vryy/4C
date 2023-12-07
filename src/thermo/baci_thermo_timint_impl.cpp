@@ -823,16 +823,6 @@ void THR::TimIntImpl::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
-
 }  // PrintNewtonIter()
 
 
@@ -983,15 +973,6 @@ void THR::TimIntImpl::PrintStep()
   {
     PrintStepText(stdout);
   }
-
-  // print to error file (on every CPU involved)
-  if (printerrfile_)
-  {
-    PrintStepText(errfile_);
-  }
-
-  // fall asleep
-  return;
 }  // PrintStep()
 
 

@@ -201,8 +201,6 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       directsolve_(true),
       printscreen_(true),
       printiter_(true),
-      printerrfile_(true),
-      errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
       timer_("FPSI Monolithic", true),
       isfirsttimestep_(true),
       islinesearch_(false),
@@ -514,8 +512,7 @@ void FPSI::Monolithic::SetupSolver()
                   solvertype == INPAR::SOLVER::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   else
     // create a linear solver
     CreateLinearSolver();
@@ -647,8 +644,7 @@ void FPSI::Monolithic::CreateLinearSolver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      fpsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(fpsisolverparams, Comm()));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
@@ -1172,14 +1168,6 @@ void FPSI::Monolithic::PrintNewtonIter()
     PrintNewtonIterText(stdout);
   }
 
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  return;
 }  // PrintNewtonIter()
 
 /*----------------------------------------------------------------------*/

@@ -187,15 +187,13 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // create solver
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm(),
-        DRT::Problem::Instance()->ErrorFile()->Handle()));
+        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
 
     // provide solver with null space information if necessary
     microdis->ComputeNullSpaceIfNecessary(solver->Params());
 
     // supplementary parameter list
     Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-    extraparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     extraparams->set<bool>("isale", false);
     extraparams->sublist("TURBULENT INFLOW") =
         DRT::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENT INFLOW");

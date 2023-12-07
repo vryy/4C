@@ -190,9 +190,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
 
       // create solver objects
-      solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
 
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
@@ -236,9 +235,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
     }
     break;
     case INPAR::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -252,9 +250,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         dserror(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
-      solver = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       break;
     }
@@ -615,7 +612,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     fluidtimeparams->set<bool>("ost new", ostnew);
 
-    fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
     if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_lung or
         probtype == ProblemType::gas_fsi or probtype == ProblemType::ac_fsi or
@@ -1278,9 +1274,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     dserror(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
 
   discret->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -1375,8 +1370,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
       ostnew = false;
     }
     fluidtimeparams->set<bool>("ost new", ostnew);
-
-    fluidtimeparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time

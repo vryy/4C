@@ -44,10 +44,8 @@
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
-      printscreen_(true),   // ADD INPUT PARAMETER
-      printiter_(true),     // ADD INPUT PARAMETER
-      printerrfile_(true),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
+      printscreen_(true),  // ADD INPUT PARAMETER
+      printiter_(true),    // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       blockrowdofmap_(Teuchos::null),
       normtypeinc_(INPAR::POROELAST::convnorm_undefined),
@@ -679,8 +677,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      porosolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(porosolverparams, Comm()));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
@@ -799,13 +796,6 @@ void POROELAST::Monolithic::PrintNewtonIter()
   {
     if (iter_ == 1) PrintNewtonIterHeader(stdout);
     PrintNewtonIterText(stdout);
-  }
-
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
   }
 }
 
@@ -1585,8 +1575,7 @@ bool POROELAST::Monolithic::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   }
   else
     // create a linear solver

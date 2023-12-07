@@ -84,14 +84,6 @@ int DRT::ResultTest::CompareValues(
   // return value (0 if results are correct, 1 if results are not correct)
   int ret = 0;
 
-  // write to error file
-  FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (err != nullptr)
-  {
-    fprintf(err, "actual = %.17e, given = %.17e, diff = %.17e\n", actresult, givenresult,
-        actresult - givenresult);
-  }
-
   // prepare std::string stream 'msghead' containing general information on the current test
   std::stringstream msghead;
   msghead << std::left << std::setw(9) << myname_ << ": " << std::left << std::setw(8)
@@ -190,11 +182,6 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   if (numerr > 0)
   {
     dserror("Result check failed with %d errors out of %d tests", numerr, size);
-  }
-  else
-  {
-    FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-    if (err != nullptr) fprintf(err, "===========================================\n");
   }
 
   /* test_count == -1 means we had a special test routine. It's thus

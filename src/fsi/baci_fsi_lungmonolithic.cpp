@@ -963,11 +963,10 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-      systemmatrix_ = Teuchos::rcp(
-          new LungOverlappingBlockMatrix(Extractor(), *StructureField(), *FluidField(), *AleField(),
-              structuresplit, DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
-              pcomega[0], pciter[0], spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0],
-              apciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
+      systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(Extractor(), *StructureField(),
+          *FluidField(), *AleField(), structuresplit,
+          DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
+          spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
       break;
     default:
       dserror("Unsupported type of monolithic solver");

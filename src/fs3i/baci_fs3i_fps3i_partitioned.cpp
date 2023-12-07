@@ -511,8 +511,7 @@ void FS3I::PartFPS3I::SetupSystem()
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   scatrasolvparams->set("solver", "umfpack");
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      scatrasolvparams, firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
@@ -537,8 +536,8 @@ void FS3I::PartFPS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams,
-      firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ =
+      Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm()));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver

@@ -880,22 +880,6 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::OpenErrorFile(
-    const Epetra_Comm& comm, std::string prefix, const bool enforceopening)
-{
-  bool openfile = enforceopening;
-  if (!enforceopening)
-  {
-    // what's given in the input file?
-    openfile = DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN");
-  }
-  errorfilecontrol_ =
-      Teuchos::rcp(new IO::ErrorFileControl(comm, std::move(prefix), Restart(), openfile));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::Problem::WriteInputParameters()
 {
   std::string s = OutputControlFile()->FileName();

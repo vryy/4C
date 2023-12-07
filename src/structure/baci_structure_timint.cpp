@@ -90,9 +90,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       output_(output),
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printlogo_(bool(printscreen_)),  // no std out no logo
-      errfile_(xparams.get<FILE*>("err file")),
-      printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-      printiter_(true),                  // ADD INPUT PARAMETER
+      printiter_(true),                // ADD INPUT PARAMETER
       outputeveryiter_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_EVERY_ITER")),
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
@@ -2185,13 +2183,6 @@ void STR::TimInt::OutputRestart(bool& datawritten)
     IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step " << step_
              << IO::endl;
   }
-
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart for field 'structure' written in step %d\n", step_);
-    fflush(errfile_);
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -2314,13 +2305,6 @@ void STR::TimInt::AddRestartToOutputState()
   {
     IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step " << step_
              << IO::endl;
-  }
-
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart for field 'Structure' written in step %d\n", step_);
-    fflush(errfile_);
   }
 }
 

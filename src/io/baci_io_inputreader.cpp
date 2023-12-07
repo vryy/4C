@@ -1152,40 +1152,6 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DatFileReader::DumpInput()
-    {
-#ifdef DEBUG
-
-      Teuchos::RCP<IO::ErrorFileControl> errcontrol = DRT::Problem::Instance()->ErrorFile();
-      if (errcontrol == Teuchos::null) dserror("ErrorFileControl not allocated");
-      FILE* out_err = DRT::Problem::Instance()->ErrorFile()->Handle();
-
-      if (out_err != nullptr)
-      {
-        if (comm_ == Teuchos::null) dserror("No communicator available");
-        if (comm_->MyPID() == 0)
-        {
-          fprintf(out_err,
-              "============================================================================\n"
-              "broadcasted copy of input file:\n"
-              "============================================================================\n");
-          for (size_t i = 0; i < lines_.size() - 1; ++i)
-          {
-            fprintf(out_err, "%s\n", lines_[i]);
-          }
-          fprintf(out_err,
-              "============================================================================\n"
-              "end of broadcasted copy of input file\n"
-              "============================================================================\n");
-          fflush(out_err);
-        }
-      }
-
-#endif
-    }
-
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
     bool DatFileReader::PrintUnknownSections()
     {
       // This function shell be called only after all reading with DatFileReader

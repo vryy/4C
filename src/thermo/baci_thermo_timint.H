@@ -529,8 +529,6 @@ namespace THR
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     bool printlogo_;                                 //!< true: enjoy your cuppa
     int printscreen_;                                //!< print infos to standard out every n steps
-    FILE* errfile_;                                  //!< error file handle
-    bool printerrfile_;                              //!< print infos to error file #errfile_
     bool printiter_;         //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written

@@ -63,8 +63,7 @@ namespace FSI
         int analyze,                             ///< Run FSIAMG anaylzer?
         INPAR::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
         std::list<int> interfaceprocs,           ///< IDs of processors that own interface nodes
-        INPAR::FSI::Verbosity verbosity,         ///< verbosity of FSI algorithm
-        FILE* err = nullptr                      ///< error file handle
+        INPAR::FSI::Verbosity verbosity          ///< verbosity of FSI algorithm
     );
 
     //! @name Setup

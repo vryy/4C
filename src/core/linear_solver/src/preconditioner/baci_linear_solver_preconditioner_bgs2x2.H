@@ -30,8 +30,7 @@ namespace CORE::LINALG
     */
     explicit BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& list1,
         const Teuchos::ParameterList& list2, int global_iter, double global_omega, int block1_iter,
-        double block1_omega, int block2_iter, double block2_omega, bool fliporder,
-        FILE* outfile = nullptr);
+        double block1_omega, int block2_iter, double block2_omega, bool fliporder);
 
     /*!
     \brief Destructor
@@ -105,7 +104,6 @@ namespace CORE::LINALG
         Teuchos::RCP<Epetra_MultiVector> tmpx, int iter, double omega) const;
 
 
-    FILE* outfile_;                 // error file to write output to or nullptr
     Teuchos::ParameterList list1_;  // list for solver of first diagonal block
     Teuchos::ParameterList list2_;  // list for solver of second diagonal block
 

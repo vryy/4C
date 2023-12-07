@@ -171,8 +171,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
 
   // setup solver for coupled problem
   solver_elch_scl_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+      problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->Comm()));
 
   switch (matrixtype_elch_scl_)
   {

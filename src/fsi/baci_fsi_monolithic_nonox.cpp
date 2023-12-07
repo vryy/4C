@@ -303,14 +303,12 @@ void FSI::MonolithicNoNOX::LinearSolve()
 #ifndef moresolvers
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
-  solver_ =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(
+      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver), Comm()));
 #else
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 #endif
 
 

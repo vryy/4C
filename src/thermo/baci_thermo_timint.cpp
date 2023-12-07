@@ -52,9 +52,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
-      errfile_(xparams.get<FILE*>("err file")),
-      printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-      printiter_(true),                  // ADD INPUT PARAMETER
+      printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
       writeglob_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
@@ -422,19 +420,6 @@ void THR::TimInt::OutputRestart(bool& datawritten)
     fflush(stdout);
   }
 
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
-    fprintf(errfile_,
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(errfile_);
-  }
-
-  // we will say what we did
-  return;
-
 }  // OutputRestart()
 
 
@@ -482,20 +467,6 @@ void THR::TimInt::AddRestartToOutputState()
         "------------------\n");
     fflush(stdout);
   }
-
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
-    fprintf(errfile_,
-        "--------------------------------------------------------------"
-        "------------------\n");
-    fflush(errfile_);
-  }
-
-  // we will say what we did
-  return;
-
 }  // AddRestartToOutputState()
 
 

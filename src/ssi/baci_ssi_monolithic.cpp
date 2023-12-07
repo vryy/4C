@@ -57,7 +57,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-          comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+          comm))),
       timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
 }

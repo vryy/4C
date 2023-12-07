@@ -120,8 +120,6 @@ namespace DRT
       void ReadKnots(
           const int dim, const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
 
-      /// dump input file contents to error file
-      void DumpInput();
 
       /// print unknown section names found in the input file
       bool PrintUnknownSections();

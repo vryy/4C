@@ -1387,9 +1387,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
         extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))  // create a dummy solver
     {
-      Teuchos::RCP<CORE::LINALG::Solver> solver =
-          Teuchos::rcp(new CORE::LINALG::Solver(problem_->SolverParams(scale_sep_solvernumber),
-              discret_->Comm(), problem_->ErrorFile()->Handle()));
+      Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+          problem_->SolverParams(scale_sep_solvernumber), discret_->Comm()));
       // compute the null space,
       discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
       // and, finally, extract the ML parameters

@@ -1074,8 +1074,6 @@ namespace STR
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     int printscreen_;                                //!< print infos to standard out every n steps
     bool printlogo_;                                 //!< print the logo (or not)?
-    FILE* errfile_;                                  //!< error file handle
-    bool printerrfile_;                              //!< print infos to error file #errfile_
     bool printiter_;                           //!< print intermediate iterations during solution
     bool outputeveryiter_;                     //!< switch
     int oei_filecounter_;                      //!< filename counter

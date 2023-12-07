@@ -42,8 +42,8 @@
 
 ART::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, FILE* errfile, IO::DiscretizationWriter& output)
-    : TimInt(actdis, linsolvernumber, probparams, artparams, errfile, output)
+    const Teuchos::ParameterList& artparams, IO::DiscretizationWriter& output)
+    : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
 

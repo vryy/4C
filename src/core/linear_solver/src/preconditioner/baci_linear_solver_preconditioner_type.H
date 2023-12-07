@@ -31,12 +31,11 @@ namespace CORE::LINEAR_SOLVER
   class PreconditionerType
   {
    public:
-    /// construction with output on proc 0 (might be nullptr)
     /*!
        No setup is done upon construction, only the preconditioner object is
        created.
     */
-    explicit PreconditionerType(FILE* outfile) : outfile_(outfile) {}
+    PreconditionerType() = default;
 
     /// virtual destruction
     virtual ~PreconditionerType() = default;
@@ -82,9 +81,6 @@ namespace CORE::LINEAR_SOLVER
    protected:
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
     Epetra_LinearProblem lp_;
-
-    //! file to write output to (proc 0 only, can be nullptr on input)
-    FILE* outfile_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

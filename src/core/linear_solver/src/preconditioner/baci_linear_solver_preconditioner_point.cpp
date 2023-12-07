@@ -18,7 +18,7 @@
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::InfNormPreconditioner::InfNormPreconditioner(
     Teuchos::RCP<PreconditionerType> preconditioner)
-    : PreconditionerType(nullptr), preconditioner_(preconditioner)
+    : preconditioner_(preconditioner)
 {
 }
 
@@ -66,7 +66,7 @@ void CORE::LINEAR_SOLVER::InfNormPreconditioner::Finish(
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::SymDiagPreconditioner::SymDiagPreconditioner(
     Teuchos::RCP<PreconditionerType> preconditioner)
-    : PreconditionerType(nullptr), preconditioner_(preconditioner)
+    : preconditioner_(preconditioner)
 {
 }
 

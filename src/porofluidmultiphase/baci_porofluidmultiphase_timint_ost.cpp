@@ -19,10 +19,9 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
     Teuchos::RCP<DRT::Discretization> dis,  //!< discretization
     const int linsolvernumber,              //!< number of linear solver
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    FILE* errfile,                                 //!< error file
     Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     )
-    : TimIntImpl(dis, linsolvernumber, probparams, poroparams, errfile, output),
+    : TimIntImpl(dis, linsolvernumber, probparams, poroparams, output),
       theta_(poroparams.get<double>("THETA"))
 {
   return;

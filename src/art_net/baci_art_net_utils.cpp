@@ -22,8 +22,7 @@
 Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
     INPAR::ARTDYN::TimeIntegrationScheme timintscheme, Teuchos::RCP<DRT::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, FILE* errfile,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& artparams, Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<ADAPTER::ArtNet> algo = Teuchos::null;
@@ -38,15 +37,15 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
     case INPAR::ARTDYN::TimeIntegrationScheme::tay_gal:
     {
       // create algorithm
-      algo = Teuchos::rcp(new ART::ArtNetExplicitTimeInt(
-          dis, linsolvernumber, probparams, artparams, errfile, *output));
+      algo = Teuchos::rcp(
+          new ART::ArtNetExplicitTimeInt(dis, linsolvernumber, probparams, artparams, *output));
       break;
     }
     case INPAR::ARTDYN::TimeIntegrationScheme::stationary:
     {
       // create algorithm
-      algo = Teuchos::rcp(new ART::ArtNetImplStationary(
-          dis, linsolvernumber, probparams, artparams, errfile, *output));
+      algo = Teuchos::rcp(
+          new ART::ArtNetImplStationary(dis, linsolvernumber, probparams, artparams, *output));
       break;
     }
     default:

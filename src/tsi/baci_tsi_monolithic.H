@@ -272,9 +272,7 @@ namespace TSI
     //! @name Printing and output
     //@{
 
-    bool printiter_;     //!< print intermediate iterations during solution
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    FILE* errfile_;      //!< error file handle
+    bool printiter_;  //!< print intermediate iterations during solution
 
     //! calculate nodal values (displacements, temperatures, reaction forces) at
     //! specific nodes used for validation of implementation with literature

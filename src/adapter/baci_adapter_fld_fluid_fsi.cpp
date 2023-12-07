@@ -499,9 +499,8 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         "no simpler solver, that is used to solve this system, defined for fluid pressure problem. "
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
-          Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(simplersolvernumber), Discretization()->Comm()));
 
   if (solver->Params().isSublist("ML Parameters"))
   {

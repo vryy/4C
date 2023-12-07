@@ -405,8 +405,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
 
   // skip setup of preconditioner in case of a direct solver
   if (solvertype != INPAR::SOLVER::SolverType::umfpack and

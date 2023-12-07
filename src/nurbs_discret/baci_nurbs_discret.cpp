@@ -466,8 +466,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   //  if(myrank==0)
   //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
-      new CORE::LINALG::Solver(p, discret.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(p, discret.Comm()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
   const_cast<DRT::Discretization&>(discret).ComputeNullSpaceIfNecessary(solver->Params());

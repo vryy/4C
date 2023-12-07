@@ -258,18 +258,11 @@ namespace DRT
     void OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile, std::string prefix,
         const std::string& restartkenner);
 
-    /// error files
-    void OpenErrorFile(
-        const Epetra_Comm& comm, std::string prefix, const bool enforceopening = false);
-
     /// control file for restart read
     Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }
 
     /// control file for normal output
     Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
-
-    /// control error files
-    Teuchos::RCP<IO::ErrorFileControl> ErrorFile() { return errorfilecontrol_; }
 
     /// write parameters read from input file for documentation
     void WriteInputParameters();
@@ -665,7 +658,6 @@ namespace DRT
 
     Teuchos::RCP<IO::InputControl> inputcontrol_;
     Teuchos::RCP<IO::OutputControl> outputcontrol_;
-    Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
 
     //@}
 

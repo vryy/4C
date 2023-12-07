@@ -14,12 +14,10 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(FILE* outfile,
+CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
     Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
-    : CORE::LINEAR_SOLVER::PreconditionerType(outfile),
-      preconditioner_(preconditioner),
-      projector_(projector)
+    : preconditioner_(preconditioner), projector_(projector)
 {
 }
 

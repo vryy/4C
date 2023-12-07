@@ -365,9 +365,6 @@ namespace LUBRICATION
     //! processor id
     int myrank_;
 
-    //! error file handle
-    FILE* errfile_;
-
     /*========================================================================*/
     //! @name flags and enums
     /*========================================================================*/

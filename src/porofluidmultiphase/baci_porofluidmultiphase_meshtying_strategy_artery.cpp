@@ -45,9 +45,8 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   artery_output->WriteMesh(0, 0.0);
 
   // build art net time integrator
-  artnettimint_ =
-      ART::UTILS::CreateAlgorithm(timintscheme, arterydis_, artdyn.get<int>("LINEAR_SOLVER"),
-          probparams, artdyn, DRT::Problem::Instance()->ErrorFile()->Handle(), artery_output);
+  artnettimint_ = ART::UTILS::CreateAlgorithm(timintscheme, arterydis_,
+      artdyn.get<int>("LINEAR_SOLVER"), probparams, artdyn, artery_output);
 
   // set to false
   artnettimint_->SetSolveScatra(false);

@@ -56,6 +56,7 @@
 #include "baci_structure_timint_noxgroup.H"
 #include "baci_surfstress_manager.H"
 
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
@@ -2046,12 +2047,6 @@ int STR::TimIntImpl::NewtonLS()
         std::string dashline;
         dashline.assign(64, '-');
         oss << dashline;
-        // print to screen (could be done differently...)
-        if (printerrfile_)
-        {
-          fprintf(errfile_, "%s\n", oss.str().c_str());
-          fflush(errfile_);
-        }
 
         fprintf(stdout, "%s\n", oss.str().c_str());
         fflush(stdout);
@@ -2314,13 +2309,6 @@ void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, doubl
 
     // finish oss
     oss << std::ends;
-
-    // print to screen (could be done differently...)
-    if (printerrfile_)
-    {
-      fprintf(errfile_, "%s\n", oss.str().c_str());
-      fflush(errfile_);
-    }
 
     fprintf(stdout, "%s\n", oss.str().c_str());
     fflush(stdout);
@@ -3654,16 +3642,6 @@ void STR::TimIntImpl::PrintNewtonIter()
     if (iter_ == 1) PrintNewtonIterHeader(stdout);
     PrintNewtonIterText(stdout);
   }
-
-  // print to error file
-  if (printerrfile_ and printiter_)
-  {
-    if (iter_ == 1) PrintNewtonIterHeader(errfile_);
-    PrintNewtonIterText(errfile_);
-  }
-
-  // see you
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -4110,15 +4088,6 @@ void STR::TimIntImpl::PrintStep()
   {
     PrintStepText(stdout);
   }
-
-  // print to error file (on every CPU involved)
-  if (printerrfile_)
-  {
-    PrintStepText(errfile_);
-  }
-
-  // fall asleep
-  return;
 }
 
 /*----------------------------------------------------------------------*/

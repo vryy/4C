@@ -158,13 +158,6 @@ namespace STR
         return *energyfile_;
       };
 
-      /// get error file pointer
-      FILE* ErrorFilePtr()
-      {
-        CheckInitSetup();
-        return errfile_;
-      };
-
       /// Is GMSH output of displacements required?
       const bool& IsGmsh() const
       {
@@ -177,13 +170,6 @@ namespace STR
       {
         CheckInitSetup();
         return printlogo_;
-      };
-
-      /// Shall we print the infos to errorfile #errfile_?
-      const bool& IsErrorFile() const
-      {
-        CheckInitSetup();
-        return printerrfile_;
       };
 
       /// Shall we print intermediate iterations during solution?
@@ -371,17 +357,11 @@ namespace STR
       /// outputfile for energy
       Teuchos::RCP<std::ofstream> energyfile_;
 
-      /// error file handle
-      FILE* errfile_;
-
       /// Is GMSH output of displacements required?
       bool gmsh_out_;
 
       /// print the logo (or not)?
       bool printlogo_;
-
-      /// print infos to error file #errfile_
-      bool printerrfile_;
 
       /// print intermediate iterations during solution
       bool printiter_;

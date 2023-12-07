@@ -739,8 +739,7 @@ void FLD::XWall::SetupL2Projection()
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-        solverparams, xwdiscret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, xwdiscret_->Comm()));
 
     if (solvertype != INPAR::SOLVER::SolverType::umfpack)
     {

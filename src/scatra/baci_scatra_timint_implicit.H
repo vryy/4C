@@ -1152,9 +1152,6 @@ namespace SCATRA
     //! Extractor used for convergence check either in ELCH or LOMA case
     Teuchos::RCP<CORE::LINALG::MapExtractor> splitter_;
 
-    //! error file handle
-    FILE* errfile_;
-
     //! meshtying strategy (includes standard case without meshtying)
     Teuchos::RCP<SCATRA::MeshtyingStrategyBase> strategy_;
 

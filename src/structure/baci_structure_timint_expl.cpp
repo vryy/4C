@@ -131,14 +131,6 @@ void STR::TimIntExpl::PrintStep()
   {
     PrintStepText(stdout);
   }
-
-  if (printerrfile_)
-  {
-    PrintStepText(errfile_);
-  }
-
-  // fall asleep
-  return;
 }
 
 /*----------------------------------------------------------------------*/

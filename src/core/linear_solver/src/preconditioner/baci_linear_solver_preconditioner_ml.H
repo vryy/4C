@@ -21,7 +21,7 @@ namespace CORE::LINEAR_SOLVER
   class MLPreconditioner : public PreconditionerType
   {
    public:
-    MLPreconditioner(FILE* outfile, Teuchos::ParameterList& mllist);
+    MLPreconditioner(Teuchos::ParameterList& mllist);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;

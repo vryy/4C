@@ -190,9 +190,9 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const CORE::LINALG::MultiMapExtractor& maps,
     ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
     bool structuresplit, int symmetric, double omega, int iterations, double somega,
-    int siterations, double fomega, int fiterations, double aomega, int aiterations, FILE* err)
+    int siterations, double fomega, int fiterations, double aomega, int aiterations)
     : BlockPreconditioningMatrix(pcdbg, maps, structure, fluid, ale, symmetric, omega, iterations,
-          somega, siterations, fomega, fiterations, aomega, aiterations, err),
+          somega, siterations, fomega, fiterations, aomega, aiterations),
       structuresplit_(structuresplit),
       structure_(structure),
       fluid_(fluid),

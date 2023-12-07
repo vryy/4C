@@ -33,7 +33,7 @@ namespace ART
     */
     ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        FILE* errfile, IO::DiscretizationWriter& output);
+        IO::DiscretizationWriter& output);
 
 
     // initialization
