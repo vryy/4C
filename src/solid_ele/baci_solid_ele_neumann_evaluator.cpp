@@ -60,22 +60,22 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
       break;
     default:
       dserror(
-          "The discretization type you are trying to evaluate the Neumann condition for is not yet "
+          "The cell type you are trying to evaluate the Neumann condition for is not yet "
           "implemented in EvaluateNeumannByElement.");
       break;
   }
 }
 
-template <CORE::FE::CellType distype>
+template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
-  constexpr auto numdim = CORE::FE::dim<distype>;
-  constexpr auto numnod = CORE::FE::num_nodes<distype>;
+  constexpr auto numdim = CORE::FE::dim<celltype>;
+  constexpr auto numnod = CORE::FE::num_nodes<celltype>;
   CORE::DRT::UTILS::GaussIntegration gauss_integration =
-      CreateGaussIntegration<distype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<distype>());
+      CreateGaussIntegration<celltype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
 
   // get values and switches from the condition
   const auto& onoff = *condition.Get<std::vector<int>>("onoff");
@@ -99,13 +99,13 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
   // get ids of functions of space and time
   const auto* function_ids = condition.Get<std::vector<int>>("funct");
 
-  const ElementNodes<distype> nodal_coordinates =
-      EvaluateElementNodes<distype>(element, discretization, dof_index_array);
+  const ElementNodes<celltype> nodal_coordinates =
+      EvaluateElementNodes<celltype>(element, discretization, dof_index_array);
 
-  ForEachGaussPoint<distype>(nodal_coordinates, gauss_integration,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
-          const ShapeFunctionsAndDerivatives<distype>& shape_functions,
-          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
+  ForEachGaussPoint<celltype>(nodal_coordinates, gauss_integration,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         if (jacobian_mapping.determinant_ == 0.0)
           dserror("The determinant of the jacobian is zero for element with id %i", element.Id());

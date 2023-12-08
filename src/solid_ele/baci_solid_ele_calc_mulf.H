@@ -29,18 +29,18 @@ namespace STR::MODELEVALUATOR
 }
 namespace DRT::ELEMENTS
 {
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   struct MulfHistoryData
   {
-    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> inverse_jacobian;
-    CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>> deformation_gradient;
+    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inverse_jacobian;
+    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> deformation_gradient;
     bool is_setup = false;
 
     MulfHistoryData()
     {
-      for (int i = 0; i < CORE::FE::dim<distype>; ++i)
+      for (int i = 0; i < CORE::FE::dim<celltype>; ++i)
       {
-        for (int j = 0; j < CORE::FE::dim<distype>; ++j)
+        for (int j = 0; j < CORE::FE::dim<celltype>; ++j)
         {
           inverse_jacobian(i, j) = static_cast<double>(i == j);
           deformation_gradient(i, j) = static_cast<double>(i == j);
@@ -49,7 +49,7 @@ namespace DRT::ELEMENTS
     }
   };
 
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   class SolidEleCalcMulf
   {
    public:
@@ -109,12 +109,12 @@ namespace DRT::ELEMENTS
 
    private:
     /// static values for matrix sizes
-    static constexpr int num_nodes_ = CORE::FE::num_nodes<distype>;
-    static constexpr int num_dim_ = CORE::FE::dim<distype>;
+    static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+    static constexpr int num_dim_ = CORE::FE::dim<celltype>;
     static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
     static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-    std::vector<MulfHistoryData<distype>> history_data_;
+    std::vector<MulfHistoryData<celltype>> history_data_;
 
     CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
     CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;

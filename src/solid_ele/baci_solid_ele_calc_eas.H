@@ -76,7 +76,7 @@ namespace DRT
   namespace ELEMENTS
   {
     /// struct for EAS matrices and vectors to be stored between iterations
-    template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
+    template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
     struct EasIterationData
     {
       constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
@@ -85,7 +85,7 @@ namespace DRT
       CORE::LINALG::Matrix<num_eas, num_eas> invKaa_{true};
 
       /// EAS matrix K_{d alpha}
-      CORE::LINALG::Matrix<CORE::FE::num_nodes<distype> * CORE::FE::dim<distype>, num_eas> Kda_{
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, num_eas> Kda_{
           true};
 
       /// EAS enhacement vector s
@@ -95,7 +95,7 @@ namespace DRT
       CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <CORE::FE::CellType distype, STR::ELEMENTS::EasType eastype>
+    template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
     class SolidEleCalcEas
     {
      public:
@@ -151,11 +151,11 @@ namespace DRT
 
      private:
       /// EAS matrices and vectors to be stored between iterations
-      DRT::ELEMENTS::EasIterationData<distype, eastype> eas_iteration_data_ = {};
+      DRT::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
 
       /// static values for matrix sizes
-      static constexpr int num_nodes_ = CORE::FE::num_nodes<distype>;
-      static constexpr int num_dim_ = CORE::FE::dim<distype>;
+      static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+      static constexpr int num_dim_ = CORE::FE::dim<celltype>;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 

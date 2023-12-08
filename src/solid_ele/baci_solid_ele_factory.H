@@ -72,7 +72,7 @@ namespace DRT::ELEMENTS
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);
 
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   SolidCalcVariant CreateSolidCalculationInterface(const DRT::Element& ele,
       const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
       STR::ELEMENTS::EasType eastype);

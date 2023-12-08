@@ -52,7 +52,7 @@ namespace DRT::ELEMENTS
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(
       DRT::Element& ele, INPAR::PORO::PoroType porotype);
 
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype);
 }  // namespace DRT::ELEMENTS
 

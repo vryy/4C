@@ -18,7 +18,7 @@
 
 namespace
 {
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   DRT::ELEMENTS::SolidCalcVariant CreateFBarSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -27,16 +27,16 @@ namespace
       dserror("FBAR only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
 
-    if constexpr (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::pyramid5)
+    if constexpr (celltype == CORE::FE::CellType::hex8 || celltype == CORE::FE::CellType::pyramid5)
     {
-      return DRT::ELEMENTS::SolidEleCalcFbar<distype>();
+      return DRT::ELEMENTS::SolidEleCalcFbar<celltype>();
     }
 
     dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
     return {};
   }
 
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   DRT::ELEMENTS::SolidCalcVariant CreateMulfSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
@@ -44,7 +44,7 @@ namespace
     {
       dserror("MULF only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
-    return DRT::ELEMENTS::SolidEleCalcMulf<distype>();
+    return DRT::ELEMENTS::SolidEleCalcMulf<celltype>();
   }
 }  // namespace
 
@@ -91,13 +91,13 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
           ele, eletech, kinem_type, eastype);
       break;
     default:
-      dserror("unknown distype provided");
+      dserror("unknown celltype provided");
       break;
   }
   return {};
 }
 
-template <CORE::FE::CellType distype>
+template <CORE::FE::CellType celltype>
 DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
     INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
@@ -107,14 +107,14 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   {
     // no element technology
     case 0:
-      return DRT::ELEMENTS::SolidEleCalc<distype>();
+      return DRT::ELEMENTS::SolidEleCalc<celltype>();
       break;
     // simple: just one element technology
     case 1:
       switch (*eletech.begin())
       {
         case INPAR::STR::EleTech::eas:
-          if constexpr (distype != CORE::FE::CellType::hex8)
+          if constexpr (celltype != CORE::FE::CellType::hex8)
           {
             dserror("EAS is only implemented for hex8 elements.");
           }
@@ -123,19 +123,19 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
             switch (eastype)
             {
               case ::STR::ELEMENTS::EasType::eastype_h8_9:
-                return DRT::ELEMENTS::SolidEleCalcEas<distype,
+                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
                     ::STR::ELEMENTS::EasType::eastype_h8_9>();
               case ::STR::ELEMENTS::EasType::eastype_h8_21:
-                return DRT::ELEMENTS::SolidEleCalcEas<distype,
+                return DRT::ELEMENTS::SolidEleCalcEas<celltype,
                     ::STR::ELEMENTS::EasType::eastype_h8_21>();
               default:
                 dserror("EAS type %d is not implemented %d.", (int)eastype);
             }
           }
         case INPAR::STR::EleTech::fbar:
-          return CreateFBarSolidCalculationInterface<distype>(kinem_type);
+          return CreateFBarSolidCalculationInterface<celltype>(kinem_type);
         case INPAR::STR::EleTech::ps_mulf:
-          return CreateMulfSolidCalculationInterface<distype>(kinem_type);
+          return CreateMulfSolidCalculationInterface<celltype>(kinem_type);
         default:
           dserror("unknown element technology");
       }

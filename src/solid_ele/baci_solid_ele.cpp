@@ -147,7 +147,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return Create(id, owner);
   return Teuchos::null;
@@ -195,17 +195,17 @@ DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
 int DRT::ELEMENTS::Solid::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(celltype_);
 }
 
 int DRT::ELEMENTS::Solid::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(celltype_);
 }
 
 int DRT::ELEMENTS::Solid::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::Solid::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   DRT::Element::Pack(data);
 
-  AddtoPack(data, (int)distype_);
+  AddtoPack(data, (int)celltype_);
 
   AddtoPack(data, (int)solid_ele_property_.kintype);
 
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
@@ -289,10 +289,10 @@ void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p
 }
 
 bool DRT::ELEMENTS::Solid::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& celltype, DRT::INPUT::LineDefinition* linedef)
 {
-  // set discretization type
-  distype_ = CORE::FE::StringToCellType(distype);
+  // set cell type
+  celltype_ = CORE::FE::StringToCellType(celltype);
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
