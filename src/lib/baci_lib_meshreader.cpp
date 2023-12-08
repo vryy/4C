@@ -187,7 +187,10 @@ void DRT::INPUT::MeshReader::Rebalance()
           discret->Redistribute(*rowmap, *colmap, true, true, false);
 
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
-              CORE::REBALANCE::BuildMonolithicNodeGraph(*discret);
+              CORE::REBALANCE::BuildMonolithicNodeGraph(
+                  *discret, CORE::GEOMETRICSEARCH::GeometricSearchParams(
+                                DRT::Problem::Instance()->GeometricSearchParams(),
+                                DRT::Problem::Instance()->IOParams()));
 
           std::tie(rowmap, colmap) =
               CORE::REBALANCE::RebalanceNodeMaps(enriched_graph, *rebalanceParams);

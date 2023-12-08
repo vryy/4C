@@ -84,7 +84,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_interaction_params_ptr_->Setup();
 
   // build a new data container to manage geometric search parameters
-  geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams());
+  geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams(
+      DRT::Problem::Instance()->GeometricSearchParams(), DRT::Problem::Instance()->IOParams()));
   if (beam_interaction_params_ptr_->GetSearchStrategy() ==
           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
       geometric_search_params_ptr_->GetWriteVisualizationFlag())

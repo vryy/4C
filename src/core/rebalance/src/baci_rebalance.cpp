@@ -323,11 +323,10 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
-    const ::DRT::Discretization& dis)
+    const ::DRT::Discretization& dis, const CORE::GEOMETRICSEARCH::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
   Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);
-  auto params = CORE::GEOMETRICSEARCH::GeometricSearchParams();
 
   std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> bounding_boxes;
   for (const auto* element : dis.MyRowElementRange())
