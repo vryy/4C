@@ -16,7 +16,6 @@
 #include "baci_coupling_volmortar_cell.H"
 #include "baci_coupling_volmortar_defines.H"
 #include "baci_coupling_volmortar_integrator.H"
-#include "baci_coupling_volmortar_shape.H"
 #include "baci_coupling_volmortar_utils.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
@@ -27,6 +26,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
@@ -1378,7 +1378,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     k->Complete();
 
     // solve with default solver
-    CORE::LINALG::Solver solver(*comm_);
+    Teuchos::ParameterList solvparams;
+    ::DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+        "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+    CORE::LINALG::Solver solver(solvparams, *comm_);
     solver.Solve(k->EpetraOperator(), mergedsol, mergedX, true);
 
     Teuchos::RCP<Epetra_Vector> sola = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));

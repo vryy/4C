@@ -14,6 +14,7 @@
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -243,7 +244,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *xm, *rhs);
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(lhs->EpetraOperator(), Xslavemod, rhs, true);
     }
     else
@@ -271,7 +275,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       mmatrix_->Multiply(false, *Xmaster, *rhs);
 
       // solve with default solver
-      CORE::LINALG::Solver solver(Comm());
+      Teuchos::ParameterList solvparams;
+      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::LINALG::Solver solver(solvparams, Comm());
       solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
     }
   }

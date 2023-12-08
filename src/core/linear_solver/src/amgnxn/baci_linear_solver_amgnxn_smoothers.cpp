@@ -10,6 +10,7 @@
 
 #include "baci_linear_solver_amgnxn_smoothers.H"
 
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linear_solver_amgnxn_hierarchies.H"
 #include "baci_linear_solver_amgnxn_vcycle.H"
@@ -195,7 +196,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
 
   // Create linear solver
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(A_->Comm()));
+  Teuchos::ParameterList solvparams;
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, A_->Comm()));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);
@@ -765,10 +769,21 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
 
   // Create linear solver. Default solver: UMFPACK
   const auto solvertype = params->get<std::string>("solver", "umfpack");
-  if (solvertype != "umfpack" and solvertype != "superlu")
+
+  if (solvertype == "umfpack")
+  {
+    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+        "SOLVER", INPAR::SOLVER::SolverType::umfpack, *params);
+  }
+  else if (solvertype == "superlu")
+  {
+    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+        "SOLVER", INPAR::SOLVER::SolverType::superlu, *params);
+  }
+  else
     dserror("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(params, A_->Comm()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*params, A_->Comm()));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);

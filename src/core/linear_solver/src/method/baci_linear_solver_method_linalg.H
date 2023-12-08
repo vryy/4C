@@ -48,48 +48,27 @@ namespace CORE::LINALG
   {
    public:
     /*!
-    \brief Standard Constructor
-
-    \param params (in) : parameter list holding solver configuration
-    \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
-                         no output will be generated.
-    */
-    Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm);
-
-    /*!
     \brief Destructor
 
     */
     virtual ~Solver();
 
     /*!
-    \brief Constructor with default solver Amesos_KLU
-
-    Creates a default solver using nonsymmetric KLU without passing a
-    parameter list. This is useful for quick development.
-    default solver intentionally is not Umfpack as Umfpack is not a
-     Trilinos build-in library.
-
-    \param comm (in)   : a reference to a epetra communicator object
-
-    */
-    Solver(const Epetra_Comm& comm);
-
-    /*!
     \brief Constructor taking a validated input parameter list for Solver
 
-    Creates a solver using the parameters provided by inparams. This parameter
-    list differs from the internally stored #params_. They are translated
-    by #TranslateSolverParameters.
+    Creates a solver using the parameters provided by inparams. They are translated
+    by #TranslateSolverParameters to the format required by Belos, if @p translate_params is true.
+    Otherwise, they need to be provided such that Belos understands them.
 
     \param inparams (in): input parameter list as provided by DRT::Problem,
-                          e.g. DRT::Problem::SolverParams(num) in case of solver for
-                          structures and num according to STRUCTURAL DYNAMIC
+                          e.g. DRT::Problem::SolverParams(num)
     \param comm     (in): a reference to a Epetra communicator object
 
+    \param translate_params_to_belos  (in): translate parameters to Belos
+
     */
-    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm);
+    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
+        bool translate_params_to_belos = true);
 
     /*!
     \brief Set-up of stuff common to all constructors
