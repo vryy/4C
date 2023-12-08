@@ -11,6 +11,8 @@
 #ifndef BACI_REBALANCE_H
 #define BACI_REBALANCE_H
 
+#include "baci_discretization_geometric_search_params.H"
+
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
@@ -125,7 +127,8 @@ namespace CORE::REBALANCE
 
   @return Completed monolithic node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const ::DRT::Discretization& dis);
+  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(
+      const ::DRT::Discretization& dis, const CORE::GEOMETRICSEARCH::GeometricSearchParams& params);
 
 }  // namespace CORE::REBALANCE
 

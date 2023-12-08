@@ -13,13 +13,16 @@
 
 #include "baci_io_pstream.H"
 
+#include <Teuchos_ParameterList.hpp>
+
 namespace CORE::GEOMETRICSEARCH
 {
   //! Data container for geometric search parameters
   class GeometricSearchParams
   {
    public:
-    GeometricSearchParams();
+    GeometricSearchParams(const Teuchos::ParameterList& geometric_search_params,
+        const Teuchos::ParameterList& io_params);
 
     /*! \brief Returns beam bounding volume scaling factor
      *
