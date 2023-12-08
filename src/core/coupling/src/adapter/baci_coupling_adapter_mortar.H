@@ -12,7 +12,7 @@
 #define BACI_COUPLING_ADAPTER_MORTAR_H
 
 #include "baci_coupling_adapter_base.H"
-#include "baci_lib_globalproblem_enums.H"
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_CrsMatrix.h>
@@ -69,7 +69,8 @@ feel free to write your own tailored Setup() method.
    public:
     /// Construct the CouplingMortar with basic parameters.
     CouplingMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
-        Teuchos::ParameterList contact_dynamic_params, ShapeFunctionType shape_function_type);
+        Teuchos::ParameterList contact_dynamic_params,
+        CORE::FE::ShapeFunctionType shape_function_type);
 
     /*! setup the machinery (generalized version)
      *
@@ -334,7 +335,7 @@ feel free to write your own tailored Setup() method.
     Teuchos::ParameterList contact_dynamic_params_;
 
     //! Shape functions used in coupled discretizations
-    ShapeFunctionType shape_function_type_;
+    CORE::FE::ShapeFunctionType shape_function_type_;
 
     /// Check for setup
     bool issetup_;

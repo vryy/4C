@@ -356,8 +356,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     auto cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() ==
-        ShapeFunctionType::shapefunction_hdg)
+    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
@@ -434,8 +433,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() ==
-        ShapeFunctionType::shapefunction_hdg)
+    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       switch (timintscheme)
       {

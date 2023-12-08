@@ -8,6 +8,7 @@
 
 #include "baci_inpar_problemtype.H"
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_utils_exceptions.H"
 
@@ -38,11 +39,11 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   }
 
   {
-    using IntegerType = std::underlying_type_t<ShapeFunctionType>;
+    using IntegerType = std::underlying_type_t<CORE::FE::ShapeFunctionType>;
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
-    for (const auto& [prb_name, prb_enum] : StringToShapeFunctionTypeMap())
+    for (const auto& [prb_name, prb_enum] : CORE::FE::StringToShapeFunctionTypeMap())
     {
       name.push_back(prb_name);
       label.push_back(static_cast<IntegerType>(prb_enum));
@@ -128,55 +129,4 @@ ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
   dserror("unsupported problem name '%s'", name.c_str());
 
   return ProblemType::none;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::map<std::string, ShapeFunctionType> INPAR::PROBLEMTYPE::StringToShapeFunctionTypeMap()
-{
-  static std::map<std::string, ShapeFunctionType> string2shapefuntype;
-
-  if (string2shapefuntype.size() == 0)
-  {
-    // problem types in alphabetical order
-    string2shapefuntype["Polynomial"] = ShapeFunctionType::shapefunction_polynomial;
-    string2shapefuntype["Nurbs"] = ShapeFunctionType::shapefunction_nurbs;
-    string2shapefuntype["HDG"] = ShapeFunctionType::shapefunction_hdg;
-  }
-
-  return string2shapefuntype;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ShapeFunctionType INPAR::PROBLEMTYPE::StringToShapeFunctionType(std::string name)
-{
-  std::map<std::string, ShapeFunctionType> map = StringToShapeFunctionTypeMap();
-  std::map<std::string, ShapeFunctionType>::const_iterator i = map.find(name);
-  if (i != map.end()) return i->second;
-  dserror(
-      "'%s' does not name a shape function type. Check for typos or consider adding the shape "
-      "function type to the map.",
-      name.c_str());
-
-  return ShapeFunctionType::shapefunction_undefined;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::string INPAR::PROBLEMTYPE::ShapeFunctionTypeToString(ShapeFunctionType shapefunctiontype)
-{
-  std::map<std::string, ShapeFunctionType> map = StringToShapeFunctionTypeMap();
-
-  std::map<ShapeFunctionType, std::string> reversed;
-  for (std::map<std::string, ShapeFunctionType>::iterator i = map.begin(); i != map.end(); ++i)
-    reversed[i->second] = i->first;
-
-  std::map<ShapeFunctionType, std::string>::const_iterator i = reversed.find(shapefunctiontype);
-  if (i != reversed.end()) return i->second;
-  dserror(
-      "Could not find the name of the given shape function type or the shapefunction is "
-      "undefined.");
-
-  return "";
 }

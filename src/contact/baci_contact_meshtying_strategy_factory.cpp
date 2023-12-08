@@ -54,7 +54,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // read Problem Type and Problem Dimension from DRT::Problem
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
   int dim = DRT::Problem::Instance()->NDim();
-  ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -240,7 +240,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // NURBS PROBLEM?
   switch (distype)
   {
-    case ShapeFunctionType::shapefunction_nurbs:
+    case CORE::FE::ShapeFunctionType::nurbs:
     {
       params.set<bool>("NURBS", true);
       break;

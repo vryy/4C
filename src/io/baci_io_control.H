@@ -8,6 +8,8 @@
 #ifndef BACI_IO_CONTROL_H
 #define BACI_IO_CONTROL_H
 
+#include "baci_discretization_fem_general_shape_function_type.H"
+
 #include <Epetra_Comm.h>
 
 #include <fstream>
@@ -18,9 +20,6 @@ extern "C"
 #include "baci_io_legacy_types.h"
 }
 
-//  Forward declaration
-enum class ShapeFunctionType;
-
 namespace IO
 {
   /// control class to manage a control file for output
@@ -28,12 +27,12 @@ namespace IO
   {
    public:
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& outputname, int ndim, int restart, int filesteps,
         int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& restartname, std::string outputname, int ndim, int restart,
         int filesteps, int create_controlfile, bool adaptname = true);
 
@@ -88,21 +87,22 @@ namespace IO
     int BinIO() const { return create_controlfile_; }
 
     /// overwrites result files
-    void OverwriteResultFile(const ShapeFunctionType& spatial_approx);
+    void OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files
-    void NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files for the mlmc
-    void NewResultFile(
-        const std::string& name_appendix, int numb_run, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(const std::string& name_appendix, int numb_run,
+        const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// creates new result files
-    void NewResultFile(std::string name, const ShapeFunctionType& spatial_approx);
+    void NewResultFile(std::string name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
    private:
-    void WriteHeader(const std::string& control_file_name, const ShapeFunctionType& spatial_approx);
+    void WriteHeader(
+        const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     void InsertRestartBackReference(int restart, const std::string& outputname);
 

@@ -11,9 +11,9 @@
 #ifndef BACI_LIB_DISCRET_H
 #define BACI_LIB_DISCRET_H
 
+#include "baci_discretization_fem_general_shape_function_type.H"
 #include "baci_lib_dofset_interface.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_node.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_std_cxx20_ranges.H"
@@ -2270,7 +2270,7 @@ namespace DRT
   //! distribute a discretization from one group to one other
   void NPDuplicateDiscretization(const int sgroup, const int rgroup,
       Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! distribute a discretization from one group to one other
   //! if the groups have the same size. In this special case it is desirable
@@ -2278,7 +2278,7 @@ namespace DRT
   //! a different braodcasting scheme is used
   void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
       Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
+      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
 
 }  // namespace DRT
 

@@ -70,7 +70,7 @@ void ADAPTER::FluidFSI::Init()
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -159,7 +159,7 @@ double ADAPTER::FluidFSI::TimeScaling() const
 void ADAPTER::FluidFSI::Update()
 {
   if (DRT::Problem::Instance()->SpatialApproximationType() !=
-      ShapeFunctionType::shapefunction_hdg)  // TODO als fix this!
+      CORE::FE::ShapeFunctionType::hdg)  // TODO als fix this!
   {
     Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
 

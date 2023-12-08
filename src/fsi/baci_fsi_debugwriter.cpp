@@ -48,10 +48,10 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
   s << "-step" << step;
 
   control_ = Teuchos::rcp(new IO::OutputControl(dis_->Comm(),
-      "none",                                       // we do not have a problem type
-      ShapeFunctionType::shapefunction_polynomial,  // this is a FE code ... no nurbs
-      "debug-output",                               // no input file either
-      s.str(),                                      // an output file name is needed
+      "none",                                   // we do not have a problem type
+      CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
+      "debug-output",                           // no input file either
+      s.str(),                                  // an output file name is needed
       DRT::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
@@ -100,10 +100,10 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
   s << "-step" << step;
 
   control_ = Teuchos::rcp(new IO::OutputControl(dis_->Comm(),
-      "none",                                       // we do not have a problem type
-      ShapeFunctionType::shapefunction_polynomial,  // this is a FE code ... no nurbs
-      "debug-output",                               // no input file either
-      s.str(),                                      // an output file name is needed
+      "none",                                   // we do not have a problem type
+      CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
+      "debug-output",                           // no input file either
+      s.str(),                                  // an output file name is needed
       DRT::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations

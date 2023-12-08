@@ -29,7 +29,7 @@
  *----------------------------------------------------------------------*/
 CORE::ADAPTER::CouplingMortar::CouplingMortar(int spatial_dimension,
     Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
-    ShapeFunctionType shape_function_type)
+    CORE::FE::ShapeFunctionType shape_function_type)
     : spatial_dimension_(spatial_dimension),
       mortar_coupling_params_(mortar_coupling_params),
       contact_dynamic_params_(contact_dynamic_params),
@@ -281,7 +281,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   input.setParameters(contact_dynamic_params_);
 
   // is this a nurbs problem?
-  const bool nurbs = shape_function_type_ == ShapeFunctionType::shapefunction_nurbs;
+  const bool nurbs = shape_function_type_ == CORE::FE::ShapeFunctionType::nurbs;
   input.set<bool>("NURBS", nurbs);
 
   // set valid parameter values

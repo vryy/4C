@@ -46,7 +46,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == ShapeFunctionType::shapefunction_hdg)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }

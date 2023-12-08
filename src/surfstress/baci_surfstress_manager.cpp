@@ -81,7 +81,7 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     Teuchos::RCP<IO::OutputControl> condcontrol =
         Teuchos::rcp(new IO::OutputControl(surfdiscret_->Comm(),
             "none",  // we do not have a problem type
-            ShapeFunctionType::shapefunction_polynomial,
+            CORE::FE::ShapeFunctionType::polynomial,
             "debug-output",  // no input file either
             outfile,         // an output file name is needed
             ndim,

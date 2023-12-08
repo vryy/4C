@@ -108,7 +108,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
       ndsale_((DRT::Problem::Instance()->SpatialApproximationType() ==
-                  ShapeFunctionType::shapefunction_hdg) *
+                  CORE::FE::ShapeFunctionType::hdg) *
               2),
       massmat_(Teuchos::null),
       logenergy_(Teuchos::null),
@@ -892,7 +892,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       //     much for sensitive problems
       //     xwall uses non-polynomial shape functions
       if (DRT::Problem::Instance()->SpatialApproximationType() ==
-              ShapeFunctionType::shapefunction_polynomial &&
+              CORE::FE::ShapeFunctionType::polynomial &&
           xwall_ == Teuchos::null)
         CheckMatrixNullspace();
 
