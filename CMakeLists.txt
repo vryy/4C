@@ -92,8 +92,6 @@ find_package(
 find_package(Netcdf REQUIRED)
 find_package(ArborX)
 find_package(FFTW)
-find_package(ACML)
-find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 

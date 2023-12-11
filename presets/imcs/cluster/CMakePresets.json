@@ -37,7 +37,6 @@
         "USE_USERSPECIFIED_BOOST": "ON",
         "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
         "BLAS_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
-        "LAPACK_LIBRARIES": "$env{OPENBLAS_ROOT}/lib/libopenblas.a",
         "SEARCH_CLN_LIBRARY_DIR": "$env{CLN_ROOT}/lib",
         "CLN_INCLUDE_DIR": "$env{CLN_ROOT}/include",
         "BLA_VENDOR": "openBLAS.0.3.6",
