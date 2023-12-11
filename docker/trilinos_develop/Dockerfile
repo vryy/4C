@@ -64,7 +64,7 @@ RUN /dependencies/current/cmake/install.sh /usr/local
 RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
 # Install superLU_dist
-RUN /dependencies/trilinos_develop/superlu_dist/install.sh ${INSTALL_DIR}
+RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # Install qhull
 RUN /dependencies/current/qhull/install.sh ${INSTALL_DIR}

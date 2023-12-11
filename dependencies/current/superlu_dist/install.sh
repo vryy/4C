@@ -9,18 +9,15 @@ set -e
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
-VERSION="2.5"
-CHECKSUM="ddba456a9aea3d589ade0b90ca197402ce75c665d344f4d8b735e80f5a821d28"
+VERSION="7.2.0"
+CHECKSUM="20b60bd8a3d88031c9ce6511ae9700b7a8dcf12e2fd704e74b1af762b3468b8c"
 
-# Install superLU_dist 2.5
-# Alternative mirror from web.archive https://web.archive.org/web/20221213023414/https://portal.nersc.gov/project/sparse/superlu/superlu_dist_2.5.tar.gz \
-# Manual copy of header files to install directory because Makefile does not do it
-# Additionally, Martin fixed a bug. So, we add the bug-fix to the super-hacky setup as well.
-# > September 29, 2015:
-# > Fixed bug in SuperLU_DIST_2.5/SRC/superlu_grid.c line 99; grid->comm set to MPI_COMM_WORLD instead of Bcomm because one later frees grid->comm if the communicator was cloned
-wget --no-verbose https://portal.nersc.gov/project/sparse/superlu/superlu_dist_${VERSION}.tar.gz
+SUPERLU_TAR="superlu_dist-${VERSION}.tar.gz"
+
+wget --no-verbose https://github.com/xiaoyeli/superlu_dist/archive/refs/tags/v${VERSION}.tar.gz --output-document "$SUPERLU_TAR"
+
 # Verify checksum
-if [ $CHECKSUM = `sha256sum superlu_dist_${VERSION}.tar.gz | awk '{print $1}'` ]
+if [ $CHECKSUM = `sha256sum "$SUPERLU_TAR" | awk '{print $1}'` ]
 then
   echo "Checksum matches"
 else
@@ -28,18 +25,33 @@ else
   exit 1
 fi
 
-tar --no-same-owner -xzf superlu_dist_${VERSION}.tar.gz
-cd SuperLU_DIST_${VERSION}/
-sed -i -e '99s/Bcomm/MPI_COMM_WORLD/' SRC/superlu_grid.c
-cp MAKE_INC/make.i386_linux make.inc
-sed -i -e "s,\(^DSUPERLULIB\s*=\).*,\1 ${INSTALL_DIR}/lib/libsuperlu_dist_${VERSION}.a," \
-     -e "s,\(^BLASLIB\s*=\).*,\1 -L/usr/lib -lblas," \
-     -e "s,\(^METISLIB\s*=\).*,\1 -L/usr/lib -lmetis," \
-     -e "s,\(^PARMETISLIB\s*=\).*,\1 -L/usr/lib -lparmetis," \
-     -e "s,\(^CFLAGS.*\),\1 -fPIC," \
-     -e "s,\(^NOOPTS.*\),\1 -O0 -fPIC," \
-     -e "s,\(^F90FLAGS.*\),\1 -fPIC," \
-     -e "s,\(^LOADER\s*=\).*,\1 mpicc," make.inc
-make && make install
-cp SRC/*h ${INSTALL_DIR}/include
-cd ../
+tar -xzf $SUPERLU_TAR
+SUPERLU_SRC="superlu_dist-${VERSION}"
+BUILD_DIR="${SUPERLU_SRC}-build"
+mkdir -p $BUILD_DIR && cd $BUILD_DIR
+
+CMAKE_COMMAND=cmake
+MPI_DIR=/usr
+MPI_BIN_DIR=$MPI_DIR/bin
+
+$CMAKE_COMMAND \
+  -DCMAKE_C_COMPILER=$MPI_BIN_DIR/mpicc \
+  -DCMAKE_C_FLAGS="-std=c99 -O3 -g -DPRNTlevel=0 -DDEBUGlevel=0" \
+  -DCMAKE_CXX_COMPILER=$MPI_BIN_DIR/mpicxx \
+  -DCMAKE_CXX_FLAGS="-std=c++17" \
+  -DCMAKE_Fortran_COMPILER=$MPI_BIN_DIR/mpif90 \
+  \
+  -Denable_openmp=OFF \
+  \
+  -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
+  -DTPL_ENABLE_LAPACKLIB=ON \
+  \
+  -DTPL_PARMETIS_INCLUDE_DIRS="/usr/include" \
+  -DTPL_PARMETIS_LIBRARIES="/usr/lib/libparmetis.so.4.0.3;/usr/lib/x86_64-linux-gnu/libmetis.so.5.1.0" \
+  \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+  ../$SUPERLU_SRC
+
+make -j${NPROCS} install
+cd ..

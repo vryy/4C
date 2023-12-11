@@ -16,7 +16,7 @@
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
-        "Trilinos_PREFIX": "/imcs/public/compsim/lib/2023_1/build",
+        "Trilinos_PREFIX": "/imcs/public/compsim/lib/2023_3/build",
         "QHULL_LIBRARY_DIR": "/imcs/public/compsim/lib/TPL/packages/qhull-2012.1/build/lib",
         "QHULL_INCLUDE_DIR": "/imcs/public/compsim/lib/TPL/packages/qhull-2012.1/build/include/libqhull",
         "MPI_RUN": "/usr/bin/mpirun",

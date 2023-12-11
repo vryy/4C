@@ -15,7 +15,7 @@ VERSION=${2:-develop}
 
 
 # Location of script to apply patches later
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+SCRIPT_DIR="`dirname "$0"`"
 CMAKE_COMMAND=cmake
 
 git clone https://github.com/trilinos/Trilinos.git

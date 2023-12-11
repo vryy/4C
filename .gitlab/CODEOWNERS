@@ -439,7 +439,8 @@ requirements.txt                               @baci/team_infrastructure
 .gitlab/issue_templates/ISSUE_TEMPLATE.md                                    @baci/baci_developers 
 .gitlab/issue_templates/ONBOARDING.md                                        @baci/baci_maintainer 
 .gitlab/issue_templates/TEST_FAILING.md                                      @baci/team_infrastructure 
-.gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers 
+.gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers
+.gitlab/merge_request_templates/MERGE_REQUEST_TRILINOS_UPDATE_TEMPLATE.md    @baci/team_infrastructure
 
 
 # put CMakeLists.txt last to override folder owners
