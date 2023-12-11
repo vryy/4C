@@ -106,11 +106,13 @@ contact_aug/               @baci/team_contact
 
 contact_constitutivelaw/   @baci/team_contact
 
-core/                      @baci/team_infrastructure
-core/coupling              @baci/team_discretization
-core/discretization        @baci/team_discretization
-core/linear_solver         @baci/team_solvers
-core/utils                 @baci/team_infrastructure
+core/*                     @baci/team_infrastructure
+core/coupling/             @baci/team_discretization
+core/discretization/       @baci/team_discretization
+core/linalg/               @baci/team_solvers
+core/linear_solver/        @baci/team_solvers
+core/rebalance/            @baci/team_discretization
+core/utils/                @baci/team_infrastructure
 
 create_rtdfiles/           @baci/team_infrastructure
 
@@ -186,8 +188,6 @@ levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
 
-linalg/                    @baci/team_solvers
-
 loma/                      @baci/team_fluid
 
 lubrication/               @baci/team_scatra
@@ -254,8 +254,6 @@ post_vtk/                  @baci/team_output
 pre_exodus/                @baci/team_input
 
 pre_locsys/                @baci/team_input
-
-rebalance/                 @baci/team_discretization
 
 red_airways/               @baci/team_reduced_fluid_models
 
