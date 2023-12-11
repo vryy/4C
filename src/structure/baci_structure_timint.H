@@ -141,12 +141,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
-    //! Empty constructor
-    TimInt() { ; }
-
-    //! Copy constructor
-    TimInt(const TimInt& old) { ; }
-
     /*! \brief Initialize this object
 
     Hand in all objects/parameters/etc. from outside.

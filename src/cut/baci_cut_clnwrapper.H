@@ -113,11 +113,6 @@ namespace CORE::GEO
 
 
 #ifdef CLN_CALC
-      inline ClnWrapper& operator=(const ClnWrapper& other)
-      {
-        value_ = other.value_;
-        return *this;
-      }
       inline ClnWrapper& operator+=(const ClnWrapper& other)
       {
         value_ += other.value_;

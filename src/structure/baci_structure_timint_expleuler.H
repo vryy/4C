@@ -40,9 +40,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output          //!< the output
     );
 
-    //! Empty constructor
-    TimIntExplEuler() : TimIntExpl() { ; }
-
     //! Copy constructor
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 

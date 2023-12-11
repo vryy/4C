@@ -160,7 +160,7 @@ namespace STR
 
     //! Create object to scale linear system
     void CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
-        STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState);
+        const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState);
   }  // namespace NLN
 }  // namespace STR
 

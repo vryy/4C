@@ -197,6 +197,8 @@ void STR::IMPLICIT::Statics::PreUpdate()
       Teuchos::RCP<const Epetra_Vector> veln_ptr = GlobalState().GetVelN();
       // update the pseudo acceleration (statics!)
       accnp_ptr->Update(1.0 / dt, *velnp_ptr, -1.0 / dt, *veln_ptr, 0.0);
+
+      [[fallthrough]];
     }
     // case: constant acceleration OR constant velocity
     case INPAR::STR::pred_constvel:

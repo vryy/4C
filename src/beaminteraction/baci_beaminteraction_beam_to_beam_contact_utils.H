@@ -186,7 +186,7 @@ namespace BEAMINTERACTION
       std::pair<double, double>&
           closestpoints,  // The closest point are only set, if we have detected an intersection at
                           // a valid closest point with eta1_seg, eta2_seg \in [-1.0;1.0]
-      bool etaset);       // bool to check, if the closest point coordinates have been set or not
+      bool& etaset);      // bool to check, if the closest point coordinates have been set or not
 
   /*
   \brief Calculate closest distance of a point and a line

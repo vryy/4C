@@ -142,7 +142,7 @@ namespace DRT
       const std::vector<char> headerchar{'=', '-', '~', '^'};
       unsigned headerlength = line.length();
       stream << line << "\n";
-      if (level < 0 or level > headerchar.size())
+      if (level > headerchar.size())
       {
         dserror("Header level for ReadTheDocs output must be [0,3], but is %i", level);
       }

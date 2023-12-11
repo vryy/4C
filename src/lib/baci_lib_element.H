@@ -177,6 +177,8 @@ namespace DRT
     */
     Element(const DRT::Element& old);
 
+    Element& operator=(const Element&) = default;
+
 
     /*!
     \brief Deep copy the derived class and return pointer to it
@@ -827,7 +829,7 @@ might become invalid after a redistribution of the discretization.
              NOT be overwritten but stored twice in the element
 
     */
-    virtual void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
     {
       condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
       return;

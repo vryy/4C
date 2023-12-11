@@ -88,6 +88,7 @@ namespace LIBB64
             result = (fragment & 0x0fc) >> 2;
             *codechar++ = base64_encode_value(result);
             result = (fragment & 0x003) << 4;
+            [[fallthrough]];
           case step_B:
             if (plainchar == plaintextend)
             {
@@ -99,6 +100,7 @@ namespace LIBB64
             result |= (fragment & 0x0f0) >> 4;
             *codechar++ = base64_encode_value(result);
             result = (fragment & 0x00f) << 2;
+            [[fallthrough]];
           case step_C:
             if (plainchar == plaintextend)
             {

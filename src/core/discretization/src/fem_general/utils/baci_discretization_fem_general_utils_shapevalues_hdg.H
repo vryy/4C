@@ -43,14 +43,6 @@ namespace CORE::DRT::UTILS
 
     CORE::LINALG::SerialDenseMatrix matrix_;
     std::vector<bool> isNonzero_;
-
-    // assignment operator
-    ShapeValuesInteriorOnFace &operator=(ShapeValuesInteriorOnFace &other)
-    {
-      matrix_ = other.matrix_;
-      isNonzero_ = other.isNonzero_;
-      return *this;
-    }
   };
 
   /*!

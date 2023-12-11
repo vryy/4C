@@ -290,6 +290,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
       break;
     case Beam3ContactOctTree::spherical:
       CreateSPBB(nodecoords, 0, bboxlimits);
+      break;
     default:
       dserror("No or an invalid Octree type was chosen. Check your input file!");
       break;

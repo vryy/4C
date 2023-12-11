@@ -173,6 +173,7 @@ void electromagnetics_drt()
     {
       case INPAR::ELEMAG::initfield_scatra_hdg:
         ishdg = true;
+        [[fallthrough]];
       case INPAR::ELEMAG::initfield_scatra:
       {
         Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(elemagdishdg->Comm().Clone());

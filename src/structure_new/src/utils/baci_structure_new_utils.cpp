@@ -366,7 +366,7 @@ void STR::NLN::CreateConstraintPreconditioner(NOX::NLN::CONSTRAINT::PrecInterfac
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
-    STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState)
+    const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState)
 {
   if (DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
     iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));

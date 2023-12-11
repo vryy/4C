@@ -507,8 +507,8 @@ void CONTACT::AUG::Strategy::Initialize(enum MORTAR::ActionType actiontype)
         CreateStiffnessState(*gAugInactiveSlaveDofs);
         Data().SetMatrixMapsValid(true);
       }
+      [[fallthrough]];
     }
-    // no break
     case MORTAR::eval_force:
     case MORTAR::eval_static_constraint_rhs:
     {

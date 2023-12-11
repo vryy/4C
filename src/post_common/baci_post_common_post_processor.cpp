@@ -195,7 +195,7 @@ void runEnsightVtuFilter(PostProblem& problem)
           xfluidwriter.WriteFiles();
         }
       }
-      // don't add break here !!!!
+      [[fallthrough]];
     }
     case ProblemType::fluid_redmodels:
     {
@@ -214,7 +214,7 @@ void runEnsightVtuFilter(PostProblem& problem)
           xfluidwriter.WriteFiles();
         }
       }
-      // don't add break here !!!!
+      [[fallthrough]];
     }
     case ProblemType::fluid_ale:
     case ProblemType::freesurf:

@@ -1039,7 +1039,6 @@ std::string EnsightWriter::GetEnsightString(const CORE::FE::CellType distype) co
   switch (distype)
   {
     case CORE::FE::CellType::hex18:
-      entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
     case CORE::FE::CellType::hex27:
       entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
       break;
