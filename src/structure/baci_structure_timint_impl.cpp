@@ -54,8 +54,6 @@
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_impl.H"
 #include "baci_structure_timint_noxgroup.H"
-#include "baci_surfstress_manager.H"
-
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -952,28 +950,6 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
 
   return;
 };
-
-/*----------------------------------------------------------------------*/
-/* evaluate _certain_ surface stresses and stiffness
- * evaluation happens internal-force like */
-void STR::TimIntImpl::ApplyForceStiffSurfstress(const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff)
-{
-  // surface stress loads (but on internal force vector side)
-  if (surfstressman_->HaveSurfStress())
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    p.set("surfstr_man", surfstressman_);
-    p.set("total time", time);
-    p.set("delta time", dt);
-    surfstressman_->EvaluateSurfStress(p, disn, fint, stiff);
-  }
-  // bye bye
-  return;
-}
-
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
@@ -2436,13 +2412,6 @@ void STR::TimIntImpl::UpdateStepCardiovascular0D()
 void STR::TimIntImpl::UpdateStepSpringDashpot()
 {
   if (springman_->HaveSpringDashpot()) springman_->Update();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepSurfstress()
-{
-  if (surfstressman_->HaveSurfStress()) surfstressman_->Update();
 }
 
 /*----------------------------------------------------------------------*/

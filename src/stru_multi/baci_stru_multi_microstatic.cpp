@@ -28,7 +28,6 @@
 #include "baci_so3_shw6.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_timint_impl.H"
-#include "baci_surfstress_manager.H"
 
 #include <Epetra_LinearProblem.h>
 
@@ -321,12 +320,6 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
-
     // complete stiffness matrix
     stiff_->Complete();
 
@@ -406,12 +399,6 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
-
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
   }
 
   stiff_->Complete();
@@ -494,12 +481,6 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
-
-    if (surf_stress_man_->HaveSurfStress())
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-    }
   }
 
   //-------------------------------------------- compute residual forces
@@ -587,12 +568,6 @@ void STRUMULTI::MicroStatic::FullNewton()
 
       discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
       discret_->ClearState();
-
-      if (surf_stress_man_->HaveSurfStress())
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p, disn_, fintn_, stiff_);
-      }
     }
 
     // complete stiffness matrix
@@ -678,8 +653,6 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     output->WriteVector("displacement", dis_);
     isdatawritten = true;
 
-    if (surf_stress_man_->HaveSurfStress()) surf_stress_man_->WriteRestart(step, time);
-
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> emptyalpha =
         Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
 
@@ -717,9 +690,6 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     output->NewStep(step, time);
     output->WriteVector("displacement", dis_);
     isdatawritten = true;
-
-    if (surf_stress_man_->HaveSurfStress() && iosurfactant_)
-      surf_stress_man_->WriteResults(step, time);
   }
 
   //------------------------------------- stress/strain output
@@ -786,7 +756,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
-    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name)
+    std::string name)
 {
   Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
@@ -806,14 +776,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
   step_ = rstep;
   stepn_ = step_ + 1;
 
-  if (surf_stress_man->HaveSurfStress())
-  {
-    surf_stress_man->ReadRestart(rstep, name, true);
-  }
-
   reader.ReadSerialDenseMatrix(lastalpha, "alpha");
-
-  return;
 }
 
 
@@ -875,9 +838,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
 }
 
 void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<UTILS::SurfStressManager> surfman,
-    Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
-    Teuchos::RCP<std::vector<char>> plstrain,
+    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<std::vector<char>> stress,
+    Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
@@ -886,7 +848,6 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
 {
   dis_ = dis;
   disn_ = disn;
-  surf_stress_man_ = surfman;
 
   stress_ = stress;
   strain_ = strain;

@@ -384,9 +384,6 @@ void STR::TimIntStatics::UpdateStepState()
   //    A_{n} := A_{n+1}
   acc_->UpdateSteps(*accn_);
 
-  // update surface stress
-  UpdateStepSurfstress();
-
   // update constraints
   UpdateStepConstraint();
 

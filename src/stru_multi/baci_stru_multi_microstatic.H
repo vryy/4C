@@ -29,11 +29,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace UTILS
-{
-  class SurfStressManager;
-}
-
 namespace CORE::LINALG
 {
   class Solver;
@@ -86,7 +81,7 @@ namespace STRUMULTI
     */
     void ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
-        Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name);
+        std::string name);
 
     /*!
     \brief Return time from parameter list
@@ -149,8 +144,8 @@ namespace STRUMULTI
 
     */
     void SetState(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
-        Teuchos::RCP<UTILS::SurfStressManager> surfman, Teuchos::RCP<std::vector<char>> stress,
-        Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
+        Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
+        Teuchos::RCP<std::vector<char>> plstrain,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
@@ -237,8 +232,6 @@ namespace STRUMULTI
     // don't want = operator and cctor
     MicroStatic operator=(const MicroStatic& old);
     MicroStatic(const MicroStatic& old);
-
-    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
     Teuchos::RCP<DRT::Discretization> discret_;
     Teuchos::RCP<CORE::LINALG::Solver> solver_;

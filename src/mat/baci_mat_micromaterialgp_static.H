@@ -19,11 +19,6 @@
 
 // forward declarations
 
-namespace UTILS
-{
-  class SurfStressManager;
-}
-
 namespace STRUMULTI
 {
   class MicroStatic;
@@ -108,9 +103,6 @@ namespace MAT
 
     /// my vector of new displacements
     Teuchos::RCP<Epetra_Vector> disn_;
-
-    /// my manager of surface stresses
-    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
     // my EAS history data -> note that microstructure is not parallel
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;

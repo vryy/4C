@@ -504,9 +504,6 @@ void STR::TimIntGEMM::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   // nothing to be done
 
-  // update surface stress
-  UpdateStepSurfstress();
-
   // update constraints
   UpdateStepConstraint();
 

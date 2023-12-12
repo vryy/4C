@@ -316,15 +316,6 @@ namespace STR
             pwindk  //!< parameter list containing scale factors for matrix entries
     );
 
-    //! Evaluate _certain_ surface stresses and stiffness
-    //!
-    //! The Evaluation happens internal-force-like.
-    void ApplyForceStiffSurfstress(const double time,      //!< evaluation time
-        const double dt,                                   //!< time step size
-        const Teuchos::RCP<Epetra_Vector> disn,            //!< displacement state at n+1
-        Teuchos::RCP<Epetra_Vector>& fint,                 //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff  //! stiffness
-    );
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void ApplyForceStiffContactMeshtying(
@@ -675,9 +666,6 @@ namespace STR
 
     //! Update Element
     void UpdateStepElement() override = 0;
-
-    //! Update step for surface stress
-    void UpdateStepSurfstress();
 
     //! Update step for constraints
     void UpdateStepConstraint();

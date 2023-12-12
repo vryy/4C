@@ -8,6 +8,5 @@ set(_stru_multi_dependencies
     mat
     so3
     structure
-    surfstress
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_stru_multi_dependencies})

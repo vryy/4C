@@ -54,7 +54,6 @@ namespace UTILS
   class ConstraintSolver;
   class Cardiovascular0DManager;
   class SpringDashpotManager;
-  class SurfStressManager;
 }  // namespace UTILS
 
 namespace CONTACT
@@ -689,9 +688,6 @@ namespace STR
     //! Read and set restart values for beam contact
     void ReadRestartBeamContact();
 
-    //! Read and set restart values for surface stresses
-    void ReadRestartSurfstress();
-
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 
@@ -1122,9 +1118,6 @@ namespace STR
 
     // spring dashpot
     Teuchos::RCP<UTILS::SpringDashpotManager> springman_;
-
-    //! surface stresses
-    Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
 
     //! bridge for meshtying and contact
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> cmtbridge_;
