@@ -295,8 +295,6 @@ structure/                 @baci/team_structure
 
 structure_new/             @baci/team_structure
 
-surfstress/                @baci/team_discretization
-
 thermo/                    @baci/team_thermo
 
 timestepping/              @baci/team_discretization

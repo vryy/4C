@@ -213,7 +213,6 @@ namespace DRT
         calc_struct_volconstrstiff,
         calc_struct_constrarea,
         calc_init_vol,
-        calc_surfstress_stiff,
         calc_struct_areaconstrstiff,
         calc_struct_monitarea,
         prestress_update,

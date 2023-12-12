@@ -13,7 +13,6 @@ set(_so3_dependencies
     mat
     nurbs_discret
     structure_new
-    surfstress
     thermo
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_so3_dependencies})

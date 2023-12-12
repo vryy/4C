@@ -26,14 +26,11 @@
 #include "baci_so3_prestress_service.H"
 #include "baci_so3_surface.H"
 #include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_surfstress_manager.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"
 
 #include <Sacado.hpp>
-
-using UTILS::SurfStressManager;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -653,8 +650,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     act = StructuralSurface::calc_struct_areaconstrstiff;
   else if (action == "calc_init_vol")
     act = StructuralSurface::calc_init_vol;
-  else if (action == "calc_surfstress_stiff")
-    act = StructuralSurface::calc_surfstress_stiff;
   else if (action == "calc_brownian_motion")
     act = StructuralSurface::calc_brownian_motion;
   else if (action == "calc_brownian_motion_damping")
@@ -1075,78 +1070,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         }
         params.set("V0", V + dV);
       }
-    }
-    break;
-    case calc_surfstress_stiff:
-    {
-      Teuchos::RCP<SurfStressManager> surfstressman =
-          params.get<Teuchos::RCP<SurfStressManager>>("surfstr_man", Teuchos::null);
-
-      if (surfstressman == Teuchos::null)
-        dserror("No SurfStressManager in Solid3 Surface available");
-
-      Teuchos::RCP<DRT::Condition> cond =
-          params.get<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::null);
-      if (cond == Teuchos::null) dserror("Condition not available in Solid3 Surface");
-
-      double time = params.get<double>("total time", -1.0);
-      double dt = params.get<double>("delta time", 0.0);
-      bool newstep = params.get<bool>("newstep", false);
-
-      // element geometry update
-
-      const int numnode = NumNode();
-      CORE::LINALG::SerialDenseMatrix x(numnode, 3);
-
-      Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
-      if (disn == Teuchos::null) dserror("Cannot get state vector 'new displacement'");
-      std::vector<double> mydisn(lm.size());
-      DRT::UTILS::ExtractMyValues(*disn, mydisn, lm);
-      SpatialConfiguration(x, mydisn);
-
-      const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-
-      // set up matrices and parameters needed for the evaluation of current
-      // interfacial area and its derivatives w.r.t. the displacements
-
-      int ndof = 3 * numnode;  // overall number of surface dofs
-      double A;                // interfacial area
-      // first partial derivatives
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
-      // second partial derivatives
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2 =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-
-      ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
-
-      if (cond->Type() == DRT::Condition::Surfactant)  // dynamic surfactant model
-      {
-        int curvenum = cond->GetInt("funct");
-        double k1xC = cond->GetDouble("k1xCbulk");
-        double k2 = cond->GetDouble("k2");
-        double m1 = cond->GetDouble("m1");
-        double m2 = cond->GetDouble("m2");
-        double gamma_0 = cond->GetDouble("gamma_0");
-        double gamma_min = cond->GetDouble("gamma_min");
-        double gamma_min_eq = gamma_0 - m1;
-        double con_quot_max = (gamma_min_eq - gamma_min) / m2 + 1.;
-        double con_quot_eq = (k1xC) / (k1xC + k2);
-
-        surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1,
-            elematrix1, this->Id(), time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0, gamma_min,
-            gamma_min_eq, con_quot_max, con_quot_eq, newstep);
-      }
-      else if (cond->Type() == DRT::Condition::SurfaceTension)  // ideal liquid
-      {
-        int curvenum = cond->GetInt("funct");
-        double const_gamma = cond->GetDouble("gamma");
-        surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1,
-            elematrix1, this->Id(), time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, newstep);
-      }
-      else
-        dserror("Unknown condition type %d", cond->Type());
     }
     break;
     // compute stochastical forces due to Brownian Motion

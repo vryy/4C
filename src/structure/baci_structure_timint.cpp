@@ -47,7 +47,6 @@
 #include "baci_stru_multi_microstatic.H"
 #include "baci_structure_resulttest.H"
 #include "baci_structure_timint_genalpha.H"
-#include "baci_surfstress_manager.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -117,7 +116,6 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       consolv_(Teuchos::null),
       cardvasc0dman_(Teuchos::null),
       springman_(Teuchos::null),
-      surfstressman_(Teuchos::null),
       cmtbridge_(Teuchos::null),
       beamcman_(Teuchos::null),
       locsysman_(Teuchos::null),
@@ -267,11 +265,6 @@ void STR::TimInt::Setup()
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams_);
   }
-
-  // Initialize SurfStressManager for handling surface stress conditions due to interfacial
-  // phenomena
-  surfstressman_ = Teuchos::rcp(new UTILS::SurfStressManager(
-      discret_, sdynparams_, DRT::Problem::Instance()->OutputControlFile()->FileName()));
 
   // check whether we have locsys BCs and create LocSysManager if so
   // after checking
@@ -1709,7 +1702,6 @@ void STR::TimInt::ReadRestart(const int step)
   ReadRestartCardiovascular0D();
   ReadRestartContactMeshtying();
   ReadRestartBeamContact();
-  ReadRestartSurfstress();
   ReadRestartMultiScale();
   ReadRestartSpringDashpot();
 
@@ -1732,9 +1724,6 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
   // ---------------------------------------------------------------------------
   // set restart is only for simple structure problems
   // hence we put some security measures in place
-
-  // surface stress
-  if (surfstressman_->HaveSurfStress()) dserror("Set restart not implemented for surface stress");
 
   // constraints
   if (conman_->HaveConstraint()) dserror("Set restart not implemented for constraints");
@@ -1860,14 +1849,6 @@ void STR::TimInt::ReadRestartBeamContact()
     IO::DiscretizationReader reader(discret_, step_);
     beamcman_->ReadRestart(reader);
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* Read and set restart values for constraints */
-void STR::TimInt::ReadRestartSurfstress()
-{
-  if (surfstressman_->HaveSurfStress())
-    surfstressman_->ReadRestart(step_, DRT::Problem::Instance()->InputControlFile()->FileName());
 }
 
 /*----------------------------------------------------------------------*/
@@ -2085,10 +2066,6 @@ void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> ti
   // get restart data is only for simple structure problems
   // hence
 
-  // surface stress
-  if (surfstressman_->HaveSurfStress())
-    dserror("Get restart data not implemented for surface stress");
-
   // constraints
   if (conman_->HaveConstraint()) dserror("Get restart data not implemented for constraints");
 
@@ -2121,12 +2098,6 @@ void STR::TimInt::OutputRestart(bool& datawritten)
   WriteRestartForce(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
-
-  // surface stress
-  if (surfstressman_->HaveSurfStress())
-  {
-    surfstressman_->WriteRestart(step_, (*time_)[0]);
-  }
 
   // constraints
   if (conman_->HaveConstraint())
@@ -2225,9 +2196,6 @@ void STR::TimInt::OutputState(bool& datawritten)
   if (writeele_) output_->WriteElementData(firstoutputofrun_);
   output_->WriteNodeData(firstoutputofrun_);
   firstoutputofrun_ = false;
-
-  if (surfstressman_->HaveSurfStress() && writesurfactant_)
-    surfstressman_->WriteResults(step_, (*time_)[0]);
 
   // meshtying and contact output
   if (HaveContactMeshtying())

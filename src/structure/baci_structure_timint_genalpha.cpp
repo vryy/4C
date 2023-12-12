@@ -417,9 +417,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
 
-  // add surface stress force
-  ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, fintn_, stiff_);
-
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
   psprdash.set("time_fac", gamma_ / (beta_ * (*dt_)[0]));
@@ -782,9 +779,6 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update residual force vector for NewtonLS
   if (fresn_str_ != Teuchos::null) fint_str_->Update(1., *fintn_str_, 0.);
-
-  // update surface stress
-  UpdateStepSurfstress();
 
   // update constraints
   UpdateStepConstraint();

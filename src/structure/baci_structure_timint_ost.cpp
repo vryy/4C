@@ -619,9 +619,6 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   //    F_{inert;n} := F_{inert;n+1}
   finert_->Update(1.0, *finertn_, 0.0);
 
-  // update surface stress
-  UpdateStepSurfstress();
-
   // update constraints
   UpdateStepConstraint();
 
