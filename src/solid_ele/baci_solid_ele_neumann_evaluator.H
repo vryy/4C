@@ -56,7 +56,7 @@ namespace DRT::ELEMENTS
 
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element with the
-   * discretization type known at compile time.
+   * cell type known at compile time.
    *
    * The element force vector is
    *
@@ -73,7 +73,7 @@ namespace DRT::ELEMENTS
    * where \f$n\f$ is the number of nodes of the element and \f$N^i\f$ is the \f$i\f$-th shape
    * function of the element.
    *
-   * @tparam distype Discretization type known at compile time
+   * @tparam celltype Cell type known at compile time
    *
    * @param element (in) : The element where we integrate
    * @param discretization (in) : Discretization
@@ -83,7 +83,7 @@ namespace DRT::ELEMENTS
    * condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  template <CORE::FE::CellType distype>
+  template <CORE::FE::CellType celltype>
   void EvaluateNeumann(DRT::Element& element, const DRT::Discretization& discretization,
       DRT::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);

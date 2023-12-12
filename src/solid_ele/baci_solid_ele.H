@@ -37,7 +37,7 @@ namespace DRT::ELEMENTS
         std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
         override;
 
-    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
         const int id, const int owner) override;
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
@@ -89,7 +89,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] DRT::ElementType& ElementType() const override { return SolidType::Instance(); }
 
-    [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
+    [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; };
 
     void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
 
@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-    bool ReadElement(const std::string& eletype, const std::string& distype,
+    bool ReadElement(const std::string& eletype, const std::string& celltype,
         DRT::INPUT::LineDefinition* linedef) override;
 
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -156,8 +156,8 @@ namespace DRT::ELEMENTS
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
    private:
-    //! discretization type
-    CORE::FE::CellType distype_ = CORE::FE::CellType::dis_none;
+    //! cell type
+    CORE::FE::CellType celltype_ = CORE::FE::CellType::dis_none;
 
     //! solid element properties
     SolidElementProperties solid_ele_property_{};

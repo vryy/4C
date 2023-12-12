@@ -31,13 +31,13 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet10>(porotype);
       break;
     default:
-      dserror("unknown distype provided");
+      dserror("unknown celltype provided");
       break;
   }
   return {};
 }
 
-template <CORE::FE::CellType distype>
+template <CORE::FE::CellType celltype>
 DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
     INPAR::PORO::PoroType porotype)
 {
@@ -50,7 +50,7 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
       break;
     case INPAR::PORO::PoroType::pressure_based:
     {
-      return DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>();
+      return DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>();
       break;
     }
     default:

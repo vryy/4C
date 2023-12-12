@@ -110,7 +110,7 @@ void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO") return Create(id, owner);
   return Teuchos::null;
@@ -149,17 +149,17 @@ DRT::Element* DRT::ELEMENTS::SolidPoro::Clone() const
 
 int DRT::ELEMENTS::SolidPoro::NumLine() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementLines(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementLines(celltype_);
 }
 
 int DRT::ELEMENTS::SolidPoro::NumSurface() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementSurfaces(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementSurfaces(celltype_);
 }
 
 int DRT::ELEMENTS::SolidPoro::NumVolume() const
 {
-  return CORE::DRT::UTILS::getNumberOfElementVolumes(distype_);
+  return CORE::DRT::UTILS::getNumberOfElementVolumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Lines()
@@ -184,11 +184,11 @@ void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterLis
 }
 
 bool DRT::ELEMENTS::SolidPoro::ReadElement(
-    const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+    const std::string& eletype, const std::string& elecelltype, DRT::INPUT::LineDefinition* linedef)
 {
   // read base element
-  // set discretization type
-  distype_ = CORE::FE::StringToCellType(eledistype);
+  // set cell type
+  celltype_ = CORE::FE::StringToCellType(elecelltype);
   anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(this->NumNode(), 0.0));
 
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   DRT::Element::Pack(data);
 
-  AddtoPack(data, (int)distype_);
+  AddtoPack(data, (int)celltype_);
 
   AddtoPack(data, (int)solid_ele_property_.kintype);
 
@@ -325,7 +325,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   solid_ele_property_.kintype = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
