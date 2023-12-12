@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
-#include "baci_io_legacy_table_cpp.h"
+#include "baci_io_legacy_table.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_post_common.H"

@@ -10,8 +10,9 @@
 #ifndef BACI_IO_LEGACY_TABLE_ITER_H
 #define BACI_IO_LEGACY_TABLE_ITER_H
 
-#include "baci_io_legacy_table.h"
+#include "baci_io_legacy_table.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -66,5 +67,7 @@ void init_map_iterator(MAP_ITERATOR* iterator, MAP* map);
 int next_map_node(MAP_ITERATOR* iterator);
 
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
+
+BACI_NAMESPACE_CLOSE
 
 #endif

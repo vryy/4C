@@ -13,7 +13,7 @@
 
 #include "baci_fluid_ele_immersed_base.H"
 #include "baci_io_control.H"
-#include "baci_io_legacy_table_cpp.h"  // access to legacy parser module
+#include "baci_io_legacy_table.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"

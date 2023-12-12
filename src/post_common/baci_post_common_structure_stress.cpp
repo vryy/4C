@@ -10,7 +10,7 @@
 
 
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_io_legacy_table_cpp.h"
+#include "baci_io_legacy_table.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"

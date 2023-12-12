@@ -40,6 +40,8 @@ table. This table can be queried for those values quite easily.
 #ifndef BACI_IO_LEGACY_TYPES_H
 #define BACI_IO_LEGACY_TYPES_H
 
+BACI_NAMESPACE_OPEN
+
 /*!
   \brief Types of the symbols we store in a map.
 
@@ -48,14 +50,14 @@ table. This table can be queried for those values quite easily.
   \author u.kue
   \date 08/04
 */
-typedef enum _SYMBOL_TYPES
+enum SYMBOL_TYPES
 {
   sym_undefined,
   sym_string,
   sym_int,
   sym_real,
   sym_map
-} SYMBOL_TYPES;
+};
 
 
 /*!
@@ -76,7 +78,7 @@ typedef enum _SYMBOL_TYPES
   \author u.kue
   \date 08/04
 */
-typedef struct _SYMBOL
+struct SYMBOL
 {
   /* put the union first to have the double value properly aligned */
   union
@@ -84,11 +86,11 @@ typedef struct _SYMBOL
     char* string;
     int integer;
     double real;
-    struct _MAP* dir;
+    struct MAP* dir;
   } s;
   SYMBOL_TYPES type;
-  struct _SYMBOL* next;
-} SYMBOL;
+  struct SYMBOL* next;
+};
 
 
 /*!
@@ -107,14 +109,14 @@ typedef struct _SYMBOL
   \author u.kue
   \date 08/04
 */
-typedef struct _MAP_NODE
+struct MAP_NODE
 {
   char* key;
   SYMBOL* symbol;
   int count;
-  struct _MAP_NODE* lhs;
-  struct _MAP_NODE* rhs;
-} MAP_NODE;
+  struct MAP_NODE* lhs;
+  struct MAP_NODE* rhs;
+};
 
 
 /*!
@@ -126,11 +128,12 @@ typedef struct _MAP_NODE
   \author u.kue
   \date 08/04
 */
-typedef struct _MAP
+struct MAP
 {
   MAP_NODE root;
-  int count;
-} MAP;
+  int count{};
+};
 
+BACI_NAMESPACE_CLOSE
 
 #endif

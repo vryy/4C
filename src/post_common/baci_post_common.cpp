@@ -17,6 +17,10 @@
 #include "baci_comm_parobject.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
+#include "baci_io_legacy_table.H"
+#include "baci_io_legacy_table_iter.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_dofset_independent.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rigidsphere.H"
@@ -25,10 +29,6 @@
 #include <EpetraExt_Transpose_CrsGraph.h>
 
 #include <stack>
-extern "C"
-{
-#include "baci_io_legacy_table_iter.h"
-}
 
 BACI_NAMESPACE_OPEN
 
@@ -473,7 +473,7 @@ void PostProblem::read_meshes()
         num_output_procs = 1;
       }
       currfield.set_num_output_procs(num_output_procs);
-      char* fn;
+      const char* fn;
       if (!map_find_string(meshmap, "mesh_file", &fn))
         dserror(
             "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
@@ -501,7 +501,7 @@ void PostProblem::read_meshes()
       for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != nullptr;
            condition = condition->next)
       {
-        char* condname;
+        const char* condname;
         if (not symbol_get_string(condition, &condname)) dserror("condition name expected");
 
         // read periodic boundary conditions if available
@@ -770,7 +770,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       num_output_procs = 1;
     }
     currfield.set_num_output_procs(num_output_procs);
-    char* fn;
+    const char* fn;
     if (!map_find_string(meshmap, "mesh_file", &fn))
       dserror(
           "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
@@ -795,7 +795,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != nullptr;
          condition = condition->next)
     {
-      char* condname;
+      const char* condname;
       if (not symbol_get_string(condition, &condname)) dserror("condition name expected");
 
       // read periodic boundary conditions if available

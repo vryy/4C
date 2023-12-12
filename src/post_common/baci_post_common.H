@@ -22,24 +22,19 @@ specific output operations can be done by the elements themselves.
 
 
 
-#include "baci_io_hdf.H"
-#include "baci_lib_globalproblem_enums.H"
-
-#include <string>
-#include <vector>
-
-extern "C"
-{
-#include "baci_io_legacy_types.h"
-}
-
 #include "baci_discretization_fem_general_shape_function_type.H"
+#include "baci_io_hdf.H"
+#include "baci_io_legacy_types.H"
+#include "baci_lib_globalproblem_enums.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <Teuchos_RCP.hpp>
+
+#include <string>
+#include <vector>
 
 class Epetra_Comm;
 

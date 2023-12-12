@@ -42,7 +42,9 @@ table. This table can be queried for those values quite easily.
 
 #include "baci_config_mpi.H"
 
-#include "baci_io_legacy_types.h"
+#include "baci_io_legacy_types.H"
+
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -75,7 +77,7 @@ SYMBOL* map_find_symbol(MAP* map, const char* key);
 
 /* Find the last symbols value. The value has to be of the given
  * type. Returns false on failure. */
-int map_find_string(MAP* map, const char* key, char** string);
+int map_find_string(MAP* map, const char* key, const char** string);
 int map_find_int(MAP* map, const char* key, int* integer);
 int map_find_real(MAP* map, const char* key, double* real);
 int map_find_map(MAP* map, const char* key, MAP** dir);
@@ -83,7 +85,7 @@ int map_find_map(MAP* map, const char* key, MAP** dir);
 
 /* Find the last symbols value. The value has to be of the given
  * type. Calls dserror on failture. */
-char* map_read_string(MAP* map, const char* key);
+const char* map_read_string(MAP* map, const char* key);
 int map_read_int(MAP* map, const char* key);
 double map_read_real(MAP* map, const char* key);
 MAP* map_read_map(MAP* map, const char* key);
@@ -121,7 +123,7 @@ int symbol_is_map(const SYMBOL* symbol);
 
 
 /* Extract the value of this symbol. Returns false on failture. */
-int symbol_get_string(const SYMBOL* symbol, char** string);
+int symbol_get_string(const SYMBOL* symbol, const char** string);
 int symbol_get_int(const SYMBOL* symbol, int* integer);
 int symbol_get_real(const SYMBOL* symbol, double* real);
 int symbol_get_real_as_float(const SYMBOL* symbol, float* real);
@@ -140,5 +142,6 @@ void parse_control_file(MAP* map, const char* filename, MPI_Comm comm);
  * (serial only!)*/
 void parse_control_file_serial(MAP* map, const char* filename);
 
+BACI_NAMESPACE_CLOSE
 
 #endif
