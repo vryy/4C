@@ -13,6 +13,8 @@
 #ifndef BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_H
 #define BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_H
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   class FunctionManager;
@@ -46,5 +48,7 @@ namespace DRT
     };
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

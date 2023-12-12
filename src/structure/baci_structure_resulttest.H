@@ -12,6 +12,9 @@
 
 #include "baci_lib_resulttest.H"
 
+class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -23,8 +26,6 @@ namespace STR
 {
   class TimInt;
 }
-
-class Epetra_Vector;
 
 /*!
   \brief Structure specific result test class
@@ -81,5 +82,7 @@ class StruResultTest : public DRT::ResultTest
 
   //!@}
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_RESULTTEST_H

@@ -19,6 +19,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -294,17 +296,17 @@ namespace NOX
     namespace StatusTest
     {
       //! map status type (outer status test) to std::string
-      inline std::string StatusType2String(const enum NOX::StatusTest::StatusType stype)
+      inline std::string StatusType2String(const enum ::NOX::StatusTest::StatusType stype)
       {
         switch (stype)
         {
-          case NOX::StatusTest::Unevaluated:
+          case ::NOX::StatusTest::Unevaluated:
             return "Unevaluated";
-          case NOX::StatusTest::Unconverged:
+          case ::NOX::StatusTest::Unconverged:
             return "Unconverged";
-          case NOX::StatusTest::Converged:
+          case ::NOX::StatusTest::Converged:
             return "Converged";
-          case NOX::StatusTest::Failed:
+          case ::NOX::StatusTest::Failed:
             return "Failed";
           default:
             return "Unknown StatusType";
@@ -397,5 +399,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_ENUM_LISTS_H

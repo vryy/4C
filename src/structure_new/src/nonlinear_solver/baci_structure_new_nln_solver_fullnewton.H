@@ -20,6 +20,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace NLN
@@ -48,5 +50,7 @@ namespace STR
   }       // namespace NLN
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_H

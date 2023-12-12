@@ -25,6 +25,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*                                                        AN,JH 09/2014 */
@@ -1387,3 +1389,5 @@ SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
   slave_side_converter_ =
       Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
 }
+
+BACI_NAMESPACE_CLOSE

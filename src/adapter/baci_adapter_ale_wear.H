@@ -18,6 +18,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace ALE
@@ -57,5 +59,7 @@ namespace ADAPTER
 
   };  // class AleWearWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_WEAR_H

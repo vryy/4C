@@ -20,6 +20,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_model_evaluator_contact.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -456,3 +457,5 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PrintUpdateHead(std::o
 {
   os << "--- ComboStrategy::PreAsymptoticSwitching::Update\n";
 }
+
+BACI_NAMESPACE_CLOSE

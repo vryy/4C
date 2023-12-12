@@ -54,6 +54,7 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -631,7 +632,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
-    const NOX::Solver::Generic& solver)
+    const ::NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
 
@@ -1075,3 +1076,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PrintActiveBeamContactSet(
     out << std::endl;
   }
 }
+
+BACI_NAMESPACE_CLOSE

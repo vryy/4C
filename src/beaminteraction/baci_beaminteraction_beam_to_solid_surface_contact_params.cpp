@@ -13,6 +13,8 @@
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -83,3 +85,5 @@ int BEAMINTERACTION::BeamToSolidSurfaceContactParams::GetFADOrder() const
       return 0;
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntStationaryHDG : public TimIntHDG
@@ -73,5 +75,7 @@ namespace SCATRA
   };  // class TimIntStationaryHDG
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_STAT_HDG_H

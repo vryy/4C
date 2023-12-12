@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*==========================================================================*/
 // forward declarations
@@ -222,5 +224,7 @@ namespace ART
 }  // namespace ART
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_TIMINT_H

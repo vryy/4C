@@ -13,6 +13,8 @@
 
 #include "baci_fsi_overlapprec.H"
 
+BACI_NAMESPACE_OPEN
+
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
@@ -33,10 +35,10 @@ namespace FSI
    public:
     /// construction
     ConstrOverlappingBlockMatrix(const CORE::LINALG::MultiMapExtractor& maps,
-        ::ADAPTER::FSIStructureWrapper& structure, ::ADAPTER::Fluid& fluid,
-        ::ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
-        int iterations = 1, double somega = 1.0, int siterations = 0, double fomega = 1.0,
-        int fiterations = 0, double aomega = 1.0, int aiterations = 0);
+        ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
+        bool structuresplit, int symmetric, double omega = 1.0, int iterations = 1,
+        double somega = 1.0, int siterations = 0, double fomega = 1.0, int fiterations = 0,
+        double aomega = 1.0, int aiterations = 0);
 
     /** \name Attribute access functions */
     //@{
@@ -69,5 +71,7 @@ namespace FSI
     INPAR::FSI::PrecConstr prec_;  /// preconditioner for constraint system
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

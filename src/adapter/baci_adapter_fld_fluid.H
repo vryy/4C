@@ -21,6 +21,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -564,5 +566,7 @@ namespace ADAPTER
     virtual INPAR::FLUID::PhysicalType PhysicalType() const = 0;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

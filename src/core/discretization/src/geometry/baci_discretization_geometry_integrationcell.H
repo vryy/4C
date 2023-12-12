@@ -17,6 +17,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   /*----------------------------------------------------------------------------*/
@@ -163,5 +165,7 @@ namespace CORE::GEO
   };
 
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_H

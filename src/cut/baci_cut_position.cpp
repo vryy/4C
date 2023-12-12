@@ -15,6 +15,8 @@
 #include "baci_cut_boundingbox.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
@@ -271,7 +273,10 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(::DRT::Problem::Instance()->NDim()) {}
+CORE::GEO::CUT::PositionFactory::PositionFactory()
+    : probdim_(BACI::DRT::Problem::Instance()->NDim())
+{
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -731,3 +736,5 @@ template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6,
 template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15,
     CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
     INPAR::CUT::floattype_cln>;
+
+BACI_NAMESPACE_CLOSE

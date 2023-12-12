@@ -12,6 +12,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   class CubicSplineInterpolationTest : public ::testing::Test
@@ -83,3 +85,4 @@ namespace
       EXPECT_NEAR(cubic_spline_->EvaluateDerivative(x_test[i], 2), reference_solution[i], 1.0e-12);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

@@ -46,6 +46,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
@@ -804,3 +806,5 @@ void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vect
                          ->FluidField()
                          ->Velnp());  // we extract the velocities as well. We sort them out later.
 }
+
+BACI_NAMESPACE_CLOSE

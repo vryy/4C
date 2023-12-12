@@ -16,6 +16,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace UTILS
@@ -35,5 +37,7 @@ namespace CONTACT
 
   }  // namespace UTILS
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_UTILS_PARALLEL_H

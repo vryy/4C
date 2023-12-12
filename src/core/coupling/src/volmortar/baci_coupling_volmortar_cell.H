@@ -17,6 +17,8 @@
  *---------------------------------------------------------------------*/
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
@@ -89,5 +91,7 @@ namespace CORE::VOLMORTAR
   };
 
 }  // namespace CORE::VOLMORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_VOLMORTAR_CELL_H

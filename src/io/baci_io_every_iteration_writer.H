@@ -18,6 +18,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -251,5 +254,7 @@ namespace IO
   int CountLinesInFile(const std::string& filepath);
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // IO_EVERY_ITERATION_WRITER_H

@@ -13,6 +13,8 @@
 #include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_scatra_ele_parameter_elch_diffcond.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -731,4 +733,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerElchDiffCond
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

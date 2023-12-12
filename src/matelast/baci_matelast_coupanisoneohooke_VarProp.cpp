@@ -15,6 +15,8 @@ space-time varying coefficients
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -184,3 +186,5 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(const double newgamma
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+
+BACI_NAMESPACE_CLOSE

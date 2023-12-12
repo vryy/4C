@@ -15,6 +15,8 @@
 
 #include "baci_mortar_coupling3d_classes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   class ParamsInterface;
@@ -497,5 +499,7 @@ namespace CONTACT
   };
 
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_LINE_COUPLING_H

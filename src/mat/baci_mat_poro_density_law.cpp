@@ -14,6 +14,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
@@ -107,3 +109,5 @@ double MAT::PAR::PoroDensityLawExp::ComputeCurDensityDerivative(
 {
   return refdensity / bulkmodulus_ * exp(press / bulkmodulus_);
 }
+
+BACI_NAMESPACE_CLOSE

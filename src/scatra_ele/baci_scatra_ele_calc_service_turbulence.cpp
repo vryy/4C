@@ -22,6 +22,7 @@
 #include "baci_scatra_ele_parameter_turbulence.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------*
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
@@ -2031,6 +2032,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   return;
 }
 
+BACI_NAMESPACE_CLOSE
 
 // template classes
 

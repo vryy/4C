@@ -23,6 +23,8 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1183,3 +1185,5 @@ template class BEAMINTERACTION::BeamToSphereContactPair<3, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<4, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<5, 1>;
 template class BEAMINTERACTION::BeamToSphereContactPair<2, 2>;
+
+BACI_NAMESPACE_CLOSE

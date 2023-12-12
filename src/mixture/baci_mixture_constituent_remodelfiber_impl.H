@@ -18,6 +18,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureConstituent;
@@ -122,5 +124,7 @@ namespace MIXTURE
     /// @}
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H

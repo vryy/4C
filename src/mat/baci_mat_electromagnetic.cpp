@@ -19,6 +19,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElectromagneticMat::ElectromagneticMat(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -109,3 +111,5 @@ void MAT::ElectromagneticMat::Unpack(const std::vector<char> &data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

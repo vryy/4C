@@ -20,6 +20,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -92,3 +94,5 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
   // finalize everything and write all required files to filesystem
   runtime_vtuwriter_->WriteToDisk(time, step);
 }
+
+BACI_NAMESPACE_CLOSE

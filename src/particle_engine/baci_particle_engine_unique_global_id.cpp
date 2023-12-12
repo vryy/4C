@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -333,3 +335,5 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

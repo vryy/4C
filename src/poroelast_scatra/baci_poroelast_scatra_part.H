@@ -18,6 +18,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -52,5 +54,7 @@ namespace POROELASTSCATRA
     virtual void DoScatraStep() = 0;
   };
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

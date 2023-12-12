@@ -12,6 +12,8 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 /*
  * \note The values for the matrix used in tests below are generated with Mathematica:
  *       > SeedRandom[666];
@@ -121,3 +123,5 @@ namespace
     EXPECT_NEAR(CORE::LINALG::DeterminantLU(A), -0.01620776397174742, 1e-14);
   }
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

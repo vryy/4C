@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
@@ -241,3 +243,5 @@ void SCATRA::TimIntStationary::WriteRestart() const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

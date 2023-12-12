@@ -16,6 +16,8 @@
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
@@ -284,3 +286,5 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::li
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::line3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

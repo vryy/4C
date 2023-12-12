@@ -12,6 +12,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -161,3 +163,5 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetGeneralParameters(
   // done
   isset_generalparams_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

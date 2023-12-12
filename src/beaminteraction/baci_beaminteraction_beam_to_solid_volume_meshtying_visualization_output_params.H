@@ -18,6 +18,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -169,5 +171,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

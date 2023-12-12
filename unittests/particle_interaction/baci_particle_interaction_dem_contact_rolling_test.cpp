@@ -15,6 +15,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class DEMContactRollingViscousTest : public ::testing::Test
   {
    protected:

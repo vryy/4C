@@ -26,6 +26,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> sourcedisp)
@@ -641,3 +643,5 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     gmshfilecontent << "};\n";
   }
 }
+
+BACI_NAMESPACE_CLOSE

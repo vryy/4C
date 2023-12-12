@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -22,7 +24,7 @@ namespace CONTACT
       /** \brief Augmented steepest ascent contact interface class
        *
        *  \author hiermeier \date 03/17 */
-      class Interface : public ::CONTACT::AUG::Interface
+      class Interface : public CONTACT::AUG::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -81,5 +83,7 @@ namespace CONTACT
   }      // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_INTERFACE_H

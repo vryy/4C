@@ -11,6 +11,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_weg6.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -283,5 +285,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

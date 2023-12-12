@@ -15,6 +15,8 @@
 #include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /**
@@ -85,5 +87,8 @@ namespace
   }
 }  // namespace
 
+BACI_NAMESPACE_CLOSE
+
 #endif
+
 #endif

@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -94,3 +96,5 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::CheckInitSetup() const
 {
   dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
+
+BACI_NAMESPACE_CLOSE

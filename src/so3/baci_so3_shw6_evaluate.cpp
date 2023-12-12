@@ -21,6 +21,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -1329,3 +1331,5 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
   StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, soshw6_easpoisthick,
       (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 }
+
+BACI_NAMESPACE_CLOSE

@@ -25,6 +25,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include <filesystem>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
 
@@ -68,7 +70,7 @@ namespace
 /*----------------------------------------------------------------------*/
 void CORE::UTILS::AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace ::DRT::INPUT;
+  using namespace BACI::DRT::INPUT;
 
   LineDefinition fastpolynomial_funct =
       LineDefinition::Builder()
@@ -124,3 +126,5 @@ double CORE::UTILS::CubicSplineFromCSV::EvaluateDerivative(
 {
   return cubic_spline_->EvaluateDerivative(scalar, deriv_order);
 }
+
+BACI_NAMESPACE_CLOSE

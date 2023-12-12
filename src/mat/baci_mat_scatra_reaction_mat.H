@@ -17,6 +17,8 @@
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -490,5 +492,7 @@ namespace MAT
   };  // class ScatraReactionMat
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

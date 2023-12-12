@@ -22,6 +22,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -3168,3 +3170,5 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::line2, 3
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::line3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

@@ -35,6 +35,8 @@ interface
 #include "baci_inpar_cut.H"
 #include "baci_inpar_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
@@ -874,5 +876,7 @@ namespace FLD
     std::map<std::string, int> dofset_coupling_map_;
   };
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

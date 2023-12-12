@@ -38,6 +38,8 @@
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
@@ -236,3 +238,5 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 // explicit initialization
 template class CORE::LINEAR_SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>;
+
+BACI_NAMESPACE_CLOSE

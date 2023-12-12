@@ -12,6 +12,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::GEO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -27,3 +29,5 @@ void INPAR::GEO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::GEO::Notree, INPAR::GEO::Octree3D, INPAR::GEO::Quadtree3D, INPAR::GEO::Quadtree2D),
       &search_tree);
 }
+
+BACI_NAMESPACE_CLOSE

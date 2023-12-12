@@ -8,6 +8,8 @@
 #include "baci_lib_node.H"
 #include "baci_so3_hex20.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
@@ -37,3 +39,5 @@ std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
   centercoords[2] = midpoint(0, 2);
   return centercoords;
 }
+
+BACI_NAMESPACE_CLOSE

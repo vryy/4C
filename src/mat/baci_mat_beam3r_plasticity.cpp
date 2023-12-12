@@ -17,6 +17,8 @@ function)
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
@@ -610,3 +612,5 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfForces(
 template class MAT::BeamPlasticMaterial<double>;
 
 template class MAT::BeamElastPlasticMaterialType<double>;
+
+BACI_NAMESPACE_CLOSE

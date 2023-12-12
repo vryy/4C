@@ -16,6 +16,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   template <CORE::FE::CellType celltype>
@@ -122,12 +124,12 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
           {
             switch (eastype)
             {
-              case ::STR::ELEMENTS::EasType::eastype_h8_9:
+              case STR::ELEMENTS::EasType::eastype_h8_9:
                 return DRT::ELEMENTS::SolidEleCalcEas<celltype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_9>();
-              case ::STR::ELEMENTS::EasType::eastype_h8_21:
+                    STR::ELEMENTS::EasType::eastype_h8_9>();
+              case STR::ELEMENTS::EasType::eastype_h8_21:
                 return DRT::ELEMENTS::SolidEleCalcEas<celltype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_21>();
+                    STR::ELEMENTS::EasType::eastype_h8_21>();
               default:
                 dserror("EAS type %d is not implemented %d.", (int)eastype);
             }
@@ -147,3 +149,5 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   }
   return {};
 }
+
+BACI_NAMESPACE_CLOSE

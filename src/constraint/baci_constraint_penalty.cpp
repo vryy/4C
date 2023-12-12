@@ -18,6 +18,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 UTILS::ConstraintPenalty::ConstraintPenalty(
@@ -387,3 +389,5 @@ void UTILS::ConstraintPenalty::EvaluateError(
 
   return;
 }  // end of EvaluateError
+
+BACI_NAMESPACE_CLOSE

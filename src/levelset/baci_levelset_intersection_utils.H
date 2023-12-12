@@ -24,6 +24,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   class PackBuffer;
@@ -218,5 +220,7 @@ namespace SCATRA
   }  // namespace LEVELSET
 }  // namespace SCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_INTERSECTION_UTILS_H

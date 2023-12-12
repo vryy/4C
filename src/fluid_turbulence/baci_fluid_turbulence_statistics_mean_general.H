@@ -16,12 +16,13 @@ means are computed as time averages
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
   class MapExtractor;
 }
-
 
 // forward declarations
 namespace DRT
@@ -230,5 +231,7 @@ namespace FLD
   };  // end class TurbulenceStatisticsGeneralMean
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_H

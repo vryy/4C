@@ -25,6 +25,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -353,3 +355,5 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
     visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
   }
 }
+
+BACI_NAMESPACE_CLOSE

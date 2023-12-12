@@ -15,6 +15,8 @@
 
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPUT
 {
 
@@ -78,7 +80,7 @@ namespace INPUT
   struct LengthFromInt
   {
     /**
-     * Determine the length of the vector component at runtime from an ::INPUT::IntComponent of
+     * Determine the length of the vector component at runtime from an INPUT::IntComponent of
      * given @p name.
      */
     LengthFromInt(std::string name) : name_(std::move(name)) {}
@@ -100,7 +102,7 @@ namespace INPUT
   /// part. It might be reasonable to specify names that have to appear in the
   /// dat file to enhance human readability.
   ///
-  class SeparatorComponent : public ::INPUT::LineComponent
+  class SeparatorComponent : public INPUT::LineComponent
   {
    public:
     SeparatorComponent(std::string separator, std::string description = {}, bool optional = false);
@@ -130,7 +132,7 @@ namespace INPUT
   /**
    * Component that parses a single string.
    */
-  class StringComponent : public ::INPUT::LineComponent
+  class StringComponent : public INPUT::LineComponent
   {
    public:
     StringComponent(std::string name, std::string defaultvalue, bool optional = false);
@@ -155,7 +157,7 @@ namespace INPUT
    * Parse a string from a selection of different strings. The parsed strings are either converted
    * into an integer or a string value.
    */
-  class SelectionComponent : public ::INPUT::LineComponent
+  class SelectionComponent : public INPUT::LineComponent
   {
    public:
     SelectionComponent(std::string name, std::string defaultvalue,
@@ -201,7 +203,7 @@ namespace INPUT
   /**
    * Parse an integer.
    */
-  class IntComponent : public ::INPUT::LineComponent
+  class IntComponent : public INPUT::LineComponent
   {
    public:
     explicit IntComponent(std::string name, IntComponentData data = IntComponentData{});
@@ -225,7 +227,7 @@ namespace INPUT
   /**
    * Parse a vector of integers.
    */
-  class IntVectorComponent : public ::INPUT::LineComponent
+  class IntVectorComponent : public INPUT::LineComponent
   {
    public:
     IntVectorComponent(std::string name, int length, IntComponentData data = {});
@@ -267,7 +269,7 @@ namespace INPUT
   /**
    * Parse a single double value.
    */
-  class RealComponent : public ::INPUT::LineComponent
+  class RealComponent : public INPUT::LineComponent
   {
    public:
     RealComponent(std::string name, RealComponentData data = {});
@@ -289,7 +291,7 @@ namespace INPUT
   /**
    * Parse a vector of doubles.
    */
-  class RealVectorComponent : public ::INPUT::LineComponent
+  class RealVectorComponent : public INPUT::LineComponent
   {
    public:
     RealVectorComponent(std::string name, int length, RealComponentData data = {});
@@ -319,7 +321,7 @@ namespace INPUT
   /**
    * Parse a single bool value.
    */
-  class BoolComponent : public ::INPUT::LineComponent
+  class BoolComponent : public INPUT::LineComponent
   {
    public:
     explicit BoolComponent(
@@ -354,7 +356,7 @@ namespace INPUT
   /**
    * This component contains a series of LineComponents that are selected by a key parameter.
    */
-  class SwitchComponent : public ::INPUT::LineComponent
+  class SwitchComponent : public INPUT::LineComponent
   {
     //! This component only supports integers for keys. Unscoped enums convert automatically to
     //! int and can be used to increase readability.
@@ -368,7 +370,7 @@ namespace INPUT
      * continues with these components. By default, the selection is made based on @p default_key.
      */
     SwitchComponent(std::string name, const KeyType& default_key,
-        std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
+        std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
             choices);
 
     void DefaultLine(std::ostream& stream) override;
@@ -386,11 +388,11 @@ namespace INPUT
 
    private:
     KeyType default_key_;
-    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
+    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
         choices_;
 
     //! Helper component to read the selected key from input.
-    std::unique_ptr<::INPUT::SelectionComponent> component_for_key_;
+    std::unique_ptr<INPUT::SelectionComponent> component_for_key_;
   };
 
 
@@ -403,11 +405,11 @@ namespace INPUT
       const std::string& description = {}, const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
-    definition->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent(name, data)));
+    definition->AddComponent(Teuchos::rcp(new INPUT::IntComponent(name, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -420,11 +422,11 @@ namespace INPUT
       const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
-    definition->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent(name, size, data)));
+    definition->AddComponent(Teuchos::rcp(new INPUT::IntVectorComponent(name, size, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -437,12 +439,12 @@ namespace INPUT
       const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::IntVectorComponent(name, LengthFromInt(sizename), data)));
+        Teuchos::rcp(new INPUT::IntVectorComponent(name, LengthFromInt(sizename), data)));
   }
 
   /// add a separator followed by a single real value
@@ -454,9 +456,9 @@ namespace INPUT
       const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::RealComponent(name, {defaultvalue, optional})));
+        Teuchos::rcp(new INPUT::RealComponent(name, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -468,9 +470,9 @@ namespace INPUT
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::RealVectorComponent(name, size, {defaultvalue, optional})));
+        Teuchos::rcp(new INPUT::RealVectorComponent(name, size, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -482,9 +484,9 @@ namespace INPUT
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     definition->AddComponent(Teuchos::rcp(
-        new ::INPUT::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
+        new INPUT::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
   }
 
   /// add a separator followed by a single string value
@@ -496,9 +498,9 @@ namespace INPUT
       const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::StringComponent(name, defaultvalue, optional)));
+        Teuchos::rcp(new INPUT::StringComponent(name, defaultvalue, optional)));
   }
 
 
@@ -511,9 +513,8 @@ namespace INPUT
       const std::string& description, const bool defaultvalue = false, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-    definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::BoolComponent(name, defaultvalue, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+    definition->AddComponent(Teuchos::rcp(new INPUT::BoolComponent(name, defaultvalue, optional)));
   }
 
 
@@ -526,9 +527,11 @@ namespace INPUT
       const std::string& name, const std::string& description, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
   }
 
 }  // namespace INPUT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

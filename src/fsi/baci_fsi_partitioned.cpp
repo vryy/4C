@@ -43,6 +43,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
@@ -80,10 +82,10 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   if (Comm().MyPID() == 0) std::cout << "\n SetupCoupling in FSI::Partitioned ..." << std::endl;
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(::DRT::Problem::Instance()->NDim(),
-      ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
 
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
@@ -188,7 +190,7 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Jacobian", "None");
 
       dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
           Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
@@ -207,11 +209,11 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Jacobian", "None");
 
       dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
           Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory =
+      Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
           Teuchos::rcp(new NOX::FSI::AitkenFactory());
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
@@ -228,11 +230,11 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Jacobian", "None");
 
       dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
           Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory =
+      Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
           Teuchos::rcp(new NOX::FSI::SDFactory());
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
@@ -298,7 +300,7 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Jacobian", "None");
       dirParams.set("Method", "User Defined");
 
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
           Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
       dirParams.set("User Defined Direction Factory", factory);
 
@@ -322,7 +324,7 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Jacobian", "None");
       dirParams.set("Method", "User Defined");
 
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
           Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
       dirParams.set("User Defined Direction Factory", factory);
 
@@ -347,7 +349,7 @@ void FSI::Partitioned::SetDefaultParameters(
       nlParams.set("Max Iterations", 1);
 
       dirParams.set("Method", "User Defined");
-      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
           Teuchos::rcp(new NOX::FSI::FixPointFactory());
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
@@ -379,7 +381,7 @@ void FSI::Partitioned::SetDefaultParameters(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -395,7 +397,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // Create printing utilities
-  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
+  utils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
 
   // ==================================================================
 
@@ -451,32 +453,32 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // Get initial guess
     Teuchos::RCP<Epetra_Vector> soln = InitialGuess();
 
-    NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
+    ::NOX::Epetra::Vector noxSoln(soln, ::NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
         CreateLinearSystem(nlParams, interface, noxSoln, utils_);
 
     // Create the Group
-    Teuchos::RCP<NOX::Epetra::Group> grp =
-        Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+    Teuchos::RCP<::NOX::Epetra::Group> grp =
+        Teuchos::rcp(new ::NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
-    Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(
+    Teuchos::RCP<::NOX::Solver::Generic> solver = ::NOX::Solver::buildSolver(
         grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
     // solve the whole thing
-    NOX::StatusTest::StatusType status = solver->solve();
+    ::NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
+    if (status != ::NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
 
     // End Nonlinear Solver **************************************
 
     // Output the parameter list
-    if (utils_->isPrintType(NOX::Utils::Parameters))
+    if (utils_->isPrintType(::NOX::Utils::Parameters))
       if (Step() == 1 and Comm().MyPID() == 0)
       {
         utils_->out() << std::endl
@@ -535,10 +537,10 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
     Teuchos::ParameterList& nlParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, NOX::Epetra::Vector& noxSoln,
-    Teuchos::RCP<NOX::Utils> utils)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
+    ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils)
 {
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
@@ -547,19 +549,19 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   Teuchos::RCP<NOX::FSI::FSIMatrixFree> FSIMF;
-  Teuchos::RCP<NOX::Epetra::MatrixFree> MF;
-  Teuchos::RCP<NOX::Epetra::FiniteDifference> FD;
-  Teuchos::RCP<NOX::Epetra::FiniteDifferenceColoring> FDC;
-  Teuchos::RCP<NOX::Epetra::FiniteDifferenceColoring> FDC1;
-  Teuchos::RCP<NOX::Epetra::BroydenOperator> B;
+  Teuchos::RCP<::NOX::Epetra::MatrixFree> MF;
+  Teuchos::RCP<::NOX::Epetra::FiniteDifference> FD;
+  Teuchos::RCP<::NOX::Epetra::FiniteDifferenceColoring> FDC;
+  Teuchos::RCP<::NOX::Epetra::FiniteDifferenceColoring> FDC1;
+  Teuchos::RCP<::NOX::Epetra::BroydenOperator> B;
 
-  Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJac;
-  Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrec;
+  Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> iJac;
+  Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iPrec;
 
   Teuchos::RCP<Epetra_Operator> J;
   Teuchos::RCP<Epetra_Operator> M;
 
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys;
 
   // ==================================================================
   // decide on Jacobian and preconditioner
@@ -599,7 +601,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
     // must set a rather low tolerance for the linear solver.
 
     MF = Teuchos::rcp(
-        new NOX::Epetra::MatrixFree(printParams, interface, noxSoln, kelleyPerturbation));
+        new ::NOX::Epetra::MatrixFree(printParams, interface, noxSoln, kelleyPerturbation));
     MF->setLambda(lambda);
     iJac = MF;
     J = MF;
@@ -619,18 +621,19 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
     double alpha = fdParams.get("alpha", 1.0e-4);
     double beta = fdParams.get("beta", 1.0e-6);
     std::string dt = fdParams.get("Difference Type", "Forward");
-    NOX::Epetra::FiniteDifference::DifferenceType dtype = NOX::Epetra::FiniteDifference::Forward;
+    ::NOX::Epetra::FiniteDifference::DifferenceType dtype =
+        ::NOX::Epetra::FiniteDifference::Forward;
     if (dt == "Forward")
-      dtype = NOX::Epetra::FiniteDifference::Forward;
+      dtype = ::NOX::Epetra::FiniteDifference::Forward;
     else if (dt == "Backward")
-      dtype = NOX::Epetra::FiniteDifference::Backward;
+      dtype = ::NOX::Epetra::FiniteDifference::Backward;
     else if (dt == "Centered")
-      dtype = NOX::Epetra::FiniteDifference::Centered;
+      dtype = ::NOX::Epetra::FiniteDifference::Centered;
     else
       dserror("unsupported difference type '%s'", dt.c_str());
 
-    FD = Teuchos::rcp(
-        new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+    FD = Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
+        printParams, interface, noxSoln, rawGraph_, beta, alpha));
     FD->setDifferenceMethod(dtype);
 
     iJac = FD;
@@ -658,7 +661,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
                        << "\n";
       }
       linSys = Teuchos::rcp(
-          new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
+          new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
     }
     else
     {
@@ -680,13 +683,14 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
     double alpha = fdParams.get("alpha", 1.0e-4);
     double beta = fdParams.get("beta", 1.0e-6);
 
-    Teuchos::RCP<NOX::Epetra::FiniteDifference> precFD = Teuchos::rcp(
-        new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+    Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
+        Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
+            printParams, interface, noxSoln, rawGraph_, beta, alpha));
     iPrec = precFD;
     M = precFD;
 
     linSys = Teuchos::rcp(
-        new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
+        new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
   }
 
   else
@@ -700,18 +704,19 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
-    Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp)
+Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
+    Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged =
-      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<::NOX::StatusTest::Combo> combo =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<::NOX::StatusTest::Combo> converged =
+      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
-      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<::NOX::StatusTest::MaxIters> maxiters =
+      Teuchos::rcp(new ::NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
+      Teuchos::rcp(new ::NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
@@ -727,28 +732,28 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
-    Teuchos::RCP<NOX::Epetra::Group> grp, Teuchos::RCP<NOX::StatusTest::Combo> converged)
+    Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged)
 {
-  Teuchos::RCP<NOX::StatusTest::NormF> absresid =
-      Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+  Teuchos::RCP<::NOX::StatusTest::NormF> absresid =
+      Teuchos::rcp(new ::NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
   converged->addStatusTest(absresid);
 
   if (nlParams.isParameter("Norm Update"))
   {
-    Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
-        Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+    Teuchos::RCP<::NOX::StatusTest::NormUpdate> update =
+        Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
     converged->addStatusTest(update);
   }
 
   if (nlParams.isParameter("Norm rel F"))
   {
-    Teuchos::RCP<NOX::StatusTest::NormF> relresid =
-        Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
+    Teuchos::RCP<::NOX::StatusTest::NormF> relresid =
+        Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
     converged->addStatusTest(relresid);
   }
 
-  // Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new
-  // NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8)); converged->addStatusTest(wrms);
+  // Teuchos::RCP<::NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new
+  // ::NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8)); converged->addStatusTest(wrms);
 }
 
 
@@ -828,7 +833,7 @@ void FSI::Partitioned::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const Fil
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(
     Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
-  if (Comm().MyPID() == 0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Fluid operator" << std::endl;
   return Teuchos::null;
 }
@@ -839,7 +844,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
-  if (Comm().MyPID() == 0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Structural operator" << std::endl;
   return Teuchos::null;
 }
@@ -939,9 +944,9 @@ void FSI::Partitioned::Output()
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
-      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory =
+      Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
           noxparameterlist_.sublist("Line Search")
-              .get<Teuchos::RCP<NOX::LineSearch::UserDefinedFactory>>(
+              .get<Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory>>(
                   "User Defined Line Search Factory");
       if (linesearchfactory == Teuchos::null)
         dserror("Could not get UserDefinedFactory from noxparameterlist_");
@@ -1002,3 +1007,5 @@ void FSI::Partitioned::ReadRestart(int step)
 
   }  // switch-case to be extended for other solver variants if necessary
 }
+
+BACI_NAMESPACE_CLOSE

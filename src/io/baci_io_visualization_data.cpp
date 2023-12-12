@@ -13,6 +13,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -202,3 +204,5 @@ std::string IO::VisualizationData::GetDataType(
   if (&field_data_ == &data) return "field data";
   dserror("Could not determine the data type");
 }
+
+BACI_NAMESPACE_CLOSE

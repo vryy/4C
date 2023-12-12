@@ -19,6 +19,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
@@ -1752,3 +1754,5 @@ inline CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptim
       return CORE::DRT::UTILS::GaussRule3D::undefined;
   }
 }
+
+BACI_NAMESPACE_CLOSE

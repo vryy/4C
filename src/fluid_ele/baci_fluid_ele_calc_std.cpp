@@ -13,6 +13,8 @@
 
 #include "baci_fluid_ele_parameter_std.H"
 
+BACI_NAMESPACE_OPEN
+
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
@@ -56,3 +58,5 @@ template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

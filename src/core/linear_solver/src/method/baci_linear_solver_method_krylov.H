@@ -23,6 +23,8 @@
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_Matrix.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   //! krylov subspace linear solvers with right-side preconditioning
@@ -264,5 +266,7 @@ namespace CORE::LINEAR_SOLVER
 #endif
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

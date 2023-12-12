@@ -26,6 +26,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -1924,3 +1926,5 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
     PARTICLEINTERACTION::UTILS::VecAddCross(vel_k, angvel_k, prev_r_kk);
   }
 }
+
+BACI_NAMESPACE_CLOSE

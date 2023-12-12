@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   namespace INTERFACEUTILS
@@ -39,5 +41,7 @@ namespace MORTAR
 
   }  // namespace INTERFACEUTILS
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_INTERFACE_UTILS_H

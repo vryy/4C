@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
@@ -62,5 +64,7 @@ namespace DRT
 
 void PrintElementDatHeader();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

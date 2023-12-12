@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * Main control routine for level set problems
@@ -121,3 +123,5 @@ void levelset_dyn(int restart)
   return;
 
 }  // end of levelset_dyn()
+
+BACI_NAMESPACE_CLOSE

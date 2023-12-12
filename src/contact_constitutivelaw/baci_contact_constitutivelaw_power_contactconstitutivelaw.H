@@ -14,6 +14,8 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -96,5 +98,7 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_POWER_CONTACTCONSTITUTIVELAW_H

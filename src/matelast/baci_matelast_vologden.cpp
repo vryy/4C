@@ -12,6 +12,8 @@ Mechanics, 2000"
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->GetDouble("KAPPA")), beta_(matdata->GetDouble("BETA"))
@@ -68,3 +70,4 @@ void MAT::ELASTIC::VolOgden::Add3rdVolDeriv(
   else
     d3PsiVolDJ3 += kappa * (-3. + 2. * std::log(modinv(2))) / (modinv(2) * modinv(2) * modinv(2));
 }
+BACI_NAMESPACE_CLOSE

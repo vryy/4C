@@ -21,6 +21,8 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 typedef Sacado::Fad::DFad<double> FAD;
 
 namespace BEAMINTERACTION
@@ -275,5 +277,7 @@ namespace BEAMINTERACTION
   }
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

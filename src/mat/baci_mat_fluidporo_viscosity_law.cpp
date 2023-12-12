@@ -13,6 +13,8 @@
 
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -111,3 +113,5 @@ double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetDerivOfViscosityWrtAbsPr
     return visc0_ * (xi_ - 1.0) * psi_ / ((xi_ - 1.0) * psi_ + abspressgrad) /
            ((xi_ - 1.0) * psi_ + abspressgrad);
 }
+
+BACI_NAMESPACE_CLOSE

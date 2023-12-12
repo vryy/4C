@@ -11,6 +11,8 @@
 
 #include "baci_structure_new_model_evaluator_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONSTRAINTS::SUBMODELEVALUATOR
 {
   /*! \brief Interface class of all submodel evaluators managing
@@ -37,5 +39,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
   };
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

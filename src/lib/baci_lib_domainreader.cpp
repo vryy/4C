@@ -24,6 +24,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
@@ -234,3 +236,5 @@ namespace DRT
 
   }  // namespace INPUT
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT
@@ -757,5 +757,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_POROFLUID_VARIABLEMANAGER_H

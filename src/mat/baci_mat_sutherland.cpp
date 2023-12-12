@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -139,3 +141,5 @@ double MAT::Sutherland::ComputeDensity(const double temp, const double thermpres
 
   return density;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA::SCATRAUTILS
 {
   //! check, if s2i condition definition is consistent
@@ -36,4 +38,6 @@ namespace SCATRA::SCATRAUTILS
       Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 
 }  // namespace SCATRA::SCATRAUTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_UTILS_H

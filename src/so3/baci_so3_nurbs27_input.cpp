@@ -12,6 +12,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_so3_nurbs27.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
@@ -43,3 +45,5 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

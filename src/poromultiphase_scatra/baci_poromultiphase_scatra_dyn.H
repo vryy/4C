@@ -9,10 +9,14 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_DYN_H
 #define BACI_POROMULTIPHASE_SCATRA_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 
 /*! entry point for the solution of poro multiphase problems problems */
 void poromultiphasescatra_dyn(int restart /* do we have to perform a restart?  */
 );
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_DYN_H

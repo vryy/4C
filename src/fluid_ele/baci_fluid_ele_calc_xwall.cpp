@@ -21,6 +21,8 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_newtonianfluid.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------*
  | Constructor                                                      bk 06/2014 |
@@ -1336,3 +1338,5 @@ template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
     DRT::ELEMENTS::Fluid::xwall>;
 template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
     DRT::ELEMENTS::Fluid::xwall>;
+
+BACI_NAMESPACE_CLOSE

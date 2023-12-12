@@ -14,6 +14,8 @@
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
@@ -167,3 +169,5 @@ CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDer
 
   return deriv1;
 }
+
+BACI_NAMESPACE_CLOSE

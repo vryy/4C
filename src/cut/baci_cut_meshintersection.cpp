@@ -12,6 +12,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------*
  * add this background element if it falls within the bounding box of cut mesh
  * If it is not within BB, this element is never cut
@@ -395,3 +397,5 @@ void CORE::GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstyp
 #endif
 #endif
 }
+
+BACI_NAMESPACE_CLOSE

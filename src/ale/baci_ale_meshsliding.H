@@ -12,6 +12,8 @@
 
 #include "baci_ale_meshtying.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class CouplingNonLinMortar;
@@ -92,5 +94,7 @@ namespace ALE
   };
 
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_MESHSLIDING_H

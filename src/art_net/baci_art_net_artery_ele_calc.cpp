@@ -11,6 +11,8 @@
 
 #include "baci_art_net_artery_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
@@ -49,3 +51,5 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 
 // 1D elements
 template class DRT::ELEMENTS::ArteryEleCalc<CORE::FE::CellType::line2>;
+
+BACI_NAMESPACE_CLOSE

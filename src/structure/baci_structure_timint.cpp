@@ -52,6 +52,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
 void STR::TimInt::Logo()
@@ -3444,3 +3446,5 @@ void STR::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptorem
   Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
   *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
 }
+
+BACI_NAMESPACE_CLOSE

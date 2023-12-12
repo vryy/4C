@@ -15,6 +15,8 @@
 #include "baci_mat_par_material.H"
 #include "baci_porofluidmultiphase_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | define conditions to copy to the cloned discretization    vuong 08/16 |
@@ -84,3 +86,5 @@ bool POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::DetermineEleType(
   // all elements are copied
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

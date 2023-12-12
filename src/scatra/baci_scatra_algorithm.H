@@ -14,6 +14,8 @@
 
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /// Basic algorithm for the transport of passive scalars in the fluid velocity field
@@ -116,5 +118,7 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ALGORITHM_H

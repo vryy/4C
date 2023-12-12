@@ -22,6 +22,8 @@
 #include "baci_structure_new_dbc.H"
 #include "baci_structure_new_timint_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
@@ -39,7 +41,7 @@ ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::Structure> ADAPTER::StructureTimeAda::Create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-    Teuchos::RCP<::STR::TIMINT::Base> ti_strategy)
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   auto kind = DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(taflags, "KIND");
   switch (kind)
@@ -610,3 +612,5 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
   }
   return INPAR::STR::conv_success;  // make compiler happy
 }
+
+BACI_NAMESPACE_CLOSE

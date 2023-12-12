@@ -15,8 +15,8 @@
 
 namespace
 {
+  using namespace BACI::DRT::INPUT;
 
-  using namespace DRT::INPUT;
   TEST(LineDefinitionTest, AddTag)
   {
     std::istringstream input("OMEGA");

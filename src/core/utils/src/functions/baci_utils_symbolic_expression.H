@@ -22,6 +22,8 @@
 #include <numeric>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::UTILS
 {
@@ -147,5 +149,7 @@ namespace CORE::UTILS
   };
 
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

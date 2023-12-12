@@ -15,6 +15,8 @@
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid_state.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFEM
 {
@@ -275,4 +277,6 @@ namespace FLD
   };
 
 } /* namespace FLD */
+BACI_NAMESPACE_CLOSE
+
 #endif  // FLUID_XFLUID_FLUID_H

@@ -15,6 +15,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -52,3 +54,5 @@ void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const doub
   if (acc_i) UTILS::VecAddScale(acc_i, (artvisc_i * mass_j[0] * dWdrij * fac), e_ij);
   if (acc_j) UTILS::VecAddScale(acc_j, (-artvisc_j * mass_i[0] * dWdrji * fac), e_ij);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,12 @@ namespace NOX
   {
     class Vector;
   }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     class Group;
@@ -36,16 +42,17 @@ namespace NOX
         {
          public:
           /// constructor
-          Generic(const Teuchos::RCP<NOX::Utils>& utils) : utils_(utils){};
+          Generic(const Teuchos::RCP<::NOX::Utils>& utils) : utils_(utils){};
 
           /// destructor
           virtual ~Generic() = default;
 
           /// this routine is called in the first attempt
-          virtual bool initAndCheckTest(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp) = 0;
+          virtual bool initAndCheckTest(
+              ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) = 0;
 
           /// this routine is called in all follow-up checking attempts
-          virtual bool checkTest(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp) = 0;
+          virtual bool checkTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) = 0;
 
           /** \brief return diagonal vector
            *
@@ -53,14 +60,14 @@ namespace NOX
            *  is specifically created based on the information collect throughout
            *  the test. */
           virtual Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(
-              const NOX::Abstract::Group& grp) const = 0;
+              const ::NOX::Abstract::Group& grp) const = 0;
 
           /// fill diagonal vector
           virtual void fillDiagonal(Epetra_Vector& diagonal) const = 0;
 
          protected:
           /// output object
-          Teuchos::RCP<NOX::Utils> utils_;
+          Teuchos::RCP<::NOX::Utils> utils_;
         };
 
         /** \brief Default step test strategy called Volume Change (VC)
@@ -70,7 +77,7 @@ namespace NOX
         {
          public:
           /// constructor
-          VolumeChange(const Teuchos::RCP<NOX::Utils>& utils) : Generic(utils){};
+          VolumeChange(const Teuchos::RCP<::NOX::Utils>& utils) : Generic(utils){};
 
          protected:
           /** \brief return true if the internally used test combination indicates acceptance
@@ -91,7 +98,7 @@ namespace NOX
           bool isAccepted();
 
           /// reset class members and perform the default check
-          bool initAndCheckTest(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp) override;
+          bool initAndCheckTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
 
           /** \brief perform the check
            *
@@ -99,11 +106,11 @@ namespace NOX
            *  2) compute different scalar quality quantities based on the direction vector
            *     and the system matrix.
            *  3) Test for acceptance */
-          bool checkTest(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp) override;
+          bool checkTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
 
           /// return diagonal with the value one at the location of bad element DOFs
           Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(
-              const NOX::Abstract::Group& grp) const override;
+              const ::NOX::Abstract::Group& grp) const override;
           Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(const NOX::NLN::Group& grp) const;
 
           /// fill the diagonal with the value one at the location of bad element DOFs
@@ -128,14 +135,14 @@ namespace NOX
 
           /// compute scalar quality quantities based on the primal search direction
           void computePrimalDirectionMeasures(
-              NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp);
+              ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp);
 
           /// compute element volumes
-          NOX::Abstract::Group::ReturnType computeElementVolumes(
-              NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp);
+          ::NOX::Abstract::Group::ReturnType computeElementVolumes(
+              ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp);
 
           /// detected bad elements based on the user-defined criteria
-          void identifyBadElements(NOX::Abstract::Group& grp, int& gnew_num_bad_eles);
+          void identifyBadElements(::NOX::Abstract::Group& grp, int& gnew_num_bad_eles);
 
           /// fill my bad dofs set and return the number of newly bad elements
           int fillMyBadDofs(NOX::NLN::Group& grp);
@@ -176,5 +183,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H

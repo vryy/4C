@@ -25,6 +25,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   struct IntegrationPoints1D;
@@ -602,7 +604,7 @@ namespace CORE::DRT::UTILS
    */
   template <int parent_ele_dim>
   CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
-      const double* faceele_xi, const ::DRT::FaceElement* faceele);
+      const double* faceele_xi, const BACI::DRT::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
   void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
@@ -1629,7 +1631,7 @@ namespace CORE::DRT::UTILS
       double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
       CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
       CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      ::DRT::Element* ele, ::DRT::Discretization& discretization,
+      BACI::DRT::Element* ele, BACI::DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {
@@ -1661,7 +1663,7 @@ namespace CORE::DRT::UTILS
 
     // Get gaussrule
     const CORE::DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(
-        ::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+        BACI::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
     CORE::GEO::fillInitialPositionArray<distype, nsd, CORE::LINALG::Matrix<nsd, bdrynen>>(
@@ -1708,5 +1710,7 @@ namespace CORE::DRT::UTILS
   }   // ElementNodeNormal
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H

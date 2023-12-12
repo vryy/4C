@@ -12,6 +12,8 @@
 
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -164,5 +166,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_PORO_DENSITY_LAW_H

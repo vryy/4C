@@ -24,6 +24,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace STR
@@ -177,4 +179,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

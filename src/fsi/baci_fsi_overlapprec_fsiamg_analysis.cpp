@@ -20,6 +20,8 @@
 #include <MLAPI_Operator_Utils.h>
 #include <MLAPI_Workspace.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(const int myrank, const int snlevel,
@@ -987,3 +989,5 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(const int myrank, Analyze
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

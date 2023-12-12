@@ -13,6 +13,8 @@
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
@@ -848,3 +850,5 @@ template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri3, DRT::ELEMEN
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri6, DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs9, DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs27, DRT::ELEMENTS::Fluid::none>;
+
+BACI_NAMESPACE_CLOSE

@@ -12,10 +12,12 @@
 
 #include "baci_adapter_fld_fluid_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   /// Fluid on XFEM test algorithm
-  class FluidXFEMAlgorithm : public ::ADAPTER::FluidMovingBoundaryBaseAlgorithm
+  class FluidXFEMAlgorithm : public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
    public:
     explicit FluidXFEMAlgorithm(const Epetra_Comm& comm);
@@ -69,5 +71,7 @@ namespace FSI
   };
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

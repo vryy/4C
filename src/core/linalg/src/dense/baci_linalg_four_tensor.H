@@ -14,6 +14,8 @@
 
 #include <array>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /*!
@@ -105,5 +107,7 @@ namespace CORE::LINALG
     return GetConst()[i1][i2][i3][i4];
   }
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

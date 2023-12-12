@@ -16,6 +16,8 @@ Nonlinear viscosity according to a modified power law
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -98,3 +100,5 @@ void MAT::ModPowerLaw::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

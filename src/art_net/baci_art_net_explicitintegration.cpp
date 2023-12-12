@@ -29,6 +29,8 @@
 
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -855,3 +857,5 @@ Teuchos::RCP<DRT::ResultTest> ART::ArtNetExplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ART::ArteryResultTest(*(this)));
 }
+
+BACI_NAMESPACE_CLOSE

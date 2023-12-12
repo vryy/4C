@@ -13,6 +13,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class ParticleContainerTest : public ::testing::Test
   {
    protected:

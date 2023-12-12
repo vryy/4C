@@ -14,6 +14,8 @@
 
 #include "baci_inpar_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace STR
 {
@@ -47,5 +49,7 @@ namespace STR
   }  // namespace PREDICT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_PREDICT_FACTORY_H

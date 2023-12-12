@@ -19,6 +19,8 @@
 
 #include <math.h>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------------------*
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
 for both convex and concave facets
@@ -1151,3 +1153,5 @@ bool CORE::GEO::CUT::TriangulateFacet::Hasequal_ptlist_inlist(
     return true;
   }
 }
+
+BACI_NAMESPACE_CLOSE

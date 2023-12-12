@@ -17,9 +17,6 @@
 #include "baci_comm_parobject.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
-#include "baci_io_legacy_table_cpp.h"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_dofset_independent.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rigidsphere.H"
@@ -44,6 +41,8 @@ extern "C"
 PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
     : start_(0), end_(-1), step_(1), mortar_(false)
 {
+  using namespace BACI;
+
   MPI_Init(&argc, &argv);
 
   BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
@@ -413,6 +412,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
  *----------------------------------------------------------------------*/
 void PostProblem::read_meshes()
 {
+  using namespace BACI;
+
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
   if (mesh == nullptr) dserror("No field found.");
 
@@ -715,6 +716,8 @@ void PostProblem::read_meshes()
  *----------------------------------------------------------------------*/
 void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputstep)
 {
+  using namespace BACI;
+
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
   if (mesh == nullptr) dserror("No field found.");
 
@@ -1009,6 +1012,8 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
  *----------------------------------------------------------------------*/
 PostField PostProblem::getfield(MAP* field_info)
 {
+  using namespace BACI;
+
   const char* field_name = map_read_string(field_info, "field");
   const int numnd = map_read_int(field_info, "num_nd");
   const int numele = map_read_int(field_info, "num_ele");
@@ -1069,7 +1074,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem,
+PostField::PostField(Teuchos::RCP<BACI::DRT::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
@@ -1282,9 +1287,11 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+Teuchos::RCP<std::map<int, Teuchos::RCP<BACI::CORE::LINALG::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
+  using namespace BACI;
+
   Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");

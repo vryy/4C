@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 #define FLUIDSPLITAMG
 
 
@@ -377,3 +379,5 @@ void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplierAfterTimeStep()
     lambda_->Scale(1 / (1.0 - ftiparam));  // entire Lagrange multiplier is divided by (1.-ftiparam)
   }
 }
+
+BACI_NAMESPACE_CLOSE

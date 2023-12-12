@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* namespace */
@@ -289,4 +290,7 @@ namespace IO
 }  // namespace IO
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // IO_PSTREAM_H

@@ -15,6 +15,8 @@
 #include "baci_porofluidmultiphase_ele_interface.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -125,3 +127,5 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& di
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

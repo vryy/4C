@@ -26,6 +26,7 @@ of errors, turbulence statistics etc.).
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace FLD
@@ -1016,5 +1017,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_H

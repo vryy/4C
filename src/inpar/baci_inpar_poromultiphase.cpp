@@ -14,6 +14,8 @@
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_equilibrate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -133,3 +135,5 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
   DoubleParameter(
       "MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &poromultiphasedynpart);
 }
+
+BACI_NAMESPACE_CLOSE

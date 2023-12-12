@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |
  *----------------------------------------------------------------------*/
@@ -356,3 +358,5 @@ int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

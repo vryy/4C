@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
@@ -107,3 +109,5 @@ void STR::TimIntPrestress::UpdateStepElement()
   }
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

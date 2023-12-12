@@ -15,6 +15,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -41,3 +43,4 @@ void ADAPTER::StructureTimeAdaZienXie::UpdateAuxiliar()
 {
   // NOTHING TO UPDATE
 }
+BACI_NAMESPACE_CLOSE

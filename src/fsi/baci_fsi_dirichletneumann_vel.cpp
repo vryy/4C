@@ -30,6 +30,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -190,7 +192,7 @@ void FSI::DirichletNeumannVel::Output()
 /*----------------------------------------------------------------------*/
 
 void FSI::DirichletNeumannVel::Timeloop(
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   constraint_manager_->Setup(StructureField(), MBFluidField());
   if (GetKinematicCoupling()) constraint_manager_->PrepareFluidSolve();
@@ -213,3 +215,5 @@ void FSI::DirichletNeumannVel::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrat
 {
   constraint_manager_->SetBinning(binning);
 };
+
+BACI_NAMESPACE_CLOSE

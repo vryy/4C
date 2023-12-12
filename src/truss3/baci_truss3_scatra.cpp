@@ -14,6 +14,8 @@
 #include "baci_mat_lin_elast_1D.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3ScatraType DRT::ELEMENTS::Truss3ScatraType::instance_;
@@ -452,3 +454,5 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

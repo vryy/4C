@@ -20,6 +20,8 @@
 #include "baci_scatra_ele_calc_loma.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
@@ -276,3 +278,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet10>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,9 @@ to disk
 class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -179,4 +182,6 @@ namespace IO
       VisualizationManager& visualization_manager, bool is_beam = false);
 
 }  // namespace IO
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -18,6 +18,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
@@ -531,3 +533,5 @@ void Myocard_Minimal::ResizeInternalStateVariables(int gp)
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
 int Myocard_Minimal::GetNumberOfGP() const { return v_.size(); };
+
+BACI_NAMESPACE_CLOSE

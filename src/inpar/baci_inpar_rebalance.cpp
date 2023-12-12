@@ -12,6 +12,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
@@ -33,3 +35,5 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       "meshes read from input files.",
       &meshpartitioning);
 }
+
+BACI_NAMESPACE_CLOSE

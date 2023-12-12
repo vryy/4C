@@ -34,6 +34,8 @@
 #include "baci_xfem_mesh_projector.H"
 #include "baci_xfem_xfluid_timeInt.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,
@@ -1129,3 +1131,5 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
 
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

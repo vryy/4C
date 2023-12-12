@@ -13,6 +13,8 @@
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -95,3 +97,5 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVisualizationOutputParams
 {
   return output_params_ptr_;
 };
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_boundary_calc_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -80,4 +82,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcElchNP
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

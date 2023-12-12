@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace NURBS
@@ -503,5 +505,7 @@ namespace DRT
   }  // namespace NURBS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_KNOTVECTOR_H

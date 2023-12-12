@@ -24,6 +24,8 @@
 #include "baci_poromultiphase_utils.H"
 #include "baci_scatra_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
@@ -322,3 +324,5 @@ void POROMULTIPHASESCATRA::PrintLogo()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -74,3 +76,5 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::EvaluateDeriv(do
           ((gap - params_->GetOffset() - params_->GetB()) *
               (gap - params_->GetOffset() - params_->GetB())));
 }
+
+BACI_NAMESPACE_CLOSE

@@ -35,6 +35,8 @@
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | Constructor                                              farah 11/13 |
@@ -499,3 +501,5 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_contact_pair.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -24,3 +26,5 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager::
     : assembly_contact_elepairs_(assembly_contact_elepairs)
 {
 }
+
+BACI_NAMESPACE_CLOSE

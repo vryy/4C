@@ -13,6 +13,8 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_geometry_element_coordtrafo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   /// base class of gauss point collection
@@ -381,5 +383,7 @@ namespace CORE::DRT::UTILS
   };
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

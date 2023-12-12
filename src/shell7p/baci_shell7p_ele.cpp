@@ -14,6 +14,8 @@
 #include "baci_shell7p_line.H"
 #include "baci_shell7p_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Shell7pType DRT::ELEMENTS::Shell7pType::instance_;
 
@@ -177,7 +179,7 @@ DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
   shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(other, other.eletech_);
 }
 
-DRT::ELEMENTS::Shell7p& ::DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
+DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
 {
   if (this == &other) return *this;
   DRT::Element::operator=(other);
@@ -367,3 +369,4 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   }
   return true;
 }
+BACI_NAMESPACE_CLOSE

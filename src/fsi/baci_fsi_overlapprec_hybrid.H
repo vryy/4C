@@ -12,15 +12,6 @@
 #define BACI_FSI_OVERLAPPREC_HYBRID_H
 
 /*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-/* forward declarations */
-namespace CORE::LINEAR_SOLVER
-{
-  class IFPACKPreconditioner;
-}
-
-/*----------------------------------------------------------------------------*/
 /* headers */
 // Standard library
 #include "baci_fsi_overlapprec.H"
@@ -29,6 +20,15 @@ namespace CORE::LINEAR_SOLVER
 #include <Teuchos_RCP.hpp>
 
 #include <list>
+
+BACI_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace CORE::LINEAR_SOLVER
+{
+  class IFPACKPreconditioner;
+}
 
 namespace FSI
 {
@@ -125,5 +125,7 @@ namespace FSI
     bool additiveschwarzeverywhere_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_OVERLAPPREC_HYBRID_H

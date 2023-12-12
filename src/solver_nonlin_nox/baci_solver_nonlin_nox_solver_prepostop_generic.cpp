@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::PrePostOp::Generic::Generic()
@@ -27,9 +29,9 @@ NOX::NLN::Solver::PrePostOp::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::Generic::runPreIterate(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::Solver::PrePostOp::Generic::runPreIterate(const ::NOX::Solver::Generic& nlnSolver)
 {
-  // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
+  // ToDo Use the getListPtr() routine of the ::NOX::Solver::Generic class
   // and do a Teuchos::rcp_const_cast() instead!
   const NOX::NLN::Solver::LineSearchBased* lsSolver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&nlnSolver);
@@ -54,9 +56,9 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreIterate(const NOX::Solver::Gene
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const ::NOX::Solver::Generic& nlnSolver)
 {
-  // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
+  // ToDo Use the getListPtr() routine of the ::NOX::Solver::Generic class
   // and do a Teuchos::rcp_const_cast() instead!
   const NOX::NLN::Solver::LineSearchBased* lsSolver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&nlnSolver);
@@ -75,7 +77,7 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const NOX::Solver::Generi
 
         // Find and get the "specified tolerance" of the structural normF test in the statusTest
         // object
-        const NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
+        const ::NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
         double specified_tol = NOX::NLN::AUX::GetNormFClassVariable(
             statusTest, NOX::NLN::StatusTest::quantity_structure, "SpecifiedTolerance");
         if (specified_tol == -1.0)
@@ -84,7 +86,7 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const NOX::Solver::Generi
 
         if (specified_tol == -1.0)
         {
-          if (lsSolver->GetUtils().isPrintType(NOX::Utils::Warning))
+          if (lsSolver->GetUtils().isPrintType(::NOX::Utils::Warning))
           {
             lsSolver->GetUtils().out()
                 << "\n*** WARNING ***\n"
@@ -100,3 +102,5 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const NOX::Solver::Generi
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

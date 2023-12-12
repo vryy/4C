@@ -12,6 +12,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(EvaluateParameterCoordinateCentroid, DisTypeHex)
   {
     // only tested for hex8, but equivalent for hex18, hex27, ...

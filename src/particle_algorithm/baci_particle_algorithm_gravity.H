@@ -18,6 +18,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -82,4 +84,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

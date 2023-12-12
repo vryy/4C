@@ -20,6 +20,8 @@
 #include <iterator>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /* -----------------------------------------------------------------------------------------------*
@@ -41,7 +43,8 @@ DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c)
+void DRT::INPUT::ConditionDefinition::AddComponent(
+    const Teuchos::RCP<BACI::INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -235,3 +238,5 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
 
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace DRT
@@ -76,5 +78,7 @@ namespace ALE
     };  // class AleCloneStrategy
   }     // namespace UTILS
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_UTILS_CLONESTRATEGY_H

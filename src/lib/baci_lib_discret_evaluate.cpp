@@ -24,6 +24,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -649,3 +651,5 @@ void DRT::Discretization::EvaluateInitialField(const std::string& fieldstring,
 {
   DRT::UTILS::EvaluateInitialField(*this, fieldstring, fieldvector, locids);
 }  // DRT::Discretization::EvaluateIntialField
+
+BACI_NAMESPACE_CLOSE

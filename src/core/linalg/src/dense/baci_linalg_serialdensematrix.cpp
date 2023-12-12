@@ -9,6 +9,7 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  B = alpha*A + beta*B                                                |
@@ -100,3 +101,5 @@ void CORE::LINALG::copy(const double* vec, CORE::LINALG::SerialDenseMatrix::Base
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

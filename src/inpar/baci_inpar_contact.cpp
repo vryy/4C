@@ -13,6 +13,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -395,3 +397,5 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   DoubleParameter("REGULARIZATION_STIFFNESS", -1.,
       "initial contact stiffness (i.e. initial \"penalty parameter\")", &scontact);
 }
+
+BACI_NAMESPACE_CLOSE

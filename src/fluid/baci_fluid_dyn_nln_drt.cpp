@@ -29,6 +29,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
  *
@@ -105,3 +107,5 @@ void dyn_fluid_drt(const int restart)
   return;
 
 }  // end of dyn_fluid_drt()
+
+BACI_NAMESPACE_CLOSE

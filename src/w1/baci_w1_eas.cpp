@@ -23,6 +23,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -506,3 +508,5 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const CORE::LINALG::SerialDenseMatrix& W0
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

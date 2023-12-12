@@ -15,6 +15,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_thermo_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
@@ -186,3 +188,5 @@ void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrit
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

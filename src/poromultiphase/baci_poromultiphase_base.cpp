@@ -19,6 +19,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_porofluidmultiphase_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
@@ -368,3 +370,5 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrintStructureDisabledInfo()
                  "++++++++++++++++++++++++++++++++\n";
   }
 }
+
+BACI_NAMESPACE_CLOSE

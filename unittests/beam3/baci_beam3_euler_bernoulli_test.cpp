@@ -27,6 +27,8 @@ namespace
    public:
     Beam3eb()
     {
+      using namespace BACI;
+
       testdis_ =
           Teuchos::rcp(new DRT::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm)));
 
@@ -49,9 +51,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<BACI::DRT::Discretization> testdis_;
     //! the beam3eb element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::Beam3eb> testele_;
+    Teuchos::RCP<BACI::DRT::ELEMENTS::Beam3eb> testele_;
   };
 
   /**
@@ -67,6 +69,8 @@ namespace
    */
   TEST_F(Beam3eb, ComputeNullSpace)
   {
+    using namespace BACI;
+
     // nodal nullspace calculation for reference center of discretization at {0.0, 0.0, 0.0}
     // at node {-0.05, 0.05, 0.3}
     {

@@ -11,6 +11,8 @@
 #include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void STR::UTILS::Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2,
     const CORE::LINALG::Matrix<3, 3>& defgrd, CORE::LINALG::Matrix<6, 1>& cauchy)
@@ -71,23 +73,23 @@ INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
 }
 
 void STR::UTILS::READELEMENT::ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef,
-    ::STR::ELEMENTS::EasType& eastype, std::set<INPAR::STR::EleTech>& eletech)
+    STR::ELEMENTS::EasType& eastype, std::set<INPAR::STR::EleTech>& eletech)
 {
   std::string type;
   linedef->ExtractString("EAS", type);
   if (type == "mild")
   {
-    eastype = ::STR::ELEMENTS::EasType::eastype_h8_9;
+    eastype = STR::ELEMENTS::EasType::eastype_h8_9;
     eletech.insert(INPAR::STR::EleTech::eas);
   }
   else if (type == "full")
   {
-    eastype = ::STR::ELEMENTS::EasType::eastype_h8_21;
+    eastype = STR::ELEMENTS::EasType::eastype_h8_21;
     eletech.insert(INPAR::STR::EleTech::eas);
   }
   else if (type == "none")
   {
-    eastype = ::STR::ELEMENTS::EasType::soh8_easnone;
+    eastype = STR::ELEMENTS::EasType::soh8_easnone;
   }
   else
     dserror("unrecognized eas type for hex8: %s", type.c_str());
@@ -101,3 +103,5 @@ void STR::UTILS::NodalBlockInformationSolid(
 
   nv = 3;
 }
+
+BACI_NAMESPACE_CLOSE

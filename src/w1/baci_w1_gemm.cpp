@@ -28,6 +28,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*======================================================================*/
@@ -597,3 +599,5 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(const double& alphafgemm, const dou
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

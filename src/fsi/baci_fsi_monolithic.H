@@ -21,6 +21,8 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -167,13 +169,13 @@ namespace FSI
     virtual void PrepareTimeStepFields();
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<::ADAPTER::FluidFSI> fluid_;
+    Teuchos::RCP<ADAPTER::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<::ADAPTER::AleFsiWrapper> ale_;
+    Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 
@@ -270,10 +272,10 @@ namespace FSI
    */
   class Monolithic : public MonolithicBase,
                      public MonolithicInterface,
-                     public NOX::Epetra::Interface::Required,
-                     public NOX::Epetra::Interface::Jacobian,
-                     public NOX::Epetra::Interface::Preconditioner,
-                     public NOX::Direction::UserDefinedFactory
+                     public ::NOX::Epetra::Interface::Required,
+                     public ::NOX::Epetra::Interface::Jacobian,
+                     public ::NOX::Epetra::Interface::Preconditioner,
+                     public ::NOX::Direction::UserDefinedFactory
   {
     friend class FSI::UTILS::MonolithicDebugWriter;
 
@@ -303,12 +305,12 @@ namespace FSI
     void PrepareTimeloop();
 
     //! outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    virtual void TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! take current results for converged and save for next time step
     void Update() override;
@@ -333,22 +335,22 @@ namespace FSI
         Teuchos::ParameterList* precParams = nullptr) override;
 
     /// request NOX convergence from outside (needed for coupled problems)
-    NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
+    ::NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
 
     //@}
 
     /// create my own direction object
     /*!
       Monolithic is a (inherits from)
-      NOX::Direction::UserDefinedFactory. This is an implementation
+      ::NOX::Direction::UserDefinedFactory. This is an implementation
       detail. This way we can construct a specialized direction object at a
       place where we know about the status tests. This is the whole point
       here. Our specialized direction is of the type NOX::FSI::Newton, the
       normal Newton direction enhanced with adaptive tolerance control for the
       internal linear (iterative) solver.
      */
-    Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-        const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
+    Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
@@ -432,13 +434,13 @@ namespace FSI
     //@}
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
-        Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
-        Teuchos::RCP<NOX::Utils> utils) = 0;
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+        Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     //! setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /*! \brief Extract the three field vectors from a given composed vector
      *
@@ -502,7 +504,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
@@ -717,7 +719,7 @@ namespace FSI
     //@{
 
     //! FSI time loop with constant time step size
-    void TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void TimeloopConstDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     /*! \brief FSI time loop with adaptive time step size
      *
@@ -737,7 +739,7 @@ namespace FSI
      * Finite Elements in Analysis and Design, 141:55-69, 2018,
      * https://doi.org/10.1016/j.finel.2017.12.002
      */
-    void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void TimeloopAdaDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //@}
 
@@ -946,7 +948,7 @@ namespace FSI
     //@{
 
     /// output utilities
-    Teuchos::RCP<NOX::Utils> utils_;
+    Teuchos::RCP<::NOX::Utils> utils_;
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
@@ -956,7 +958,7 @@ namespace FSI
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF>> statustests_;
 
     /// status of NOX convergence check
-    NOX::StatusTest::StatusType noxstatus_;
+    ::NOX::StatusTest::StatusType noxstatus_;
 
     //@}
 
@@ -1249,10 +1251,10 @@ namespace FSI
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
         Teuchos::ParameterList& nlParams,  ///< parameter list
-        NOX::Epetra::Vector& noxSoln,      ///< solution vector in NOX format
-        Teuchos::RCP<NOX::Utils> utils     ///< NOX utils
+        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector in NOX format
+        Teuchos::RCP<::NOX::Utils> utils   ///< NOX utils
         ) override;
 
     void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
@@ -1293,5 +1295,7 @@ namespace FSI
   };
 }  // namespace FSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

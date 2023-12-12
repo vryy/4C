@@ -22,6 +22,8 @@
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
@@ -2121,5 +2123,7 @@ namespace MORTAR
 
   }  // namespace UTILS
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_SHAPE_UTILS_H

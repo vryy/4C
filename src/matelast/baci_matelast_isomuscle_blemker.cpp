@@ -19,6 +19,8 @@ stress approach)
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -294,3 +296,4 @@ void MAT::ELASTIC::IsoMuscleBlemker::EvaluateTotalFiberCauchyStressAndDerivative
       (sigma_max * deriv_f_passive + sigma_max_ft * deriv_f_active) * lambdaM / lambda_ofl +
       sigma_fiber_total / lambda_ofl;
 }
+BACI_NAMESPACE_CLOSE

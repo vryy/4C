@@ -21,6 +21,8 @@ approach)
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -224,5 +226,7 @@ namespace MAT
   };  // end class Muscle_Weickenmeier
 
 }  // end namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_MUSCLE_WEICKENMEIER_H

@@ -22,6 +22,13 @@
 #include <unordered_map>
 #include <vector>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace LINALG
 {
@@ -38,10 +45,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace MIXTURE
 {
@@ -135,5 +138,7 @@ namespace MIXTURE
     std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growthStrategy_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_RULE_GROWTHREMODEL_H

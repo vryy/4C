@@ -28,6 +28,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
@@ -4670,3 +4672,5 @@ template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri3, DRT::ELEMEN
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::tri6, DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs9, DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<CORE::FE::CellType::nurbs27, DRT::ELEMENTS::Fluid::none>;
+
+BACI_NAMESPACE_CLOSE

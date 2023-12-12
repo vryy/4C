@@ -17,6 +17,8 @@ In this file, the helper for defining type trait functionality is defined
 
 #include <tuple>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE::DETAILS
 {
   //! @name helper functions for cell-type related type lists
@@ -148,5 +150,7 @@ namespace CORE::FE::DETAILS
   };
   /// @}
 }  // namespace CORE::FE::DETAILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

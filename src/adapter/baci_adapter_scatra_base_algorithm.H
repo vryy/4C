@@ -14,6 +14,13 @@
 
 #include <Teuchos_RCP.hpp>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -24,11 +31,6 @@ namespace DRT
 namespace SCATRA
 {
   class ScaTraTimIntImpl;
-}
-
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 namespace CORE::LINALG
@@ -106,5 +108,7 @@ namespace ADAPTER
   };  // class ScaTraBaseAlgorithm
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

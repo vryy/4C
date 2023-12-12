@@ -21,6 +21,8 @@ class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_Comm;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class Solver;
@@ -105,5 +107,7 @@ namespace CONTACT
   }     // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H

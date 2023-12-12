@@ -20,6 +20,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Condition;
@@ -255,7 +257,7 @@ namespace POROELAST
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_;
     //!@}
 
     //! flag for old time integration
@@ -283,10 +285,10 @@ namespace POROELAST
     //! @name Underlying fields
 
     //! underlying structure of the poro problem
-    Teuchos::RCP<::ADAPTER::FPSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::FPSIStructureWrapper> structure_;
 
     //! underlying fluid of the poro problem
-    Teuchos::RCP<::ADAPTER::FluidPoro> fluid_;
+    Teuchos::RCP<ADAPTER::FluidPoro> fluid_;
 
     //!@}
   };
@@ -374,5 +376,7 @@ namespace POROELAST
     //!@}
   };
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_BASE_H

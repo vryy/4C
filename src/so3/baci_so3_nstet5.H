@@ -17,7 +17,7 @@
 // #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
 #define ALPHA_NSTET5 0.1  ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
-
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -533,5 +533,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_NSTET5_H

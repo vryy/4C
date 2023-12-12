@@ -19,6 +19,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
@@ -94,5 +96,7 @@ namespace DRT
     };  // class SolidEleCalcFbar
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_FBAR_H

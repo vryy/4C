@@ -21,6 +21,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -74,5 +75,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_INDEPENDENT_H

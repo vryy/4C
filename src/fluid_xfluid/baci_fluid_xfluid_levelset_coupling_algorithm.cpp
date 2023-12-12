@@ -20,6 +20,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -795,3 +797,5 @@ void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncScaTra(double& fsphiincnorm, int 
 
   phinpi_->Update(1.0, *phinpip, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

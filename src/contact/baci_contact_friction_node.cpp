@@ -11,6 +11,8 @@
 #include "baci_contact_element.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
 
 CORE::COMM::ParObject* CONTACT::FriNodeType::Create(const std::vector<char>& data)
@@ -623,3 +625,5 @@ void CONTACT::FriNode::ResetDataContainer()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

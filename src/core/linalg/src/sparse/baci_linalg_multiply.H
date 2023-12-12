@@ -13,6 +13,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   // forward declarations
@@ -115,5 +117,7 @@ namespace CORE::LINALG
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

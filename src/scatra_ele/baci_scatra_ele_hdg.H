@@ -19,6 +19,8 @@ of the usual Lagrangian polynomials for standard transport elements
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
@@ -940,5 +942,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_HDG_H

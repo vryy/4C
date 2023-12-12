@@ -12,6 +12,8 @@
 
 #include "baci_ssi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   class SSIPart1WC : public SSIPart
@@ -123,5 +125,7 @@ namespace SSI
   };
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_1WC_H

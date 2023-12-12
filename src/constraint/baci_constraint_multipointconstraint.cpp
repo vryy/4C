@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
@@ -53,3 +55,5 @@ void UTILS::MPConstraint::SetConstrState(const std::string& state,  ///< name of
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

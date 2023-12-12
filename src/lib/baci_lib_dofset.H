@@ -25,6 +25,8 @@
 #include <list>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -426,5 +428,7 @@ namespace DRT
 // << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_H

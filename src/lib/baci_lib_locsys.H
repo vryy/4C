@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -303,5 +305,7 @@ namespace DRT
   }     // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_LOCSYS_H

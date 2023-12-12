@@ -25,6 +25,8 @@
 #include "baci_ssi_utils.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
@@ -34,7 +36,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
     : blockmapstructure_(std::move(blockmapstructure)),
       blockmapthermo_(std::move(blockmapthermo)),
@@ -406,3 +408,5 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,7 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -571,5 +572,7 @@ namespace DRT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_CONDITION_H

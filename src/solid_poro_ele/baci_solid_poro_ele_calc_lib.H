@@ -22,6 +22,8 @@
 
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace DRT::ELEMENTS
@@ -830,5 +832,7 @@ namespace DRT::ELEMENTS
     return dInverseCauchyGreen_dDisp;
   }
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_PORO_ELE_CALC_LIB_H

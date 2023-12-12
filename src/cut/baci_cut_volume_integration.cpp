@@ -23,6 +23,7 @@ equations
 #include <cmath>
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
          compute the rhs of the moment fitting equations
@@ -1206,3 +1207,5 @@ std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matri
   if (rightFacets % 2 == 0) return "outside";
   return "inside";
 }
+
+BACI_NAMESPACE_CLOSE

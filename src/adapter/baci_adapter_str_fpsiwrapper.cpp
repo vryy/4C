@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   bool PrestressIsActive(const double currentTime)
@@ -79,3 +81,5 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

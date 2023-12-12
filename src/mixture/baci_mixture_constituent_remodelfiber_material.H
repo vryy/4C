@@ -13,6 +13,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   // forward declaration
@@ -69,5 +71,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H

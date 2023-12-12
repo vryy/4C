@@ -14,6 +14,8 @@
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace FBI
@@ -172,5 +174,7 @@ namespace FBI
   };
 
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

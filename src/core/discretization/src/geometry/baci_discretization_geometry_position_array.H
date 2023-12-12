@@ -15,6 +15,7 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -29,11 +30,11 @@ namespace CORE::GEO
    * nodes
    */
   template <class M>
-  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const BACI::DRT::Element* const ele, M& xyze)
   {
     const int numnode = ele->NumNode();
 
-    const ::DRT::Node* const* nodes = ele->Nodes();
+    const BACI::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -58,12 +59,12 @@ namespace CORE::GEO
    * nodes
    */
   template <CORE::FE::CellType distype, class M>
-  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const BACI::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
-    const ::DRT::Node* const* nodes = ele->Nodes();
+    const BACI::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -89,12 +90,12 @@ namespace CORE::GEO
    * of the nodes
    */
   template <CORE::FE::CellType distype, int dim, class M>
-  void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const BACI::DRT::Element* const ele, M& xyze)
   {
     dsassert(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
-    const ::DRT::Node* const* nodes = ele->Nodes();
+    const BACI::DRT::Node* const* nodes = ele->Nodes();
     dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -120,7 +121,8 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  void InitialPositionArray(CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
+  void InitialPositionArray(
+      CORE::LINALG::SerialDenseMatrix& xyze, const BACI::DRT::Element* const ele);
 
 
   /*!
@@ -131,7 +133,7 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const ::DRT::Element* const
+  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const BACI::DRT::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -145,7 +147,7 @@ namespace CORE::GEO
    * nodes
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const ::DRT::Element* const ele,  ///< element with nodal pointers
+      const BACI::DRT::Element* const ele,  ///< element with nodal pointers
       const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
   );
@@ -160,11 +162,13 @@ namespace CORE::GEO
    * nodes
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
+      const Teuchos::RCP<const BACI::DRT::Element> ele,  ///< pointer on element
       const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );
 
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

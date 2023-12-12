@@ -13,6 +13,8 @@
 #include "baci_inpar_bio.H"
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -79,5 +81,7 @@ namespace ART
 }  // namespace ART
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_UTILS_H

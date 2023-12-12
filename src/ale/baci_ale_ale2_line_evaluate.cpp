@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(Teuchos::ParameterList& params,
@@ -22,3 +24,5 @@ int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

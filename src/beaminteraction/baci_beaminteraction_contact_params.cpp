@@ -18,6 +18,8 @@
 #include "baci_beaminteraction_beam_to_sphere_contact_params.H"
 #include "baci_beaminteraction_contact_runtime_visualization_output_params.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactParams::BeamContactParams()
@@ -92,3 +94,5 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceContactParams()
   beam_to_solid_surface_contact_params_->Init();
   beam_to_solid_surface_contact_params_->Setup();
 }
+
+BACI_NAMESPACE_CLOSE

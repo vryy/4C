@@ -20,6 +20,8 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
@@ -106,3 +108,4 @@ void STR::MODELEVALUATOR::BaseSSI::Setup()
   // set flag
   issetup_ = true;
 }
+BACI_NAMESPACE_CLOSE

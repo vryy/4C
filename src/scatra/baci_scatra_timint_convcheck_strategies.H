@@ -19,6 +19,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   // forward declaration
@@ -333,4 +335,6 @@ namespace SCATRA
         const ConvCheckStrategyPoroMultiphaseScatra& old);
   };  // class ConvCheckStrategyPoroMultiphaseScatra
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

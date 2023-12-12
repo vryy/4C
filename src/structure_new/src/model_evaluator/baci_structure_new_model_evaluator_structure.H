@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace IO
 {
@@ -101,7 +103,7 @@ namespace STR
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override;
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
       void Predict(const INPAR::STR::PredEnum& pred_type) override;
@@ -529,5 +531,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H

@@ -15,6 +15,8 @@
 
 #include "baci_thermo_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               dano 08/09 |
  *----------------------------------------------------------------------*/
@@ -331,3 +333,5 @@ void THR::TimIntStatics::ApplyForceExternalConv(const double time,  //!< evaluat
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -10,6 +10,8 @@
 
 #include "baci_constraint_framework_model_evaluator.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -201,3 +203,5 @@ void STR::MODELEVALUATOR::Constraints::RecoverFromBackupState()
 {
   dserror("This function is not yet implemented");
 }
+
+BACI_NAMESPACE_CLOSE

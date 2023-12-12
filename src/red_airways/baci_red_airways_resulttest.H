@@ -19,6 +19,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -71,5 +73,7 @@ namespace AIRWAY
   };
 
 }  // namespace AIRWAY
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_RESULTTEST_H

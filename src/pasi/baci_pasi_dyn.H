@@ -11,6 +11,8 @@
 #ifndef BACI_PASI_DYN_H
 #define BACI_PASI_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 /*!
  * \brief control routine for particle structure interaction
  *
@@ -19,4 +21,6 @@
 void pasi_dyn();
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

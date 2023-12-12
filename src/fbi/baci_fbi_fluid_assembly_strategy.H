@@ -20,10 +20,11 @@
 
 #include <vector>
 
-
 // Forward declarations.
 class Epetra_FEVector;
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -40,7 +41,6 @@ namespace BEAMINTERACTION
 {
   class BeamContactPair;
 }
-
 
 namespace FBI
 {
@@ -108,5 +108,7 @@ namespace FBI
     };
   }  // namespace UTILS
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

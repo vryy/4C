@@ -12,6 +12,8 @@
 
 #include "baci_scatra_timint_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
@@ -56,3 +58,5 @@ double SCATRA::HDGResultTest::ResultNode(
 
   return result;
 }  // SCATRA::HDGResultTest::ResultNode
+
+BACI_NAMESPACE_CLOSE

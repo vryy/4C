@@ -12,6 +12,8 @@
 
 #include "baci_mat_fluidporo_singlephase.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
  *---------------------------------------------------------------------*/
@@ -253,5 +255,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_H

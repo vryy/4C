@@ -15,6 +15,8 @@
 #include <memory>
 #include <type_traits>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   //! Action types for the singleton owner
@@ -292,5 +294,7 @@ namespace CORE::UTILS
   }
 }  // namespace CORE::UTILS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

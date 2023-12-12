@@ -19,6 +19,8 @@
 #include "baci_unittest_utils_assertions_test.H"
 namespace
 {
+  using namespace BACI;
+
   class DruckerPragerTest : public ::testing::Test
   {
    protected:

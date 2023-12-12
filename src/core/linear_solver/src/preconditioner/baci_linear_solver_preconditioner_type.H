@@ -20,6 +20,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// preconditioner base class
@@ -83,5 +85,7 @@ namespace CORE::LINEAR_SOLVER
     Epetra_LinearProblem lp_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

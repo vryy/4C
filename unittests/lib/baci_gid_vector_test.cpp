@@ -13,6 +13,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(BroadcastMapVector, Vector)
   {
     Epetra_MpiComm comm(MPI_COMM_WORLD);

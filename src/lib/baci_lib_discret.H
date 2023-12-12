@@ -28,12 +28,18 @@
 
 #include <vector>
 
-
 // forward declarations
 namespace Teuchos
 {
   class ParameterList;
+
+  template <class T>
+  class RCP;
 }  // namespace Teuchos
+
+class PostProblem;
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::COMM
 {
@@ -46,8 +52,6 @@ namespace CORE::LINALG
   class MapExtractor;
   class SerialDenseVector;
 }  // namespace CORE::LINALG
-
-class PostProblem;
 
 namespace IO
 {
@@ -1248,7 +1252,7 @@ namespace DRT
     // Naming "SetupGhosting" is misleading, implementation duplicates functionality that
     // can be build using some of the other methods
     // mwgee 4/12
-    friend class ::PostProblem;
+    friend class PostProblem;
 
    public:
     //-----------------------------------------------------------------------------------
@@ -2287,5 +2291,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_H

@@ -17,6 +17,8 @@
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -38,7 +40,7 @@ namespace CONTACT
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
     double GetConstraintRHSNorms(const Epetra_Vector& F,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
@@ -48,12 +50,12 @@ namespace CONTACT
 
     /// Returns the increment norm of the largange multiplier DoFs
     double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
     double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
     /// @}
 
@@ -91,5 +93,7 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_NOXINTERFACE_H

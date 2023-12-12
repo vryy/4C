@@ -14,6 +14,8 @@
 #include "baci_contact_nitsche_integrator_poro.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class XFluid_Contact_Comm;
@@ -143,4 +145,6 @@ namespace CONTACT
     Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_FPI_H

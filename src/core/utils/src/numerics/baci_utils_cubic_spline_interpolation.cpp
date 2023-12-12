@@ -16,6 +16,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
     std::vector<double> x, std::vector<double> y)
@@ -155,3 +157,4 @@ void CORE::UTILS::CubicSplineInterpolation::SetupInternalVectors(
     d_[i] = (c_[i + 1] - c_[i]) / (3.0 * delta_x_p);
   }
 }
+BACI_NAMESPACE_CLOSE

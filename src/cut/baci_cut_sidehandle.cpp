@@ -14,6 +14,8 @@ subsides
 #include "baci_cut_mesh.H"
 #include "baci_cut_position.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(
@@ -386,3 +388,5 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
   }
   pos->LocalCoordinates(rst);
 }
+
+BACI_NAMESPACE_CLOSE

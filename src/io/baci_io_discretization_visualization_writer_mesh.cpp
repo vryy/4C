@@ -23,6 +23,8 @@ to disk
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace IO
 {
@@ -489,3 +491,4 @@ namespace IO
         "element_ghosting", ghosted_elements, n_proc);
   }
 }  // namespace IO
+BACI_NAMESPACE_CLOSE

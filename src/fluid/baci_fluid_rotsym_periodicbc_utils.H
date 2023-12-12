@@ -17,6 +17,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -52,5 +53,7 @@ namespace FLD
       Teuchos::RCP<DRT::Discretization> dis);  ///< discretization
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ROTSYM_PERIODICBC_UTILS_H

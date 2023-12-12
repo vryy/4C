@@ -17,6 +17,8 @@
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -247,5 +249,7 @@ namespace DRT
     };  // class DbcNurbs
   }     // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_H

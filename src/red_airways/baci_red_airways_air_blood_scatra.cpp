@@ -14,6 +14,8 @@
 #include "baci_red_airways_elementbase.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 using namespace CORE::DRT::UTILS;
 
 DRT::ELEMENTS::RedAirBloodScatraType DRT::ELEMENTS::RedAirBloodScatraType::instance_;
@@ -262,3 +264,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAirBloodScatra::Lines(
 
   return {Teuchos::rcpFromRef(*this)};
 }
+
+BACI_NAMESPACE_CLOSE

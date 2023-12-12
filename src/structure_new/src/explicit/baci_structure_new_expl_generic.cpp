@@ -22,6 +22,8 @@
 #include "baci_structure_new_timint_basedataglobalstate.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::Generic::Setup()
@@ -116,7 +118,7 @@ bool STR::EXPLICIT::Generic::ApplyForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::EXPLICIT::Generic::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type) const
+    const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   dserror("%s is not yet implemented", __FUNCTION__);
   return 0.0;
@@ -182,14 +184,14 @@ void STR::EXPLICIT::Generic::ResetEvalParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreIterate(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreIterate(const ::NOX::Solver::Generic& nlnSolver)
 {
   // For explicit integration this action simply does nothing.
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreSolve(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreSolve(const ::NOX::Solver::Generic& nlnSolver)
 {
   // For explicit integration this action simply does nothing.
 }
@@ -209,3 +211,5 @@ void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
 {
   // For explicit integration this action simply does nothing.
 }
+
+BACI_NAMESPACE_CLOSE

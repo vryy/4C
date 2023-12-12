@@ -11,6 +11,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_thermo_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | read element and set required information                  gjb 01/08 |
@@ -29,3 +31,5 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

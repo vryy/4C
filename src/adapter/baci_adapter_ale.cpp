@@ -36,6 +36,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
@@ -289,3 +291,5 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

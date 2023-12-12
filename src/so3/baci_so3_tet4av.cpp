@@ -20,6 +20,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 DRT::ELEMENTS::So_tet4avType DRT::ELEMENTS::So_tet4avType::instance_;
@@ -247,3 +249,5 @@ bool DRT::ELEMENTS::So_tet4av::VisData(const std::string& name, std::vector<doub
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4av, this->Id());
 }
+
+BACI_NAMESPACE_CLOSE

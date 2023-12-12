@@ -17,6 +17,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
@@ -95,3 +97,5 @@ void THR::TimIntExpl::PrintStepText(FILE* ofile)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

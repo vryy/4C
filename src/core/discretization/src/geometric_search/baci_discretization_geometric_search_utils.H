@@ -15,6 +15,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   /*! \brief Storing information on the geometric search
@@ -59,5 +61,7 @@ namespace CORE::GEOMETRICSEARCH
   GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume);
 
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

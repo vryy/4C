@@ -25,6 +25,8 @@
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LINEAR_SOLVER
 {
@@ -293,5 +295,7 @@ namespace CORE::LINEAR_SOLVER
   void PrintMap(const Epetra_Map &Map, std::string prefix);
 
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_AMGNXN_PRECONDITIONER_H

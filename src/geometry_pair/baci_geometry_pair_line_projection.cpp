@@ -21,6 +21,7 @@
 #include "baci_geometry_pair_utility_functions.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -720,3 +721,5 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE

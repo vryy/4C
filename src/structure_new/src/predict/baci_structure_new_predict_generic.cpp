@@ -18,6 +18,8 @@
 #include "baci_structure_new_model_evaluator.H"
 #include "baci_structure_new_timint_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::PREDICT::Generic::Generic()
@@ -55,7 +57,7 @@ void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::PrePredict(NOX::Abstract::Group& grp)
+void STR::PREDICT::Generic::PrePredict(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   Print();
@@ -64,7 +66,7 @@ void STR::PREDICT::Generic::PrePredict(NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
+void STR::PREDICT::Generic::Predict(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   bool& ispredict = gstate_ptr_->IsPredict();
@@ -84,7 +86,7 @@ void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
+void STR::PREDICT::Generic::PostPredict(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
 
@@ -92,7 +94,7 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
       GlobalState().GetVelNp(), GlobalState().GetAccNp(), false);
 
   // Create the new solution vector
-  Teuchos::RCP<NOX::Epetra::Vector> x_vec = GlobalState().CreateGlobalVector(
+  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = GlobalState().CreateGlobalVector(
       TIMINT::BaseDataGlobalState::VecInitType::init_current_state, ImplInt().ModelEvalPtr());
   // resets all isValid flags
   grp.setX(*x_vec);
@@ -231,3 +233,5 @@ bool STR::PREDICT::Generic::PreApplyForceExternal(Epetra_Vector& fextnp) const
   // do nothing
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

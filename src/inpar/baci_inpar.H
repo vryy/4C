@@ -10,6 +10,8 @@
 #ifndef BACI_INPAR_H
 #define BACI_INPAR_H
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -24,4 +26,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_H

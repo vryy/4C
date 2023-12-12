@@ -14,6 +14,8 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
@@ -150,3 +152,5 @@ void CORE::VOLMORTAR::Cell::Print()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

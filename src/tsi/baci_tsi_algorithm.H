@@ -23,6 +23,7 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
@@ -98,7 +99,7 @@ namespace TSI
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<::ADAPTER::Thermo>& ThermoField() { return thermo_; }
+    const Teuchos::RCP<ADAPTER::Thermo>& ThermoField() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks
@@ -158,10 +159,10 @@ namespace TSI
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem
-    Teuchos::RCP<::ADAPTER::Structure> structure_;
+    Teuchos::RCP<ADAPTER::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<::ADAPTER::Thermo> thermo_;
+    Teuchos::RCP<ADAPTER::Thermo> thermo_;
 
     //! contact strategies
     Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_lagrange_;
@@ -174,7 +175,7 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_;
 
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;  // S: master, T: slave
     //@}
@@ -187,6 +188,8 @@ namespace TSI
   };  // Algorithm
 }  // namespace TSI
 
-
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // TSI_ALGORITHM_H

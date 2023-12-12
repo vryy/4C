@@ -14,6 +14,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   class BeamToSphereContactParams
@@ -61,5 +63,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -26,6 +26,8 @@
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
@@ -3722,3 +3724,5 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
     CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 3>;
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
     CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 3>;
+
+BACI_NAMESPACE_CLOSE

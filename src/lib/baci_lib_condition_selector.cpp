@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -146,3 +148,5 @@ void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretizat
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@ of errors, turbulence statistics etc.)
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 
 DRT::ELEMENTS::FluidXWallType& DRT::ELEMENTS::FluidXWallType::Instance() { return instance_; }
@@ -132,3 +134,5 @@ void DRT::ELEMENTS::FluidXWall::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

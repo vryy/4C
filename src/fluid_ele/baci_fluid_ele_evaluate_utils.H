@@ -25,6 +25,8 @@
 #include "baci_mat_sutherland.H"
 #include "baci_nurbs_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   //-----------------------------------------------------------------------
@@ -2640,6 +2642,7 @@ namespace FLD
       }
       velderxy = mffsvelintderxy;
 #endif
+
       CORE::LINALG::Matrix<NSD, NSD> two_epsilon;
       double rateofstrain = 0.0;
       for (int idim = 0; idim < NSD; idim++)
@@ -3268,5 +3271,7 @@ namespace FLD
 
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

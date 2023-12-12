@@ -17,6 +17,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -67,3 +69,5 @@ void particle_drt()
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = CORE::COMM::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
+
+BACI_NAMESPACE_CLOSE

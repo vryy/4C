@@ -19,6 +19,7 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -227,5 +228,7 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

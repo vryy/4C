@@ -12,6 +12,8 @@
 
 #include "baci_linear_solver_preconditioner_type.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// ml preconditioners
@@ -42,5 +44,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> P_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

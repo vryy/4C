@@ -17,6 +17,8 @@
 #include "baci_inpar_particle.H"
 #include "baci_particle_interaction_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -202,4 +204,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

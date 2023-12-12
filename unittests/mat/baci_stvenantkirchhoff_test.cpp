@@ -14,6 +14,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class StVenantKirchhoffTest : public ::testing::Test
   {
    protected:

@@ -22,6 +22,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -212,3 +214,5 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

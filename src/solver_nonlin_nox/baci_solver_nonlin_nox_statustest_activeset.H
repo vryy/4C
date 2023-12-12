@@ -24,23 +24,25 @@
 // forward declarations
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
   {
     namespace StatusTest
     {
-      class ActiveSet : public NOX::StatusTest::Generic
+      class ActiveSet : public ::NOX::StatusTest::Generic
       {
        public:
         //! constructor
         ActiveSet(const NOX::NLN::StatusTest::QuantityType& qtype, const int& max_cycle_size);
 
-        NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+        ::NOX::StatusTest::StatusType checkStatus(
+            const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         //! NOTE: returns the global status of all normF tests
-        NOX::StatusTest::StatusType getStatus() const override;
+        ::NOX::StatusTest::StatusType getStatus() const override;
 
         std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
@@ -49,7 +51,7 @@ namespace NOX
         NOX::NLN::StatusTest::QuantityType qtype_;
 
         //! status of the active set test
-        NOX::StatusTest::StatusType status_;
+        ::NOX::StatusTest::StatusType status_;
 
         //! maximal cycle size, which is checked
         int max_cycle_size_;
@@ -66,5 +68,7 @@ namespace NOX
   }       // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H

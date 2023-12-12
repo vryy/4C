@@ -20,6 +20,8 @@
 #include <NOX_StatusTest_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::LineSearch::Factory::Factory()
@@ -29,13 +31,13 @@ NOX::NLN::LineSearch::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLineSearch(
-    const Teuchos::RCP<NOX::GlobalData>& gd,
-    const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLineSearch(
+    const Teuchos::RCP<::NOX::GlobalData>& gd,
+    const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& lsparams)
 {
-  Teuchos::RCP<NOX::LineSearch::Generic> line_search;
+  Teuchos::RCP<::NOX::LineSearch::Generic> line_search;
 
   std::string method = lsparams.get("Method", "Full Step");
 
@@ -43,7 +45,7 @@ Teuchos::RCP<NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLineS
   if (method != "Full Step") InnerStatusTestIsRequired(innerTests);
 
   if (method == "Full Step")
-    line_search = Teuchos::rcp(new NOX::LineSearch::FullStep(gd, lsparams));
+    line_search = Teuchos::rcp(new ::NOX::LineSearch::FullStep(gd, lsparams));
   else if (method == "Backtrack")
   {
     line_search =
@@ -74,12 +76,14 @@ void NOX::NLN::LineSearch::Factory::InnerStatusTestIsRequired(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::LineSearch::Generic> NOX::NLN::LineSearch::BuildLineSearch(
-    const Teuchos::RCP<NOX::GlobalData>& gd,
-    const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::BuildLineSearch(
+    const Teuchos::RCP<::NOX::GlobalData>& gd,
+    const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& lsparams)
 {
   Factory factory;
   return factory.BuildLineSearch(gd, outerTests, innerTests, lsparams);
 }
+
+BACI_NAMESPACE_CLOSE

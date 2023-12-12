@@ -18,6 +18,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  variables                                                ljag 09/13 |
  *----------------------------------------------------------------------
@@ -732,3 +734,5 @@ void Myocard_TenTusscher::Update(const double phi, const double dt)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

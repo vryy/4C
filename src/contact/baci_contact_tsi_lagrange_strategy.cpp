@@ -29,6 +29,8 @@
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
@@ -1042,3 +1044,5 @@ void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& rea
   CORE::LINALG::Export(*ftcn_, *tmp);
   ftcn_ = tmp;
 }
+
+BACI_NAMESPACE_CLOSE

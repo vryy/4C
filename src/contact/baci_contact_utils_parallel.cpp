@@ -18,6 +18,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList& contactParams)
@@ -63,3 +65,5 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
 
   return use_safe_ghosting_branch;
 }
+
+BACI_NAMESPACE_CLOSE

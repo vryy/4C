@@ -29,14 +29,17 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<Epetra_Operator>& J, const NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<CORE::LINALG::Solver> structure_solver, const Teuchos::RCP<NOX::Epetra::Scaling> s)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
+    Teuchos::RCP<CORE::LINALG::Solver> structure_solver,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jacInterfacePtr_(iJac),
       jacType_(EpetraOperator),
@@ -49,7 +52,7 @@ NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timer_("", true),
       timeApplyJacbianInverse_(0.0)
 {
-  tmpVectorPtr_ = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
+  tmpVectorPtr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
   // std::cout << "STRUCTURE SOLVER: " << *structureSolver_ << " " << structureSolver_ << std::endl;
 
@@ -104,7 +107,7 @@ void NOX::STR::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::applyJacobian(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(false);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -115,7 +118,7 @@ bool NOX::STR::LinearSystem::applyJacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::applyJacobianTranspose(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(true);
   int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -127,7 +130,7 @@ bool NOX::STR::LinearSystem::applyJacobianTranspose(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+    Teuchos::ParameterList& p, const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   double startTime = timer_.wallTime();
 
@@ -173,8 +176,8 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::applyRightPreconditioning(bool useTranspose,
-    Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
-    NOX::Epetra::Vector& result) const
+    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+    ::NOX::Epetra::Vector& result) const
 {
   if (&result != &input) result = input;
   return true;
@@ -183,12 +186,12 @@ bool NOX::STR::LinearSystem::applyRightPreconditioning(bool useTranspose,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Scaling> NOX::STR::LinearSystem::getScaling() { return scaling_; }
+Teuchos::RCP<::NOX::Epetra::Scaling> NOX::STR::LinearSystem::getScaling() { return scaling_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
+void NOX::STR::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   scaling_ = scalingObject;
 }
@@ -196,7 +199,7 @@ void NOX::STR::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scalin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
+bool NOX::STR::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), *jacPtr_);
   return success;
@@ -206,7 +209,7 @@ bool NOX::STR::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::createPreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
 {
   return false;
 }
@@ -220,7 +223,7 @@ bool NOX::STR::LinearSystem::destroyPreconditioner() const { return false; }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::STR::LinearSystem::recomputePreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
 }
@@ -298,7 +301,7 @@ void NOX::STR::LinearSystem::setPrecOperatorForSolve(
 void NOX::STR::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_.isPrintType(NOX::Utils::Error))
+  if (utils_.isPrintType(::NOX::Utils::Error))
 
   {
     utils_.out() << "NOX::STR::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
@@ -307,3 +310,5 @@ void NOX::STR::LinearSystem::throwError(
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -28,6 +28,8 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
@@ -1777,3 +1779,5 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     }
   }
 }  // AssembleDomainInterfaceOD
+
+BACI_NAMESPACE_CLOSE

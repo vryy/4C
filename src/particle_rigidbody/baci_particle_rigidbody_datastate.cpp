@@ -10,6 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody_datastate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -36,3 +38,5 @@ void PARTICLERIGIDBODY::RigidBodyDataState::AllocateStoredStates(const int numri
   force_.resize(numrigidbodies, std::vector<double>(3, 0.0));
   torque_.resize(numrigidbodies, std::vector<double>(3, 0.0));
 }
+
+BACI_NAMESPACE_CLOSE

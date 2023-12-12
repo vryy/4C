@@ -19,10 +19,12 @@
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::MeritFunction::Lagrangian::Lagrangian(
-    const std::string& identifier, const Teuchos::RCP<NOX::Utils>& u)
+    const std::string& identifier, const Teuchos::RCP<::NOX::Utils>& u)
     : lagrangian_type_(mrtfct_vague), meritFunctionName_()
 {
   SetType(identifier);
@@ -33,7 +35,7 @@ NOX::NLN::MeritFunction::Lagrangian::Lagrangian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computef(const NOX::Abstract::Group& grp) const
+double NOX::NLN::MeritFunction::Lagrangian::computef(const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
@@ -57,7 +59,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computef(const NOX::Abstract::Group&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
-    const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
@@ -79,7 +81,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeMixed2ndOrderTerms(
-    const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
@@ -101,7 +103,8 @@ double NOX::NLN::MeritFunction::Lagrangian::computeMixed2ndOrderTerms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(const double& stepPV,
-    const double& stepLM, const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const double& stepLM, const ::NOX::Abstract::Vector& dir,
+    const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
@@ -150,7 +153,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(const double
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
-    const double& step, const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+    const double& step, const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   return computeSaddlePointModel(step, step, dir, grp);
 }
@@ -207,10 +210,12 @@ void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
 void NOX::NLN::MeritFunction::Lagrangian::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_->isPrintType(NOX::Utils::Error))
+  if (utils_->isPrintType(::NOX::Utils::Error))
   {
     utils_->out() << "ERROR - NOX::NLN::MeritFunction::Lagrangian::" << functionName << " - "
                   << errorMsg << std::endl;
   }
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

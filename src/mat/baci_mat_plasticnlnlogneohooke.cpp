@@ -29,6 +29,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
@@ -597,3 +599,5 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

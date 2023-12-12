@@ -16,6 +16,8 @@
 #include "baci_discretization_geometry_element_volume.H"
 #include "baci_io_gmsh.H"
 
+BACI_NAMESPACE_OPEN
+
 
 CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
     const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const
@@ -106,3 +108,5 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(CORE::FE::CellType distype, const in
 {
   /* intentionally left blank */
 }
+
+BACI_NAMESPACE_CLOSE

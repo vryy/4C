@@ -27,6 +27,8 @@ Kloeppel
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -527,3 +529,5 @@ void UTILS::ConstrManager::UseBlockMatrix(
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *domainmaps, *rangemaps, 81, false, true));
 }
+
+BACI_NAMESPACE_CLOSE

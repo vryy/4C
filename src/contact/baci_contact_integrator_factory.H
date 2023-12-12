@@ -20,6 +20,9 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoIntegrator;
@@ -44,5 +47,7 @@ namespace CONTACT
   }  // namespace INTEGRATOR
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_INTEGRATOR_FACTORY_H

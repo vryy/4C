@@ -42,6 +42,8 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -1579,3 +1581,5 @@ bool MAT::ActiveFiber::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 
 #include "baci_cut_pointgraph.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -184,5 +186,7 @@ namespace CORE::GEO
   }    // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_POINTGRAPH_SIMPLE_H

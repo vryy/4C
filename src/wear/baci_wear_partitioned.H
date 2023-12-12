@@ -27,6 +27,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
  *----------------------------------------------------------------------*/
@@ -171,8 +173,8 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector> delta_ale_;
     Teuchos::RCP<Epetra_Vector> ale_i_;
 
-    Teuchos::RCP<::CORE::ADAPTER::Coupling> coupstrualei_;  // ale struct coupling on ale interface
-    Teuchos::RCP<::CORE::ADAPTER::CouplingBase> coupalestru_;  // ale struct cpupling
+    Teuchos::RCP<CORE::ADAPTER::Coupling> coupstrualei_;     // ale struct coupling on ale interface
+    Teuchos::RCP<CORE::ADAPTER::CouplingBase> coupalestru_;  // ale struct cpupling
 
     Teuchos::ParameterList alepara_;  // ale parameter list
 
@@ -181,4 +183,6 @@ namespace WEAR
 }  // namespace WEAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // WEAR_PARTITIONED_H

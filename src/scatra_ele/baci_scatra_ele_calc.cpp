@@ -28,6 +28,8 @@
 #include "baci_scatra_ele_parameter_turbulence.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -2085,6 +2087,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatA
 {
   scatravarmanager_->SetInternalVariables(funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_);
 }
+
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

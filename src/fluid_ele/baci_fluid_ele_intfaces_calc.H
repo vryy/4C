@@ -18,6 +18,8 @@
 #include "baci_mat_material.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -29,7 +31,6 @@ namespace DRT
   class Condition;
   class Discretization;
   class DiscretizationFaces;
-
 
   namespace ELEMENTS
   {
@@ -166,5 +167,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

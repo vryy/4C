@@ -18,6 +18,8 @@
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------------*
@@ -41,8 +43,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
-    Teuchos::RCP<::DRT::Discretization> const& ia_discret,
-    Teuchos::RCP<::DRT::Discretization> const& bindis,
+    Teuchos::RCP<BACI::DRT::Discretization> const& ia_discret,
+    Teuchos::RCP<BACI::DRT::Discretization> const& bindis,
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
@@ -90,7 +92,7 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<BACI::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
 {
   CheckInit();
   return discret_ptr_;
@@ -98,8 +100,8 @@ Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const ::DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
-    const
+Teuchos::RCP<const BACI::DRT::Discretization>
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr() const
 {
   CheckInit();
   return discret_ptr_;
@@ -123,7 +125,8 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
+Teuchos::RCP<BACI::DRT::Discretization>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
 {
   CheckInit();
   return bindis_ptr_;
@@ -131,7 +134,7 @@ Teuchos::RCP<::DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const ::DRT::Discretization>
+Teuchos::RCP<const BACI::DRT::Discretization>
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
 {
   CheckInit();
@@ -321,3 +324,5 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
   eletypeextractor_->CheckForValidMapExtractor();
   return *eletypeextractor_;
 }
+
+BACI_NAMESPACE_CLOSE

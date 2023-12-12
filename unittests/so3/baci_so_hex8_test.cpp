@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SoHex8Test : public ::testing::Test
   {
    protected:

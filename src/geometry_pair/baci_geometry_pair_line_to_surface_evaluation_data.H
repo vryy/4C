@@ -18,14 +18,15 @@
 
 #include <unordered_map>
 
-
 // Forward declarations.
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace GEOMETRYPAIR
 {
   class FaceElement;
 }
-
 
 namespace GEOMETRYPAIR
 {
@@ -83,5 +84,7 @@ namespace GEOMETRYPAIR
     INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

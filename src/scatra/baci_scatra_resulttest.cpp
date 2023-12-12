@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
@@ -472,3 +474,5 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
   return result;
 }  // SCATRA::ScaTraResultTest::ResultSpecial
+
+BACI_NAMESPACE_CLOSE

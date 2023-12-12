@@ -28,6 +28,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -384,7 +386,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights_4gp[gp];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -973,12 +975,12 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 
   // Initialize for mass integration with 10 GPs
 
@@ -1053,7 +1055,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     N_XYZ.Multiply(invJ_[gp], derivs_4gp[gp]);
     double detJ = detJ_[gp];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1789,3 +1791,5 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
   // Update of history for materials
   SolidMaterial()->Update();
 }
+
+BACI_NAMESPACE_CLOSE

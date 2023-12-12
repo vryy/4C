@@ -20,6 +20,8 @@ Thomas Kloeppel
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
@@ -445,3 +447,5 @@ std::vector<int> UTILS::Constraint::GetActiveCondID()
   }
   return condID;
 }
+
+BACI_NAMESPACE_CLOSE

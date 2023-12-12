@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
@@ -257,3 +259,5 @@ void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(
   dofmap_ = Teuchos::rcp(
       new Epetra_Map(-1, (int)globaldof.size(), globaldof.data(), 0, discret_->Comm()));
 }
+
+BACI_NAMESPACE_CLOSE

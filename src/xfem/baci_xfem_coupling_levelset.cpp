@@ -32,6 +32,8 @@ bridge between the xfluid class and the cut-library
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // TODO: CouplingBase should become abstract class
 
 
@@ -1505,3 +1507,5 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

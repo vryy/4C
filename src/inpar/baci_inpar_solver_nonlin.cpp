@@ -15,6 +15,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -172,11 +174,11 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
     Teuchos::Array<std::string> checktypes =
         Teuchos::tuple<std::string>("Complete", "Minimal", "None");
-    Teuchos::setStringToIntegralParameter<NOX::StatusTest::CheckType>(
+    Teuchos::setStringToIntegralParameter<::NOX::StatusTest::CheckType>(
         "Inner Status Test Check Type", "Minimal",
         "Specify the check type for the inner status tests.", checktypes,
-        Teuchos::tuple<NOX::StatusTest::CheckType>(
-            NOX::StatusTest::Complete, NOX::StatusTest::Minimal, NOX::StatusTest::None),
+        Teuchos::tuple<::NOX::StatusTest::CheckType>(
+            ::NOX::StatusTest::Complete, ::NOX::StatusTest::Minimal, ::NOX::StatusTest::None),
         &linesearch);
   }
 
@@ -297,9 +299,9 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         Teuchos::tuple<int>(0, 1, 2), &morethuente);
     BoolParameter("Optimize Slope Calculation", "No",
         "Boolean value. If set to true the value of \f$s^T J^T F\f$ is estimated using a "
-        "directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. "
+        "directional derivative in a call to ::NOX::LineSearch::Common::computeSlopeWithOutJac. "
         "If false the slope computation is computed with the "
-        "NOX::LineSearch::Common::computeSlope method. "
+        "::NOX::LineSearch::Common::computeSlope method. "
         "Setting this to true eliminates having to compute the Jacobian at each inner iteration of "
         "the More'-Thuente line search",
         &morethuente);
@@ -394,3 +396,5 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         &linearSolver);
   }
 }
+
+BACI_NAMESPACE_CLOSE

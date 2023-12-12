@@ -22,6 +22,8 @@
 #include "baci_so3_surface.H"
 #include "baci_thermo_ele_impl_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
  *----------------------------------------------------------------------*/
@@ -944,5 +946,6 @@ int DRT::ELEMENTS::PlastEasTypeToNumEasV(DRT::ELEMENTS::So3Plast_EASType et)
   return -1;
 }
 
+BACI_NAMESPACE_CLOSE
 
 #include "baci_so3_ssn_plast_fwd.hpp"

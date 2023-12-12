@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_steepest_ascent_sp_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -28,7 +30,7 @@ namespace CONTACT
       /** \brief Condensed variant of the modified Newton approach.
        *
        * \author hiermeier \date 03/17 */
-      class Strategy : public ::CONTACT::AUG::STEEPESTASCENT_SP::Strategy
+      class Strategy : public CONTACT::AUG::STEEPESTASCENT_SP::Strategy
       {
         /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
          *  strategies and needs access to all methods. */
@@ -92,5 +94,7 @@ namespace CONTACT
   }    // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H

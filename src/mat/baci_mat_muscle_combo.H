@@ -21,6 +21,8 @@ active strain approach) with variable time-dependent activation
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -194,5 +196,7 @@ namespace MAT
   };  // end class Muscle_Combo
 
 }  // end namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_MUSCLE_COMBO_H

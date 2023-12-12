@@ -14,6 +14,8 @@
 #include <memory>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   class PackBuffer;
@@ -124,5 +126,7 @@ namespace MIXTURE
     const std::shared_ptr<IMPLEMENTATION::RemodelFiberImplementation<2, double>> impl_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_REMODELFIBER_H

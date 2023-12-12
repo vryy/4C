@@ -14,6 +14,8 @@
 #include <cmath>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace internal
 {
@@ -7578,3 +7580,5 @@ CORE::DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D int
   }
   dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
+
+BACI_NAMESPACE_CLOSE

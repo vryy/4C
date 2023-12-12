@@ -16,6 +16,8 @@
 /* header inclusions */
 #include "baci_ale_ale3.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -146,5 +148,7 @@ namespace DRT
   }    // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_ALE3_NURBS_H

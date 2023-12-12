@@ -31,17 +31,19 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::OptimizationProblemType& type,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<NOX::Epetra::Scaling>& iScale)
+    const Teuchos::RCP<::NOX::Epetra::Scaling>& iScale)
     : comm_(Teuchos::rcp(&comm, false)),
       nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(type),
@@ -65,9 +67,9 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac, const OptimizationProblemType& type,
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const OptimizationProblemType& type, const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
     : comm_(Teuchos::rcp(&comm, false)),
       nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(type),
@@ -89,9 +91,9 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec)
     : comm_(Teuchos::rcp(&comm, false)),
       nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(opt_unconstrained),
@@ -112,8 +114,8 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac)
     : comm_(Teuchos::rcp(&comm, false)),
       nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(opt_unconstrained),
@@ -163,7 +165,7 @@ void NOX::NLN::GlobalData::Setup()
   SetPrintingParameters();
 
   // construct the nox utils class
-  noxUtils_ = Teuchos::rcp(new NOX::Utils(nlnparams_->sublist("Printing")));
+  noxUtils_ = Teuchos::rcp(new ::NOX::Utils(nlnparams_->sublist("Printing")));
 
   // set (non-linear) solver option parameters
   SetSolverOptionParameters();
@@ -188,7 +190,7 @@ void NOX::NLN::GlobalData::SetPrintingParameters()
 void NOX::NLN::GlobalData::SetSolverOptionParameters()
 {
   /* NOX gives you the option to use a user defined merit function by inserting
-   * a Teuchos::RCP<NOX::MeritFunction::Generic> pointer into the parameter
+   * a Teuchos::RCP<::NOX::MeritFunction::Generic> pointer into the parameter
    * sublist "Solver Options". Since we are forced to use the
    * NOX_GlobalData class, we have to use this to define our own merit functions
    * by creating the particular class in the NOX::NLN::MeritFunction::Factory
@@ -209,7 +211,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   // If the mrtFctPtr is Teuchos::null the default "Sum of Squares" NOX internal
   // merit function is used.
   if (not mrtFctPtr_.is_null())
-    solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic>>(
+    solverOptionsList.set<Teuchos::RCP<::NOX::MeritFunction::Generic>>(
         "User Defined Merit Function", mrtFctPtr_);
 
   /* NOX has become quite strict about parameter lists. They may only contain parameters,
@@ -244,7 +246,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
     if (pdir.get<std::string>("Method") == "User Defined")
     {
       direction_factory_ = Teuchos::rcp(new NOX::NLN::Direction::Factory);
-      pdir.set<Teuchos::RCP<NOX::Direction::UserDefinedFactory>>(
+      pdir.set<Teuchos::RCP<::NOX::Direction::UserDefinedFactory>>(
           "User Defined Direction Factory", direction_factory_);
     }
   }
@@ -322,7 +324,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
+const ::NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
 {
   if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
 
@@ -331,7 +333,7 @@ const NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
+const Teuchos::RCP<::NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
 {
   if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
 
@@ -383,7 +385,7 @@ const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
+Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
 {
   if (iReqPtr_.is_null()) dserror("Required interface pointer iReqPtr_ was not initialized!");
 
@@ -392,7 +394,7 @@ Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequired
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
+Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
 {
   if (iJacPtr_.is_null()) dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
 
@@ -400,7 +402,7 @@ Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobian
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
+Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>
 NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
   /* We explicitly allow a return value of Teuchos::nullptr, because the
@@ -432,7 +434,9 @@ const bool& NOX::NLN::GlobalData::GetIsConstrained() const { return isConstraine
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Scaling>& NOX::NLN::GlobalData::GetScalingObject()
+const Teuchos::RCP<::NOX::Epetra::Scaling>& NOX::NLN::GlobalData::GetScalingObject()
 {
   return iScale_;
 }
+
+BACI_NAMESPACE_CLOSE

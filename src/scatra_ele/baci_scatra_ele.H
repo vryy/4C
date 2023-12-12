@@ -17,6 +17,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -734,5 +736,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_H

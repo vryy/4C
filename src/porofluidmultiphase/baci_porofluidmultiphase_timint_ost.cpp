@@ -12,6 +12,8 @@
 #include "baci_io.H"
 #include "baci_porofluidmultiphase_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                   vuong  08/16 |
  *----------------------------------------------------------------------*/
@@ -240,3 +242,5 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

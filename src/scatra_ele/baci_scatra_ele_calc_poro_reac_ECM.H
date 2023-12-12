@@ -14,6 +14,8 @@
 
 #include "baci_scatra_ele_calc_poro_reac.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class StructPoroReactionECM;
@@ -72,5 +74,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_PORO_REAC_ECM_H

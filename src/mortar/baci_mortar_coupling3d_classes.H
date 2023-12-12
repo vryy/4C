@@ -13,6 +13,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   // forward declarations
@@ -523,5 +525,7 @@ namespace MORTAR
   };  // class Vertex
 
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_COUPLING3D_CLASSES_H

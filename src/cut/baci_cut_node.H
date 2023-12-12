@@ -13,6 +13,8 @@
 
 #include "baci_cut_point.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -319,7 +321,7 @@ namespace CORE::GEO
       //! @name private class variables
       /*========================================================================*/
 
-      int nid_;       ///< node's id (the same as in  ::DRT::Discretization)
+      int nid_;       ///< node's id (the same as in  BACI::DRT::Discretization)
       Point* point_;  ///< pointer to the CORE::GEO::CUT::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 
@@ -358,5 +360,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

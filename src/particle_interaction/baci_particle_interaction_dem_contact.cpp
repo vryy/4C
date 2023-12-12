@@ -32,6 +32,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -1021,3 +1023,5 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallElasticPotentialEnergy
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

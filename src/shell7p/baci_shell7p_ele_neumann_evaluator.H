@@ -12,6 +12,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -68,5 +70,7 @@ namespace DRT::ELEMENTS::SHELL
       CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

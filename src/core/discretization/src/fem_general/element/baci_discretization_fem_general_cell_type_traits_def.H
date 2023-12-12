@@ -16,6 +16,8 @@ In this file, the helper defining the mapping from celltype to their properties 
 #include <tuple>
 #include <type_traits>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE::DETAILS
 {
   //! @name Definition of the mapping celltype to string
@@ -340,5 +342,7 @@ namespace CORE::FE::DETAILS
                          is_line<celltype>::value>;
   /// @}
 }  // namespace CORE::FE::DETAILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

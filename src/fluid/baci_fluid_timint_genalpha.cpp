@@ -20,6 +20,8 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -487,3 +489,5 @@ double FLD::TimIntGenAlpha::MethodLinErrCoeffVel() const
 
   return fac;
 }
+
+BACI_NAMESPACE_CLOSE

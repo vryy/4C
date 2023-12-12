@@ -21,6 +21,8 @@
 #include <utility>
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   using namespace DRT::INPUT;
@@ -977,3 +979,5 @@ namespace DRT::INPUT
     return length;
   }
 }  // namespace DRT::INPUT
+
+BACI_NAMESPACE_CLOSE

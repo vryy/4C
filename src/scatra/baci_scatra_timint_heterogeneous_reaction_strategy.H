@@ -13,6 +13,7 @@
 
 #include "baci_scatra_timint_meshtying_strategy_std.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -143,5 +144,7 @@ namespace SCATRA
 }  // namespace SCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_HETEROGENEOUS_REACTION_STRATEGY_H

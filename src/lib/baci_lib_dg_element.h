@@ -9,6 +9,8 @@
 #ifndef BACI_LIB_DG_ELEMENT_H
 #define BACI_LIB_DG_ELEMENT_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class DG_Element
@@ -24,6 +26,6 @@ namespace DRT
   };
 }  // namespace DRT
 
-
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LIB_DG_ELEMENT_H

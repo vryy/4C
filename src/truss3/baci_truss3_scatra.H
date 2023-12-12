@@ -12,6 +12,8 @@
 #include "baci_inpar_scatra.H"
 #include "baci_truss3.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -114,5 +116,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // TRUSS3_SCATRA_H

@@ -34,6 +34,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
@@ -55,21 +57,21 @@ NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
+enum ::NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
     const enum INPAR::STR::VectorNorm& normtype)
 {
-  enum NOX::Abstract::Vector::NormType nox_normtype = NOX::Abstract::Vector::TwoNorm;
+  enum ::NOX::Abstract::Vector::NormType nox_normtype = ::NOX::Abstract::Vector::TwoNorm;
 
   switch (normtype)
   {
     case INPAR::STR::norm_l2:
-      nox_normtype = NOX::Abstract::Vector::TwoNorm;
+      nox_normtype = ::NOX::Abstract::Vector::TwoNorm;
       break;
     case INPAR::STR::norm_l1:
-      nox_normtype = NOX::Abstract::Vector::OneNorm;
+      nox_normtype = ::NOX::Abstract::Vector::OneNorm;
       break;
     case INPAR::STR::norm_inf:
-      nox_normtype = NOX::Abstract::Vector::MaxNorm;
+      nox_normtype = ::NOX::Abstract::Vector::MaxNorm;
       break;
     case INPAR::STR::norm_rms:
     case INPAR::STR::norm_vague:
@@ -365,7 +367,7 @@ void STR::NLN::CreateConstraintPreconditioner(NOX::NLN::CONSTRAINT::PrecInterfac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
+void STR::NLN::CreateScaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
     const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState)
 {
   if (DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
@@ -408,3 +410,5 @@ void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficient
     coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
   };
 }
+
+BACI_NAMESPACE_CLOSE

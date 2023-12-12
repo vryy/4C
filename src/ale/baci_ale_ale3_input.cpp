@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Ale3::ReadElement(
@@ -75,3 +77,5 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

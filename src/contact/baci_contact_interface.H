@@ -19,6 +19,8 @@
 // forward declarations
 class Epetra_FEVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SerialDenseMatrix;
@@ -1687,5 +1689,7 @@ namespace CONTACT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoInterface& interface);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_INTERFACE_H

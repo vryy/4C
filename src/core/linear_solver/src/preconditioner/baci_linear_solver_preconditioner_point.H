@@ -13,6 +13,8 @@
 #include "baci_linalg_downwindmatrix.H"
 #include "baci_linear_solver_preconditioner_type.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// inf-norm scaling fits the preconditioner framework perfecty
@@ -81,5 +83,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Vector> diag_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

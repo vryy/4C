@@ -13,6 +13,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -190,4 +192,6 @@ namespace SSTI
     Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif

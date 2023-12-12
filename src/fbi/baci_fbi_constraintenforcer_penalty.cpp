@@ -25,6 +25,8 @@ fluid-beam interaction)
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
@@ -149,3 +151,5 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

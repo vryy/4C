@@ -30,6 +30,8 @@ algorithms
 
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 12/15 |
  *----------------------------------------------------------------------*/
@@ -623,10 +625,10 @@ void EHL::Base::SetupFieldCoupling(
   // matching node coupling is defined below.
 
   std::vector<int> coupleddof(ndim, 1);
-  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(::DRT::Problem::Instance()->NDim(),
-      ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
@@ -849,3 +851,5 @@ void EHL::Base::Output(bool forced_writerestart)
   StructureField()->Discretization()->ClearState(true);
   lubrication_->LubricationField()->Discretization()->ClearState(true);
 }  // Output()
+
+BACI_NAMESPACE_CLOSE

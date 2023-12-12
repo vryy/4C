@@ -19,6 +19,8 @@ header file
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace CORE::GEO
@@ -38,5 +40,7 @@ namespace CORE::GEO
     HIGHERORDER
   };
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_GEO_UTILS_H

@@ -9,6 +9,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE")), beta_(matdata->GetDouble("BETA"))
@@ -62,3 +64,4 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
   // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
   delta(5) += 0.0;
 }
+BACI_NAMESPACE_CLOSE

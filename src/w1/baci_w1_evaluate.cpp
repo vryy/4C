@@ -36,6 +36,8 @@
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -2281,3 +2283,5 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   // bye
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -34,6 +34,8 @@
 #include "baci_ssi_utils.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -161,7 +163,7 @@ void SSI::SSIBase::Setup()
     // get wrapper and cast it to specific type
     // do not do so, in case the wrapper has already been set from outside
     if (structure_ == Teuchos::null)
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
           struct_adapterbase_ptr_->StructureField());
 
     if (structure_ == Teuchos::null)
@@ -759,7 +761,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     {
       auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
           structure->StructureField(), true);
       if (structure_ == Teuchos::null)
         dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
@@ -946,3 +948,5 @@ void SSI::SSIBase::SetupModelEvaluator()
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

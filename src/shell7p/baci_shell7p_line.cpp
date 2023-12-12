@@ -7,6 +7,8 @@
 
 #include "baci_shell7p_line.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Shell7pLineType DRT::ELEMENTS::Shell7pLineType::instance_;
 
 DRT::ELEMENTS::Shell7pLineType& DRT::ELEMENTS::Shell7pLineType::Instance() { return instance_; }
@@ -78,3 +80,5 @@ void DRT::ELEMENTS::Shell7pLine::Print(std::ostream& os) const
   os << "Shell7pLine ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

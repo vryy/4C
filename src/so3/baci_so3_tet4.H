@@ -24,6 +24,8 @@
 #define NUMNOD_SOTET4_FACE 3  ///< number of nodes on a TET4 face (which is a TRI3)
 #define NUMGPT_SOTET4_FACE 1  ///< number of GP on a TET4 face (which is a TRI3)
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -482,5 +484,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_TET4_H

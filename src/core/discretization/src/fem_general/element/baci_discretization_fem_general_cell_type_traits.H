@@ -19,6 +19,8 @@
 #include <type_traits>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE
 {
   //! @name Type traits for cell shape based on cell types
@@ -400,5 +402,7 @@ namespace CORE::FE
   static constexpr CellType order = DETAILS::CellTypeInformation<celltype>::order;
 
 }  // namespace CORE::FE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

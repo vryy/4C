@@ -16,7 +16,6 @@
 #include <NOX_Abstract_Group.H>
 
 class Epetra_Vector;
-
 namespace NOX
 {
   class Utils;
@@ -24,6 +23,12 @@ namespace NOX
   {
     class Generic;
   }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -66,12 +71,12 @@ namespace NOX
         class VolumeChange : public Generic
         {
          public:
-          VolumeChange(const VolumeChangeParams& params, const NOX::Utils& u)
+          VolumeChange(const VolumeChangeParams& params, const ::NOX::Utils& u)
               : params_(params), utils_(u){};
 
           StatusType CheckStatus(const Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType) override;
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           StatusType GetStatus() const override;
 
@@ -79,8 +84,8 @@ namespace NOX
 
          protected:
           /// set the internal class variables by calling the related evaluate routine
-          NOX::Abstract::Group::ReturnType SetElementVolumes(
-              const NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const;
+          ::NOX::Abstract::Group::ReturnType SetElementVolumes(
+              const ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const;
 
           /// get the number of bad elements
           int NumberOfBadElements();
@@ -112,7 +117,7 @@ namespace NOX
               NOX::NLN::INNER::StatusTest::status_unevaluated;
 
           /// reference the ostream object
-          const NOX::Utils& utils_;
+          const ::NOX::Utils& utils_;
         };
       }  // namespace StatusTest
     }    // namespace INNER
@@ -120,5 +125,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_VOLUME_CHANGE_H

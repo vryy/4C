@@ -44,6 +44,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
  * important here! In here control file entries are written. And these
@@ -412,7 +414,7 @@ void FSI::Monolithic::SetupSystem()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::Monolithic::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
@@ -436,7 +438,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::TimeloopConstDt(
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   PrepareTimeloop();
 
@@ -466,16 +468,17 @@ void FSI::Monolithic::PrepareTimeloop()
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
 
-  printParams.set("Output Information",
-      NOX::Utils::Error | NOX::Utils::Warning | NOX::Utils::OuterIteration |
-          NOX::Utils::InnerIteration |
-          // NOX::Utils::Parameters |
-          NOX::Utils::Details | NOX::Utils::OuterIterationStatusTest |
-          NOX::Utils::LinearSolverDetails | NOX::Utils::TestDetails | NOX::Utils::StepperIteration |
-          NOX::Utils::StepperDetails | NOX::Utils::StepperParameters | NOX::Utils::Debug | 0);
+  printParams.set(
+      "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
+                                ::NOX::Utils::OuterIteration | ::NOX::Utils::InnerIteration |
+                                // ::NOX::Utils::Parameters |
+                                ::NOX::Utils::Details | ::NOX::Utils::OuterIterationStatusTest |
+                                ::NOX::Utils::LinearSolverDetails | ::NOX::Utils::TestDetails |
+                                ::NOX::Utils::StepperIteration | ::NOX::Utils::StepperDetails |
+                                ::NOX::Utils::StepperParameters | ::NOX::Utils::Debug | 0);
 
   // Create printing utilities
-  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
+  utils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
 
   // write header of log-file
   if (Comm().MyPID() == 0)
@@ -523,7 +526,7 @@ void FSI::Monolithic::PrepareTimeloop()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
 
@@ -545,46 +548,48 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   {
     case INPAR::FSI::verbosity_full:
     {
-      printParams.set("Output Information",
-          NOX::Utils::Error | NOX::Utils::Warning | NOX::Utils::OuterIteration |
-              NOX::Utils::InnerIteration |
-              // NOX::Utils::Parameters |
-              NOX::Utils::Details |  // weg damit!
-              NOX::Utils::OuterIterationStatusTest |
-              NOX::Utils::LinearSolverDetails |  // weg damit!
-              NOX::Utils::TestDetails | NOX::Utils::StepperIteration | NOX::Utils::StepperDetails |
-              NOX::Utils::StepperParameters | NOX::Utils::Debug | 0);
+      printParams.set(
+          "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
+                                    ::NOX::Utils::OuterIteration | ::NOX::Utils::InnerIteration |
+                                    // ::NOX::Utils::Parameters |
+                                    ::NOX::Utils::Details |  // weg damit!
+                                    ::NOX::Utils::OuterIterationStatusTest |
+                                    ::NOX::Utils::LinearSolverDetails |  // weg damit!
+                                    ::NOX::Utils::TestDetails | ::NOX::Utils::StepperIteration |
+                                    ::NOX::Utils::StepperDetails | ::NOX::Utils::StepperParameters |
+                                    ::NOX::Utils::Debug | 0);
       break;
     }
     case INPAR::FSI::verbosity_medium:
     {
-      printParams.set("Output Information",
-          NOX::Utils::Error | NOX::Utils::Warning | NOX::Utils::OuterIteration |
-              NOX::Utils::InnerIteration |
-              // NOX::Utils::Parameters |
-              // NOX::Utils::Details | //weg damit!
-              NOX::Utils::OuterIterationStatusTest |
-              NOX::Utils::LinearSolverDetails |  // weg damit!
-              NOX::Utils::TestDetails | NOX::Utils::StepperIteration | NOX::Utils::StepperDetails |
-              NOX::Utils::StepperParameters | NOX::Utils::Debug | 0);
+      printParams.set(
+          "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
+                                    ::NOX::Utils::OuterIteration | ::NOX::Utils::InnerIteration |
+                                    // ::NOX::Utils::Parameters |
+                                    // ::NOX::Utils::Details | //weg damit!
+                                    ::NOX::Utils::OuterIterationStatusTest |
+                                    ::NOX::Utils::LinearSolverDetails |  // weg damit!
+                                    ::NOX::Utils::TestDetails | ::NOX::Utils::StepperIteration |
+                                    ::NOX::Utils::StepperDetails | ::NOX::Utils::StepperParameters |
+                                    ::NOX::Utils::Debug | 0);
       break;
     }
     case INPAR::FSI::verbosity_low:
     case INPAR::FSI::verbosity_subproblem:
     {
       printParams.set(
-          "Output Information", NOX::Utils::Error | NOX::Utils::Warning |
-                                    //                    NOX::Utils::OuterIteration |
-                                    //                    NOX::Utils::InnerIteration |
-                                    //                    //NOX::Utils::Parameters |
-                                    //  //                  NOX::Utils::Details |
-                                    NOX::Utils::OuterIterationStatusTest |
-                                    //  //                  NOX::Utils::LinearSolverDetails |
-                                    //                    NOX::Utils::TestDetails |
-                                    //                    NOX::Utils::StepperIteration |
-                                    //                    NOX::Utils::StepperDetails |
-                                    //                    NOX::Utils::StepperParameters |
-                                    NOX::Utils::Debug | 0);
+          "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
+                                    //                    ::NOX::Utils::OuterIteration |
+                                    //                    ::NOX::Utils::InnerIteration |
+                                    //                    //::NOX::Utils::Parameters |
+                                    //  //                  ::NOX::Utils::Details |
+                                    ::NOX::Utils::OuterIterationStatusTest |
+                                    //  //                  ::NOX::Utils::LinearSolverDetails |
+                                    //                    ::NOX::Utils::TestDetails |
+                                    //                    ::NOX::Utils::StepperIteration |
+                                    //                    ::NOX::Utils::StepperDetails |
+                                    //                    ::NOX::Utils::StepperParameters |
+                                    ::NOX::Utils::Debug | 0);
       break;
     }
     default:
@@ -619,21 +624,21 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
   InitialGuess(initial_guess);
 
-  NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector noxSoln(initial_guess, ::NOX::Epetra::Vector::CreateView);
 
   // Create the linear system
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = CreateLinearSystem(nlParams, noxSoln, utils_);
+  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys = CreateLinearSystem(nlParams, noxSoln, utils_);
 
   // Create the Group
   Teuchos::RCP<NOX::FSI::Group> grp =
       Teuchos::rcp(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
 
   // Convergence Tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+  Teuchos::RCP<::NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
   // Create the solver
-  Teuchos::RCP<NOX::Solver::Generic> solver =
-      NOX::Solver::buildSolver(grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
+  Teuchos::RCP<::NOX::Solver::Generic> solver = ::NOX::Solver::buildSolver(
+      grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
   // we know we already have the first linear system calculated
   grp->CaptureSystemState();
@@ -704,7 +709,7 @@ void FSI::Monolithic::NonLinErrorCheck()
   erroraction_ = erroraction_none;
 
   // if everything is fine, then return right now
-  if (NoxStatus() == NOX::StatusTest::Converged)
+  if (NoxStatus() == ::NOX::StatusTest::Converged)
   {
     return;
   }
@@ -719,7 +724,7 @@ void FSI::Monolithic::NonLinErrorCheck()
   const INPAR::FSI::DivContAct divcontype = DRT::INPUT::IntegralValue<INPAR::FSI::DivContAct>(
       fsidyn.sublist("TIMEADAPTIVITY"), ("DIVERCONT"));
 
-  if (NoxStatus() != NOX::StatusTest::Converged)
+  if (NoxStatus() != ::NOX::StatusTest::Converged)
   {
     switch (divcontype)
     {
@@ -801,7 +806,7 @@ void FSI::Monolithic::NonLinErrorCheck()
   }
   else
   {
-    dserror("Unknown NOX::StatusTest::StatusType.");
+    dserror("Unknown ::NOX::StatusTest::StatusType.");
   }
 
   return;
@@ -929,7 +934,7 @@ void FSI::Monolithic::SetDefaultParameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this, false);
+  Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this, false);
   dirParams.set("User Defined Direction Factory", newtonfactory);
 
 
@@ -960,8 +965,8 @@ void FSI::Monolithic::SetDefaultParameters(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic> FSI::Monolithic::buildDirection(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+Teuchos::RCP<::NOX::Direction::Generic> FSI::Monolithic::buildDirection(
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
   Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd, params));
   for (unsigned i = 0; i < statustests_.size(); ++i)
@@ -1233,18 +1238,19 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
+Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+    Teuchos::RCP<::NOX::Utils> utils)
 {
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys;
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-  NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  ::NOX::Epetra::Interface::Jacobian* iJac = this;
+  ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP<Epetra_Operator> J = SystemMatrix();
   const Teuchos::RCP<Epetra_Operator> M = SystemMatrix();
 
@@ -1258,7 +1264,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
     case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::HybridSchwarz:
     {
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+      linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     }
@@ -1342,3 +1348,5 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
 
   return linSys;
 }
+
+BACI_NAMESPACE_CLOSE

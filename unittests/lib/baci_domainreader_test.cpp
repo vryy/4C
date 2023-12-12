@@ -15,6 +15,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class DatFileReaderStub : public DRT::INPUT::DatFileReader
   {
    public:

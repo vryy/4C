@@ -11,6 +11,8 @@
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/10|
  *----------------------------------------------------------------------*/
@@ -39,3 +41,5 @@ MORTAR::ManagerBase::ManagerBase()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

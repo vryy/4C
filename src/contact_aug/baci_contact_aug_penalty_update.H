@@ -18,6 +18,12 @@ parameter cn
 // forward declarations
 class Epetra_Vector;
 class Epetra_Map;
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
 
 namespace INPAR
 {
@@ -35,11 +41,6 @@ namespace CORE::LINALG
 {
   class SparseMatrix;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace CONTACT
 {
@@ -378,5 +379,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PENALTY_UPDATE_H

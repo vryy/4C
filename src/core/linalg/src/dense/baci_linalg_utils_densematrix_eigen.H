@@ -18,6 +18,8 @@
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /*!
@@ -110,5 +112,7 @@ namespace CORE::LINALG
   }
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_DENSEMATRIX_EIGEN_H

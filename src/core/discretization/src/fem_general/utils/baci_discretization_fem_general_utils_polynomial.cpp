@@ -18,6 +18,8 @@
 #include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   inline CORE::DRT::UTILS::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
@@ -778,3 +780,5 @@ namespace CORE::DRT
 
   }  // end of namespace UTILS
 }  // namespace CORE::DRT
+
+BACI_NAMESPACE_CLOSE

@@ -32,6 +32,8 @@ xfluid class and the cut-library
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
     Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
@@ -1067,3 +1069,5 @@ bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWiza
     Get_Contact_Comm()->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
   return contact_;
 }
+
+BACI_NAMESPACE_CLOSE

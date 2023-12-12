@@ -16,6 +16,8 @@
 
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace IMPLICIT
@@ -72,7 +74,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
+      double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! access the alphaf parameter of the Generalized-\f$\alpha\f$ Method
       double GetIntParam() const override;
@@ -375,5 +377,7 @@ namespace STR
 
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_GENALPHA_H

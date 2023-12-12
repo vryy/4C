@@ -14,6 +14,8 @@
 
 #include "baci_lib_dofset_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -255,5 +257,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -12,6 +12,8 @@
 
 #include "baci_particle_interaction_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -117,3 +119,5 @@ double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToEnergy(
   return -UTILS::Pow<2>(speedofsound_) * mass *
          std::log(UTILS::Pow<2>(mass) / (density0 * density));
 }
+
+BACI_NAMESPACE_CLOSE

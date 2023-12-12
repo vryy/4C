@@ -17,6 +17,8 @@
 
 #include <NOX_LineSearch_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -25,7 +27,7 @@ namespace NOX
     {
       class PrePostOperator;
 
-      class Generic : public NOX::LineSearch::Generic,
+      class Generic : public ::NOX::LineSearch::Generic,
                       public NOX::NLN::INNER::StatusTest::Interface::Required
       {
        public:
@@ -36,7 +38,7 @@ namespace NOX
         //! @name NOX::NLN::LineSearch::Generic
         //! @{
         //! returns the slope in the current search direction
-        virtual const NOX::Abstract::Vector& GetSearchDirection() const = 0;
+        virtual const ::NOX::Abstract::Vector& GetSearchDirection() const = 0;
 
         //! returns the stepSize
         virtual double GetStepLength() const = 0;
@@ -45,10 +47,10 @@ namespace NOX
         virtual void SetStepLength(double step) = 0;
         //! @}
 
-        //! @name NOX::LineSearch::Generic
+        //! @name ::NOX::LineSearch::Generic
         //! @{
-        bool compute(NOX::Abstract::Group& grp, double& step, const NOX::Abstract::Vector& dir,
-            const NOX::Solver::Generic& s) override = 0;
+        bool compute(::NOX::Abstract::Group& grp, double& step, const ::NOX::Abstract::Vector& dir,
+            const ::NOX::Solver::Generic& s) override = 0;
         //! @}
 
         //! @name NOX::NLN::INNER::StatusTest::Interface::Required
@@ -57,7 +59,7 @@ namespace NOX
         int GetNumIterations() const override = 0;
 
         //! get the merit function
-        const NOX::MeritFunction::Generic& GetMeritFunction() const override = 0;
+        const ::NOX::MeritFunction::Generic& GetMeritFunction() const override = 0;
         //! @}
 
        protected:
@@ -67,5 +69,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_H

@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_conditions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -50,7 +52,7 @@ namespace BEAMINTERACTION
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    void BuildIdSets(const Teuchos::RCP<const ::DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const BACI::DRT::Discretization>& discretization) override;
 
 
    private:
@@ -62,5 +64,7 @@ namespace BEAMINTERACTION
     std::array<double, 2> local_parameter_coordinates_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

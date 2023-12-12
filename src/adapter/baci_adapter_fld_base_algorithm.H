@@ -22,6 +22,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// fluid field solver
@@ -87,5 +89,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -20,6 +20,16 @@
 
 #include <NOX_Abstract_Vector.H>
 
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Vector;
+  }  // namespace  Epetra
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseOperator;
@@ -27,10 +37,6 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 namespace NOX
 {
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace  Epetra
   namespace NLN
   {
     class LinearSystem;
@@ -38,7 +44,7 @@ namespace NOX
     {
       /*! \brief Pseudo Transient Continuation (PTC) non-linear solver
        *
-       * This implementation is based on the NOX::Solver::PseudoTransient class
+       * This implementation is based on the ::NOX::Solver::PseudoTransient class
        * and the former BACI internal implementation of the PTC method. In contrast
        * to the NOX internal implementation we try to avoid the need of the Thyra
        * interface package.
@@ -155,18 +161,18 @@ namespace NOX
 
        public:
         //! constructor
-        PseudoTransient(const Teuchos::RCP<NOX::Abstract::Group>& grp,
-            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+        PseudoTransient(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+            const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
 
         //! reset the non-linear solver
-        void reset(const NOX::Abstract::Vector& initialGuess,
-            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+        void reset(const ::NOX::Abstract::Vector& initialGuess,
+            const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
-        void reset(const NOX::Abstract::Vector& initialGuess,
-            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) override;
+        void reset(const ::NOX::Abstract::Vector& initialGuess,
+            const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) override;
 
         void createScalingOperator();
 
@@ -174,9 +180,9 @@ namespace NOX
 
         void createGroupPrePostOperator();
 
-        NOX::StatusTest::StatusType step() override;
+        ::NOX::StatusTest::StatusType step() override;
 
-        NOX::StatusTest::StatusType solve() override;
+        ::NOX::StatusTest::StatusType solve() override;
 
         //! Returns the inverse pseudo time step
         const double& getInversePseudoTimeStep() const;
@@ -330,7 +336,7 @@ namespace NOX
         double scaleFactor_;
 
         //! solution time derivative used for scaling operator V in pseudo-transient paper.
-        Teuchos::RCP<NOX::Abstract::Vector> xDot_;
+        Teuchos::RCP<::NOX::Abstract::Vector> xDot_;
 
         //! Are we solving the pseudo transient continuation problem at the moment?
         bool isPtcSolve_;
@@ -365,7 +371,7 @@ namespace NOX
         enum BuildOpType build_scaling_op_;
 
         //! vector norm type (necessary for the time step control)
-        enum NOX::Abstract::Vector::NormType normType_;
+        enum ::NOX::Abstract::Vector::NormType normType_;
 
         //! The current model reduction ratio.
         double modelReductionRatio_;
@@ -440,7 +446,8 @@ namespace NOX
           void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 
          protected:
-          Teuchos::RCP<NOX::Epetra::Vector> evalPseudoTransientFUpdate(const NOX::NLN::Group& grp);
+          Teuchos::RCP<::NOX::Epetra::Vector> evalPseudoTransientFUpdate(
+              const NOX::NLN::Group& grp);
 
          private:
           //! read-only access
@@ -461,5 +468,7 @@ namespace NOX
     }       // namespace GROUP
   }         // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_SOLVER_PTC_H

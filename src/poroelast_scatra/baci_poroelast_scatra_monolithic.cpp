@@ -28,6 +28,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
@@ -1450,3 +1452,5 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -34,6 +34,8 @@
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3441,3 +3443,5 @@ bool CONTACT::CoAbstractStrategy::IsFirstTimeStep() const
 
   return first_time_step;
 }
+
+BACI_NAMESPACE_CLOSE

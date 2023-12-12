@@ -18,6 +18,8 @@
 #include <numeric>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   /*!
@@ -753,5 +755,7 @@ namespace CORE::DRT::UTILS
   }
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_POLYNOMIAL_H

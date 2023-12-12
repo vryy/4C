@@ -29,6 +29,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                          kremheller 03/17 |
@@ -1473,3 +1475,5 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::CreateLinearS
   // build also the artery null space
   BuildArteryBlockNullSpace(solver_, 3);
 }
+
+BACI_NAMESPACE_CLOSE

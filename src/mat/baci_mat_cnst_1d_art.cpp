@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -215,3 +217,5 @@ double MAT::Cnst_1d_art::CalculateBloodViscosity(const double diam, const double
 
   return visc;
 }
+
+BACI_NAMESPACE_CLOSE

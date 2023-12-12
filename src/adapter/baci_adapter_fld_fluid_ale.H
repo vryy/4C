@@ -12,15 +12,6 @@
 #define BACI_ADAPTER_FLD_FLUID_ALE_H
 
 /*----------------------------------------------------------------------------*/
-/* forward declarations */
-namespace ADAPTER
-{
-  class CouplingBase;
-  class Coupling;
-  class AleFluidWrapper;
-}  // namespace ADAPTER
-
-/*----------------------------------------------------------------------------*/
 /* headers */
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_moving_boundary.H"
@@ -30,6 +21,16 @@ namespace ADAPTER
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace ADAPTER
+{
+  class CouplingBase;
+  class Coupling;
+  class AleFluidWrapper;
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -147,5 +148,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

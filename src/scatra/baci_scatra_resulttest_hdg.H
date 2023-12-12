@@ -14,6 +14,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_scatra_resulttest.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   // forward declaration
@@ -39,4 +41,6 @@ namespace SCATRA
 
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -16,6 +16,8 @@ materials with @MAT::Anisotropy
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_coordinate_system_provider.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
     : cosyLocation_(CosyLocation::None)
 {
@@ -85,3 +87,4 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCoordinateSystemProvider(in
 
   return cosy;
 }
+BACI_NAMESPACE_CLOSE

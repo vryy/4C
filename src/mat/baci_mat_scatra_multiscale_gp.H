@@ -17,6 +17,8 @@ transport problems
 // forward declarations
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntOneStepTheta;
@@ -151,4 +153,6 @@ namespace MAT
     const bool is_ale_;
   };  // class MAT::ScatraMultiScaleGP
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

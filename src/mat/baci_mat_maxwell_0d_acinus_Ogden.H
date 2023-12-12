@@ -20,6 +20,8 @@ volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
 #include "baci_red_airways_elem_params.h"
 #include "baci_red_airways_elementbase.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -160,5 +162,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

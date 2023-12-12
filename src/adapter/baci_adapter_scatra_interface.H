@@ -13,6 +13,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -68,5 +69,7 @@ namespace ADAPTER
   };  // class ScatraInterface
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_INTERFACE_H

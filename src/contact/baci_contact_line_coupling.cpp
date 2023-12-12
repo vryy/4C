@@ -28,6 +28,8 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor for lts/stl (public)                                farah 07/16|
@@ -3490,3 +3492,5 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   // bye bye
   return angleRad;
 }
+
+BACI_NAMESPACE_CLOSE

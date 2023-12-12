@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace DRT
@@ -77,5 +79,7 @@ namespace ELEMAG
     };  // class ScatraCloneStrategy
   }     // namespace UTILS
 }  // namespace ELEMAG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_UTILS_CLONESTRATEGY_H

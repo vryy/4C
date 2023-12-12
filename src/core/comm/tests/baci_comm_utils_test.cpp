@@ -19,6 +19,8 @@
 
 #include <stdexcept>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   Teuchos::RCP<CORE::COMM::Communicators> MockUpCommunicators()
@@ -178,3 +180,5 @@ namespace
   }
 
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include <memory>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   class PackBuffer;
@@ -175,5 +177,7 @@ namespace MIXTURE
     };
   }  // namespace IMPLEMENTATION
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_REMODELFIBER_INTERNAL_H

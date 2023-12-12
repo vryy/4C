@@ -117,8 +117,8 @@ namespace TESTING::INTERNAL
   template <unsigned int M, unsigned int N, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const CORE::LINALG::Matrix<M, N, T>& mat1,
-      const CORE::LINALG::Matrix<M, N, T>& mat2, T tolerance)
+      const char* toleranceExpr, const BACI::CORE::LINALG::Matrix<M, N, T>& mat1,
+      const BACI::CORE::LINALG::Matrix<M, N, T>& mat2, T tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;
@@ -155,7 +155,7 @@ namespace TESTING::INTERNAL
   template <unsigned int M, unsigned int N, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const CORE::LINALG::Matrix<M, N, T>& mat,
+      const char* toleranceExpr, const BACI::CORE::LINALG::Matrix<M, N, T>& mat,
       const std::array<T, static_cast<std::size_t>(M) * N>& array, T tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
@@ -192,8 +192,8 @@ namespace TESTING::INTERNAL
    */
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const CORE::LINALG::SerialDenseMatrix& mat1,
-      const CORE::LINALG::SerialDenseMatrix& mat2, double tolerance)
+      const char* toleranceExpr, const BACI::CORE::LINALG::SerialDenseMatrix& mat1,
+      const BACI::CORE::LINALG::SerialDenseMatrix& mat2, double tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;

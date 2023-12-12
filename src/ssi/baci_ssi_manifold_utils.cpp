@@ -28,6 +28,8 @@
 #include "baci_ssi_monolithic.H"
 #include "baci_ssi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
@@ -1398,3 +1400,5 @@ Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> SSI::BuildManifoldMeshTyingStra
 
   return meshtyingstrategy;
 }
+
+BACI_NAMESPACE_CLOSE

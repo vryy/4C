@@ -12,6 +12,8 @@
 #include "baci_thermo_ele_impl.H"
 #include "baci_thermo_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | evaluate the element for volume coupling (public)         dano 02/10 |
@@ -46,3 +48,5 @@ int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, lm, elevec1, elemat1);
 }
+
+BACI_NAMESPACE_CLOSE

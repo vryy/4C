@@ -14,6 +14,8 @@
 
 #include "baci_scatra_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ELCH
 {
   /// ELCH algorithm base
@@ -47,5 +49,7 @@ namespace ELCH
     bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol) override;
   };
 }  // namespace ELCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELCH_ALGORITHM_H

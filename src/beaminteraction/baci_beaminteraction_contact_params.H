@@ -15,6 +15,8 @@
 
 #include "baci_inpar_beamcontact.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -116,5 +118,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,6 +16,8 @@
 #include <Teuchos_ParameterListExceptions.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
@@ -124,3 +126,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetNearbyElePairs(
 {
   // do nothing
 }
+
+BACI_NAMESPACE_CLOSE

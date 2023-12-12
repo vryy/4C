@@ -21,6 +21,8 @@
 #include <fstream>
 #include <map>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -688,5 +690,7 @@ namespace CORE::GEO
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point& point);
 
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point* point);
+
+BACI_NAMESPACE_CLOSE
 
 #endif

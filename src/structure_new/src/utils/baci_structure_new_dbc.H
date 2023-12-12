@@ -19,6 +19,12 @@
 // forward declarations
 class Epetra_Map;
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -37,11 +43,6 @@ namespace CORE::LINALG
   class SparseMatrix;
   class MapExtractor;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace STR
 {
@@ -273,15 +274,15 @@ namespace NOX
         {
          public:
           //! constructor
-          Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr);
+          Dbc(const Teuchos::RCP<const STR::Dbc>& dbc_ptr);
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
-          void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+          void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
               CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys) override;
 
          private:
           //! pointer to the underlying class, which provides the whole functionality
-          Teuchos::RCP<const ::STR::Dbc> dbc_ptr_;
+          Teuchos::RCP<const STR::Dbc> dbc_ptr_;
 
         };  // class Dbc (pre/post operator)
       }     // namespace PrePostOp
@@ -289,5 +290,7 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_DBC_H

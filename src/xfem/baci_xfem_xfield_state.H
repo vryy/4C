@@ -18,6 +18,8 @@
 
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -164,5 +166,7 @@ namespace XFEM
   };  // class XFieldState
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_STATE_H

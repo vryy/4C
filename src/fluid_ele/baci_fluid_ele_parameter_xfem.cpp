@@ -13,6 +13,8 @@
 
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidEleParameterXFEM* DRT::ELEMENTS::FluidEleParameterXFEM::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -235,3 +237,5 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

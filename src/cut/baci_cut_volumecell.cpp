@@ -28,6 +28,7 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
 
 int CORE::GEO::CUT::VolumeCell::hex8totet4[5][4] = {
     {0, 1, 3, 4}, {1, 2, 3, 6}, {4, 5, 1, 6}, {6, 7, 3, 4}, {1, 6, 3, 4}};
@@ -1869,3 +1870,5 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
     return false;
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // #define DEBUG_SELFCUT
 
 /*-------------------------------------------------------------------------------------*
@@ -3368,3 +3370,5 @@ void CORE::GEO::CUT::SelfCut::SideNodePlot(Side& side)
     NodePlot(*sidenode);
   }
 }
+
+BACI_NAMESPACE_CLOSE

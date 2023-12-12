@@ -25,6 +25,8 @@
 #include "baci_fluid_ele_xwall.H"
 #include "baci_lib_condition_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*
   Depending on the type of action and the element type (tet, hex etc.),
@@ -780,3 +782,5 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

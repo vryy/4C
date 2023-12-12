@@ -26,6 +26,7 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -1789,3 +1790,5 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
   for (std::size_t i = 0; i < 6; i++)
     visualization_data.SetPointDataVector(field_names[i], stress_strain_vector[i], 1);
 }
+
+BACI_NAMESPACE_CLOSE

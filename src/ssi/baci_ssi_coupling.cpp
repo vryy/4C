@@ -21,6 +21,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,
@@ -227,9 +229,9 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
 
   // setup mortar adapter for surface volume coupling
   adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   SetIsInit(true);
 }
@@ -606,3 +608,5 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
 {
   dserror("transferring micro scalar state to structure discretization not implemented.");
 }
+
+BACI_NAMESPACE_CLOSE

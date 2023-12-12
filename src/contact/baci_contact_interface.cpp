@@ -37,6 +37,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::InterfaceDataContainer::InterfaceDataContainer()
@@ -9657,3 +9659,5 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     writer->WriteVector("Owner", owner, IO::VectorType::elementvector);
   }
 }
+
+BACI_NAMESPACE_CLOSE

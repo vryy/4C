@@ -29,11 +29,17 @@ namespace NOX
   {
     class Group;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace Interface
     {
-      class Required : public virtual NOX::Epetra::Interface::Required
+      class Required : public virtual ::NOX::Epetra::Interface::Required
       {
        public:
         //! Constructor
@@ -42,7 +48,7 @@ namespace NOX
         //! returns the right-hand-side norms of the primary DoF fields
         virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
             const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! Returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
@@ -54,13 +60,13 @@ namespace NOX
         //! Returns the increment norm of the primary DoF fields
         virtual double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xNew,
             const Epetra_Vector& xOld, const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! Returns the previous solution norm of primary DoF fields
         virtual double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xOld,
             const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! compute and return some energy representative
@@ -68,7 +74,7 @@ namespace NOX
             const enum MeritFunction::MeritFctName merit_func_type) const = 0;
 
         //! return model terms of a linear model (optional)
-        virtual double GetLinearizedModelTerms(const NOX::Abstract::Group* group,
+        virtual double GetLinearizedModelTerms(const ::NOX::Abstract::Group* group,
             const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const
@@ -118,5 +124,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H

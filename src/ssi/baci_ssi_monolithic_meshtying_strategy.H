@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MultiMapExtractor;
@@ -234,4 +236,6 @@ namespace SSI
       CORE::LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_MESHTYING_STRATEGY_H

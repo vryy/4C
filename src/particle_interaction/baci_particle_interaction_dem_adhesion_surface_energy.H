@@ -18,6 +18,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
@@ -112,4 +114,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

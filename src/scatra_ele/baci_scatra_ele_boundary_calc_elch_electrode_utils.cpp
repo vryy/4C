@@ -13,6 +13,8 @@
 #include "baci_inpar_s2i.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmodel, const double j0,
@@ -268,3 +270,4 @@ bool DRT::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
 }
+BACI_NAMESPACE_CLOSE

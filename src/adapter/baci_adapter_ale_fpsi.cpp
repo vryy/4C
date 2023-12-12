@@ -13,6 +13,8 @@
 
 #include "baci_ale_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
@@ -51,3 +53,5 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleFpsiWrapper::Interface(
 {
   return interface_;
 }
+
+BACI_NAMESPACE_CLOSE

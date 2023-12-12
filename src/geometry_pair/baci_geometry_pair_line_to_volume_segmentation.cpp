@@ -15,6 +15,7 @@
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -70,3 +71,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMET
     GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

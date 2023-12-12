@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Problem;
@@ -76,7 +78,7 @@ namespace CONTACT
        *
        * \param[in] c new component needed as parameter for the contact constitutive law
        */
-      void AddComponent(Teuchos::RCP<::INPUT::LineComponent> c);
+      void AddComponent(Teuchos::RCP<INPUT::LineComponent> c);
 
       /** \brief read all materials from my input file section
        *
@@ -101,7 +103,7 @@ namespace CONTACT
       std::string Description() const { return description_; }
 
       /// get contact constitutive law inputline
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
 
      private:
       /// name of ontact constitutive law
@@ -111,7 +113,7 @@ namespace CONTACT
       /// type of ontact constitutive law to be build
       INPAR::CONTACT::ConstitutiveLawType coconstlawtype_;
       /// the list of valid components
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
     };
 
 
@@ -119,7 +121,7 @@ namespace CONTACT
      * \brief This is a floating point number component within a contact constitutive law definition
      *
      */
-    class RealContactConstitutiveLawComponent : public ::INPUT::LineComponent
+    class RealContactConstitutiveLawComponent : public INPUT::LineComponent
     {
      public:
       /**
@@ -179,5 +181,7 @@ namespace CONTACT
 
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H

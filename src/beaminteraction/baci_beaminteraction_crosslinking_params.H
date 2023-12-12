@@ -14,6 +14,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace STR
 {
@@ -205,5 +207,7 @@ namespace BEAMINTERACTION
         filamentbspotrangelocal_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

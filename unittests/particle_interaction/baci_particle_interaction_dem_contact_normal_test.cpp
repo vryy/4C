@@ -14,6 +14,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class DEMContactNormalLinearSpringTest : public ::testing::Test
   {
    protected:

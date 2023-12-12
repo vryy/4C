@@ -14,6 +14,8 @@
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
 #include "baci_porofluidmultiphase_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | ctor                                                     vuong 08/16 |
@@ -296,3 +298,5 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
 
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultSpecial
+
+BACI_NAMESPACE_CLOSE

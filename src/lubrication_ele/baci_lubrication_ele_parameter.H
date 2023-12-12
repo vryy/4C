@@ -20,6 +20,8 @@ parameters required for Lubrication element evaluation.
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -72,5 +74,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_PARAMETER_H

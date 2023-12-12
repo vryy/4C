@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_poroelast_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
     : AlgorithmBase(comm, fpsidynparams)
 {
@@ -55,3 +57,5 @@ void FPSI::FPSI_Base::RedistributeInterface()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

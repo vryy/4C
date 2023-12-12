@@ -14,6 +14,8 @@
 #include "baci_inpar_beampotential.H"
 #include "baci_io_visualization_parameters.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   /*!
@@ -115,5 +117,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

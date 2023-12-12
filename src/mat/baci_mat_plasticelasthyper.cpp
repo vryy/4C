@@ -26,6 +26,8 @@ rY_13 0.7
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -2712,3 +2714,5 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivative3x3(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

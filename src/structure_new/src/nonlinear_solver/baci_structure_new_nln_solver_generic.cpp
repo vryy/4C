@@ -17,6 +17,8 @@
 
 #include <NOX_Abstract_Group.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -55,7 +57,7 @@ void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
+Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 {
   CheckInit();
 
@@ -64,7 +66,7 @@ Teuchos::RCP<NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
+::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
 {
   CheckInit();
   dsassert(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
@@ -73,14 +75,16 @@ NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup() { return Group(); }
+::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup() { return Group(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::Abstract::Group& STR::NLN::SOLVER::Generic::GetSolutionGroup() const
+const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::GetSolutionGroup() const
 {
   CheckInitSetup();
   dsassert(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
 
   return *group_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -350,3 +352,5 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::Apply(
   for (int i = 0; i < NumSweeps_; i++) DoVcycle(X, Y, FirstLevel_, InitialGuessIsZero and i == 0);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

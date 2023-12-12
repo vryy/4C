@@ -14,6 +14,8 @@
 #include "baci_adapter_poromultiphase.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class PoroFluidMultiphaseWrapper;
@@ -229,5 +231,7 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_BASE_H

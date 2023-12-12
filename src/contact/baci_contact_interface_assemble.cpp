@@ -18,6 +18,8 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
  *----------------------------------------------------------------*/
@@ -5386,3 +5388,4 @@ void CONTACT::CoInterface::AssembleCoupLinM(
     /*********************************************************************/
   }
 }
+BACI_NAMESPACE_CLOSE

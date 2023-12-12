@@ -45,6 +45,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -2150,3 +2152,5 @@ void EHL::Monolithic::ApplyDBC()
       if (abs(inf_gap_toggle_lub_->operator[](i)) > 1.e-12)
         rhs_->ReplaceGlobalValue(inf_gap_toggle_lub_->Map().GID(i), 0, 0.);
 }
+
+BACI_NAMESPACE_CLOSE

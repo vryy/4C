@@ -17,6 +17,8 @@ gradient.
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   inline void EvaluateCe(const CORE::LINALG::Matrix<3, 3>& F,
@@ -117,4 +119,6 @@ namespace MAT
   }
 
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H

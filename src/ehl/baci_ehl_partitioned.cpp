@@ -18,6 +18,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_lubrication_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                              wirtz 12/15 |
  *----------------------------------------------------------------------*/
@@ -287,3 +289,5 @@ bool EHL::Partitioned::ConvergenceCheck(int itnum)
 
   return stopnonliniter;
 }
+
+BACI_NAMESPACE_CLOSE

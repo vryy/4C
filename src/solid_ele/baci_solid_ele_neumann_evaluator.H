@@ -12,6 +12,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -90,5 +92,7 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_NEUMANN_EVALUATOR_H

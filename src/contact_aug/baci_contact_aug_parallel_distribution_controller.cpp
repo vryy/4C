@@ -13,6 +13,8 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ParallelDistributionController::setup(CONTACT::ParamsInterface& cparams)
@@ -94,3 +96,5 @@ bool CONTACT::AUG::ParallelDistributionController::redistribute(
 
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

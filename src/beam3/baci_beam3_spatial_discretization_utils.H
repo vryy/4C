@@ -17,6 +17,8 @@
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::UTILS::BEAM
 {
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
@@ -363,5 +365,7 @@ namespace DRT::UTILS::BEAM
     return {reflength - int_length, 1 - deriv_length};
   }
 }  // namespace DRT::UTILS::BEAM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

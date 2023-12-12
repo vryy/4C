@@ -32,6 +32,8 @@
 #include <MueLu_VerbosityLevel.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 #define SIMPLEC_DIAGONAL 1       // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1  // 1: AMG          0: true solve
 #define SIMPLER_ALGORITHM 0      // 1: triple solve 0: double solve
@@ -521,3 +523,5 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(
 
   vx = vwork1_ - diagAinv * (A01 * px);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 #include "baci_linear_solver_method_parameters.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
@@ -437,3 +439,5 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiV
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrix::Label() const { return "FSI::OverlappingBlockMatrix"; }
+
+BACI_NAMESPACE_CLOSE

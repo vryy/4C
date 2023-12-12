@@ -74,6 +74,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
@@ -1045,3 +1047,5 @@ void xfpsi_drt()
   }
   Teuchos::TimeMonitor::summarize();
 }
+
+BACI_NAMESPACE_CLOSE

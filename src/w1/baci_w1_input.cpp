@@ -12,6 +12,8 @@
 #include "baci_mat_elasthyper.H"
 #include "baci_w1.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -225,3 +227,5 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

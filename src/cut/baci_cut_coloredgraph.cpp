@@ -19,6 +19,8 @@
 #include <stack>
 #include <stdexcept>
 
+BACI_NAMESPACE_OPEN
+
 bool CORE::GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
     const std::pair<const int, plain_int_set>& point)
 {
@@ -966,3 +968,5 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::DumpGraph(const std::string& name)
   }
   file << "}\n";
 }
+
+BACI_NAMESPACE_CLOSE

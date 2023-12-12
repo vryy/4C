@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -330,3 +332,5 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

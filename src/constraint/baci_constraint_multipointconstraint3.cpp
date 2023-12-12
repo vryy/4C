@@ -23,6 +23,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
@@ -552,3 +554,5 @@ void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization
   }
   return;
 }  // end of InitializeConstraint
+
+BACI_NAMESPACE_CLOSE

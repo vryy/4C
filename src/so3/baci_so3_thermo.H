@@ -21,6 +21,8 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_thermo_ele_impl_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           dano 11/12 |
  *----------------------------------------------------------------------*/
@@ -389,4 +391,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_THERMO_H

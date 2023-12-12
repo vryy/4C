@@ -12,6 +12,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 
 
@@ -102,3 +104,5 @@ void DRT::FIBER::FiberNode::Print(std::ostream& os) const
   DRT::Node::Print(os);
   os << "(" << fibers_.size() << " fibers, " << angles_.size() << " angles)";
 }
+
+BACI_NAMESPACE_CLOSE

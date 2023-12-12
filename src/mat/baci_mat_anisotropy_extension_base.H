@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -104,4 +106,6 @@ namespace MAT
     Teuchos::RCP<Anisotropy> anisotropy_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_ANISOTROPY_EXTENSION_BASE_H

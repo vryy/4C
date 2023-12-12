@@ -31,6 +31,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1660,3 +1662,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)),
       *(scatramsht_->ArtScatraDofRowMap()), blocksmootherparams5);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -25,6 +25,8 @@
 
 #include <Epetra_CrsMatrix.h>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
@@ -408,3 +410,5 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

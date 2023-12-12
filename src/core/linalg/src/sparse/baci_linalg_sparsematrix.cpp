@@ -20,6 +20,8 @@
 #include <iterator>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::SparseMatrix::SparseMatrix(
@@ -1966,3 +1968,5 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CORE::LINALG::CastToConstSparseMa
 
   return sparse_matrix;
 }
+
+BACI_NAMESPACE_CLOSE

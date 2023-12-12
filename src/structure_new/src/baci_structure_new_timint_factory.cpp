@@ -20,6 +20,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -167,3 +169,5 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::BuildDataGlobalState
   Factory factory;
   return factory.BuildDataGlobalState();
 }
+
+BACI_NAMESPACE_CLOSE

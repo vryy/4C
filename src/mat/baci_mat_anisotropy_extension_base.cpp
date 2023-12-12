@@ -14,7 +14,11 @@
 
 #include "baci_mat_anisotropy.H"
 
+BACI_NAMESPACE_OPEN
+
 void MAT::BaseAnisotropyExtension::SetAnisotropy(MAT::Anisotropy& anisotropy)
 {
   anisotropy_ = Teuchos::rcpFromRef(anisotropy);
 }
+
+BACI_NAMESPACE_CLOSE

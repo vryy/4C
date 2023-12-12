@@ -16,6 +16,8 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace THR
 {
   /*--------------------------------------------------------------------------
@@ -131,5 +133,7 @@ namespace THR
 
 }  // namespace THR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // THERMO_ELE_ACTION_H

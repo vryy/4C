@@ -17,6 +17,8 @@
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_sparseoperator.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -472,12 +474,11 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::TotalAndMeanScalar, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> totalandmeanscalarcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> totalandmeanscalarcomponents;
 
   {
-    totalandmeanscalarcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ID")));
-    totalandmeanscalarcomponents.emplace_back(
-        Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+    totalandmeanscalarcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
+    totalandmeanscalarcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
   }
 
   // insert input file line components into condition definitions
@@ -509,13 +510,13 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::ScatraRelError, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> relerrorcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> relerrorcomponents;
 
   {
-    relerrorcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ID")));
-    relerrorcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
-    relerrorcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("Function")));
-    relerrorcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("FunctionID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("Function")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("FunctionID")));
   }
 
   // insert input file line components into condition definitions
@@ -534,30 +535,29 @@ void INPAR::SCATRA::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Coupling of different scalar transport fields
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> scatracoupcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> scatracoupcomponents;
 
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMSCAL")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numscal")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
   scatracoupcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", ::INPUT::LengthFromInt("numscal"))));
+      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numscal"))));
 
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPID")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("PERMCOEF")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPID")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("PERMCOEF")));
   scatracoupcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("permeability coefficient")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("CONDUCT")));
+      Teuchos::rcp(new INPUT::RealComponent("permeability coefficient")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("CONDUCT")));
   scatracoupcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("hydraulic conductivity")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("FILTR")));
+      Teuchos::rcp(new INPUT::RealComponent("hydraulic conductivity")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("FILTR")));
   scatracoupcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("filtration coefficient")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("WSSONOFF")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("wss onoff")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("WSSCOEFFS")));
-  scatracoupcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealVectorComponent("wss coeffs", 2)));
+      Teuchos::rcp(new INPUT::RealComponent("filtration coefficient")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("WSSONOFF")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("wss onoff")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("WSSCOEFFS")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent("wss coeffs", 2)));
 
 
   Teuchos::RCP<ConditionDefinition> surfscatracoup = Teuchos::rcp(
@@ -582,19 +582,19 @@ void INPAR::SCATRA::SetValidConditions(
           "TransportRobin", "Scalar Transport Robin Boundary Condition",
           DRT::Condition::TransportRobin, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> scatrarobincomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> scatrarobincomponents;
 
 
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMSCAL")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numscal")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
   scatrarobincomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", ::INPUT::LengthFromInt("numscal"))));
+      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numscal"))));
 
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("PREFACTOR")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("prefactor")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("REFVALUE")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("refvalue")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("PREFACTOR")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("prefactor")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("REFVALUE")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("refvalue")));
 
   for (auto& scatrarobincomponent : scatrarobincomponents)
   {
@@ -623,34 +623,33 @@ void INPAR::SCATRA::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Scatra convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> transportthermoconvectcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> transportthermoconvectcomponents;
 
   // decide here if approximation is sufficient
   // --> Tempn (old temperature T_n)
   // or if the exact solution is needed
   // --> Tempnp (current temperature solution T_n+1) with linearisation
-  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
+  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new INPUT::SelectionComponent(
       "temperature state", "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
       Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
   // heat transfer coefficient h
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("coeff")));
-  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("coeff")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("coeff")));
+  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("coeff")));
   // surrounding (fluid) temperature T_oo
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("surtemp")));
-  transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::RealComponent("surtemp")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("surtemp")));
+  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("surtempfunct")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("surtempfunct")));
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("surtempfunct", {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("surtempfunct", {0, true, true})));
   // time curve to increase the complete boundary condition, i.e., the heat flux
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("funct")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("funct")));
   transportthermoconvectcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("funct", {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("funct", {0, true, true})));
 
   Teuchos::RCP<ConditionDefinition> linetransportthermoconvect =
       Teuchos::rcp(new ConditionDefinition("TRANSPORT THERMO CONVECTION LINE CONDITIONS",
@@ -724,3 +723,5 @@ void INPAR::SCATRA::SetValidConditions(
     condlist.emplace_back(scatravolpartitioning);
   }
 }
+
+BACI_NAMESPACE_CLOSE

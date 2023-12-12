@@ -18,6 +18,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_fixed_size.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -94,5 +96,7 @@ namespace XFEM
         dis_;  ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

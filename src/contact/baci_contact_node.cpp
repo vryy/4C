@@ -15,6 +15,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
 
@@ -1494,3 +1496,5 @@ void CONTACT::CoNode::StoreOldNormal()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

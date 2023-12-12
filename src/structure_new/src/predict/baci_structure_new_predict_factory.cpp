@@ -16,6 +16,8 @@
 #include "baci_structure_new_predict_constdisvelaccpress.H"
 #include "baci_structure_new_predict_tangdis.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -64,3 +66,5 @@ Teuchos::RCP<STR::PREDICT::Generic> STR::PREDICT::BuildPredictor(
   Factory factory;
   return factory.BuildPredictor(predType);
 }
+
+BACI_NAMESPACE_CLOSE

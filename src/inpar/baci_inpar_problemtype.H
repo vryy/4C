@@ -14,6 +14,8 @@
 #include <map>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace PROBLEMTYPE
@@ -35,4 +37,6 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_PROBLEMTYPE_H

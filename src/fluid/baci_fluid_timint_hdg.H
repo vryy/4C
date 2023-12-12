@@ -16,6 +16,8 @@
 
 #include "baci_fluid_timint_genalpha.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -200,5 +202,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_HDG_H

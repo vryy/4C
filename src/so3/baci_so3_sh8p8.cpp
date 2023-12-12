@@ -18,6 +18,8 @@
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;
 
@@ -286,3 +288,5 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

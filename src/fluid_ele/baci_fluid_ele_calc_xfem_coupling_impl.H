@@ -21,6 +21,8 @@
 //     is a smoothed projection matrix given.
 #define PROJECT_VEL_FOR_PRESSURE_ADJOINT
 
+BACI_NAMESPACE_OPEN
+
 //  For comparison to Urquizas paper with his slip length implementation
 //   Only working for Navier-Slip (i.e. itraction_jump_ = 0)!
 //   Can be modified to work for this case as well.
@@ -1059,5 +1061,7 @@ namespace DRT
     }  // namespace XFLUID
   }    // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H

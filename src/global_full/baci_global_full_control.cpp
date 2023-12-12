@@ -15,8 +15,6 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 
-
-
 void ntacal();
 
 /*----------------------------------------------------------------------*
@@ -24,6 +22,8 @@ void ntacal();
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
+  using namespace BACI;
+
   Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetCommunicators()->GlobalComm();
 
   double t0, ti, tc;

@@ -16,6 +16,8 @@
 #include "baci_lib_utils_createdis.H"
 #include "baci_lubrication_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | Main control routine for Lubrication problems            wirtz 11/15 |
@@ -84,3 +86,5 @@ void lubrication_dyn(int restart)
   return;
 
 }  // end of lubrication_dyn()
+
+BACI_NAMESPACE_CLOSE

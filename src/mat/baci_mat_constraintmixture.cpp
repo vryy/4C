@@ -39,6 +39,8 @@ For a detailed description see:
 #include "baci_mat_service.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -3211,3 +3213,5 @@ void MAT::ConstraintMixtureOutputToGmsh(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

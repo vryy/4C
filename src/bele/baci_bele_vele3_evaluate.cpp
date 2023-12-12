@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -38,3 +40,5 @@ int DRT::ELEMENTS::Vele3::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_volmortar.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
@@ -70,75 +72,77 @@ namespace CORE::VOLMORTAR
     \brief Integrate cell for 2D problems
 
     */
-    void IntegrateCells2D(::DRT::Element& sele, ::DRT::Element& mele,
+    void IntegrateCells2D(BACI::DRT::Element& sele, BACI::DRT::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, CORE::LINALG::SparseMatrix& dmatrix,
-        CORE::LINALG::SparseMatrix& mmatrix, Teuchos::RCP<const ::DRT::Discretization> slavedis,
-        Teuchos::RCP<const ::DRT::Discretization> masterdis, int sdofset, int mdofset);
+        CORE::LINALG::SparseMatrix& mmatrix, Teuchos::RCP<const BACI::DRT::Discretization> slavedis,
+        Teuchos::RCP<const BACI::DRT::Discretization> masterdis, int sdofset, int mdofset);
 
     /*!
     \brief Integrate cell for 3D problems
 
     */
-    void IntegrateCells3D(::DRT::Element& Aele, ::DRT::Element& Bele,
+    void IntegrateCells3D(BACI::DRT::Element& Aele, BACI::DRT::Element& Bele,
         Teuchos::RCP<CORE::VOLMORTAR::Cell> cell, CORE::LINALG::SparseMatrix& dmatrix_A,
         CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
-        CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const ::DRT::Discretization> Adis,
-        Teuchos::RCP<const ::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-        int mdofset_B);
+        CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const BACI::DRT::Discretization> Adis,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate cell for 3D problems
 
     */
-    void IntegrateCells3D_DirectDiveregence(::DRT::Element& Aele, ::DRT::Element& Bele,
+    void IntegrateCells3D_DirectDiveregence(BACI::DRT::Element& Aele, BACI::DRT::Element& Bele,
         CORE::GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> intpoints,
         bool switched_conf, CORE::LINALG::SparseMatrix& dmatrix_A,
         CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
-        CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const ::DRT::Discretization> Adis,
-        Teuchos::RCP<const ::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-        int mdofset_B);
+        CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const BACI::DRT::Discretization> Adis,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEle3D(int domain, ::DRT::Element& Aele, ::DRT::Element& Bele,
+    void IntegrateEle3D(int domain, BACI::DRT::Element& Aele, BACI::DRT::Element& Bele,
         CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
         CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const ::DRT::Discretization> Adis,
-        Teuchos::RCP<const ::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-        int mdofset_B);
+        Teuchos::RCP<const BACI::DRT::Discretization> Adis,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_ADis(::DRT::Element& Aele, std::vector<int>& foundeles,
+    void IntegrateEleBased3D_ADis(BACI::DRT::Element& Aele, std::vector<int>& foundeles,
         CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-        Teuchos::RCP<const ::DRT::Discretization> Adiscret,
-        Teuchos::RCP<const ::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        Teuchos::RCP<const BACI::DRT::Discretization> Adiscret,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_BDis(::DRT::Element& Bele, std::vector<int>& foundeles,
+    void IntegrateEleBased3D_BDis(BACI::DRT::Element& Bele, std::vector<int>& foundeles,
         CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const ::DRT::Discretization> Adiscret,
-        Teuchos::RCP<const ::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        Teuchos::RCP<const BACI::DRT::Discretization> Adiscret,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
    protected:
     /*!
     \brief Check integration point mapping (2D)
 
     */
-    bool CheckMapping2D(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi);
+    bool CheckMapping2D(
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, double* sxi, double* mxi);
 
     /*!
     \brief Check integration point mapping (3D)
 
     */
-    bool CheckMapping3D(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi);
+    bool CheckMapping3D(
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points
@@ -176,10 +180,10 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D(::DRT::Element& sele, std::vector<int>& foundeles,
+    void IntegrateEleBased3D(BACI::DRT::Element& sele, std::vector<int>& foundeles,
         CORE::LINALG::SparseMatrix& dmatrixA, CORE::LINALG::SparseMatrix& mmatrixA,
-        Teuchos::RCP<const ::DRT::Discretization> Adiscret,
-        Teuchos::RCP<const ::DRT::Discretization> Bdiscret, int dofseta, int dofsetb,
+        Teuchos::RCP<const BACI::DRT::Discretization> Adiscret,
+        Teuchos::RCP<const BACI::DRT::Discretization> Bdiscret, int dofseta, int dofsetb,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
@@ -188,7 +192,8 @@ namespace CORE::VOLMORTAR
     \brief Check integration point mapping (3D)
 
     */
-    bool CheckMapping3D(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi);
+    bool CheckMapping3D(
+        BACI::DRT::Element& sele, BACI::DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points
@@ -204,7 +209,7 @@ namespace CORE::VOLMORTAR
    |  Check paraspace mapping                                  farah 02/15|
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  bool CheckMapping(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi)
+  bool CheckMapping(BACI::DRT::Element& sele, BACI::DRT::Element& mele, double* sxi, double* mxi)
   {
     // check GP projection (SLAVE)
     double tol = 1e-5;
@@ -302,7 +307,7 @@ namespace CORE::VOLMORTAR
    |  Check mapping                                            farah 06/14|
    *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
-  bool CheckMapping(::DRT::Element& ele, double* xi)
+  bool CheckMapping(BACI::DRT::Element& ele, double* xi)
   {
     // check node projection
     double tol = 1e-5;
@@ -357,22 +362,23 @@ namespace CORE::VOLMORTAR
 
   //===================================
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  bool VolMortarEleBasedGP(::DRT::Element& sele, ::DRT::Element* mele, std::vector<int>& foundeles,
-      int& found, int& gpid, double& jac, double& wgt, double& gpdist, double* Axi, double* AuxXi,
-      double* globgp, INPAR::VOLMORTAR::DualQuad& dq, INPAR::VOLMORTAR::Shapefcn& shape,
-      CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-      Teuchos::RCP<const ::DRT::Discretization> Adis,
-      Teuchos::RCP<const ::DRT::Discretization> Bdis, int dofseta, int dofsetb,
+  bool VolMortarEleBasedGP(BACI::DRT::Element& sele, BACI::DRT::Element* mele,
+      std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
+      double* Axi, double* AuxXi, double* globgp, INPAR::VOLMORTAR::DualQuad& dq,
+      INPAR::VOLMORTAR::Shapefcn& shape, CORE::LINALG::SparseMatrix& dmatrix_A,
+      CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const BACI::DRT::Discretization> Adis,
+      Teuchos::RCP<const BACI::DRT::Discretization> Bdis, int dofseta, int dofsetb,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
   // evaluation of nts approach
   template <CORE::FE::CellType distype>
-  bool ConsInterpolatorEval(::DRT::Node* node, ::DRT::Element* ele,
-      CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const ::DRT::Discretization> nodediscret,
-      Teuchos::RCP<const ::DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
-      int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
-      const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+  bool ConsInterpolatorEval(BACI::DRT::Node* node, BACI::DRT::Element* ele,
+      CORE::LINALG::SparseMatrix& pmatrix,
+      Teuchos::RCP<const BACI::DRT::Discretization> nodediscret,
+      Teuchos::RCP<const BACI::DRT::Discretization> elediscret, std::vector<int>& foundeles,
+      int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
+      std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
 
   //===================================
@@ -390,13 +396,15 @@ namespace CORE::VOLMORTAR
     \brief interpolation functionality
 
     */
-    void Interpolate(::DRT::Node* node, CORE::LINALG::SparseMatrix& pmatrix_,
-        Teuchos::RCP<const ::DRT::Discretization> nodediscret,
-        Teuchos::RCP<const ::DRT::Discretization> elediscret, std::vector<int>& foundeles,
+    void Interpolate(BACI::DRT::Node* node, CORE::LINALG::SparseMatrix& pmatrix_,
+        Teuchos::RCP<const BACI::DRT::Discretization> nodediscret,
+        Teuchos::RCP<const BACI::DRT::Discretization> elediscret, std::vector<int>& foundeles,
         std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
   };
 
 }  // namespace CORE::VOLMORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_VOLMORTAR_INTEGRATOR_H

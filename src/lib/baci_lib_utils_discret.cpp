@@ -18,6 +18,8 @@
 
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -121,3 +123,5 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

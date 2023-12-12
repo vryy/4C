@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class UtilsRefConfigTest : public testing::Test
   {
    public:

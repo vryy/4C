@@ -19,6 +19,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::EXPLICIT::CentrDiff::CentrDiff()
@@ -172,3 +174,5 @@ void STR::EXPLICIT::CentrDiff::UpdateStepState()
   // ---------------------------------------------------------------------------
   ModelEval().UpdateStepState(0.0);
 }
+
+BACI_NAMESPACE_CLOSE

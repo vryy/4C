@@ -17,6 +17,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FADUTILS
 {
   namespace DETAILS
@@ -276,5 +278,7 @@ namespace CORE::FADUTILS
   };
 
 }  // namespace CORE::FADUTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

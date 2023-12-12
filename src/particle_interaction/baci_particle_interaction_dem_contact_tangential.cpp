@@ -14,6 +14,8 @@
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -145,3 +147,5 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialPotent
 {
   tangentialpotentialenergy = 0.5 * k_tangential_ * UTILS::VecDot(gap_tangential, gap_tangential);
 }
+
+BACI_NAMESPACE_CLOSE

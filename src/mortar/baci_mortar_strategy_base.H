@@ -20,6 +20,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace INPAR
@@ -411,5 +412,7 @@ namespace MORTAR
 
   };  // class StrategyBase
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_STRATEGY_BASE_H

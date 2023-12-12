@@ -13,6 +13,8 @@
 #include "baci_lib_discret.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -42,3 +44,5 @@ void STR::MODELEVALUATOR::StructAle::PreEvaluateInternal()
   DiscretPtr()->SetState(0, "material_displacement", material_displacements_np_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

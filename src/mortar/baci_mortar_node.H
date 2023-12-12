@@ -13,6 +13,8 @@
 #include "baci_lib_node.H"
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   /*!
@@ -708,5 +710,7 @@ namespace MORTAR
 //! << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_MORTAR_NODE_H

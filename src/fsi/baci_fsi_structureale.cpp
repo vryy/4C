@@ -25,6 +25,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
@@ -32,10 +34,10 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(::DRT::Problem::Instance()->NDim(),
-      ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
   {
@@ -111,3 +113,5 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra
     return coupsfm_->MasterToSlave(iv);
   }
 }
+
+BACI_NAMESPACE_CLOSE

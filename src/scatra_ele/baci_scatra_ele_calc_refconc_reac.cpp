@@ -13,6 +13,8 @@ concentrations and with advanced reaction terms
 #include "baci_mat_list_reactions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
@@ -284,3 +286,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::pyram
 template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs9>;
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

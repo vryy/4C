@@ -21,6 +21,8 @@ general static parameters required for scalar transport element evaluation.
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -63,4 +65,6 @@ namespace DRT
     };  // class ScaTraEleParameterTimInt
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

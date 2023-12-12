@@ -9,11 +9,15 @@
 #ifndef BACI_SO3_DEFINES_H
 #define BACI_SO3_DEFINES_H
 
+BACI_NAMESPACE_OPEN
+
 
 /************************************************************************/
 /* Material debugging options                                           */
 /************************************************************************/
 
 //#define MATERIALFDCHECK /* check constitutive matrix via finite differences */
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_DEFINES_H

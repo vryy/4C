@@ -12,6 +12,8 @@
 
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 // tolerated unconverged states
 const std::set<NOX::NLN::INNER::StatusTest::StatusType>
     NOX::NLN::INNER::StatusTest::Combo::unconverged_ = {
@@ -19,7 +21,8 @@ const std::set<NOX::NLN::INNER::StatusTest::StatusType>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo::Combo(NOX::StatusTest::Combo::ComboType t, const NOX::Utils* u)
+NOX::NLN::INNER::StatusTest::Combo::Combo(
+    ::NOX::StatusTest::Combo::ComboType t, const ::NOX::Utils* u)
     : type_(t)
 {
   if (u != nullptr) utils_ = *u;
@@ -28,7 +31,7 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(NOX::StatusTest::Combo::ComboType t, c
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::Combo::Combo(
-    NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u)
+    ::NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a, const ::NOX::Utils* u)
     : type_(t)
 {
   if (u != nullptr) utils_ = *u;
@@ -38,8 +41,8 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo::Combo(NOX::StatusTest::Combo::ComboType t,
-    const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b, const NOX::Utils* u)
+NOX::NLN::INNER::StatusTest::Combo::Combo(::NOX::StatusTest::Combo::ComboType t,
+    const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b, const ::NOX::Utils* u)
     : type_(t)
 {
   if (u != nullptr) utils_ = *u;
@@ -54,10 +57,10 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(NOX::StatusTest::Combo::ComboType t,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::CheckStatus(
-    const Interface::Required& interface, const NOX::Solver::Generic& solver,
-    const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType)
+    const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+    const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
-  if (type_ == NOX::StatusTest::Combo::OR)
+  if (type_ == ::NOX::StatusTest::Combo::OR)
     orOp(interface, solver, grp, checkType);
   else
     andOp(interface, solver, grp, checkType);
@@ -75,10 +78,10 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::GetS
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Combo::orOp(const Interface::Required& interface,
-    const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-    NOX::StatusTest::CheckType checkType)
+    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
-  if (checkType == NOX::StatusTest::None)
+  if (checkType == ::NOX::StatusTest::None)
     status_ = status_unevaluated;
   else
     status_ = status_step_too_long;
@@ -96,7 +99,7 @@ void NOX::NLN::INNER::StatusTest::Combo::orOp(const Interface::Required& interfa
       status_ = s;
 
       // Turn off checking for the remaining tests
-      if (checkType == NOX::StatusTest::Minimal) checkType = NOX::StatusTest::None;
+      if (checkType == ::NOX::StatusTest::Minimal) checkType = ::NOX::StatusTest::None;
     }
   }
 
@@ -106,10 +109,10 @@ void NOX::NLN::INNER::StatusTest::Combo::orOp(const Interface::Required& interfa
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Combo::andOp(const Interface::Required& interface,
-    const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-    NOX::StatusTest::CheckType checkType)
+    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
-  if (checkType == NOX::StatusTest::None)
+  if (checkType == ::NOX::StatusTest::None)
     status_ = status_unevaluated;
   else
     status_ = status_step_too_long;
@@ -129,7 +132,7 @@ void NOX::NLN::INNER::StatusTest::Combo::andOp(const Interface::Required& interf
       status_ = s;
 
       // Turn off checking for the remaining tests
-      if (checkType == NOX::StatusTest::Minimal) checkType = NOX::StatusTest::None;
+      if (checkType == ::NOX::StatusTest::Minimal) checkType = ::NOX::StatusTest::None;
     }
 
     // If this is the first test and it's converged/failed, copy its
@@ -200,7 +203,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Combo::Print(std::ostream& stream, in
 {
   stream << std::string(indent, ' ');
   stream << status_;
-  stream << ((type_ == NOX::StatusTest::Combo::OR) ? "OR" : "AND");
+  stream << ((type_ == ::NOX::StatusTest::Combo::OR) ? "OR" : "AND");
   stream << " Combination";
   stream << " -> " << std::endl;
 
@@ -208,3 +211,5 @@ std::ostream& NOX::NLN::INNER::StatusTest::Combo::Print(std::ostream& stream, in
 
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

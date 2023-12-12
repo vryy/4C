@@ -15,6 +15,8 @@
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /**
@@ -136,3 +138,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairGaussPointBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

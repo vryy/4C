@@ -23,6 +23,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                (public) kremheller 04/18 |
@@ -392,3 +394,5 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::BloodVesselVolumeFraction()
 {
   return arttoporofluidcoupling_->BloodVesselVolumeFraction();
 }
+
+BACI_NAMESPACE_CLOSE

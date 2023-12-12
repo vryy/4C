@@ -24,6 +24,8 @@ MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -377,3 +379,5 @@ void MAT::ScalarDepInterp::StrainEnergy(
   psi += (1 - lambda) * psi_lambda_zero + lambda * psi_lambda_unit;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

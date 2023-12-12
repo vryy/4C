@@ -13,6 +13,8 @@
 #include "baci_inpar_ssi.H"
 #include "baci_ssi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   //! base class to deal with partioned 2WC SSI. Mainly it is the same as for thermo-structure
@@ -285,5 +287,7 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> scaincnpold_;
   };
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_2WC_H

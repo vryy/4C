@@ -16,6 +16,8 @@
 #include "baci_cut_pointgraph_simple.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -178,3 +180,5 @@ void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
   // finally add the volumes to volume cells set
   AddToVolumeCells(mesh, element, volumes, cells);
 }
+
+BACI_NAMESPACE_CLOSE

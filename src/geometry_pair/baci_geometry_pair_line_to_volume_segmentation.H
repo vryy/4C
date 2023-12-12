@@ -14,6 +14,7 @@
 
 #include "baci_geometry_pair_line_to_volume.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -57,5 +58,7 @@ namespace GEOMETRYPAIR
         std::vector<LineSegment<scalar_type>>& segments) const override;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

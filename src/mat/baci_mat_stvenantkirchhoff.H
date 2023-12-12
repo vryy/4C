@@ -15,6 +15,8 @@ St. Venant-Kirchhoff material
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -149,5 +151,7 @@ namespace MAT
     MAT::PAR::StVenantKirchhoff* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_STVENANTKIRCHHOFF_H

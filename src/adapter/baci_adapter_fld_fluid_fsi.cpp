@@ -28,6 +28,9 @@
 
 #include <set>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -832,3 +835,5 @@ void ADAPTER::FluidFSI::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
 {
   fluidimpl_->UpdateSlaveDOF(f);
 }
+
+BACI_NAMESPACE_CLOSE

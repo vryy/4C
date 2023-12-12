@@ -15,6 +15,8 @@
 #include "baci_io_inputreader.H"
 #include "baci_particle_engine_typedefs.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::INPUT
 {
   class ParticleReader
@@ -38,5 +40,7 @@ namespace DRT::INPUT
   };
 
 }  // namespace DRT::INPUT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

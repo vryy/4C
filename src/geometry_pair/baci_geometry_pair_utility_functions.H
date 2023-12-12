@@ -19,6 +19,7 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace GEOMETRYPAIR
@@ -175,5 +176,7 @@ namespace GEOMETRYPAIR
 
 }  // namespace GEOMETRYPAIR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

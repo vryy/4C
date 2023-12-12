@@ -26,6 +26,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   static void SendToNextProc(const int p, CORE::COMM::Exporter& exporter,
@@ -292,17 +294,17 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
   std::set<enum NOX::NLN::StatusTest::QuantityType>::const_iterator qiter;
   if (isnox)
   {
-    const NOX::StatusTest::Generic& ostatus = nox_nln_ptr->GetOStatusTest();
+    const ::NOX::StatusTest::Generic& ostatus = nox_nln_ptr->GetOStatusTest();
     for (qiter = qtypes.begin(); qiter != qtypes.end(); ++qiter)
     {
       // fill the normtype_force map
       int inormtype = NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormF>(ostatus, *qiter);
       if (inormtype != -100)
-        normtype_force_[*qiter] = static_cast<NOX::Abstract::Vector::NormType>(inormtype);
+        normtype_force_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
       // fill the normtype_update map
       inormtype = NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormUpdate>(ostatus, *qiter);
       if (inormtype != -100)
-        normtype_update_[*qiter] = static_cast<NOX::Abstract::Vector::NormType>(inormtype);
+        normtype_update_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
 
       // check for the root mean square test (wrms)
       if (NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormWRMS>(ostatus, *qiter))
@@ -353,13 +355,13 @@ void STR::MODELEVALUATOR::Data::CollectNormTypesOverAllProcs(
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Data::GetUpdateNormType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    enum NOX::Abstract::Vector::NormType& normtype)
+    enum ::NOX::Abstract::Vector::NormType& normtype)
 {
   FillNormTypeMaps();
 
   // check if there is a normtype for the corresponding quantity type
   std::map<enum NOX::NLN::StatusTest::QuantityType,
-      enum NOX::Abstract::Vector::NormType>::const_iterator miter;
+      enum ::NOX::Abstract::Vector::NormType>::const_iterator miter;
   miter = normtype_update_.find(qtype);
   if (miter == normtype_update_.end()) return false;
 
@@ -397,7 +399,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
 {
   if (owner != comm_ptr_->MyPID()) return;
   // --- standard update norms
-  enum NOX::Abstract::Vector::NormType normtype = NOX::Abstract::Vector::TwoNorm;
+  enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (GetUpdateNormType(qtype, normtype))
     SumIntoMyNorm(numentries, my_update_values, normtype, step_length, my_update_norm_[qtype]);
 
@@ -419,7 +421,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyPreviousSolNorm(
 {
   if (owner != comm_ptr_->MyPID()) return;
 
-  enum NOX::Abstract::Vector::NormType normtype = NOX::Abstract::Vector::TwoNorm;
+  enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
   if (not GetUpdateNormType(qtype, normtype)) return;
 
   SumIntoMyNorm(numentries, my_old_sol_values, normtype, 1.0, my_prev_sol_norm_[qtype]);
@@ -448,23 +450,23 @@ void STR::MODELEVALUATOR::Data::SumIntoMyRelativeMeanSquare(const double& atol, 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::SumIntoMyNorm(const int& numentries, const double* my_values,
-    const enum NOX::Abstract::Vector::NormType& normtype, const double& step_length,
+    const enum ::NOX::Abstract::Vector::NormType& normtype, const double& step_length,
     double& my_norm) const
 {
   switch (normtype)
   {
-    case NOX::Abstract::Vector::OneNorm:
+    case ::NOX::Abstract::Vector::OneNorm:
     {
       for (int i = 0; i < numentries; ++i) my_norm += std::abs(my_values[i] * step_length);
       break;
     }
-    case NOX::Abstract::Vector::TwoNorm:
+    case ::NOX::Abstract::Vector::TwoNorm:
     {
       for (int i = 0; i < numentries; ++i)
         my_norm += (my_values[i] * my_values[i]) * (step_length * step_length);
       break;
     }
-    case NOX::Abstract::Vector::MaxNorm:
+    case ::NOX::Abstract::Vector::MaxNorm:
     {
       for (int i = 0; i < numentries; ++i)
         my_norm = std::max(my_norm, std::abs(my_values[i] * step_length));
@@ -768,3 +770,5 @@ std::string STR::MODELEVALUATOR::ContactData::GetOutputFilePath() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int STR::MODELEVALUATOR::Data::GetRestartStep() const { return GState().GetRestartStep(); }
+
+BACI_NAMESPACE_CLOSE

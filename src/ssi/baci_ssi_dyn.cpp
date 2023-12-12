@@ -19,6 +19,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ssi_drt()
@@ -152,3 +154,5 @@ void ssi_drt()
   // 5. - perform the result test
   ssi->TestResults(comm);
 }
+
+BACI_NAMESPACE_CLOSE

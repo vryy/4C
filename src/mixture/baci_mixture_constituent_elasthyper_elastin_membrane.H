@@ -16,6 +16,8 @@
 #include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Anisotropy;
@@ -325,5 +327,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H

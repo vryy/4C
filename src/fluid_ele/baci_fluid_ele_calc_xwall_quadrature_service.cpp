@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------*
  | Prepare custom (direction-dependent) Gauss rule                  bk 06/2014 |
@@ -181,3 +183,5 @@ template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
     DRT::ELEMENTS::Fluid::xwall>;
 template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
     DRT::ELEMENTS::Fluid::xwall>;
+
+BACI_NAMESPACE_CLOSE

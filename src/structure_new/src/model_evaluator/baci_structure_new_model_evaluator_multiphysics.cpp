@@ -12,6 +12,8 @@
 
 #include "baci_structure_new_model_evaluator_multiphysics.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -117,3 +119,5 @@ void STR::MODELEVALUATOR::Multiphysics::UpdateStepState(const double& timefac_n)
 
   GetModelEvaluatorFromMap(active_mt_)->UpdateStepState(timefac_n);
 }
+
+BACI_NAMESPACE_CLOSE

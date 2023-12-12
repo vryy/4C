@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::UTILS::READELEMENT
 {
   INPAR::SCATRA::ImplType ReadType(DRT::INPUT::LineDefinition* linedef)
@@ -70,5 +72,7 @@ namespace STR::UTILS::READELEMENT
 
 
 }  // namespace STR::UTILS::READELEMENT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_PORO_ELE_UTILS_H

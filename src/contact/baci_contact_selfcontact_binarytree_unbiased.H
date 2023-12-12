@@ -11,6 +11,8 @@
 
 #include "baci_contact_selfcontact_binarytree.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -129,5 +131,7 @@ namespace CONTACT
     const bool Searchele_AllProc_;
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_SELFCONTACT_BINARYTREE_UNBIASED_H

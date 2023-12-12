@@ -16,6 +16,8 @@ constraint discretization approach
 #include "baci_fbi_partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "baci_inpar_fbi.H"
 #include "baci_lib_discret.H"
+
+BACI_NAMESPACE_OPEN
 /**
  *
  */
@@ -48,3 +50,5 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
       return Teuchos::null;
   }
 }
+
+BACI_NAMESPACE_CLOSE

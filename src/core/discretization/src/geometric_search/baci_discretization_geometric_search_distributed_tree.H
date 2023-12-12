@@ -19,6 +19,8 @@
 
 class Epetra_Comm;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   struct BoundingVolume;
@@ -41,5 +43,7 @@ namespace CORE::GEOMETRICSEARCH
       const IO::verbositylevel verbosity);
 
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

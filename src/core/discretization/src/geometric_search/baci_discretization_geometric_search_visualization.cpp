@@ -13,6 +13,8 @@
 #include "baci_discretization_geometric_search_utils.H"
 #include "baci_io_visualization_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   GeometricSearchVisualization::GeometricSearchVisualization(
@@ -64,3 +66,5 @@ namespace CORE::GEOMETRICSEARCH
   }
 
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE

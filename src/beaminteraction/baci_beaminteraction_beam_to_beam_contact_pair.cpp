@@ -35,6 +35,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // TODO: Abfangen, dass Kontaktpunkte am Elementuebergang zweimal ausgewertet werden!!!
 
 /*----------------------------------------------------------------------------*
@@ -3851,11 +3853,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
-  L(0, 0) = ::CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
-  L(1, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
-  L(0, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
+  L(0, 0) =
+      CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) + CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
+  L(1, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
+            CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
+  L(0, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
   L(1, 0) = -L(0, 1);
 
   // invert L by hand
@@ -5448,3 +5450,5 @@ template class BEAMINTERACTION::BeamToBeamContactPair<3, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<4, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<5, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<2, 2>;
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::ResultTest("FLUID")
@@ -129,3 +131,5 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

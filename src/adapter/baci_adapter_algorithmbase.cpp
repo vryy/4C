@@ -17,6 +17,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::AlgorithmBase::AlgorithmBase(
@@ -62,3 +64,5 @@ void ADAPTER::AlgorithmBase::ReadRestartfromTime(double time)
 {
   dserror("Subclass has not implemented this restart option");
 }
+
+BACI_NAMESPACE_CLOSE

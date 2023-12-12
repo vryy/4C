@@ -12,6 +12,8 @@
 #ifndef BACI_CUT_ENUM_H
 #define BACI_CUT_ENUM_H
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 namespace CORE::GEO
 {
@@ -36,4 +38,6 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

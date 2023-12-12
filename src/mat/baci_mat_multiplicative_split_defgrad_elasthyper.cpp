@@ -20,6 +20,8 @@ multiplicatively into elastic and inelastic parts
 #include "baci_mat_service.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
@@ -912,3 +914,5 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
     iFin_init_store.Update(1.0, iFinM, 0.0);
   }
 }
+
+BACI_NAMESPACE_CLOSE

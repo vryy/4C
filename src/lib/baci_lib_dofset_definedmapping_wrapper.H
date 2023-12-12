@@ -18,6 +18,7 @@
 
 #include <Epetra_IntVector.h>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -329,5 +330,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_DEFINEDMAPPING_WRAPPER_H

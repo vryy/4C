@@ -20,6 +20,7 @@ continuous interior penalty) scheme
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -134,5 +135,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_EDGESTAB_H

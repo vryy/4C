@@ -16,6 +16,8 @@
 #include "baci_lib_utils_parallel.H"
 #include "baci_rebalance_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -279,3 +281,5 @@ void DRT::INPUT::ElementReader::GetAndDistributeElements(const int nblock, const
     dis_->ProcZeroDistributeElementsToAll(*roweles_, gidlist);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -25,6 +25,8 @@
 #include "baci_w1_poro_p1_scatra.H"
 #include "baci_w1_poro_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 
 INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImplType(
     DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
@@ -247,3 +249,4 @@ bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::DetermineE
 
   return false;
 }
+BACI_NAMESPACE_CLOSE

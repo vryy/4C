@@ -25,6 +25,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -203,3 +204,5 @@ void ADAPTER::Thermo::Integrate()
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

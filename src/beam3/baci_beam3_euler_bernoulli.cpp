@@ -17,6 +17,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
@@ -570,3 +572,5 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
       "\nBeam3eb::GetTriadAtXi(): by definition, this element can not return "
       "a full triad; think about replacing it by GetTangentAtXi or another solution.");
 }
+
+BACI_NAMESPACE_CLOSE

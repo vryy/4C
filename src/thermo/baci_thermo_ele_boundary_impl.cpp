@@ -24,6 +24,8 @@
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -1177,3 +1179,5 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
     weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

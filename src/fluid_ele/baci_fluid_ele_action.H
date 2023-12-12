@@ -12,6 +12,8 @@
 #ifndef BACI_FLUID_ELE_ACTION_H
 #define BACI_FLUID_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*--------------------------------------------------------------------------
@@ -123,5 +125,7 @@ namespace FLD
   };  // enum IntFaceAction
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

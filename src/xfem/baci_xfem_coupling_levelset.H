@@ -18,6 +18,8 @@ bridge between the xfluid class and the cut-library
 #include "baci_xfem_coupling_base.H"
 #include "baci_xfem_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   class CutWizard;
@@ -643,5 +645,7 @@ namespace XFEM
 
 
 };  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_LEVELSET_H

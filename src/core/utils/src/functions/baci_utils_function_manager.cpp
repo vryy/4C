@@ -9,7 +9,6 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_io.H"
-#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
@@ -17,6 +16,7 @@
 
 #include <stdexcept>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -88,7 +88,7 @@ namespace
 void PrintFunctionDatHeader()
 {
   CORE::UTILS::FunctionManager functionmanager;
-  DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
+  BACI::DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
 
   lines.Print(std::cout);
 }
@@ -97,7 +97,7 @@ void PrintFunctionDatHeader()
 
 void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  using namespace ::DRT::INPUT;
+  using namespace BACI::DRT::INPUT;
 
   std::vector<LineDefinition> possible_lines = {
       LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build(),
@@ -152,7 +152,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
 
 DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 {
-  ::DRT::INPUT::Lines lines(
+  BACI::DRT::INPUT::Lines lines(
       "FUNCT", "Definition of functions for various cases, mainly boundary conditions");
 
   for (const auto& [possible_lines, _] : attached_function_data_)
@@ -168,13 +168,13 @@ DRT::INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 
 
 void CORE::UTILS::FunctionManager::AddFunctionDefinition(
-    std::vector<::DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
+    std::vector<BACI::DRT::INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));
 }
 
 
-void CORE::UTILS::FunctionManager::ReadInput(::DRT::INPUT::DatFileReader& reader)
+void CORE::UTILS::FunctionManager::ReadInput(BACI::DRT::INPUT::DatFileReader& reader)
 {
   functions_.clear();
 
@@ -188,7 +188,7 @@ void CORE::UTILS::FunctionManager::ReadInput(::DRT::INPUT::DatFileReader& reader
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] = ::DRT::INPUT::ReadMatchingLines(
+            auto [parsed_lines, unparsed_lines] = BACI::DRT::INPUT::ReadMatchingLines(
                 reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop
@@ -224,3 +224,5 @@ void CORE::UTILS::FunctionManager::ReadInput(::DRT::INPUT::DatFileReader& reader
     if (stop_parsing) break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_lubrication_resulttest.H"
 #include "baci_lubrication_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::LubricationBaseAlgorithm::Setup(
@@ -108,3 +110,5 @@ Teuchos::RCP<IO::DiscretizationWriter> ADAPTER::LubricationBaseAlgorithm::DiscWr
 {
   return lubrication_->DiscWriter();
 }
+
+BACI_NAMESPACE_CLOSE

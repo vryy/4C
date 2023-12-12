@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -251,3 +253,5 @@ template class DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<CORE::FE::CellType::tet
 template class DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<CORE::FE::CellType::pyramid5>;
 // template class
 // DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

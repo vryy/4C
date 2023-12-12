@@ -23,6 +23,8 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -66,3 +68,5 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line2
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

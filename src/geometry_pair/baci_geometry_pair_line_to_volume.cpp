@@ -15,7 +15,7 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_exceptions.H"
 
-
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -310,3 +310,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_he
     GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

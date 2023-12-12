@@ -12,6 +12,8 @@
 
 #include "baci_adapter_fld_fluid_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FPSI
 {
   namespace UTILS
@@ -56,5 +58,7 @@ namespace ADAPTER
 
   };  // class FluidFPSI
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

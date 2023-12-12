@@ -17,6 +17,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,
@@ -160,3 +162,5 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidToAle
 {
   return icoupfa_->MasterToSlave(iv);
 }
+
+BACI_NAMESPACE_CLOSE

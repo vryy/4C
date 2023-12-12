@@ -11,6 +11,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -36,5 +38,7 @@ namespace CONTACT
       CORE::LINALG::Matrix<3, 3>& derivanalyt);
 
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_ANALYTICAL_H

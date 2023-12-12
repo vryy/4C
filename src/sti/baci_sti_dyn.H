@@ -10,8 +10,12 @@
 #ifndef BACI_STI_DYN_H
 #define BACI_STI_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 //! entry point for simulations of scalar-thermo interaction problems
 void sti_dyn(const int& restartstep  //! time step for restart
 );
+
+BACI_NAMESPACE_CLOSE
 
 #endif

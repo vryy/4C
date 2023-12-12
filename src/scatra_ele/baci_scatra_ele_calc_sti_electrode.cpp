@@ -16,6 +16,8 @@
 #include "baci_scatra_ele_sti_thermo.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
@@ -678,3 +680,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<CORE::FE::CellType::tet1
 template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<CORE::FE::CellType::pyramid5>;
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

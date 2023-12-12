@@ -24,6 +24,9 @@
 
 // forward declarations
 class Epetra_Map;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -716,5 +719,7 @@ namespace XFEM
   };  // class MapExtractor
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_MULTI_FIELD_MAPEXTRACTOR_H

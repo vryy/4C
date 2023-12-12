@@ -21,6 +21,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -222,3 +224,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet4>;
   template class BeamToSolidVolumeMeshtyingPair2D3DPlane<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

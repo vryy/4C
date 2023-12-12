@@ -19,6 +19,7 @@
 #include <NOX_Utils.H>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -28,7 +29,7 @@ namespace NOX
     /*!
 
       This is a simple linesearch intended to be used with
-      NOX::Direction::NonlinearCG, which provides search direction \f$
+      ::NOX::Direction::NonlinearCG, which provides search direction \f$
       d \f$, in computing an update to the current solution vector \f$
       x_{new} = x_{old} + \lambda d \f$.  It is designed to compute a step
       length \f$ \lambda \f$ consistent with the exact linesearch of %Linear
@@ -101,39 +102,39 @@ namespace NOX
 
     */
 
-    class SDRelaxation : public NOX::LineSearch::Generic
+    class SDRelaxation : public ::NOX::LineSearch::Generic
     {
      public:
       //! Constructor
-      SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
+      SDRelaxation(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
 
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
-      bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-          const NOX::Solver::Generic& s) override;
+      bool compute(::NOX::Abstract::Group& newgrp, double& step, const ::NOX::Abstract::Vector& dir,
+          const ::NOX::Solver::Generic& s) override;
 
      private:
       //! Method for computing directional derivatives numerically
-      NOX::Abstract::Vector& computeDirectionalDerivative(
-          const NOX::Abstract::Vector& dir, NOX::Epetra::Interface::Required& interface);
+      ::NOX::Abstract::Vector& computeDirectionalDerivative(
+          const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface);
 
       //! Printing utilities
-      Teuchos::RCP<NOX::Utils> utils_;
+      Teuchos::RCP<::NOX::Utils> utils_;
 
       //! Temporary Vector pointer used to compute directional derivatives
-      Teuchos::RCP<NOX::Abstract::Vector> vecPtr_;
+      Teuchos::RCP<::NOX::Abstract::Vector> vecPtr_;
     };
 
 
     /// simple factory that creates SD relaxation class
-    class SDFactory : public NOX::LineSearch::UserDefinedFactory
+    class SDFactory : public ::NOX::LineSearch::UserDefinedFactory
     {
      public:
-      Teuchos::RCP<NOX::LineSearch::Generic> buildLineSearch(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
+      Teuchos::RCP<::NOX::LineSearch::Generic> buildLineSearch(
+          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         return Teuchos::rcp(new SDRelaxation(gd->getUtils(), params));
       }
@@ -141,5 +142,7 @@ namespace NOX
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

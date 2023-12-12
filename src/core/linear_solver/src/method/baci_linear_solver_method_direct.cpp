@@ -21,6 +21,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linear_solver_method_direct.H"
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
@@ -199,3 +201,5 @@ int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 // explicit initialization
 template class CORE::LINEAR_SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
+
+BACI_NAMESPACE_CLOSE

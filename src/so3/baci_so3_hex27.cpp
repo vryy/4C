@@ -24,6 +24,8 @@
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
 
@@ -103,13 +105,13 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));
 
   return;
@@ -134,7 +136,7 @@ DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
@@ -182,7 +184,7 @@ void DRT::ELEMENTS::So_hex27::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
@@ -221,7 +223,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -287,3 +289,5 @@ bool DRT::ELEMENTS::So_hex27::VisData(const std::string& name, std::vector<doubl
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOH27, this->Id());
 }
+
+BACI_NAMESPACE_CLOSE

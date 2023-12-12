@@ -11,6 +11,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_mat_trait_thermo_solid.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -26,5 +28,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,6 +13,8 @@
 #include "baci_fsi_xfem_coupling_comm_manager.H"
 #include "baci_fsi_xfem_coupling_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class XFluid;
@@ -86,4 +88,6 @@ namespace XFEM
     Teuchos::RCP<XFEM::Coupling_Comm_Manager> Ale_Struct_coupling_;
   };
 }  // namespace XFEM
+BACI_NAMESPACE_CLOSE
+
 #endif

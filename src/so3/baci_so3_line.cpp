@@ -11,6 +11,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;
 
@@ -113,3 +115,5 @@ void DRT::ELEMENTS::StructuralLine::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

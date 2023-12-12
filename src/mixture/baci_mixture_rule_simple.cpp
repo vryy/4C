@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <iosfwd>
 
+BACI_NAMESPACE_OPEN
+
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->GetDouble("DENS")),
@@ -68,3 +70,4 @@ void MIXTURE::SimpleMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     cmat.Update(constituent_density, ccmat, 1.0);
   }
 }
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communicator
@@ -606,3 +608,4 @@ void SCATRA::ScaTraAlgorithm::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
   DRT::Problem::Instance()->TestAll(Comm());
 }
+BACI_NAMESPACE_CLOSE

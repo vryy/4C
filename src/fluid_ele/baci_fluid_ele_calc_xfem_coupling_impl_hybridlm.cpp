@@ -13,6 +13,8 @@ multipliers method
 #include "baci_fluid_ele_calc_xfem_coupling.H"
 #include "baci_fluid_ele_calc_xfem_coupling_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -607,3 +609,5 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge
     CORE::FE::CellType::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
     CORE::FE::CellType::quad9, 4>;
+
+BACI_NAMESPACE_CLOSE

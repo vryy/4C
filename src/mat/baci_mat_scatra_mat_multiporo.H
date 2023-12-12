@@ -12,6 +12,8 @@
 
 #include "baci_mat_scatra_mat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ScatraMatMultiPoro
@@ -502,5 +504,7 @@ namespace MAT
 }  // namespace MAT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_SCATRA_MAT_MULTIPORO_H

@@ -15,6 +15,8 @@
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_structure_new_dbc.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace STR
 {
@@ -99,5 +101,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Map> combinedmap_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

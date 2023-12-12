@@ -26,9 +26,10 @@
 
 #include <unordered_map>
 
-
 // forward declarations
 class Epetra_Comm;
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -79,7 +80,7 @@ namespace STR
     class Data : public STR::ELEMENTS::ParamsInterface
     {
       typedef std::map<enum NOX::NLN::StatusTest::QuantityType,
-          enum NOX::Abstract::Vector::NormType>
+          enum ::NOX::Abstract::Vector::NormType>
           quantity_norm_type_map;
 
      public:
@@ -375,7 +376,7 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline enum NOX::Abstract::Vector::NormType GetUpdateNormType(
+      inline enum ::NOX::Abstract::Vector::NormType GetUpdateNormType(
           const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
@@ -388,7 +389,7 @@ namespace STR
         }
 
         std::map<enum NOX::NLN::StatusTest::QuantityType,
-            enum NOX::Abstract::Vector::NormType>::const_iterator c_it;
+            enum ::NOX::Abstract::Vector::NormType>::const_iterator c_it;
         c_it = normtype_update_.find(qtype);
         if (c_it == normtype_update_.end())
           dserror("The corresponding norm type could not be found! (quantity: %s)",
@@ -756,7 +757,7 @@ namespace STR
        *  If the norm type can be found, the function returns true,
        *  otherwise false. */
       bool GetUpdateNormType(const enum NOX::NLN::StatusTest::QuantityType& qtype,
-          enum NOX::Abstract::Vector::NormType& normtype);
+          enum ::NOX::Abstract::Vector::NormType& normtype);
 
       /*! \brief Get the WRMS absolute and relative tolerances of the desired quantity.
        *
@@ -776,7 +777,7 @@ namespace STR
        * @param[in/out] my_norm
        */
       void SumIntoMyNorm(const int& numentries, const double* my_values,
-          const enum NOX::Abstract::Vector::NormType& normtype, const double& step_length,
+          const enum ::NOX::Abstract::Vector::NormType& normtype, const double& step_length,
           double& my_norm) const;
 
       /*! \brief Calculate a local relative mean square sum for the global WRMS status test
@@ -1415,5 +1416,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H

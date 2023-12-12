@@ -18,6 +18,8 @@
 #include "baci_fs3i_partitioned_1wc.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -302,5 +304,7 @@ namespace FS3I
     double SumDtPres_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace WEAR
 {
   class WearInterface : public CONTACT::CoInterface
@@ -461,5 +463,7 @@ namespace WEAR
 
 
 }  // namespace WEAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_WEAR_INTERFACE_H

@@ -26,6 +26,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
@@ -366,3 +368,5 @@ void STR::MODELEVALUATOR::LagPenConstraint::PostOutput()
   CheckInitSetup();
   // empty
 }  // PostOutput()
+
+BACI_NAMESPACE_CLOSE

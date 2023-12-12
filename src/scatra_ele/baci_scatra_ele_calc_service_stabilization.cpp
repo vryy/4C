@@ -16,6 +16,7 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  calculate stabilization parameter  (private)              gjb 06/08 |
@@ -1123,6 +1124,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc
 
+BACI_NAMESPACE_CLOSE
 
 // template classes
 

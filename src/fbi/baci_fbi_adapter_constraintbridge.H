@@ -18,6 +18,11 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 
 #include <vector>
 
+class Epetra_Vector;
+class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 // Forward declaration
 
 namespace DRT
@@ -40,9 +45,6 @@ namespace GEOMETRYPAIR
 {
   class LineTo3DEvaluationData;
 }
-
-class Epetra_Vector;
-class Epetra_FEVector;
 
 namespace FBI
 {
@@ -178,5 +180,7 @@ namespace ADAPTER
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_H

@@ -15,6 +15,8 @@
 #include "baci_discretization_geometry_integrationcell.H"
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -471,5 +473,7 @@ namespace SCATRA
     static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_37point;
   };
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

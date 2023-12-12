@@ -11,6 +11,8 @@
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               berardocco 05/20 |
  *----------------------------------------------------------------------*/
@@ -78,3 +80,4 @@ void SCATRA::TimIntStationaryHDG::SetTimeForNeumannEvaluation(Teuchos::Parameter
   params.set("total time", time_);
   return;
 }
+BACI_NAMESPACE_CLOSE

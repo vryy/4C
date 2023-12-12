@@ -14,6 +14,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRuntimeOutputParams()
@@ -86,3 +88,5 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotIni
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

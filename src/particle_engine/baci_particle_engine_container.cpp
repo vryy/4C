@@ -12,6 +12,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -255,3 +257,5 @@ double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(ParticleState state
 
   return max;
 }
+
+BACI_NAMESPACE_CLOSE

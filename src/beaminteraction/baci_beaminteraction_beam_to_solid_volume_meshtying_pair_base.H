@@ -17,6 +17,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace CORE::LINALG
@@ -174,5 +176,7 @@ namespace BEAMINTERACTION
     CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -14,6 +14,8 @@
 #include "baci_so3_scatra.H"
 #include "baci_structure_new_enum_lists.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
@@ -519,3 +521,5 @@ template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::C
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
@@ -294,3 +296,5 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::UpdateStepState()
 template class STR::EXPLICIT::AdamsBashforthX<2>;
 // template class STR::EXPLICIT::AdamsBashforthX<3>;
 template class STR::EXPLICIT::AdamsBashforthX<4>;
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@ using XFEM
 
 #include "baci_fsi_monolithic_nonox.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -186,5 +188,7 @@ namespace FSI
     //@}
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H

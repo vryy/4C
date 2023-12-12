@@ -18,6 +18,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::ElemagDiffType DRT::ELEMENTS::ElemagDiffType::instance_;
 DRT::ELEMENTS::ElemagDiffBoundaryType DRT::ELEMENTS::ElemagDiffBoundaryType::instance_;
 DRT::ELEMENTS::ElemagDiffIntFaceType DRT::ELEMENTS::ElemagDiffIntFaceType::instance_;
@@ -617,3 +619,5 @@ void DRT::ELEMENTS::ElemagDiffIntFace::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

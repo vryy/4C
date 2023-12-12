@@ -22,6 +22,8 @@
 #include <ml_include.h>
 #include <ml_MultiLevelPreconditioner.h>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& mllist)
@@ -54,3 +56,5 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
     P_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist_, true));
   }
 }
+
+BACI_NAMESPACE_CLOSE

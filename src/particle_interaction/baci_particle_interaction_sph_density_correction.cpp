@@ -13,6 +13,8 @@
 #include "baci_inpar_particle.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -78,3 +80,5 @@ void PARTICLEINTERACTION::SPHDensityCorrectionRandles::CorrectedDensityFreeSurfa
 {
   dens[0] = denssum[0] + dens_bc[0] * (1.0 - colorfield[0]);
 }
+
+BACI_NAMESPACE_CLOSE

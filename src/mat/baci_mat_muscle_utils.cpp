@@ -19,6 +19,8 @@
 #include <cmath>
 #include <functional>
 
+BACI_NAMESPACE_OPEN
+
 void MAT::UTILS::MUSCLE::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)
 {
@@ -375,3 +377,4 @@ double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
   double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;
   return dotLambdaM;
 }
+BACI_NAMESPACE_CLOSE

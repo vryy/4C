@@ -15,6 +15,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CORE::LINALG
 {
@@ -56,5 +58,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

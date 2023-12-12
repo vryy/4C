@@ -15,6 +15,8 @@ multiplicatively into elastic and inelastic parts
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 namespace MAT
@@ -403,4 +405,6 @@ namespace MAT
   };
 
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

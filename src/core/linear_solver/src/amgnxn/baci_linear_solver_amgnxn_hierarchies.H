@@ -24,6 +24,8 @@
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER::AMGNXN
 {
   class Hierarchies
@@ -123,5 +125,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<AMGNXN::GenericSmoother> BuildSmoother(int level);
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_AMGNXN_HIERARCHIES_H

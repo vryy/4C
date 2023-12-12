@@ -15,6 +15,8 @@
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_growth_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
@@ -80,3 +82,4 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateGrowthStressCmat(
   S_stress.Clear();
   cmat.Clear();
 }
+BACI_NAMESPACE_CLOSE

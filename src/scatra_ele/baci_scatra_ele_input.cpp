@@ -11,6 +11,8 @@
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | read element input                                        fang 02/15 |
@@ -86,3 +88,5 @@ bool DRT::ELEMENTS::Transport::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

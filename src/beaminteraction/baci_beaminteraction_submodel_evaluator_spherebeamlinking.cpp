@@ -41,6 +41,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 /*-------------------------------------------------------------------------------*
@@ -1153,3 +1154,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

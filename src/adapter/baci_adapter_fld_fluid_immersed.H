@@ -15,6 +15,8 @@
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_moving_boundary.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   // forward declarations
@@ -130,5 +132,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

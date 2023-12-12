@@ -18,6 +18,8 @@
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
 DRT::ELEMENTS::Ale2Type& DRT::ELEMENTS::Ale2Type::Instance() { return instance_; }
@@ -227,3 +229,5 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

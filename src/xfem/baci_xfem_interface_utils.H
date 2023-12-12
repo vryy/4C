@@ -18,6 +18,8 @@
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -189,5 +191,7 @@ namespace XFEM
 
   }  // namespace UTILS
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_INTERFACE_UTILS_H

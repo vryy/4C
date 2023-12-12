@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -125,3 +127,5 @@ double MAT::LinearDensityViscosity::ComputeViscosity(const double press) const
 
   return viscosity;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,7 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
@@ -1024,6 +1025,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDJDMesh(
     for (int dim = 0; dim < static_cast<int>(nsd_); dim++)
       dJ_dmesh(dim + node * nsd_) = J * derxy_(dim, node);
 }
+
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

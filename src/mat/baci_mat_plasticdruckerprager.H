@@ -19,6 +19,8 @@ John Wiley & Sons, Ltd, 2008
 #include "baci_mat_so3_material.H"
 #include "baci_utils_local_newton.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -191,4 +193,6 @@ namespace MAT
     bool isinit_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

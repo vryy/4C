@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -147,3 +149,5 @@ double MAT::TempDepWater::ComputeDensity(const double temp) const
 
   return density;
 }
+
+BACI_NAMESPACE_CLOSE

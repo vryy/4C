@@ -11,6 +11,8 @@
 
 #include "baci_contact_nitsche_strategy_ssi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -49,4 +51,6 @@ namespace CONTACT
     CoNitscheStrategySsiElch(const CoNitscheStrategySsiElch& old) = delete;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_SSI_ELCH_H

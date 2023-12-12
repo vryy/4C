@@ -15,6 +15,8 @@
 #include "baci_linear_solver_method_parameters.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
@@ -140,3 +142,5 @@ void DRT::Discretization::AddMultiVectorToParameterList(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

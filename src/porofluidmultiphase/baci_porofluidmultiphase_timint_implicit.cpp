@@ -31,6 +31,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // Constructors and destructors and related methods
 /*==========================================================================*/
@@ -2260,3 +2262,5 @@ Teuchos::RCP<ADAPTER::ArtNet> POROFLUIDMULTIPHASE::TimIntImpl::ArtNetTimInt()
 {
   return strategy_->ArtNetTimInt();
 }
+
+BACI_NAMESPACE_CLOSE

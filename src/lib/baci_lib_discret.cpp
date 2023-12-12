@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -851,3 +852,5 @@ void DRT::Discretization::RedistributeState(const unsigned nds, const std::strin
     SetState(nds, name, statevecrowmap);
   }
 }
+
+BACI_NAMESPACE_CLOSE

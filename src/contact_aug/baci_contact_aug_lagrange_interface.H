@@ -13,13 +13,15 @@
 
 #include "baci_contact_aug_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
   {
     namespace LAGRANGE
     {
-      class Interface : public ::CONTACT::AUG::Interface
+      class Interface : public CONTACT::AUG::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -54,5 +56,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_INTERFACE_H

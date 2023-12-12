@@ -17,6 +17,8 @@ interaction.
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FSIStructureWrapper;
@@ -297,4 +299,6 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::MapExtractor> velocity_pressure_splitter_;
   };
 }  // namespace ADAPTER
+BACI_NAMESPACE_CLOSE
+
 #endif

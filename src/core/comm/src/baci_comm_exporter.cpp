@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 CORE::COMM::Exporter::Exporter(const Epetra_Comm& comm)
     : dummymap_(0, 0, comm),
@@ -357,3 +359,5 @@ void CORE::COMM::Exporter::Export(
   AnyObjectExporterHelper<CORE::LINALG::SerialDenseMatrix> helper(data);
   GenericExport(helper);
 }
+
+BACI_NAMESPACE_CLOSE

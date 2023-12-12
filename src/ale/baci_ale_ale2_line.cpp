@@ -13,6 +13,8 @@
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;
 
@@ -86,3 +88,5 @@ void DRT::ELEMENTS::Ale2Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace FLD
 {
@@ -1622,5 +1624,7 @@ namespace DRT
     // FluidEleCalc<distype>::instances_;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

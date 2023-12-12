@@ -16,6 +16,8 @@
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_inpar_fbi.H"
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
@@ -164,3 +166,5 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
   // Default return value.
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

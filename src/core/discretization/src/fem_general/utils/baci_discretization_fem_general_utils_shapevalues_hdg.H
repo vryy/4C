@@ -16,6 +16,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   /*!
@@ -118,7 +120,7 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const ::DRT::Element &ele, const std::vector<double> &aleDis = {});
+    void Evaluate(const BACI::DRT::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
@@ -201,13 +203,13 @@ namespace CORE::DRT::UTILS
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(
-        const ::DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
+    void EvaluateFace(const BACI::DRT::Element &ele, const unsigned int face,
+        const std::vector<double> &aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void AdjustFaceOrientation(const ::DRT::Element &ele, const unsigned int face);
+    void AdjustFaceOrientation(const BACI::DRT::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -275,7 +277,7 @@ namespace CORE::DRT::UTILS
 
     \Author: Berardocco
      */
-    void ComputeFaceReferenceSystem(const ::DRT::Element &ele, const unsigned int face);
+    void ComputeFaceReferenceSystem(const BACI::DRT::Element &ele, const unsigned int face);
   };
 
   /*!
@@ -323,5 +325,7 @@ namespace CORE::DRT::UTILS
   };
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

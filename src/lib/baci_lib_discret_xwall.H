@@ -23,6 +23,8 @@ of dofs per node on a fluid discretization for xwall
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class DiscretizationXWall : public DiscretizationFaces
@@ -86,5 +88,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationXWall& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_XWALL_H

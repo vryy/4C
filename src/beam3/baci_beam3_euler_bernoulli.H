@@ -51,9 +51,9 @@
 // Default: 3
 
 #define mygaussruleeb \
-  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
-                                                // intrule_line_10point
-                                                // is implemented
+  CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                              // intrule_line_10point
+                                              // is implemented
 // Default: 4
 
 // #define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
@@ -92,6 +92,8 @@ dserror(
 #if defined(INEXTENSIBLE) and !defined(ANS_BEAM3EB)
 dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
@@ -604,5 +606,7 @@ namespace DRT::ELEMENTS
   std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

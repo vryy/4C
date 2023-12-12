@@ -20,6 +20,13 @@
 #include <memory>
 #include <vector>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -28,10 +35,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace MIXTURE
 {
@@ -82,5 +85,7 @@ namespace MIXTURE
     PAR::SimpleMixtureRule* params_{};
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_RULE_SIMPLE_H

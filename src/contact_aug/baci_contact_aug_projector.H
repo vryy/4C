@@ -13,6 +13,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MORTAR
 {
@@ -224,5 +226,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PROJECTOR_H

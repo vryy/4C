@@ -14,6 +14,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lubrication_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
@@ -117,3 +119,5 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Defin
 {
   return DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(disname);
 }
+
+BACI_NAMESPACE_CLOSE

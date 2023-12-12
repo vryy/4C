@@ -14,6 +14,8 @@
 
 #include "baci_structure_new_impl_statics.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace IMPLICIT
@@ -64,5 +66,7 @@ namespace STR
   }  // namespace IMPLICIT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_PRESTRESS_H

@@ -24,6 +24,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureConstrMerged::StructureConstrMerged(Teuchos::RCP<Structure> stru)
@@ -259,3 +261,5 @@ void ADAPTER::StructureConstrMerged::ApplyInterfaceForcesTemporaryDeprecated(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
@@ -80,3 +82,5 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

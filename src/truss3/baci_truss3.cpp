@@ -16,6 +16,8 @@
 #include "baci_so3_nullspace.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
 DRT::ELEMENTS::Truss3Type& DRT::ELEMENTS::Truss3Type::Instance() { return instance_; }
@@ -504,3 +506,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterf
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace CORE::LINALG
@@ -108,7 +110,7 @@ namespace ALE
    *
    *  \author mayr.mt \date 10/2014
    */
-  class Ale : public ::ADAPTER::Ale
+  class Ale : public ADAPTER::Ale
   {
     // friend class AleResultTest;
 
@@ -605,5 +607,7 @@ namespace ALE
   };  // class AleLinear
 
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_H

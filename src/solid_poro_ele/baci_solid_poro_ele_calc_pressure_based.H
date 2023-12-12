@@ -14,6 +14,8 @@ implementation
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class FluidPoroMultiPhase;
@@ -62,5 +64,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_PORO_ELE_CALC_PRESSURE_BASED_H

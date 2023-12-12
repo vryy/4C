@@ -17,6 +17,8 @@ multi-scale framework
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -210,3 +212,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::Cell
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tet4, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<CORE::FE::CellType::pyramid5, 3>;
+
+BACI_NAMESPACE_CLOSE

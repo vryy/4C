@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_parameter_lsreinit.H"
 #include "baci_scatra_ele_parameter_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -499,3 +501,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet10, 3
 // template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::wedge6,3>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs27,3>;
+
+BACI_NAMESPACE_CLOSE

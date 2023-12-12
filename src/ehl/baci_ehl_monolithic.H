@@ -23,6 +23,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
@@ -374,5 +376,7 @@ namespace EHL
 
 }  // namespace EHL
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_MONOLITHIC_H

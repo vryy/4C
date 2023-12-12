@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   /*!
@@ -159,5 +161,7 @@ namespace STR::UTILS::SHELL
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

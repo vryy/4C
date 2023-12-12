@@ -16,6 +16,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   /// Growth evolution equation
@@ -853,5 +855,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_REMODELFIBER_H

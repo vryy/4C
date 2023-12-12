@@ -36,6 +36,7 @@
 // Extra safety test: (leads to error if REMOVE_ALL_TETS_ON_CUTSIDE is defined in cut_test
 // hex8_quad4_alex38) #define TEST_EMPTY_VC_IS_COMPLETELY_ON_CUTSIDE
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -889,5 +890,7 @@ namespace CORE::GEO
     };
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

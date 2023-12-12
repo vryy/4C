@@ -17,6 +17,7 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::COMM
 {
@@ -50,7 +51,7 @@ namespace CORE::COMM
   \param owner   (in): owner of the new element
 
   */
-  Teuchos::RCP<::DRT::Element> Factory(
+  Teuchos::RCP<BACI::DRT::Element> Factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
@@ -81,7 +82,7 @@ namespace CORE::COMM
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<::DRT::Element>> ElementBoundaryFactory(
+  std::vector<Teuchos::RCP<BACI::DRT::Element>> ElementBoundaryFactory(
       const BoundaryBuildType
           buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle& ele  ///< pointer on the parent element
@@ -110,7 +111,7 @@ namespace CORE::COMM
         dserror("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
-    std::vector<Teuchos::RCP<::DRT::Element>> boundaryeles(nele);
+    std::vector<Teuchos::RCP<BACI::DRT::Element>> boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
@@ -121,7 +122,7 @@ namespace CORE::COMM
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size();  // this number changes for pyramids or wedges
       std::vector<int> nodeids(nnode);
-      std::vector<::DRT::Node*> nodes(nnode);
+      std::vector<BACI::DRT::Node*> nodes(nnode);
 
       // get connectivity infos
       for (unsigned int inode = 0; inode < nnode; inode++)
@@ -158,11 +159,11 @@ namespace CORE::COMM
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  Teuchos::RCP<::DRT::Element> ElementIntFaceFactory(int id,  ///< element id
+  Teuchos::RCP<BACI::DRT::Element> ElementIntFaceFactory(int id,  ///< element id
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
-      ::DRT::Node** nodes,        ///< nodes of surface
+      BACI::DRT::Node** nodes,    ///< nodes of surface
       ParentEle* master_ele,      ///< pointer on the master parent element
       ParentEle* slave_ele,       ///< pointer on the slave parent element
       const int lsurface_master,  ///< local surface index with respect to master parent element
@@ -176,7 +177,7 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<::DRT::Element>> GetElementLines(ParentEle& ele)
+  std::vector<Teuchos::RCP<BACI::DRT::Element>> GetElementLines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
     if (CORE::DRT::UTILS::getDimension(ele.Shape()) > 1)
@@ -193,7 +194,7 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<::DRT::Element>> GetElementSurfaces(ParentEle& ele)
+  std::vector<Teuchos::RCP<BACI::DRT::Element>> GetElementSurfaces(ParentEle& ele)
   {
     if (CORE::DRT::UTILS::getDimension(ele.Shape()) > 2)
     {
@@ -213,5 +214,7 @@ namespace CORE::COMM
 }  // namespace CORE::COMM
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_FACTORY_H

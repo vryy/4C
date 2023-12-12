@@ -45,6 +45,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -328,7 +330,7 @@ void FS3I::PartFS3I::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
+Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObject(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis)
 {
   // copy conditions
@@ -369,7 +371,7 @@ Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObj
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volume_coupling_object =
+  Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volume_coupling_object =
       Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
@@ -846,3 +848,5 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

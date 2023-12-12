@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
@@ -58,3 +60,5 @@ int ADAPTER::AleXFFsiWrapper::Solve()
 
   return err;
 }
+
+BACI_NAMESPACE_CLOSE

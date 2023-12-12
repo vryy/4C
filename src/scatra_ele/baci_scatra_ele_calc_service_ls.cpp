@@ -15,6 +15,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_ls.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -169,3 +171,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet10>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@ documentation.
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   namespace GMSH
@@ -599,5 +601,7 @@ namespace IO
     );
   }  // namespace GMSH
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // IO_GMSH_H

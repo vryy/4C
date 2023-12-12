@@ -25,6 +25,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | entry point for TSI in DRT                                dano 12/09 |
@@ -102,3 +104,5 @@ void tsi_dyn_drt()
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

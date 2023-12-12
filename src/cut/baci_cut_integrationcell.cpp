@@ -17,6 +17,8 @@
 #include "baci_cut_volumecell.H"
 #include "baci_discretization_geometry_element_volume.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -179,3 +181,5 @@ void CORE::GEO::CUT::IntegrationCell::Print(std::ostream& stream) const
     stream << "\n";
   }
 }
+
+BACI_NAMESPACE_CLOSE

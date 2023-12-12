@@ -16,6 +16,8 @@
 #include "baci_lib_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   /// A DofSet that owns a predefined number of dofs
@@ -188,5 +190,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_PREDEFINEDDOFNUMBER_H

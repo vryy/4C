@@ -21,6 +21,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   /*! \brief This class extends a standard DofSet to a DofSet whose mapping uses global IDs
@@ -276,5 +278,7 @@ namespace DRT
   };
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_GIDBASED_WRAPPER_H

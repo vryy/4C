@@ -20,6 +20,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* forward declarations */
 namespace MAT
@@ -124,5 +126,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_PAR_BUNDLE_H

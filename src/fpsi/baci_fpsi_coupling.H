@@ -18,6 +18,8 @@ Fluid-Poro-Coupling Matrixes!
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -56,7 +58,7 @@ namespace FPSI
    public:
     // ctor
     explicit FPSICoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
-        Teuchos::RCP<::ADAPTER::Fluid> fluid, Teuchos::RCP<::ADAPTER::AleFpsiWrapper> ale,
+        Teuchos::RCP<ADAPTER::Fluid> fluid, Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale,
         Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
         Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap);
 
@@ -181,7 +183,7 @@ namespace FPSI
     // underlying poroelast problem
     Teuchos::RCP<POROELAST::Monolithic> poro_;
     // underlying fluid of the FPSI problem
-    Teuchos::RCP<::ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<ADAPTER::Fluid> fluid_;
     // underlying ale of the FPSI problem
     Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
 
@@ -254,5 +256,7 @@ namespace FPSI
     double conductivity_;
   };  // FPSICoupling
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FPSI_COUPLING_H

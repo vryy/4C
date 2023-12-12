@@ -46,9 +46,11 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, double alpha,
+void FSI::UTILS::DumpJacobian(::NOX::Epetra::Interface::Required& interface, double alpha,
     double beta, Teuchos::RCP<Epetra_Vector> soln, std::string filename)
 {
   // that's really stupid again
@@ -68,7 +70,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
   Epetra_Vector Jc(*soln);
 
   // Compute the RHS at the initial solution
-  interface.computeF(*soln, fo, NOX::Epetra::Interface::Required::FD_Res);
+  interface.computeF(*soln, fo, ::NOX::Epetra::Interface::Required::FD_Res);
 
   Epetra_Vector x_perturb = *soln;
 
@@ -96,7 +98,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface, doubl
     map.Comm().Broadcast(&idx, 1, broadcastProc);
 
     // Compute the perturbed RHS
-    interface.computeF(x_perturb, fp, NOX::Epetra::Interface::Required::FD_Res);
+    interface.computeF(x_perturb, fp, ::NOX::Epetra::Interface::Required::FD_Res);
 
     // Compute the column k of the Jacobian
     Jc.Update(1.0, fp, -1.0, fo, 0.0);
@@ -177,10 +179,10 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(::DRT::Problem::Instance()->NDim(),
-      ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
@@ -888,3 +890,5 @@ void FSI::UTILS::SlideAleUtils::ReadRestart(IO::DiscretizationReader& reader)
 {
   reader.ReadVector(iprojhist_, "projhist");
 }
+
+BACI_NAMESPACE_CLOSE

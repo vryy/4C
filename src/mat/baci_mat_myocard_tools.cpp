@@ -13,6 +13,8 @@
 
 #include <math.h> /* tanh, log */
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
@@ -39,3 +41,5 @@ double Myocard_Tools::GatingVarCalc(
   double y_1 = 1.0 / (1.0 + dt / y_tau) * (y_0 + dt * y_inf / y_tau);
   return y_1;
 }
+
+BACI_NAMESPACE_CLOSE

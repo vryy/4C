@@ -18,6 +18,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
     : DRT::ResultTest("XFLUID"),
@@ -115,3 +117,5 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
     CORE::FE::ShapeFunctionType shape_function_type)
@@ -1165,3 +1167,5 @@ int ADAPTER::CouplingEhlMortar::SlipContact()
 {
   return interface_->SlipNodes()->NumGlobalElements();
 }
+
+BACI_NAMESPACE_CLOSE

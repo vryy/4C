@@ -26,6 +26,8 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_matelast_summand.H"
 #include "baci_matelast_visco_generalizedgenmax.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -1216,3 +1218,5 @@ void MAT::ViscoElastHyper::EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

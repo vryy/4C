@@ -42,6 +42,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Structure::Structure()
@@ -1291,7 +1293,7 @@ void STR::MODELEVALUATOR::Structure::RunPostComputeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::RunPostIterate(const NOX::Solver::Generic& solver)
+void STR::MODELEVALUATOR::Structure::RunPostIterate(const ::NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
 
@@ -2114,3 +2116,5 @@ void STR::MODELEVALUATOR::Structure::RecoverFromBackupState()
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
+
+BACI_NAMESPACE_CLOSE

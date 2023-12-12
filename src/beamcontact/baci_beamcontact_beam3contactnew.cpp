@@ -26,6 +26,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
  *----------------------------------------------------------------------*/
@@ -1893,11 +1895,11 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
-  L(0, 0) = ::CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
-  L(1, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
-            ::CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
-  L(0, 1) = -::CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
+  L(0, 0) =
+      CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) + CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
+  L(1, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r2_xi) +
+            CORE::FADUTILS::ScalarProduct(delta_r, r2_xixi);
+  L(0, 1) = -CORE::FADUTILS::ScalarProduct(r2_xi, r1_xi);
   L(1, 0) = -L(0, 1);
 
   // invert L by hand
@@ -3989,3 +3991,5 @@ template class CONTACT::Beam3contactnew<3, 1>;
 template class CONTACT::Beam3contactnew<4, 1>;
 template class CONTACT::Beam3contactnew<5, 1>;
 template class CONTACT::Beam3contactnew<2, 2>;
+
+BACI_NAMESPACE_CLOSE

@@ -40,6 +40,7 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -1448,5 +1449,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_IMPLICIT_INTEGRATION_H

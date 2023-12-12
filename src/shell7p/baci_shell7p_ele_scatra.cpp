@@ -15,6 +15,7 @@
 #include "baci_shell7p_line.H"
 #include "baci_shell7p_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -207,7 +208,7 @@ DRT::ELEMENTS::Shell7pScatra::Shell7pScatra(const DRT::ELEMENTS::Shell7pScatra& 
 }
 
 
-DRT::ELEMENTS::Shell7pScatra& ::DRT::ELEMENTS::Shell7pScatra::operator=(
+DRT::ELEMENTS::Shell7pScatra& DRT::ELEMENTS::Shell7pScatra::operator=(
     const DRT::ELEMENTS::Shell7pScatra& other)
 {
   if (this == &other) return *this;
@@ -421,3 +422,5 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

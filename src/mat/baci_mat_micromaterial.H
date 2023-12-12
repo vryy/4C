@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace MAT
@@ -186,5 +188,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

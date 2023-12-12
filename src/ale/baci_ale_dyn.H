@@ -12,6 +12,10 @@
 #ifndef BACI_ALE_DYN_H
 #define BACI_ALE_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 void dyn_ale_drt();
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_DYN_H

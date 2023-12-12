@@ -15,6 +15,8 @@ file as well as a quick access wrapper for those parameters
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container>
@@ -39,3 +41,5 @@ void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

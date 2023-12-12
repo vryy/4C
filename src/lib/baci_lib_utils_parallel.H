@@ -16,6 +16,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -160,5 +161,7 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_PARALLEL_H

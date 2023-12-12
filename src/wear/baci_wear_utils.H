@@ -25,6 +25,8 @@
 #include "baci_wear_defines.H"
 
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 12/13 |
  *----------------------------------------------------------------------*/
@@ -178,5 +180,7 @@ namespace WEAR
   }  // namespace UTILS
 
 }  // namespace WEAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // WEAR_UTILS_H

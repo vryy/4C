@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <map>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE
 {
   namespace
@@ -51,3 +53,4 @@ namespace CORE::FE
     return string2shapefuntype;
   }
 }  // namespace CORE::FE
+BACI_NAMESPACE_CLOSE

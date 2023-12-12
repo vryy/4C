@@ -14,6 +14,8 @@
 
 #include <Epetra_CrsMatrix.h>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::InfNormPreconditioner::InfNormPreconditioner(
@@ -103,3 +105,5 @@ void CORE::LINEAR_SOLVER::SymDiagPreconditioner::Finish(
   lp_.RightScale(*diag_);
   diag_ = Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

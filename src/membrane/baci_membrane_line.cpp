@@ -10,6 +10,8 @@
 *----------------------------------------------------------------------*/
 #include "baci_membrane.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  LINE 2 Element                                         fbraeu 06/16 |
@@ -141,3 +143,5 @@ template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

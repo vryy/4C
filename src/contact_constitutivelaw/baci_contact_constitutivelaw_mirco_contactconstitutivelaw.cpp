@@ -20,6 +20,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams(
@@ -164,4 +166,7 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
   return ((pressure1 - pressure2) /
           (-(params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset())));
 }
+
+BACI_NAMESPACE_CLOSE
+
 #endif

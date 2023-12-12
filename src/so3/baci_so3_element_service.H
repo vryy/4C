@@ -13,6 +13,8 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_MultiVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -53,5 +55,7 @@ namespace DRT
         const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_ELEMENT_SERVICE_H

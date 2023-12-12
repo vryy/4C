@@ -8,7 +8,7 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
-
+BACI_NAMESPACE_OPEN
 
 namespace UTILS::TENSOR
 {
@@ -120,5 +120,7 @@ namespace UTILS::TENSOR
 
 }  // namespace UTILS::TENSOR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LINALG_FIXEDSIZEMATRIX_TENSOR_TRANSFORMATION_H

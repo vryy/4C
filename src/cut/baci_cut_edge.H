@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_cut.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -433,5 +435,7 @@ namespace CORE::GEO
     };  // class EdgeFactory
   }     // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_EDGE_H

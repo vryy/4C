@@ -17,6 +17,7 @@
 #include "baci_cut_volumecell.H"
 #include "baci_linalg_gauss.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1463,3 +1464,5 @@ std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f)
   stream << "}";
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

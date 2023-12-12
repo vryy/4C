@@ -18,6 +18,8 @@ contact pressure based on micro interactions
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -55,5 +57,7 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

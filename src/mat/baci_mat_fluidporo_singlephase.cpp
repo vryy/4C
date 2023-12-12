@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
@@ -533,3 +535,5 @@ void MAT::FluidPoroVolFracPressure::Initialize()
   params_->Initialize();
   return;
 }
+
+BACI_NAMESPACE_CLOSE

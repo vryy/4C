@@ -14,6 +14,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  store the required ghosting within a round              farah 10/13 |
  |  robin iteration for current interface (public)                      |
@@ -519,3 +521,5 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace UTILS
 {
   /*!
@@ -123,5 +125,7 @@ namespace UTILS
     );
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONSTRAINT_PENALTY_H

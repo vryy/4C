@@ -22,6 +22,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
 
@@ -331,7 +333,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ParObject::ExtractfromPack(position, data, solid_ele_property_.eletech);
 
-  solid_ele_property_.eastype = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
+  solid_ele_property_.eastype = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
 
   poro_ele_property_.porotype = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
 
@@ -415,3 +417,5 @@ MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::FluidPoroMultiMaterial(int n
   }
   return *fluidmulti_mat;
 }
+
+BACI_NAMESPACE_CLOSE

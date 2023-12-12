@@ -9,6 +9,8 @@
 
 #include "baci_io_utils_reader.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -66,3 +68,5 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

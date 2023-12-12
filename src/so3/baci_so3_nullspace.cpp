@@ -7,6 +7,8 @@
 
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
 
@@ -86,3 +88,5 @@ namespace DRT::ELEMENTS
     return nullspace;
   }
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE

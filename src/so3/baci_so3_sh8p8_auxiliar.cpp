@@ -19,6 +19,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 
@@ -1408,3 +1410,5 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   //
   return;
 }
+
+BACI_NAMESPACE_CLOSE

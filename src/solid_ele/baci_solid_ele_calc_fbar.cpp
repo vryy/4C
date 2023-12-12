@@ -17,6 +17,8 @@
 #include <memory>
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   template <CORE::FE::CellType celltype>
@@ -469,3 +471,4 @@ void DRT::ELEMENTS::SolidEleCalcFbar<celltype>::ResetToLastConverged(
 // template classes
 template class DRT::ELEMENTS::SolidEleCalcFbar<CORE::FE::CellType::hex8>;
 template class DRT::ELEMENTS::SolidEleCalcFbar<CORE::FE::CellType::pyramid5>;
+BACI_NAMESPACE_CLOSE

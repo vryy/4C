@@ -30,12 +30,15 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // #define PRINT_DEBUG
 #ifdef PRINT_DEBUG
 #include <sstream>
 #include <string>
 
 #include <cstd::string>
+
 template <class T>
 void writeArray(const T& mat, std::string name = "unnamed")
 {
@@ -406,7 +409,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ * gpweights[gp];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get derivatives wrt to last spatial configuration
           CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -513,7 +516,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (::UTILS::PRESTRESS::IsAny(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -532,7 +535,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (::UTILS::PRESTRESS::IsAny(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsAny(pstype_))
       {
       }
 
@@ -1108,14 +1111,14 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [    dX       dY       dZ    ]
     */
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
       if (!(prestress_->IsInit())) prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
     }
 
   }  // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 
 
@@ -2112,7 +2115,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
       // size is 3x3
       CORE::LINALG::Matrix<3, 3> defgrd(false);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get derivatives wrt to last spatial configuration
         CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -2438,3 +2441,5 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }
+
+BACI_NAMESPACE_CLOSE

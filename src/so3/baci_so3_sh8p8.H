@@ -12,6 +12,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_so3_sh8.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 struct _SOH8_DATA;
@@ -901,10 +902,10 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+BACI_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/
 /* definitions of above declared template functions */
 #include "baci_so3_sh8p8_eas.H"
-
 
 #endif  // SO3_SH8P8_H

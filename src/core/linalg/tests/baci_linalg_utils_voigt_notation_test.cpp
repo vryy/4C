@@ -13,6 +13,8 @@
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_unittest_utils_assertions_test.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   class VoigtNotationTest : public testing::Test
@@ -182,3 +184,4 @@ namespace
     EXPECT_EQ(matrix, tens);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

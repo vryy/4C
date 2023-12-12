@@ -14,6 +14,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 
 // #define COMBINE_SAMPLES
 
@@ -682,3 +684,5 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
   }
   return;
 }  // TurbulenceStatisticsBfda::DumpStatistics
+
+BACI_NAMESPACE_CLOSE

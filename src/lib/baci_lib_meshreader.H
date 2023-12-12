@@ -19,6 +19,8 @@
 
 #include <Epetra_CrsGraph.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::INPUT
 {
   /*!
@@ -146,5 +148,7 @@ namespace DRT::INPUT
     Teuchos::RCP<NodeReader> node_reader_;
   };
 }  // namespace DRT::INPUT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

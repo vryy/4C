@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FBI
 {
@@ -39,5 +41,7 @@ namespace FBI
     bool constraint_violation_;
   };
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

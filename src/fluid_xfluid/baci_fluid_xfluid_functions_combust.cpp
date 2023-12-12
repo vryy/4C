@@ -12,6 +12,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_utils_function_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
@@ -166,3 +168,5 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(
 
   return distance;
 }
+
+BACI_NAMESPACE_CLOSE

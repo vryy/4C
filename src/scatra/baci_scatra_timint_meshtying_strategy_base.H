@@ -18,6 +18,8 @@ strategy without meshtying)
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace IO
 {
@@ -273,4 +275,6 @@ namespace SCATRA
     MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
   };  // class MeshtyingStrategyBase
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H

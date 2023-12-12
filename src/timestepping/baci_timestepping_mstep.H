@@ -21,6 +21,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* A collection of time integration utilities */
 namespace TIMINT
@@ -384,4 +386,6 @@ namespace TIMINT
 }  // namespace TIMINT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // TIMESTEPPING_MSTEP_H

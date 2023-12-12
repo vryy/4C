@@ -16,6 +16,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -58,5 +60,7 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_UTILS_H

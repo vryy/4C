@@ -17,6 +17,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SPHKernelCubicSplineTest : public ::testing::Test
   {
    protected:

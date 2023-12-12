@@ -23,6 +23,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* foward declarations */
 namespace MAT
@@ -166,5 +168,7 @@ namespace MAT
 /// out stream operator
 std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_PAR_MATERIAL_H

@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -125,3 +127,5 @@ double MAT::MixFrac::ComputeDensity(const double mixfrac) const
 
   return density;
 }
+
+BACI_NAMESPACE_CLOSE

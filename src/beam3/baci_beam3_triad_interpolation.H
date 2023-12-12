@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace LARGEROTATIONS
 {
   /**
@@ -87,5 +89,7 @@ namespace LARGEROTATIONS
   };
 
 }  // namespace LARGEROTATIONS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

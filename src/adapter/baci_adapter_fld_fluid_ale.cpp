@@ -23,6 +23,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname)
@@ -468,3 +470,5 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(
 {
   return icoupfa_->MasterToSlave(iv);
 }
+
+BACI_NAMESPACE_CLOSE

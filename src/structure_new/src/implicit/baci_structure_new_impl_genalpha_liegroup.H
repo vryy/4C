@@ -16,6 +16,9 @@
 #include "baci_structure_new_impl_genalpha.H"
 
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace IMPLICIT
@@ -201,5 +204,7 @@ namespace STR
   }  // namespace IMPLICIT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_H

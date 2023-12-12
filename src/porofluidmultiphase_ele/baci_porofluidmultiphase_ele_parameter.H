@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -106,5 +108,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_PARAMETER_H

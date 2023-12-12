@@ -23,6 +23,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -534,3 +536,5 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::InterpolateOpenBoundaryStates(
 {
   // nothing to do
 }
+
+BACI_NAMESPACE_CLOSE

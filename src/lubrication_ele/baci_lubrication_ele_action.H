@@ -15,6 +15,8 @@ comparison instead of a cumbersome std::string compare.
 #ifndef BACI_LUBRICATION_ELE_ACTION_H
 #define BACI_LUBRICATION_ELE_ACTION_H
 
+BACI_NAMESPACE_OPEN
+
 
 namespace LUBRICATION
 {
@@ -48,5 +50,7 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_ACTION_H

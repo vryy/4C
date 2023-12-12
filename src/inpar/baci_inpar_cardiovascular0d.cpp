@@ -16,6 +16,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -481,13 +483,13 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           DRT::Condition::Cardiovascular0D4ElementWindkessel_Structure, true,
           DRT::Condition::Surface));
 
-  ::INPUT::AddNamedInt(cardiovascular0d4elementwindkesselcondition, "id");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "C");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "R_p");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "Z_c");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "L");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "p_ref");
-  ::INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "p_0");
+  INPUT::AddNamedInt(cardiovascular0d4elementwindkesselcondition, "id");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "C");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "R_p");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "Z_c");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "L");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "p_ref");
+  INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "p_0");
 
   condlist.push_back(cardiovascular0d4elementwindkesselcondition);
 
@@ -502,29 +504,29 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           DRT::Condition::Cardiovascular0DArterialProxDist_Structure, true,
           DRT::Condition::Surface));
 
-  ::INPUT::AddNamedInt(cardiovascular0darterialproxdistcond, "id");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arvalve_max");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arvalve_min");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_atvalve_max");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_atvalve_min");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "k_p");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "L_arp");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "C_arp");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arp");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "C_ard");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_ard");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_ref");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_v_0");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_arp_0");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "y_arp_0");
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_ard_0");
+  INPUT::AddNamedInt(cardiovascular0darterialproxdistcond, "id");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arvalve_max");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arvalve_min");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_atvalve_max");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_atvalve_min");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "k_p");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "L_arp");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "C_arp");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arp");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "C_ard");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_ard");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_ref");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_v_0");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_arp_0");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "y_arp_0");
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "p_ard_0");
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("P_AT")));
-  ::INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "fac");
+      Teuchos::rcp(new INPUT::SeparatorComponent("P_AT")));
+  INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "fac");
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("crv")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("crv")));
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("curve", 1, {0, true, true})));
+      Teuchos::rcp(new INPUT::IntVectorComponent("curve", 1, {0, true, true})));
 
   condlist.push_back(cardiovascular0darterialproxdistcond);
 
@@ -539,11 +541,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           DRT::Condition::Cardiovascular0DSysPulCirculation_Structure, true,
           DRT::Condition::Surface));
 
-  ::INPUT::AddNamedInt(cardiovascular0dsyspulcirculationcond, "id");
+  INPUT::AddNamedInt(cardiovascular0dsyspulcirculationcond, "id");
   cardiovascular0dsyspulcirculationcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("TYPE")));
   cardiovascular0dsyspulcirculationcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("type", "ventricle_left",
+      Teuchos::rcp(new INPUT::SelectionComponent("type", "ventricle_left",
           Teuchos::tuple<std::string>(
               "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
           Teuchos::tuple<std::string>(
@@ -564,11 +566,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           DRT::Condition::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure, true,
           DRT::Condition::Surface));
 
-  ::INPUT::AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
+  INPUT::AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("TYPE")));
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
-      Teuchos::rcp(new ::INPUT::SelectionComponent("type", "ventricle_left",
+      Teuchos::rcp(new INPUT::SelectionComponent("type", "ventricle_left",
           Teuchos::tuple<std::string>(
               "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
           Teuchos::tuple<std::string>(
@@ -588,7 +590,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           "structure 0d cardiovascular coupling surface condition",
           DRT::Condition::Cardiovascular0DStructureCoupling, true, DRT::Condition::Surface));
 
-  ::INPUT::AddNamedInt(cardiovascular0dstructurecouplingcond, "coupling_id");
+  INPUT::AddNamedInt(cardiovascular0dstructurecouplingcond, "coupling_id");
 
   condlist.push_back(cardiovascular0dstructurecouplingcond);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include "baci_so3_plast_ssn.H"
 #include "baci_so3_plast_ssn_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -263,5 +265,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

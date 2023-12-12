@@ -13,6 +13,8 @@ Mechanics, 2000"
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->GetDouble("KAPPA"))
@@ -51,3 +53,4 @@ void MAT::ELASTIC::VolSussmanBathe::Add3rdVolDeriv(
 {
   d3PsiVolDJ3 += 0.;
 }
+BACI_NAMESPACE_CLOSE

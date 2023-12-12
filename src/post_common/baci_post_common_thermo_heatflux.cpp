@@ -100,6 +100,8 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();
@@ -218,6 +220,8 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
+    using namespace BACI;
+
     dsassert(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();

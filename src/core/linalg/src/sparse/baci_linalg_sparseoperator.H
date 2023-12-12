@@ -21,6 +21,8 @@
 // forward declaration
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   // forward declarations
@@ -246,6 +248,8 @@ namespace CORE::LINALG
 
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif
 /*LINALG_SPARSEOPERATOR_H_*/

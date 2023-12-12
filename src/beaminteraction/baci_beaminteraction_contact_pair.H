@@ -15,10 +15,12 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-
 // forward declaration ...
 class Epetra_Vector;
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -104,7 +106,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    virtual void ResetRotationState(const ::DRT::Discretization& discret,
+    virtual void ResetRotationState(const BACI::DRT::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
 
     //@}
@@ -243,7 +245,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    virtual void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
@@ -267,7 +269,7 @@ namespace BEAMINTERACTION
      * @param lambda (in) Global Lagrange multiplier vector.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const ::DRT::Discretization& discret,
+    virtual void EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -301,7 +303,7 @@ namespace BEAMINTERACTION
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    virtual void EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -405,5 +407,7 @@ namespace BEAMINTERACTION
     //@}
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

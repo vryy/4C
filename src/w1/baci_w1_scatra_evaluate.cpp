@@ -14,6 +14,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_w1_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -170,3 +172,5 @@ int DRT::ELEMENTS::Wall1_Scatra::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

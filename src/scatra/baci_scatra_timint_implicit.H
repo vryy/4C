@@ -36,6 +36,7 @@
 #include <optional>
 #include <set>
 
+BACI_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -102,7 +103,7 @@ namespace SCATRA
    * \brief implicit time integration for scalar transport problems
    */
 
-  class ScaTraTimIntImpl : public ::ADAPTER::ScatraInterface
+  class ScaTraTimIntImpl : public ADAPTER::ScatraInterface
   {
     friend class HomIsoTurbInitialScalarField;
     friend class HomIsoTurbScalarForcing;
@@ -1847,4 +1848,6 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // BACI_SCATRA_TIMINT_IMPLICIT_H

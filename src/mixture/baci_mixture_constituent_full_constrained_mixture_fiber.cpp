@@ -21,6 +21,8 @@ equations
 #include <memory>
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 // anonymous namespace for helper classes and functions
 namespace
 {
@@ -359,3 +361,4 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateLambdaf(
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
+BACI_NAMESPACE_CLOSE

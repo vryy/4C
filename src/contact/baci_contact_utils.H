@@ -16,6 +16,8 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -152,5 +154,7 @@ namespace CONTACT
   }  // namespace UTILS
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_UTILS_H

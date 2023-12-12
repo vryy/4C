@@ -16,6 +16,8 @@
 #include "baci_inpar_bio.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -49,5 +51,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_ELE_FACTORY_H

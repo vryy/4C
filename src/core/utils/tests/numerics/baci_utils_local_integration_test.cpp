@@ -14,6 +14,8 @@
 #include <Sacado.hpp>
 #include <Sacado_Fad_DFad.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   using FADdouble = Sacado::Fad::DFad<double>;
@@ -210,3 +212,4 @@ namespace
     EXPECT_NEAR((7.0 + 29.0) / 3.0, value, 1e-8);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

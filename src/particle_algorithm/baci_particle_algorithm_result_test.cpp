@@ -15,6 +15,8 @@
 #include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -209,3 +211,5 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

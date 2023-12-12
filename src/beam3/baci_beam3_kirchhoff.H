@@ -78,8 +78,8 @@ dserror(
 #endif
 
 #define MYGAUSSRULEBEAM3K \
-  ::CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
-                                                // intrule_line_10point is implemented.
+  CORE::DRT::UTILS::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+                                              // intrule_line_10point is implemented.
 // DEFAULT: intrule_line_4point
 
 #define BEAM3K_COLLOCATION_POINTS \
@@ -96,6 +96,7 @@ dserror(
     "before using other values than 3!");
 #endif
 
+BACI_NAMESPACE_OPEN
 
 // #define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector
 //  component as test function for strong Kirchhoff
@@ -1721,5 +1722,7 @@ namespace DRT
   }  // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -116,3 +118,5 @@ void MAT::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
   reaccoeff_ = params_->reaccoeff_ * exp(params_->reacscale_ * chempot);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

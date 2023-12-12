@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -53,3 +55,5 @@ Teuchos::RCP<const FLD::Meshtying> ADAPTER::FluidFBI::GetMeshtying()
 {
   return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->GetMeshtying();
 }
+
+BACI_NAMESPACE_CLOSE

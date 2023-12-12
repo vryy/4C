@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace POROMULTIPHASESCATRA
 {
@@ -187,5 +189,7 @@ namespace POROMULTIPHASESCATRA
   };
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

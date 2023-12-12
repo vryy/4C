@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_utils_elch_diffcond.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
@@ -789,3 +791,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::tet10
 template class DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::pyramid5>;
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

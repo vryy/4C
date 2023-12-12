@@ -13,6 +13,8 @@
 #include "baci_shell7p_ele_calc_lib.H"
 #include "baci_shell7p_ele_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -121,3 +123,5 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
   auto xrefe = Teuchos::rcp(new std::vector<double>(center));
   params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
 }
+
+BACI_NAMESPACE_CLOSE

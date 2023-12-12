@@ -14,6 +14,7 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -55,5 +56,7 @@ class Cardiovascular0DResultTest : public DRT::ResultTest
   const bool havecardio_syspulcirculation_;
   const bool havecardiorespir_syspulperiphcirculation_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CARDIOVASCULAR0D_RESULTTEST_H

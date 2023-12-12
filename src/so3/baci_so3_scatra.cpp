@@ -16,6 +16,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|
  |  id             (in)  this element's global id                       |
@@ -249,3 +251,5 @@ template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::Cell
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

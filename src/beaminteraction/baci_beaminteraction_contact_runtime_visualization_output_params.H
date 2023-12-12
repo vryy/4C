@@ -14,6 +14,8 @@
 #include "baci_inpar_beamcontact.H"
 #include "baci_io_visualization_parameters.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   class BeamContactRuntimeVisualizationOutputParams
@@ -104,5 +106,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

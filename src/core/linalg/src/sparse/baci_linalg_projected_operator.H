@@ -16,6 +16,8 @@
 // forward declarations
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class KrylovProjector;
@@ -167,5 +169,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_PROJECTED_OPERATOR_H

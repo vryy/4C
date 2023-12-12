@@ -14,6 +14,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /**
@@ -395,5 +397,7 @@ namespace CORE::LINALG
   void SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const int dim);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

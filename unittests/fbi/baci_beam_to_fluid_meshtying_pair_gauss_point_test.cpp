@@ -25,6 +25,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * Class to test the local coupling matrices calculated by the beam to fluid meshtying gpts pair.
    */

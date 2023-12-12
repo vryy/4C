@@ -12,6 +12,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace FIBER
@@ -95,5 +97,7 @@ namespace DRT
     }  // namespace UTILS
   }    // namespace FIBER
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

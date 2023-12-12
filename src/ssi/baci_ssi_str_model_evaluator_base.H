@@ -11,6 +11,8 @@
 
 #include "baci_structure_new_model_evaluator_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::MODELEVALUATOR
 {
   class BaseSSI : public Generic
@@ -76,7 +78,7 @@ namespace STR::MODELEVALUATOR
     {
     }
 
-    void RunPostIterate(const NOX::Solver::Generic& solver) override {}
+    void RunPostIterate(const ::NOX::Solver::Generic& solver) override {}
 
     void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
         const NOX::NLN::Group& curr_grp) override
@@ -104,4 +106,6 @@ namespace STR::MODELEVALUATOR
     Teuchos::RCP<Epetra_Vector> mechanical_stress_state_;
   };
 }  // namespace STR::MODELEVALUATOR
+BACI_NAMESPACE_CLOSE
+
 #endif

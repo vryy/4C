@@ -18,6 +18,8 @@
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -979,3 +981,5 @@ void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(const std::vector<double>& res
   t_ += dt_;
   p_ += dp_;
 }
+
+BACI_NAMESPACE_CLOSE

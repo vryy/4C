@@ -58,6 +58,8 @@
 #include <unordered_set>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
@@ -3699,3 +3701,5 @@ void SCATRA::ScaTraTimIntImpl::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
   DRT::Problem::Instance()->TestAll(discret_->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

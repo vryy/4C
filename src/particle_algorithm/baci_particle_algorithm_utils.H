@@ -19,6 +19,8 @@
 
 #include <map>
 
+BACI_NAMESPACE_OPEN
+
 namespace PARTICLEALGORITHM
 {
   namespace UTILS
@@ -45,4 +47,6 @@ namespace PARTICLEALGORITHM
 }  // namespace PARTICLEALGORITHM
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

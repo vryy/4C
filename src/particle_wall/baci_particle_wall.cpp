@@ -31,6 +31,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -750,3 +752,5 @@ void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
 {
   // nothing to do
 }
+
+BACI_NAMESPACE_CLOSE

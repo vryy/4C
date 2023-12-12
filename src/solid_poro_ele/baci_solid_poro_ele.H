@@ -23,6 +23,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -183,7 +185,7 @@ namespace DRT::ELEMENTS
 
     INPAR::STR::KinemType GetEleKinematicType() { return solid_ele_property_.kintype; }
 
-    ::STR::ELEMENTS::EasType GetEAStype() { return solid_ele_property_.eastype; }
+    STR::ELEMENTS::EasType GetEAStype() { return solid_ele_property_.eastype; }
 
     INPAR::SCATRA::ImplType GetImplType() { return poro_ele_property_.impltype; }
 
@@ -223,5 +225,7 @@ namespace DRT::ELEMENTS
   };  // class SolidPoro
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_PORO_ELE_H

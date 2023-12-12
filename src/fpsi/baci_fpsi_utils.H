@@ -16,6 +16,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -133,5 +135,7 @@ namespace FPSI
 
   }  // namespace UTILS
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FPSI_UTILS_H

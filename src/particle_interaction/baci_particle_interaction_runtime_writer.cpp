@@ -17,6 +17,8 @@
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -101,3 +103,5 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
     runtime_csvwriter->WriteFile();
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 
 #include "baci_thermo_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               dano 06/13 |
  *----------------------------------------------------------------------*/
@@ -446,3 +448,5 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(const double time,  //!< ev
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

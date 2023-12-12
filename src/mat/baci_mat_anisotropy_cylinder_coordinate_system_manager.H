@@ -14,6 +14,8 @@
 
 #include "baci_mat_anisotropy_cylinder_coordinate_system_provider.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -128,5 +130,7 @@ namespace MAT
     CORE::LINALG::Matrix<3, 1> circumferential_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_H

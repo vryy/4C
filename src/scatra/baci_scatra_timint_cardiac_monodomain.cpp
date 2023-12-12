@@ -22,6 +22,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                              ehrl  01/14 |
  *----------------------------------------------------------------------*/
@@ -203,3 +205,5 @@ void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

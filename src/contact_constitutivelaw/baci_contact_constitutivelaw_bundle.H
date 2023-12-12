@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -76,5 +78,7 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_BUNDLE_H

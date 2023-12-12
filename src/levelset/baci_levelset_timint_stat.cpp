@@ -11,6 +11,8 @@
 
 #include "baci_levelset_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
@@ -76,3 +78,5 @@ void SCATRA::LevelSetTimIntStationary::Setup()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

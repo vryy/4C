@@ -261,5 +261,4 @@ class AnyFilter : public PostFilterBase
   void WriteAllResults(PostField* field) override;
 };
 
-
 #endif  // POST_COMMON_SINGLE_FIELD_WRITERS_H

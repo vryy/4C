@@ -18,7 +18,6 @@
 #include "baci_structure_new_timint_basedataio.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
 
-
 // forward declaration
 class Epetra_Vector;
 class Epetra_Map;
@@ -27,6 +26,9 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
@@ -49,9 +51,9 @@ namespace STR
     /** \brief Abstract class for all time integration strategies
      *
      *  \author Michael Hiermeier */
-    class Base : public ::ADAPTER::StructureNew, IO::EveryIterationWriterInterface
+    class Base : public ADAPTER::StructureNew, IO::EveryIterationWriterInterface
     {
-      friend class ::ADAPTER::StructureTimeAda;
+      friend class ADAPTER::StructureTimeAda;
 
      public:
       /// constructor
@@ -272,7 +274,7 @@ namespace STR
       }
 
       /// FixMe get constraint manager defined in the structure
-      Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
+      Teuchos::RCP<BACI::UTILS::ConstrManager> GetConstraintManager() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;
@@ -919,5 +921,7 @@ namespace STR
   }     // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_BASE_H

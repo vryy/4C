@@ -21,10 +21,13 @@
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(const double& upperboundval,
-    const NOX::Abstract::Vector::NormType normtype, const NOX::NLN::StatusTest::QuantityType qtype)
+    const ::NOX::Abstract::Vector::NormType normtype,
+    const NOX::NLN::StatusTest::QuantityType qtype)
     : status_(status_unevaluated),
       normtype_(normtype),
       qtype_(qtype),
@@ -38,8 +41,8 @@ NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(const double& upperboundval,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::INNER::StatusTest::UpperBound::GetSearchDirectionLength(
-    const NOX::NLN::LineSearch::Generic& linesearch, const NOX::Solver::Generic& solver,
-    const NOX::Abstract::Group& grp) const
+    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+    const ::NOX::Abstract::Group& grp) const
 {
   const NOX::NLN::Group& nln_grp = dynamic_cast<const NOX::NLN::Group&>(grp);
 
@@ -50,8 +53,8 @@ double NOX::NLN::INNER::StatusTest::UpperBound::GetSearchDirectionLength(
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound::CheckStatus(
     const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
-    const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-    NOX::StatusTest::CheckType checkType)
+    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
   /* check if it is a line search object: upper bound for Newton step size only
    * makes sense as inner status test for line search solvers */
@@ -105,12 +108,12 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
     else
       reduction_fac_ = 1.0;
   }
-  else if (checkType == NOX::StatusTest::None)
+  else if (checkType == ::NOX::StatusTest::None)
   {
     /*!
       The test can (and should, if possible) be skipped if
       checkType is NOX::StatusType::None. If the test is skipped, then
-      the status should be set to NOX::StatusTest::Unevaluated.
+      the status should be set to ::NOX::StatusTest::Unevaluated.
     */
     status_ = status_unevaluated;
   }
@@ -136,10 +139,10 @@ std::ostream& NOX::NLN::INNER::StatusTest::UpperBound::Print(std::ostream& strea
   stream << status_;
   stream << " ";
   stream << "Upper Bound for Newton step size: ";
-  stream << NOX::Utils::sciformat(stepmaxval_, 3) << " < "
-         << NOX::Utils::sciformat(upperboundval_, 3) << "\n";
-  stream << indent_string << NOX::Utils::fill(13, ' ')
-         << " (reduction factor = " << NOX::Utils::sciformat(reduction_fac_, 3) << ")\n";
+  stream << ::NOX::Utils::sciformat(stepmaxval_, 3) << " < "
+         << ::NOX::Utils::sciformat(upperboundval_, 3) << "\n";
+  stream << indent_string << ::NOX::Utils::fill(13, ' ')
+         << " (reduction factor = " << ::NOX::Utils::sciformat(reduction_fac_, 3) << ")\n";
 
   return stream;
 }
@@ -154,3 +157,5 @@ void NOX::NLN::INNER::StatusTest::UpperBound::throwError(
       << std::endl;
   dserror(msg.str());
 }
+
+BACI_NAMESPACE_CLOSE

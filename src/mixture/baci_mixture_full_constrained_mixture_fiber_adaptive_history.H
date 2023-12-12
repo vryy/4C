@@ -18,6 +18,8 @@
 #include <optional>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   class PackBuffer;
@@ -370,5 +372,7 @@ namespace MIXTURE
                CORE::FADUTILS::Norm<Number>(exact_integration) <= tolerance);
   }
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_ADAPTIVE_HISTORY_H

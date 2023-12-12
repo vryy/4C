@@ -17,6 +17,8 @@
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_linalg_gauss.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
@@ -1177,5 +1179,7 @@ namespace CORE::GEO
 
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_ELEMENT_COORDTRAFO_H

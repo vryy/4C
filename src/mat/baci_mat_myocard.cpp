@@ -25,6 +25,8 @@
 #include <fstream>  // For plotting ion concentrations
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                          cbert 09/12 |
@@ -588,3 +590,5 @@ void MAT::Myocard::Update(const double phi, const double dt)
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
 int MAT::Myocard::GetNumberOfGP() const { return myocard_mat_->GetNumberOfGP(); };
+
+BACI_NAMESPACE_CLOSE

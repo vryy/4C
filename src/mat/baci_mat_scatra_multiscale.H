@@ -14,6 +14,8 @@ problems
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -159,4 +161,6 @@ namespace MAT
     std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
   };  // material wrapper
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

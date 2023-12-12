@@ -11,6 +11,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 
 DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
@@ -58,3 +60,5 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
   }
   return {};
 }
+
+BACI_NAMESPACE_CLOSE

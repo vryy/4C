@@ -10,6 +10,8 @@
 #ifndef BACI_CONTACT_AUG_ENUM_LISTS_H
 #define BACI_CONTACT_AUG_ENUM_LISTS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -36,5 +38,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_ENUM_LISTS_H

@@ -17,6 +17,8 @@
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
 /*----------------------------------------------------------------------*/
@@ -73,3 +75,5 @@ Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bund
   // catch up
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

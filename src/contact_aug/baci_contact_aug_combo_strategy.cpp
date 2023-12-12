@@ -21,6 +21,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_solver_factory.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
@@ -686,3 +688,5 @@ std::ostream& CONTACT::AUG::ComboStrategy::Output::oscreen() const
   if (not oscreen_) dserror("Call initScreenOutput first");
   return *oscreen_;
 }
+
+BACI_NAMESPACE_CLOSE

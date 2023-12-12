@@ -16,6 +16,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem2.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// direct linear solver (using amesos)
@@ -73,5 +75,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -32,6 +32,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
 
@@ -133,11 +134,11 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-    pstype_ = ::UTILS::PRESTRESS::GetType();
-    pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+    pstype_ = BACI::UTILS::PRESTRESS::GetType();
+    pstime_ = BACI::UTILS::PRESTRESS::GetPrestressTime();
     if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
   }
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -178,7 +179,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
@@ -238,7 +239,7 @@ void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     CORE::COMM::ParObject::AddtoPack(data, *prestress_);
   }
@@ -285,7 +286,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -456,3 +457,5 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
   // do not throw an error if key does not exist.
   params.remove("fiberholder", false);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 
 #include "baci_mortar_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -88,5 +90,7 @@ namespace CONTACT
   };
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_PARAMSINTERFACE_H

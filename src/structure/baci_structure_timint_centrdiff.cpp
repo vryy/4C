@@ -19,6 +19,8 @@
 #include "baci_mortar_manager_base.H"
 #include "baci_mortar_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 STR::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
@@ -289,3 +291,5 @@ void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrit
 {
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
@@ -268,3 +270,5 @@ double XFEM::XFSCoupling_Manager::GetInterfaceTimefac()
   else
     return 1. / dt;
 }
+
+BACI_NAMESPACE_CLOSE

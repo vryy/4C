@@ -23,6 +23,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace BINSTRATEGY
 {
@@ -1803,5 +1805,7 @@ namespace MORTAR
 // << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarInterface& interface);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_INTERFACE_H

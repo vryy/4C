@@ -16,6 +16,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -1611,3 +1613,5 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   dserror("The output is only implemented for four different fiber directions!!!");
   return false;
 }  // VisData()
+
+BACI_NAMESPACE_CLOSE

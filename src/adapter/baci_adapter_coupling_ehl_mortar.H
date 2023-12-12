@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
  *---------------------------------------------------------------------*/
@@ -230,5 +232,7 @@ namespace ADAPTER
     double regularization_compliance_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_COUPLING_EHL_MORTAR_H

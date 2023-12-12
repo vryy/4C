@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_poro_p1_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
@@ -123,3 +125,5 @@ void DRT::ELEMENTS::So_tet4PoroP1ScatraType::SetupElementDefinition(
   defs["TET4"] =
       DRT::INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
 }
+
+BACI_NAMESPACE_CLOSE

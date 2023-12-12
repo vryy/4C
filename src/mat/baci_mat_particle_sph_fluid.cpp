@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | define static class member                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -121,3 +123,5 @@ void MAT::ParticleMaterialSPHFluid::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

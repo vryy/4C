@@ -16,6 +16,8 @@ Local electroneutrality is dismissed, which enables formation of Space-Charge-La
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_elchsinglemat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -189,5 +191,7 @@ namespace MAT
     MAT::PAR::Scl* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

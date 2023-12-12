@@ -25,6 +25,8 @@
 #include "baci_scatra_ele_hdg_intfaces_calc.H"
 #include "baci_scatra_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // initialize static variable
 DRT::ELEMENTS::ScaTraHDGType DRT::ELEMENTS::ScaTraHDGType::instance_;
@@ -1059,3 +1061,5 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::EvaluateNeumann(Teuchos::ParameterList& par
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

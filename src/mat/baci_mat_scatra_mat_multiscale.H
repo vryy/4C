@@ -12,6 +12,8 @@
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_scatra_multiscale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -139,4 +141,6 @@ namespace MAT
     MAT::PAR::ScatraMatMultiScale* params_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

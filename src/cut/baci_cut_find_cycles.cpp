@@ -10,6 +10,8 @@
 
 #include "baci_cut_find_cycles.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -292,3 +294,5 @@ namespace CORE::GEO
     }  // namespace IMPL
   }    // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE

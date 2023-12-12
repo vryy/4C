@@ -11,6 +11,8 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 using namespace DRT::UTILS;
 
@@ -2892,3 +2894,5 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

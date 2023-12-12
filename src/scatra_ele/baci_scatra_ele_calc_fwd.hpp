@@ -10,6 +10,7 @@
 
  *----------------------------------------------------------------------*/
 
+BACI_NAMESPACE_OPEN
 
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::line2, 1>;
@@ -40,5 +41,7 @@ template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalc<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

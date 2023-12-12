@@ -16,6 +16,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace UTILS
 {
   namespace PRESTRESS
@@ -207,5 +209,7 @@ namespace UTILS
 
   }  // namespace PRESTRESS
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

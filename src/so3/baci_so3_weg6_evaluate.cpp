@@ -25,6 +25,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
@@ -279,7 +281,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_WEG6 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_WEG6 + 2];
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_WEG6 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_WEG6 + 1];
@@ -307,7 +309,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
         CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -587,13 +589,13 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -641,7 +643,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_WEG6 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_WEG6 + 2];
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
       xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -667,7 +669,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1269,7 +1271,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       xcurr(i, 1) = x[1] + disp[i * NODDOF_WEG6 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_WEG6 + 2];
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
         xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -1297,7 +1299,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
+      if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1406,3 +1408,5 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

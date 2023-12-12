@@ -11,6 +11,8 @@
 
 #include "baci_contact_aug_integrator_policy.H"
 
+BACI_NAMESPACE_OPEN
+
 template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2,
     CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2>>;
 template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2,
@@ -147,5 +149,7 @@ template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE:
 template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4,
     CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
         CORE::FE::CellType::nurbs4>>;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

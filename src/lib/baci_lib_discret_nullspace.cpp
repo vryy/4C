@@ -8,6 +8,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
@@ -103,3 +105,5 @@ namespace DRT
     return nullspace;
   }
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

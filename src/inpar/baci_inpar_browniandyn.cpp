@@ -13,6 +13,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -59,3 +61,5 @@ void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "translational perpendicular/parallel to beam axis, rotational around axis",
       &browniandyn_list);
 }
+
+BACI_NAMESPACE_CLOSE

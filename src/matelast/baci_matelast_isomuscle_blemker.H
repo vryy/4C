@@ -19,6 +19,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace ELASTIC
@@ -151,5 +153,7 @@ namespace MAT
     };
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_ISOMUSCLE_BLEMKER_H

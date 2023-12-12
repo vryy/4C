@@ -20,6 +20,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
@@ -251,3 +253,5 @@ void POROELAST::MonolithicSplit::Solve()
   // (i.e. condensed forces onto the structure) needed for rhs in next time step
   RecoverLagrangeMultiplierAfterTimeStep();
 }
+
+BACI_NAMESPACE_CLOSE

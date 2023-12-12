@@ -17,6 +17,8 @@ with condensed structure interface displacements
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -211,9 +213,9 @@ namespace FSI
     void OutputLambda() override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams,     ///< parameter list
-        Teuchos::RCP<NOX::Epetra::Group> grp  ///< the NOX group
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams,       ///< parameter list
+        Teuchos::RCP<::NOX::Epetra::Group> grp  ///< the NOX group
         ) override;
 
     /*! \brief Extract the three field vectors from a given composed vector
@@ -270,10 +272,10 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     /// communicator
     const Epetra_Comm& comm_;
@@ -360,5 +362,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> iprojdisp_;     ///< displacement of fluid side of the interface
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

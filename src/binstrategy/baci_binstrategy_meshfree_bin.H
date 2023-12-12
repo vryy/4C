@@ -13,6 +13,8 @@
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace MESHFREE
@@ -149,5 +151,7 @@ namespace DRT
 
   }  // namespace MESHFREE
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BINSTRATEGY_MESHFREE_BIN_H

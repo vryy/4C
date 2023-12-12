@@ -15,6 +15,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -71,5 +73,7 @@ namespace BEAMINTERACTION
         const bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

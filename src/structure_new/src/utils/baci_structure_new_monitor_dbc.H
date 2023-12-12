@@ -14,6 +14,8 @@
 
 #include "baci_lib_condition.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -146,5 +148,7 @@ namespace STR
   };
 
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MONITOR_DBC_H

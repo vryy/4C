@@ -14,6 +14,8 @@
 #include "baci_linalg_mapextractor.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
@@ -151,3 +153,5 @@ void XFEM::XFACoupling_Manager::AddCouplingRHS(
   me.InsertVector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
   return;
 }
+
+BACI_NAMESPACE_CLOSE

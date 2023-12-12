@@ -21,6 +21,8 @@
 #include <string>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   class ParamsInterface;
@@ -98,5 +100,7 @@ namespace DRT
     };  // class Shell7pEleCalc
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

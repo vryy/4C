@@ -24,6 +24,8 @@
 
 #include <NOX_Solver_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   inline bool DetermineWriteOutput(int step, int offset, int write_every)
@@ -171,7 +173,7 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
   // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
-  Teuchos::RCP<NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
+  Teuchos::RCP<::NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
       new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(*writer_every_iter_));
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
@@ -291,7 +293,7 @@ NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEvery
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve(
-    const NOX::Solver::Generic& solver)
+    const ::NOX::Solver::Generic& solver)
 {
   every_iter_writer_.InitNewtonIteration();
 }
@@ -299,7 +301,7 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIterate(
-    const NOX::Solver::Generic& solver)
+    const ::NOX::Solver::Generic& solver)
 {
   const int newton_iteration = solver.getNumIterations();
   every_iter_writer_.AddNewtonIteration(newton_iteration);
@@ -308,10 +310,12 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIter
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreModifyStepLength(
-    const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch)
+    const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
 {
   const int newton_iteration = solver.getNumIterations();
   const int ls_iteration =
       dynamic_cast<const NOX::NLN::LineSearch::Generic&>(linesearch).GetNumIterations();
   every_iter_writer_.AddLineSearchIteration(newton_iteration, ls_iteration);
 }
+
+BACI_NAMESPACE_CLOSE

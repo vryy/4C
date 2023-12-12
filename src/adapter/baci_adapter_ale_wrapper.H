@@ -17,6 +17,8 @@
 #include "baci_adapter_ale.H"
 #include "baci_ale_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
@@ -299,5 +301,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> stepinc_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_WRAPPER_H

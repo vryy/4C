@@ -21,6 +21,8 @@
 #include <istream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -354,3 +356,5 @@ std::vector<Teuchos::RCP<DRT::Discretization>> DRT::INPUT::NodeReader::FindDisNo
 
   return list_of_discretizations;
 }
+
+BACI_NAMESPACE_CLOSE

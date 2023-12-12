@@ -11,6 +11,7 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -77,3 +78,5 @@ void GEOMETRYPAIR::LineTo3DEvaluationData::ResetTracker()
 
   for (auto& data : segment_tracker_) data.second.clear();
 }
+
+BACI_NAMESPACE_CLOSE

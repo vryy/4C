@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
@@ -513,9 +515,9 @@ void INPAR::PARTICLE::SetValidConditions(
   /*-------------------------------------------------------------------------*
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> particlewallcomponents;
-  particlewallcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("MAT")));
-  particlewallcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("MAT")));
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> particlewallcomponents;
+  particlewallcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("MAT")));
+  particlewallcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("MAT")));
 
   Teuchos::RCP<ConditionDefinition> surfpartwall =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PARTICLE WALL", "ParticleWall",
@@ -527,3 +529,5 @@ void INPAR::PARTICLE::SetValidConditions(
 
   condlist.push_back(surfpartwall);
 }
+
+BACI_NAMESPACE_CLOSE

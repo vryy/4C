@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   namespace SUBMODELEVALUATOR
@@ -47,5 +49,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

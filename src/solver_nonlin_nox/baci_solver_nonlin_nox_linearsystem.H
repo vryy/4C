@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
+\brief %NOX::NLN extension of the %::NOX::Epetra::LinearSystem.
 
 
 
@@ -18,6 +18,7 @@
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem.H>
 #include <Teuchos_Time.hpp>
+
 // Forward declaration
 class Epetra_Vector;
 class Epetra_RowMatrix;
@@ -28,15 +29,7 @@ namespace Teuchos
 {
   class ParameterList;
 }
-namespace CORE::LINALG
-{
-  class Solver;
-  class SparseOperator;
-  class SparseMatrix;
-  class SerialDenseMatrix;
-  class SerialDenseVector;
-  class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace Abstract
@@ -53,6 +46,19 @@ namespace NOX
     }  // namespace Interface
   }    // namespace Epetra
 }  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class Solver;
+  class SparseOperator;
+  class SparseMatrix;
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+  class BlockSparseMatrixBase;
+}  // namespace CORE::LINALG
+
 namespace NOX
 {
   namespace NLN
@@ -66,7 +72,7 @@ namespace NOX
       class PrePostOperator;
       class Scaling;
     }  // namespace LinSystem
-    class LinearSystem : public NOX::Epetra::LinearSystem
+    class LinearSystem : public ::NOX::Epetra::LinearSystem
     {
      public:
       typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> SolverMap;
@@ -91,37 +97,37 @@ namespace NOX
      public:
       //! Standard constructor with full functionality.
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
-          const SolverMap& solvers, const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-          const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
-          const NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+          const ::NOX::Epetra::Vector& cloneVector,
+          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
       //! Constructor without scaling object
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
-          const SolverMap& solvers, const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-          const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
-          const NOX::Epetra::Vector& cloneVector);
+          const ::NOX::Epetra::Vector& cloneVector);
 
       //! Constructor without preconditioner
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
-          const SolverMap& solvers, const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-          const NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+          const ::NOX::Epetra::Vector& cloneVector,
+          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
       //! Constructor without preconditioner and scaling object
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
-          const SolverMap& solvers, const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+          const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-          const NOX::Epetra::Vector& cloneVector);
+          const ::NOX::Epetra::Vector& cloneVector);
 
       //! reset the linear solver parameters
       void reset(Teuchos::ParameterList& p);
@@ -130,45 +136,46 @@ namespace NOX
       void resetPrePostOperator(Teuchos::ParameterList& p);
 
       //! Evaluate the Jacobian
-      bool computeJacobian(const NOX::Epetra::Vector& x) override;
+      bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
 
       //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
-      virtual bool computeFandJacobian(const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs);
+      virtual bool computeFandJacobian(const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs);
 
       bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
-          const NOX::Abstract::Group& grp, const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs);
+          const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x,
+          ::NOX::Epetra::Vector& rhs);
 
-      bool applyJacobianBlock(const NOX::Epetra::Vector& input,
-          Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
+      bool applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+          Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
 
       bool applyJacobian(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       bool applyJacobianTranspose(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) override;
 
       bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& linearSolverParams,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
-      bool createPreconditioner(const NOX::Epetra::Vector& x,
+      bool createPreconditioner(const ::NOX::Epetra::Vector& x,
           Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const override;
 
       //! adjust the pseudo time step (using a least squares approximation)
       void adjustPseudoTimeStep(double& delta, const double& stepSize,
-          const NOX::Epetra::Vector& dir, const NOX::Epetra::Vector& rhs,
+          const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
           const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
-      //! NOX::Epetra::Interface::Required accessor
-      Teuchos::RCP<const NOX::Epetra::Interface::Required> getRequiredInterface() const;
+      //! ::NOX::Epetra::Interface::Required accessor
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Required> getRequiredInterface() const;
 
-      //! NOX::Epetra::Interface::Jacobian accessor
-      Teuchos::RCP<const NOX::Epetra::Interface::Jacobian> getJacobianInterface() const;
+      //! ::NOX::Epetra::Interface::Jacobian accessor
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian> getJacobianInterface() const;
 
-      //! NOX::Epetra::Interface::Preconditioner accessor
-      Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
+      //! ::NOX::Epetra::Interface::Preconditioner accessor
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
 
       /** \brief return the Jacobian range map
        *
@@ -210,16 +217,16 @@ namespace NOX
       void SetJacobianOperatorForSolve(
           const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp);
 
-      Teuchos::RCP<NOX::Epetra::Scaling> getScaling() override;
+      Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
 
-      void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject) override;
+      void resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) override;
 
       bool destroyPreconditioner() const override;
 
-      bool recomputePreconditioner(
-          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const override;
+      bool recomputePreconditioner(const ::NOX::Epetra::Vector& x,
+          Teuchos::ParameterList& linearSolverParams) const override;
 
-      NOX::Epetra::LinearSystem::PreconditionerReusePolicyType getPreconditionerPolicy(
+      ::NOX::Epetra::LinearSystem::PreconditionerReusePolicyType getPreconditionerPolicy(
           bool advanceReuseCounter) override;
 
       bool isPreconditionerConstructed() const override;
@@ -337,22 +344,22 @@ namespace NOX
 
      protected:
       //! Printing Utilities object
-      NOX::Utils utils_;
+      ::NOX::Utils utils_;
 
       //! Solver pointers
       const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers_;
 
       //! Reference to the user supplied required interface functions
-      Teuchos::RCP<NOX::Epetra::Interface::Required> reqInterfacePtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> reqInterfacePtr_;
 
       //! Reference to the user supplied Jacobian interface functions
-      Teuchos::RCP<NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
 
       //! Type of operator for the Jacobian.
       NOX::NLN::LinSystem::OperatorType jacType_;
 
       //! Reference to the user supplied preconditioner interface functions
-      Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
 
       //! Type of operator for the preconditioner.
       NOX::NLN::LinSystem::OperatorType precType_;
@@ -363,7 +370,7 @@ namespace NOX
       PreconditionerMatrixSourceType precMatrixSource_;
 
       //! Scaling object supplied by the user
-      Teuchos::RCP<NOX::Epetra::Scaling> scaling_;
+      Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
 
       double conditionNumberEstimate_;
 
@@ -403,5 +410,6 @@ namespace NOX
   }  // namespace NLN
 }  // namespace NOX
 
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_H

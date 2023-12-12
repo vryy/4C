@@ -24,6 +24,7 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -31,11 +32,11 @@ namespace NOX
   {
     /// generalized conjugate residual linear system solver for NOX
     /*!
-      A lot of details stolen from NOX::Epetra::LinearSystemAztecOO.
+      A lot of details stolen from ::NOX::Epetra::LinearSystemAztecOO.
       No preconditioner supported.
       Reuse of internal search directions supported.
      */
-    class LinearSystemGCR : public NOX::Epetra::LinearSystem
+    class LinearSystemGCR : public ::NOX::Epetra::LinearSystem
     {
      protected:
       //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
@@ -55,10 +56,10 @@ namespace NOX
       //! Constructor with a user supplied Jacobian Operator.
       LinearSystemGCR(Teuchos::ParameterList& printParams,
           Teuchos::ParameterList& linearSolverParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-          const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<Epetra_Operator>& J, const NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+          const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
+          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
       //! Reset the linear solver parameters.
       virtual void reset(Teuchos::ParameterList& linearSolverParams);
@@ -72,7 +73,7 @@ namespace NOX
         and \f$v\f$ is the result vector.  Returns true if successful.
       */
       bool applyJacobian(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       /*!
         \brief Applies Jacobian-Transpose to the given input vector and puts the answer in the
@@ -85,7 +86,7 @@ namespace NOX
 
       */
       bool applyJacobianTranspose(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       /*!
         \brief Applies the inverse of the Jacobian matrix to the given
@@ -98,8 +99,8 @@ namespace NOX
 
         The parameter list contains the linear solver options.
       */
-      bool applyJacobianInverse(Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
-          NOX::Epetra::Vector& result) override;
+      bool applyJacobianInverse(Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+          ::NOX::Epetra::Vector& result) override;
 
       /*!
         \brief Apply right preconditiong to the given input vector
@@ -121,37 +122,37 @@ namespace NOX
         The parameter list contains the linear solver options.
       */
       bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
+          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       //! Get the scaling object
-      Teuchos::RCP<NOX::Epetra::Scaling> getScaling() override;
+      Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
 
       /*!
         \brief Sets the diagonal scaling vector(s) used in scaling the linear system.
 
-        See NOX::Epetra::Scaling for details on how to specify scaling
+        See ::NOX::Epetra::Scaling for details on how to specify scaling
         of the linear system.
       */
-      void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& s) override;
+      void resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& s) override;
 
       //! Evaluates the Jacobian based on the solution vector x.
-      bool computeJacobian(const NOX::Epetra::Vector& x) override;
+      bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
 
       /*!
         \brief Explicitly constructs a preconditioner based on the solution vector x and the
         parameter list p.
 
         The user has the option of recomputing the graph when a new
-        preconditioner is created. The NOX::Epetra::Group controls the
+        preconditioner is created. The ::NOX::Epetra::Group controls the
         isValid flag for the preconditioner and will control when to call this.
       */
-      bool createPreconditioner(const NOX::Epetra::Vector& x, Teuchos::ParameterList& p,
+      bool createPreconditioner(const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p,
           bool recomputeGraph) const override;
 
       /*!
         \brief Deletes the preconditioner.
 
-        The NOX::Epetra::Group controls the isValid flag for the preconditioner and will control
+        The ::NOX::Epetra::Group controls the isValid flag for the preconditioner and will control
         when to call this.
       */
       bool destroyPreconditioner() const override;
@@ -163,8 +164,8 @@ namespace NOX
       reallocating the memory required for the preconditioner and
       results in a big speed-up for large-scale jobs.
       */
-      bool recomputePreconditioner(
-          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const override;
+      bool recomputePreconditioner(const ::NOX::Epetra::Vector& x,
+          Teuchos::ParameterList& linearSolverParams) const override;
 
       /*! \brief  Evaluates the preconditioner policy at the current state.
 
@@ -218,7 +219,8 @@ namespace NOX
         GMRES methods, Num. Lin. Alg. Appl., 1 (1994),
         pp. 369--386. http://citeseer.ist.psu.edu/vandervorst91gmresr.html
        */
-      int SolveGCR(const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& maxit, double& tol);
+      int SolveGCR(
+          const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& maxit, double& tol);
 
       /// GMRES solver
       /*!
@@ -230,8 +232,8 @@ namespace NOX
         Linear Systems: Building Blocks for Iterative Methods, SIAM
         (1993)
       */
-      int SolveGMRES(
-          const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& max_iter, double& tol, int m);
+      int SolveGMRES(const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter,
+          double& tol, int m);
 
       /// helper for GMRES
       void ApplyPlaneRotation(double& dx, double& dy, double& cs, double& sn);
@@ -243,10 +245,10 @@ namespace NOX
 
      protected:
       //! Printing Utilities object
-      NOX::Utils utils;
+      ::NOX::Utils utils;
 
       //! Reference to the user supplied Jacobian interface functions
-      Teuchos::RCP<NOX::Epetra::Interface::Jacobian> jacInterfacePtr;
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr;
 
       //! Type of operator for the Jacobian.
       OperatorType jacType;
@@ -255,10 +257,10 @@ namespace NOX
       mutable Teuchos::RCP<Epetra_Operator> jacPtr;
 
       //! Scaling object supplied by the user
-      Teuchos::RCP<NOX::Epetra::Scaling> scaling;
+      Teuchos::RCP<::NOX::Epetra::Scaling> scaling;
 
       //! An extra temporary vector, only allocated if needed.
-      mutable Teuchos::RCP<NOX::Epetra::Vector> tmpVectorPtr;
+      mutable Teuchos::RCP<::NOX::Epetra::Vector> tmpVectorPtr;
 
       mutable double conditionNumberEstimate;
 
@@ -279,12 +281,14 @@ namespace NOX
       //! Total time spent in applyJacobianInverse (sec.).
       mutable double timeApplyJacbianInverse;
 
-      std::vector<Teuchos::RCP<NOX::Epetra::Vector>> u_;
+      std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> u_;
 
-      std::vector<Teuchos::RCP<NOX::Epetra::Vector>> c_;
+      std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> c_;
     };
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

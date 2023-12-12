@@ -16,6 +16,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_condition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace DRT
@@ -199,5 +201,7 @@ namespace INPAR
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace BEAMTOSOLID
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

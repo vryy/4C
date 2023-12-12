@@ -13,6 +13,8 @@
 
 #include "baci_nurbs_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace NURBS
@@ -199,5 +201,7 @@ namespace DRT
   }  // namespace NURBS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // NURBS_DISCRET_NURBS_UTILS_H

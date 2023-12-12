@@ -14,6 +14,8 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_nonconforming.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASESCATRA
 {
   // forward declaration
@@ -93,5 +95,7 @@ namespace POROMULTIPHASESCATRA
   };
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_SURFBASED_H

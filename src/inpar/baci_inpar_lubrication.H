@@ -12,6 +12,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace LUBRICATION
@@ -89,5 +91,7 @@ namespace INPAR
 
   }  // namespace LUBRICATION
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // INPAR_LUBRICATION_H

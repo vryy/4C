@@ -17,12 +17,14 @@
 
 #include <unordered_map>
 
-
-// Forward declarations.
 namespace
 {
   class GeometryPairLineToSurfacePatchTest;
 }
+
+BACI_NAMESPACE_OPEN
+
+// Forward declarations.
 namespace GEOMETRYPAIR
 {
   struct ConnectedFace;
@@ -570,5 +572,7 @@ namespace GEOMETRYPAIR
       const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

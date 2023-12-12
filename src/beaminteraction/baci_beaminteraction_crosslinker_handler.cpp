@@ -20,6 +20,7 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -654,3 +655,5 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::GetNeighbouringBinsOfLinkerContain
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
@@ -223,3 +225,5 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

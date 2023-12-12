@@ -11,6 +11,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -113,3 +115,5 @@ CORE::DRT::UTILS::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_
     }
   }
 };
+
+BACI_NAMESPACE_CLOSE

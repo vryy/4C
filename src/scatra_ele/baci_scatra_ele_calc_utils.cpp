@@ -13,6 +13,8 @@
 
 #include "baci_lib_condition_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*----------------------------------------------------------------------*/
@@ -223,3 +225,5 @@ namespace SCATRA
     return impltypestring;
   }
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE

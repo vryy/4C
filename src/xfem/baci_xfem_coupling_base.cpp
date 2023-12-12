@@ -21,6 +21,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
 {
   if (condname == "XFEMSurfFSIPart")
@@ -750,3 +752,5 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

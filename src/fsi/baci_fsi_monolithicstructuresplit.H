@@ -16,6 +16,8 @@ with condensed structure interface displacements
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -180,8 +182,8 @@ namespace FSI
     void CreateSystemMatrix();
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -317,5 +319,7 @@ namespace FSI
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

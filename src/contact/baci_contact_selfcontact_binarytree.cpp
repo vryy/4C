@@ -16,6 +16,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|
  *----------------------------------------------------------------------*/
@@ -2001,3 +2003,5 @@ void CONTACT::SelfBinaryTree::PlotRootsAndTree()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

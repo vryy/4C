@@ -22,6 +22,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -31,7 +33,7 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class DiscretizationFaces : public Discretization
+  class DiscretizationFaces : public BACI::DRT::Discretization
   {
    public:
     /*!
@@ -341,5 +343,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_FACES_H

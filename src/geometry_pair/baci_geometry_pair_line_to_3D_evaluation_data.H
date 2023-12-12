@@ -17,6 +17,7 @@
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_inpar_geometry_pair.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -134,5 +135,7 @@ namespace GEOMETRYPAIR
     std::map<int, std::set<LineSegment<double>>> segment_tracker_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

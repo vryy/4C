@@ -16,6 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FluidFluidFSI;
@@ -312,5 +314,7 @@ namespace FSI
     Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -133,6 +133,8 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -226,6 +228,8 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -308,6 +312,8 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
+  using namespace BACI;
+
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
@@ -379,6 +385,8 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
 
 void PostVtiWriter::WriterPrepTimestep()
 {
+  using namespace BACI;
+
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, less_tol<double>> set_tol;

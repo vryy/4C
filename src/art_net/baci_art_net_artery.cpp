@@ -14,6 +14,8 @@
 #include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 using namespace DRT::UTILS;
 
 DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
@@ -182,3 +184,5 @@ void DRT::ELEMENTS::Artery::Print(std::ostream& os) const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
@@ -79,3 +81,5 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

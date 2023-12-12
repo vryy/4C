@@ -18,6 +18,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 //! note for chemotaxis in BACI:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
 //! attractant and scalar A the chemotractant) with chemotactic coefficient 3.0
@@ -385,3 +387,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

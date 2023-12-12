@@ -22,10 +22,12 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Direction::ModifiedNewton::ModifiedNewton(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& p)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& p)
     : NOX::NLN::Direction::Newton(gd, p),
       init_primal_diag_corr_(p.sublist("Newton", true)
                                  .sublist("Modified", true)
@@ -88,8 +90,8 @@ void NOX::NLN::Direction::ModifiedNewton::fillDefaultStepTests(Teuchos::Paramete
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::computeCorrectionDirection(NOX::Abstract::Vector& dir,
-    NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver,
+bool NOX::NLN::Direction::ModifiedNewton::computeCorrectionDirection(::NOX::Abstract::Vector& dir,
+    ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver,
     NOX::NLN::CorrectionType corr_type)
 {
   switch (corr_type)
@@ -123,7 +125,7 @@ bool NOX::NLN::Direction::ModifiedNewton::computeCorrectionDirection(NOX::Abstra
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::ModifiedNewton::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
+    ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   *corr_counter_ = 0;
   stagnation_counter_ = 0;
@@ -190,7 +192,7 @@ void NOX::NLN::Direction::ModifiedNewton::updateSuccessiveReductionCounter()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::ModifiedNewton::getDiagonal(
-    const NOX::Abstract::Group& grp) const
+    const ::NOX::Abstract::Group& grp) const
 {
   // fill the diagonal
   Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::null;
@@ -216,8 +218,8 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::ModifiedNewton::getDiagonal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::testDefaultStepQuality(NOX::Abstract::Vector& dir,
-    NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test)
+bool NOX::NLN::Direction::ModifiedNewton::testDefaultStepQuality(::NOX::Abstract::Vector& dir,
+    ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test)
 {
   bool status = true;
   // perform the test
@@ -240,13 +242,13 @@ bool NOX::NLN::Direction::ModifiedNewton::testDefaultStepQuality(NOX::Abstract::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::computeModifiedNewton(NOX::Abstract::Vector& dir,
-    NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver, Epetra_Vector* diagonal)
+bool NOX::NLN::Direction::ModifiedNewton::computeModifiedNewton(::NOX::Abstract::Vector& dir,
+    ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal)
 {
   // Compute F and Jacobian at current solution.
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
-  NOX::Abstract::Group::ReturnType status = nln_grp.computeFandJacobian();
-  if (status != NOX::Abstract::Group::Ok)
+  ::NOX::Abstract::Group::ReturnType status = nln_grp.computeFandJacobian();
+  if (status != ::NOX::Abstract::Group::Ok)
     throwError(__LINE__, "compute", "Unable to compute F and/or Jacobian");
 
   if (not modifySystem(grp, diagonal)) return false;
@@ -261,7 +263,7 @@ bool NOX::NLN::Direction::ModifiedNewton::computeModifiedNewton(NOX::Abstract::V
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
+    ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   // sanity check
   if (not grp.isF()) dserror("At this point the right hand side must be fully evaluated!");
@@ -280,20 +282,20 @@ bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
       params_->sublist("Newton", true).sublist("Linear Solver", true);
 
   fp_except_.precompute();
-  NOX::Abstract::Group::ReturnType status = grp.computeNewton(plinsolver);
-  if (fp_except_.postcompute(utils_->out(NOX::Utils::Warning)))
-    status = NOX::Abstract::Group::ReturnType::Failed;
+  ::NOX::Abstract::Group::ReturnType status = grp.computeNewton(plinsolver);
+  if (fp_except_.postcompute(utils_->out(::NOX::Utils::Warning)))
+    status = ::NOX::Abstract::Group::ReturnType::Failed;
 
   dir = grp.getNewton();
-  if (status == NOX::Abstract::Group::Ok) setStagnationCounter(dir);
+  if (status == ::NOX::Abstract::Group::Ok) setStagnationCounter(dir);
 
-  return (status == NOX::Abstract::Group::Ok);
+  return (status == ::NOX::Abstract::Group::Ok);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::ModifiedNewton::solveUnmodifiedSystem(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp, const NOX::Solver::Generic& solver)
+    ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   if (not useUnmodifiedSystem()) return false;
 
@@ -301,16 +303,16 @@ bool NOX::NLN::Direction::ModifiedNewton::solveUnmodifiedSystem(
   {
     fp_except_.precompute();
     const bool success = Newton::compute(dir, grp, solver);
-    if (fp_except_.postcompute(utils_->out(NOX::Utils::Warning))) return false;
+    if (fp_except_.postcompute(utils_->out(::NOX::Utils::Warning))) return false;
 
     return success;
   }
   catch (const char* e)
   {
-    utils_->out(NOX::Utils::Warning)
-        << NOX::Utils::fill(40, '*') << "\n"
+    utils_->out(::NOX::Utils::Warning)
+        << ::NOX::Utils::fill(40, '*') << "\n"
         << "WARNING: Error caught during the linear solver call = " << e << "\n"
-        << NOX::Utils::fill(40, '*') << "\n";
+        << ::NOX::Utils::fill(40, '*') << "\n";
 
     return false;
   }
@@ -319,7 +321,7 @@ bool NOX::NLN::Direction::ModifiedNewton::solveUnmodifiedSystem(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
-    NOX::Abstract::Group& grp, Epetra_Vector* diagonal)
+    ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal)
 {
   primal_diag_corr_ = getPrimalDiagCorrection(*corr_counter_ == 0);
 
@@ -331,9 +333,9 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::setStagnationCounter(NOX::Abstract::Vector& dir)
+void NOX::NLN::Direction::ModifiedNewton::setStagnationCounter(::NOX::Abstract::Vector& dir)
 {
-  double dir_nrm2 = dir.norm(NOX::Abstract::Vector::TwoNorm);
+  double dir_nrm2 = dir.norm(::NOX::Abstract::Vector::TwoNorm);
   static double prev_dir_nrm2 = 0.0;
 
   if (std::abs(prev_dir_nrm2 - dir_nrm2) < 1.0e-3 * prev_dir_nrm2) ++stagnation_counter_;
@@ -351,7 +353,7 @@ void NOX::NLN::Direction::ModifiedNewton::setStagnationCounter(NOX::Abstract::Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
-    NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr)
+    ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr)
 {
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
 
@@ -427,28 +429,28 @@ void NOX::NLN::Direction::ModifiedNewton::storeCorrectionFactor()
 void NOX::NLN::Direction::ModifiedNewton::print(
     std::ostream& os, const NOX::NLN::CorrectionType* corr_type) const
 {
-  os << NOX::Utils::fill(80, '=') << "\nNOX::NLN::Direction::ModifiedNewton\n"
+  os << ::NOX::Utils::fill(80, '=') << "\nNOX::NLN::Direction::ModifiedNewton\n"
      << "The system matrix has been " << *corr_counter_ << " time(s) corrected"
      << " before a reliable solution \nof the linear system could be obtained.\n"
-     << NOX::Utils::fill(80, '=');
+     << ::NOX::Utils::fill(80, '=');
 
   if (corr_type)
     os << "\nCorrection Type = " << NOX::NLN::CorrectionType2String(*corr_type) << "\n"
-       << NOX::Utils::fill(80, '-');
+       << ::NOX::Utils::fill(80, '-');
 
   os << "\nStagnation detected                       = " << stagnation_counter_
      << "\nSuccessive reduction counter              = " << successive_red_counter_ << "\n"
-     << NOX::Utils::fill(80, '-')
+     << ::NOX::Utils::fill(80, '-')
      << "\nLast primal diagonal correction factor    = " << primal_diag_corr_last_
      << "\nCurrent primal diagonal correction factor = " << primal_diag_corr_ << "\n"
-     << NOX::Utils::fill(80, '-')
+     << ::NOX::Utils::fill(80, '-')
      << "\nInitial primal diagonal correction = " << init_primal_diag_corr_
      << "\nMinimal primal diagonal correction = " << min_primal_diag_corr_
      << "\nMaximal primal diagonal correction = " << max_primal_diag_corr_
      << "\nPrimal reduction factor            = " << primal_red_fac_
      << "\nPrimal acceration factor           = " << primal_acc_fac_
      << "\nPrimal high acceration factor      = " << primal_high_acc_fac_ << "\n"
-     << NOX::Utils::fill(80, '=') << std::endl;
+     << ::NOX::Utils::fill(80, '=') << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -456,9 +458,11 @@ void NOX::NLN::Direction::ModifiedNewton::print(
 void NOX::NLN::Direction::ModifiedNewton::throwError(
     const int line, const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_->isPrintType(NOX::Utils::Error))
+  if (utils_->isPrintType(::NOX::Utils::Error))
     utils_->err() << line << " -- "
                   << "NOX::NLN::Direction::ModifiedNewton::" << functionName << " - " << errorMsg
                   << std::endl;
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

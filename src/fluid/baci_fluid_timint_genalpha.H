@@ -15,6 +15,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -248,5 +250,7 @@ namespace FLD
   };  // class TimIntGenAlpha
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_GENALPHA_H

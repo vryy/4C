@@ -21,6 +21,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
@@ -54,7 +56,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       ptc_delta_init_(0.0),
       linsolvers_(Teuchos::null),
       normtype_(INPAR::STR::norm_vague),
-      nox_normtype_(NOX::Abstract::Vector::TwoNorm),
+      nox_normtype_(::NOX::Abstract::Vector::TwoNorm),
       tol_disp_incr_(-1.0),
       toltype_disp_incr_(INPAR::STR::convnorm_abs),
       tol_fres_(-1.0),
@@ -772,3 +774,5 @@ void STR::TIMINT::ExplEulerDataSDyn::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

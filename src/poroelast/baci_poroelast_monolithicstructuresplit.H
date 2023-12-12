@@ -13,6 +13,8 @@ interface
 
 #include "baci_poroelast_monolithicsplit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LINALG
 {
@@ -109,5 +111,7 @@ namespace POROELAST
   };
 
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_MONOLITHICSTRUCTURESPLIT_H

@@ -17,6 +17,8 @@
 // required because of used enums
 #include <NOX_Abstract_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace CORE::LINALG
 {
@@ -64,9 +66,10 @@ namespace STR
        *  purpose we only need the right order of magnitude, so we don't
        *  mind evaluating the corresponding norms at possibly different
        *  points within the time-step (end point, generalized midpoint). */
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override = 0;
+      double CalcRefNormForce(
+          const enum ::NOX::Abstract::Vector::NormType& type) const override = 0;
 
-      //! return the default step length of the used NOX::LineSearch method
+      //! return the default step length of the used ::NOX::LineSearch method
       double GetDefaultStepLength() const;
 
       //! @name Monolithic update routines
@@ -217,7 +220,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const ::STR::IMPLICIT::Generic& implicit)
+          Generic(const STR::IMPLICIT::Generic& implicit)
               : impl_(implicit), default_step_(implicit.GetDefaultStepLength()){/* empty */};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
@@ -248,14 +251,14 @@ namespace NOX
               const double& step, const NOX::NLN::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
-           *  NOX::Solver::Generic::step()
+           *  ::NOX::Solver::Generic::step()
            *
            *  This method gives you the opportunity to do something in the end of
            *  a successful or unsuccessful nonlinear solver step. It is called after
            *  a possible LineSearch or other globalization method has been used.
            *
            *  \author hiermeier \date 03/17 */
-          void runPostIterate(const NOX::Solver::Generic& solver) override;
+          void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
            *  NOX::NLN::Group::applyJacobianInverse()
@@ -266,7 +269,7 @@ namespace NOX
            *  \note The result vector is the actual result vector of the internal
            *  linear solver and, accordingly, due to the used sign convention in NOX,
            *  the NEGATIVE direction vector. The sign will be changed again in the
-           *  NOX::Epetra::Group::computeNewton method.
+           *  ::NOX::Epetra::Group::computeNewton method.
            *
            *  \param rhs    : read-only access to the rhs vector
            *  \param result : full access to the result vector
@@ -274,14 +277,14 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author hiermeier \date 12/17 */
-          void runPostApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
-              NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+          void runPostApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+              ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
               const NOX::NLN::Group& grp) override;
 
           /// \brief Called at the very beginning of a Newton loop
           /**
            *  \author hiermeier \date 05/18 */
-          void runPreSolve(const NOX::Solver::Generic& solver) override;
+          void runPreSolve(const ::NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the beginning of a call to
            *  NOX::NLN::Group::applyJacobianInverse()
@@ -292,27 +295,27 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author seitz \date 04/18 */
-          void runPreApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
-              NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+          void runPreApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+              ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
               const NOX::NLN::Group& grp) override;
 
          private:
-          /*! \brief Convert NOX::Abstract::Vector to Epetra_Vector
+          /*! \brief Convert ::NOX::Abstract::Vector to Epetra_Vector
            *
            *  \param[in] vec Vector to be converted
            */
-          Epetra_Vector& convert2EpetraVector(NOX::Abstract::Vector& vec) const;
-          const Epetra_Vector& convert2EpetraVector(const NOX::Abstract::Vector& vec) const;
+          Epetra_Vector& convert2EpetraVector(::NOX::Abstract::Vector& vec) const;
+          const Epetra_Vector& convert2EpetraVector(const ::NOX::Abstract::Vector& vec) const;
 
           /// get the step length
-          bool getStep(double& step, const NOX::Solver::Generic& solver) const;
+          bool getStep(double& step, const ::NOX::Solver::Generic& solver) const;
 
           /// get the number of necessary system corrections in case of a mod newton direction
-          int getNumberOfModifiedNewtonCorrections(const NOX::Solver::Generic& solver) const;
+          int getNumberOfModifiedNewtonCorrections(const ::NOX::Solver::Generic& solver) const;
 
          private:
           //! reference to the STR::IMPLICIT::Generic object (read-only)
-          const ::STR::IMPLICIT::Generic& impl_;
+          const STR::IMPLICIT::Generic& impl_;
 
           //! default step length
           const double default_step_;
@@ -323,5 +326,7 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_GENERIC_H

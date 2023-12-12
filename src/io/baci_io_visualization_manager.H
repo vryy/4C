@@ -17,6 +17,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /**
@@ -127,5 +129,7 @@ namespace IO
     std::string base_output_name_;
   };
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,6 +19,8 @@
 
 int main(int argc, char *argv[])
 {
+  using namespace BACI;
+
   MPI_Init(&argc, &argv);
 
   printf(
@@ -53,6 +55,7 @@ int main(int argc, char *argv[])
      * TODO: Other files can be written as readthedocs Reference files (e.g. Element Reference)
      */
   }
+
   MPI_Finalize();
 
   return (0);

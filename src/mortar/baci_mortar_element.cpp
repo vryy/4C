@@ -19,6 +19,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
@@ -1715,3 +1717,5 @@ MORTAR::MortarElementNitscheContainer& MORTAR::MortarElement::GetNitscheContaine
     }
   return *nitsche_container_;
 }
+
+BACI_NAMESPACE_CLOSE

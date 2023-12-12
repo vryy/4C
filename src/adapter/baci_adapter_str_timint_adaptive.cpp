@@ -16,6 +16,8 @@
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_create.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*======================================================================*/
 /* constructor */
@@ -46,3 +48,5 @@ void ADAPTER::StructureTimIntAda::Output() { sta_->OutputPeriod(); }
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

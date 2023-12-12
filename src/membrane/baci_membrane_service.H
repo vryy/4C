@@ -12,6 +12,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MEMBRANE
 {
   /*!
@@ -51,5 +53,7 @@ namespace MEMBRANE
   }
 
 }  // namespace MEMBRANE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

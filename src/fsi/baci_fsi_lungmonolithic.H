@@ -18,6 +18,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 
 namespace UTILS
@@ -153,12 +155,12 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StructToAleOutflow(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils) override;
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the three field vectors from a given composed vector
     /*!
@@ -223,7 +225,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector>
         IncLagrMultVec_;  ///< nonlinear iteration increment vector of lagrange multipliers
 
-    Teuchos::RCP<::UTILS::ConstraintDofSet>
+    Teuchos::RCP<BACI::UTILS::ConstraintDofSet>
         ConstrDofSet_;                       ///< degrees of freedom of lagrange multipliers
     int OffsetID_;                           ///< smallest constraint boundary condition ID
     int NumConstrID_;                        ///< number of volume constraint boundary conditions
@@ -306,5 +308,7 @@ namespace FSI
     void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

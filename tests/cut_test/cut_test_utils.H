@@ -15,6 +15,8 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -25,6 +27,10 @@ namespace CORE::GEO
     class Side;
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
+
+using namespace BACI;
 
 class SimpleWrapper
 {

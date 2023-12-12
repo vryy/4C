@@ -21,6 +21,8 @@
 // forward declaration
 class Epetra_FEVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseOperator;
@@ -59,7 +61,7 @@ namespace STR
       void Init();
 
       /// setup of the new class variables
-      void Setup(Teuchos::RCP<const ::DRT::Discretization> const& ia_discret);
+      void Setup(Teuchos::RCP<const BACI::DRT::Discretization> const& ia_discret);
 
      protected:
       inline const bool& IsInit() const { return isinit_; };
@@ -242,7 +244,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> GetMultiDis()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
@@ -325,7 +327,7 @@ namespace STR
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
       Teuchos::RCP<Epetra_Vector> dis_restart_;
@@ -362,5 +364,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

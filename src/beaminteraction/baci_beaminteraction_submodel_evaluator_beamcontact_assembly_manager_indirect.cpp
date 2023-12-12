@@ -22,6 +22,8 @@ coupling matrices M and D first.
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -30,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
     BeamContactAssemblyManagerInDirect(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
             assembly_contact_elepairs,
-        const Teuchos::RCP<const ::DRT::Discretization>& discret,
+        const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamContactAssemblyManager()
 {
@@ -50,7 +52,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::EvaluateForceStiff(
-    Teuchos::RCP<::DRT::Discretization> discret,
+    Teuchos::RCP<BACI::DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
 {
@@ -67,3 +69,5 @@ double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::G
 {
   return mortar_manager_->GetEnergy();
 }
+
+BACI_NAMESPACE_CLOSE

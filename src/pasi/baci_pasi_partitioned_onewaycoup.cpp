@@ -14,6 +14,8 @@
 #include "baci_particle_wall_datastate.H"
 #include "baci_particle_wall_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -90,3 +92,5 @@ void PASI::PASI_PartOneWayCoup::Output()
   // output of particle field
   ParticleOutput();
 }
+
+BACI_NAMESPACE_CLOSE

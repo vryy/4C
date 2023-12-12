@@ -17,6 +17,8 @@
 #include "baci_lib_discret.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
@@ -36,3 +38,5 @@ void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetr
   if (intfforce != Teuchos::null)
     interface_->AddPASICondVector(intfforce, PASIModelEvaluator()->GetInterfaceForceNpPtr());
 }
+
+BACI_NAMESPACE_CLOSE

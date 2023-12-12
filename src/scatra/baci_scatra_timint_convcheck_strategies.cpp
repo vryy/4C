@@ -19,6 +19,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 02/16 |
  *----------------------------------------------------------------------*/
@@ -1380,3 +1382,5 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // proceed with next iteration step
   return false;
 }  // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,8 @@ extern "C"
 #include "baci_io_legacy_types.h"
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /// control class to manage a control file for output
@@ -147,5 +149,7 @@ namespace IO
   size_t RestartFinder(const std::string& filename);
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

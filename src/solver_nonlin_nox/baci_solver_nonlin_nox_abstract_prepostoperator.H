@@ -20,10 +20,6 @@
 
 // forward declaration
 class Epetra_Vector;
-namespace CORE::LINALG
-{
-  class SparseOperator;
-}  // namespace CORE::LINALG
 namespace NOX
 {
   namespace Abstract
@@ -34,6 +30,16 @@ namespace NOX
   {
     class Generic;
   }  // namespace LineSearch
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class SparseOperator;
+}  // namespace CORE::LINALG
+namespace NOX
+{
   namespace NLN
   {
     class Group;
@@ -82,7 +88,7 @@ namespace NOX
         \author Michael Hiermeier
        */
 
-      class PrePostOperator : public NOX::Observer
+      class PrePostOperator : public ::NOX::Observer
       {
        public:
         //! constructor (does nothing)
@@ -92,25 +98,25 @@ namespace NOX
         PrePostOperator(const NOX::NLN::Abstract::PrePostOperator& source){};
 
         /** @name Solver Pre/Post Operator
-         *  Non-linear solver pre/post-operator functions. See the  NOX::Solver::PrePostOperator
+         *  Non-linear solver pre/post-operator functions. See the  ::NOX::Solver::PrePostOperator
          *  class and its derived classes for more information. The virtual functions can be found
          * in the base class.
          */
         ///@{
         /** User defined method that will be executed at the start of a call to
-        NOX::Solver::Generic::iterate(). virtual void runPreIterate(const NOX::Solver::Generic&
+        ::NOX::Solver::Generic::iterate(). virtual void runPreIterate(const ::NOX::Solver::Generic&
         solver); */
 
         /** User defined method that will be executed at the end of a call to
-        NOX::Solver::Generic::iterate(). virtual void runPostIterate(const NOX::Solver::Generic&
+        ::NOX::Solver::Generic::iterate(). virtual void runPostIterate(const ::NOX::Solver::Generic&
         solver); */
 
         /** User defined method that will be executed at the start of a call to
-        NOX::Solver::Generic::solve().
-        virtual void runPreSolve(const NOX::Solver::Generic& solver); */
+        ::NOX::Solver::Generic::solve().
+        virtual void runPreSolve(const ::NOX::Solver::Generic& solver); */
 
         /** User defined method that will be executed at the end of a call to
-        NOX::Solver::Generic::solve(). virtual void runPostSolve(const NOX::Solver::Generic&
+        ::NOX::Solver::Generic::solve(). virtual void runPostSolve(const ::NOX::Solver::Generic&
         solver); */
         ///@}
 
@@ -126,7 +132,7 @@ namespace NOX
          * \param jac    : full access to the jacobian
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+        virtual void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -140,8 +146,8 @@ namespace NOX
          * \param jac    : full access to the jacobian
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostApplyJacobianInverse(NOX::Abstract::Vector& result,
-            NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
+        virtual void runPostApplyJacobianInverse(::NOX::Abstract::Vector& result,
+            ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
             const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -261,8 +267,8 @@ namespace NOX
          *  \param xold   : read-only access to the jacobian
          *  \param grp    : read only access to the group object
          */
-        virtual void runPreApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
-            NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+        virtual void runPreApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+            ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp)
         {
           return;
@@ -276,8 +282,8 @@ namespace NOX
          *  \param xold   : read-only access to the jacobian
          *  \param grp    : read only access to the group object
          */
-        virtual void runPostApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
-            NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+        virtual void runPostApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+            ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp)
         {
           return;
@@ -295,7 +301,7 @@ namespace NOX
          * \param solver     : Access to the underlying solver object.
          * \param linesearch : Access to the line search object. */
         virtual void runPreModifyStepLength(
-            const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch)
+            const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
         {
           return;
         }
@@ -307,5 +313,7 @@ namespace NOX
   }       // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_ABSTRACT_PREPOSTOPERATOR_H

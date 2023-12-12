@@ -21,6 +21,7 @@
 #include <limits>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
 
 namespace LIBB64
 {
@@ -849,3 +850,5 @@ void VtkWriterBase::ThrowErrorIfInvalidFileStream(const std::ostream& ostream) c
 {
   if (not ostream) dserror("VtkWriterBase: trying to write to invalid output stream!");
 }
+
+BACI_NAMESPACE_CLOSE

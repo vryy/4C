@@ -17,6 +17,8 @@
 #include "baci_lib_periodicbc.H"
 #include "baci_rebalance.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -543,3 +545,5 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     dserror("Nodes with separation condition expected!");
   }
 }
+
+BACI_NAMESPACE_CLOSE

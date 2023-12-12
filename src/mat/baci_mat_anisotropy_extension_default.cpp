@@ -17,6 +17,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 template <unsigned int numfib>
 MAT::DefaultAnisotropyExtension<numfib>::DefaultAnisotropyExtension(const int init_mode,
     const double gamma, const bool adapt_angle,
@@ -242,3 +244,4 @@ void MAT::DefaultAnisotropyExtension<numfib>::DoExternalFiberInitialization()
 // explicit instatiations of template classes
 template class MAT::DefaultAnisotropyExtension<1u>;
 template class MAT::DefaultAnisotropyExtension<2u>;
+BACI_NAMESPACE_CLOSE

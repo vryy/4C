@@ -29,6 +29,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -974,3 +976,5 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

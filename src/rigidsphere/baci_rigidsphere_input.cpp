@@ -11,6 +11,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_rigidsphere.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -23,3 +25,5 @@ bool DRT::ELEMENTS::Rigidsphere::ReadElement(
 
   return (true);
 }
+
+BACI_NAMESPACE_CLOSE

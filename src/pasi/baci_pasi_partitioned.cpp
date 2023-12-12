@@ -25,6 +25,8 @@
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -293,7 +295,7 @@ void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
     struct_adapterbase_ptr_->Setup();
 
     // get wrapper and cast it to specific type
-    structurefield_ = Teuchos::rcp_dynamic_cast<::ADAPTER::PASIStructureWrapper>(
+    structurefield_ = Teuchos::rcp_dynamic_cast<ADAPTER::PASIStructureWrapper>(
         struct_adapterbase_ptr_->StructureField());
 
     if (structurefield_ == Teuchos::null)
@@ -304,3 +306,5 @@ void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
         Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedPASI>(pasi_model_ptr));
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_control_point.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------
 
                   Standard Constructor (public)
@@ -1530,3 +1532,5 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
   return;
 }  // FLD::TurbulenceStatisticsCcy::AddScaTraResults
+
+BACI_NAMESPACE_CLOSE

@@ -46,6 +46,8 @@
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+  using namespace BACI;
+
   int restart = DRT::Problem::Instance()->Restart();
 
   // choose the entry-routine depending on the problem type

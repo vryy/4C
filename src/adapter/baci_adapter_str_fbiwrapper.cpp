@@ -16,6 +16,8 @@
 #include "baci_structure_new_timint_basedataio.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> structure)
@@ -119,3 +121,5 @@ Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> ADAPTER::FBIStructureWrappe
 {
   return FSIModelEvaluator()->GetInOutput().GetRuntimeVtkOutputParams();
 }
+
+BACI_NAMESPACE_CLOSE

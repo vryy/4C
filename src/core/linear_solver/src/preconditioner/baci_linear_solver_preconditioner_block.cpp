@@ -17,6 +17,8 @@
 
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::SimplePreconditioner::SimplePreconditioner(Teuchos::ParameterList& params)
@@ -292,3 +294,5 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
       dserror("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");
   }
 }
+
+BACI_NAMESPACE_CLOSE

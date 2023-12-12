@@ -20,6 +20,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |
  *----------------------------------------------------------------------*/
@@ -595,3 +597,5 @@ double FLD::UTILS::FluidImpedanceBc::Area(const int condid)
 
   return pararea;
 }  // FluidImplicitTimeInt::Area
+
+BACI_NAMESPACE_CLOSE

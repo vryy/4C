@@ -15,6 +15,8 @@
 #include "baci_particle_engine_interface.H"
 #include "baci_particle_interaction_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -74,3 +76,5 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::ComputeRecoilPressureCon
     UTILS::VecAddScale(acc_i, -recoil_press_i / dens_i[0], cfg_i);
   }
 }
+
+BACI_NAMESPACE_CLOSE

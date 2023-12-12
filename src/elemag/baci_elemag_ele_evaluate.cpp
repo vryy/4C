@@ -13,6 +13,8 @@
 #include "baci_elemag_ele_interface.H"
 #include "baci_inpar_elemag.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
@@ -54,3 +56,5 @@ int DRT::ELEMENTS::Elemag::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

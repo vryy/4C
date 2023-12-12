@@ -25,6 +25,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
@@ -299,3 +301,5 @@ void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretiza
     volcoupl_fluidscatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
   }
 }
+
+BACI_NAMESPACE_CLOSE

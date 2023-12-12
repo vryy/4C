@@ -22,6 +22,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -62,7 +64,7 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
-    Teuchos::RCP<const ::DRT::Discretization> const& ia_discret)
+    Teuchos::RCP<const BACI::DRT::Discretization> const& ia_discret)
 {
   // safety check
   CheckInit();
@@ -70,8 +72,7 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
   myrank_ = ia_discret->Comm().MyPID();
 
   // displacements
-  dis_ =
-      Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->DofRowMap(), true));
+  dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->DofRowMap(), true));
   disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
   discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
 
@@ -84,3 +85,5 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

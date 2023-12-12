@@ -14,6 +14,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE::PAR
 {
   template <typename T>
@@ -111,5 +113,7 @@ namespace MIXTURE
     return 2.0 * (2 * ddPsi + I4 * dddPsi);
   }
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H

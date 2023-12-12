@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace RTD
@@ -114,3 +116,5 @@ namespace DRT
 
   }  // namespace RTD
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

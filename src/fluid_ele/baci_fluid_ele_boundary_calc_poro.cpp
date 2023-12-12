@@ -24,6 +24,8 @@
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_poroelast_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(CORE::UTILS::SingletonAction action)
@@ -4835,3 +4837,5 @@ template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nur
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs3>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include <memory>
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 
 template <CORE::FE::CellType celltype>
 DRT::ELEMENTS::SolidEleCalc<celltype>::SolidEleCalc()
@@ -398,3 +400,5 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

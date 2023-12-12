@@ -31,6 +31,8 @@
 #include <iomanip>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
@@ -3074,3 +3076,5 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5, 
     const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
     const CORE::LINALG::Matrix<1, 5, double>&, const CORE::LINALG::Matrix<1, 5, double>&,
     const double, const double) const;
+
+BACI_NAMESPACE_CLOSE

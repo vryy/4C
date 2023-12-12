@@ -17,6 +17,8 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// krylov projection for undefined pressure value in incompressible fluids
@@ -56,5 +58,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> P_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

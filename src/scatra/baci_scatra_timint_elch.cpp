@@ -33,6 +33,8 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis,
@@ -3320,3 +3322,4 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElch::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp(this, false)));
 }
+BACI_NAMESPACE_CLOSE

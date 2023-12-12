@@ -29,6 +29,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::Integrator::Integrator()
@@ -178,8 +180,8 @@ void STR::Integrator::EquilibrateInitialState()
   Teuchos::RCP<Epetra_Vector> rhs_ptr =
       Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
   // wrap the rhs_ptr in a nox_epetra_Vector
-  Teuchos::RCP<NOX::Epetra::Vector> nox_rhs_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(rhs_ptr, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_rhs_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(rhs_ptr, ::NOX::Epetra::Vector::CreateView));
 
   // initialize a temporal structural stiffness matrix
   Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_ptr =
@@ -257,8 +259,8 @@ void STR::Integrator::EquilibrateInitialState()
   Teuchos::RCP<Epetra_Vector> soln_ptr =
       Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
   // wrap the soln_ptr in a nox_epetra_Vector
-  Teuchos::RCP<NOX::Epetra::Vector> nox_soln_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(soln_ptr, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(soln_ptr, ::NOX::Epetra::Vector::CreateView));
 
   // Check if we are using a Newton direction
   std::string dir_str = p_nox.sublist("Direction").get<std::string>("Method");
@@ -498,7 +500,7 @@ double STR::Integrator::GetCondensedUpdateNorm(
   CheckInitSetup();
 
   double myupdatenorm = eval_data_ptr_->GetMyUpdateNorm(qtype);
-  const enum NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
+  const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
 
   return GetCondensedGlobalNorm(qtype, normtype, myupdatenorm);
 }
@@ -511,7 +513,7 @@ double STR::Integrator::GetCondensedPreviousSolNorm(
   CheckInitSetup();
 
   double myprevsolnorm = eval_data_ptr_->GetMyPreviousSolNorm(qtype);
-  const enum NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
+  const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
 
   return GetCondensedGlobalNorm(qtype, normtype, myprevsolnorm);
 }
@@ -551,24 +553,24 @@ int STR::Integrator::GetCondensedDofNumber(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::Integrator::GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    const enum NOX::Abstract::Vector::NormType& normtype, double& mynorm) const
+    const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const
 {
   double gnorm = 0;
 
   switch (normtype)
   {
-    case NOX::Abstract::Vector::OneNorm:
+    case ::NOX::Abstract::Vector::OneNorm:
     {
       gstate_ptr_->GetComm().SumAll(&mynorm, &gnorm, 1);
       break;
     }
-    case NOX::Abstract::Vector::TwoNorm:
+    case ::NOX::Abstract::Vector::TwoNorm:
     {
       gstate_ptr_->GetComm().SumAll(&mynorm, &gnorm, 1);
       gnorm = std::sqrt(gnorm);
       break;
     }
-    case NOX::Abstract::Vector::MaxNorm:
+    case ::NOX::Abstract::Vector::MaxNorm:
     {
       gstate_ptr_->GetComm().MaxAll(&mynorm, &gnorm, 1);
       break;
@@ -818,3 +820,5 @@ void STR::Integrator::MidTimeEnergy::Setup()
   avg_type_ = integrator_.SDyn().GetMidTimeEnergyType();
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

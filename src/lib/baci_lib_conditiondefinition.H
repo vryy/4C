@@ -26,6 +26,7 @@
 #include <variant>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -83,7 +84,7 @@ namespace DRT
         right. The order is important! On reading we try and read component
         after component.
        */
-      void AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c);
+      void AddComponent(const Teuchos::RCP<BACI::INPUT::LineComponent>& c);
 
       /// read all conditions from my input file section
       /*!
@@ -107,7 +108,7 @@ namespace DRT
       std::string Description() const { return description_; }
 
       /// my condition inputline
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> Inputline() const { return inputline_; }
 
       /// my GeometryType
       Condition::GeometryType GeometryType() const { return gtype_; }
@@ -121,11 +122,13 @@ namespace DRT
       Condition::GeometryType gtype_;
 
       ///
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> inputline_;
     };
 
   }  // namespace INPUT
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

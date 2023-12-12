@@ -14,6 +14,8 @@
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -79,3 +81,5 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -177,5 +179,7 @@ namespace SCATRA
 }  // namespace SCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_POROMULTI_H

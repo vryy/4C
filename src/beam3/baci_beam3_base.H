@@ -25,6 +25,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration ...
 namespace CORE::LINALG
@@ -718,5 +720,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

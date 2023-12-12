@@ -16,6 +16,8 @@
 #include "baci_fsi_constr_overlapprec.H"
 #include "baci_fsi_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace UTILS
 {
@@ -129,12 +131,12 @@ namespace FSI
     void CreateSystemMatrix(bool structuresplit);
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils) override;
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the three field vectors from a given composed vector
     /*!
@@ -192,7 +194,7 @@ namespace FSI
     /// @name information about constraints are taken from structure ConstraintManager
     //!@{
 
-    const Teuchos::RCP<::UTILS::ConstrManager> conman_;  ///< constraint manager
+    const Teuchos::RCP<BACI::UTILS::ConstrManager> conman_;  ///< constraint manager
 
     //!@}
 
@@ -227,5 +229,7 @@ namespace FSI
     void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -23,6 +23,8 @@ be set in problem specific parameter lists derived from this class.
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::FluidEleParameterIntFace* DRT::ELEMENTS::FluidEleParameterIntFace::Instance(
     CORE::UTILS::SingletonAction action)
@@ -358,3 +360,5 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

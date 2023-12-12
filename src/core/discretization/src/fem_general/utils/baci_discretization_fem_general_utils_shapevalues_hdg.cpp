@@ -12,6 +12,8 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
@@ -76,7 +78,7 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
-    const ::DRT::Element& ele, const std::vector<double>& aleDis)
+    const BACI::DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
@@ -194,7 +196,7 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const ::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
+    const BACI::DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
   const CORE::FE::CellType facedis = CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
@@ -264,7 +266,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
-    const ::DRT::Element& ele, const unsigned int face)
+    const BACI::DRT::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
   // a face walks over the face and how the current face element wants to walk over
@@ -480,7 +482,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
-    const ::DRT::Element& ele, const unsigned int face)
+    const BACI::DRT::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.
@@ -679,3 +681,5 @@ template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
 template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
 template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
 template class CORE::DRT::UTILS::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace ART
@@ -52,5 +54,7 @@ namespace ART
 
   }  // namespace UTILS
 }  // namespace ART
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ART_TERMINAL_BC_H

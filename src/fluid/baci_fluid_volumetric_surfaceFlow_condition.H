@@ -24,6 +24,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -422,5 +424,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_H

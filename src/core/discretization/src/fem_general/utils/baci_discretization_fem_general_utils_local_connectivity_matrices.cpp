@@ -10,6 +10,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 int CORE::DRT::UTILS::getNumberOfElementNodes(const CORE::FE::CellType& distype)
 {
@@ -1696,3 +1698,4 @@ bool CORE::DRT::UTILS::IsNurbsDisType(const CORE::FE::CellType dis_type)
 
 template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::GetNodeCoordinates<3>(
     const int nodeId, const CORE::FE::CellType distype);
+BACI_NAMESPACE_CLOSE

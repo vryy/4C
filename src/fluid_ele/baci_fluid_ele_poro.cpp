@@ -16,6 +16,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
 DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance() { return instance_; }
@@ -168,3 +170,5 @@ void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
   os << "FluidPoro " << (CORE::FE::CellTypeToString(distype_)).c_str();
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

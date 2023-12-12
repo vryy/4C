@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -185,5 +187,7 @@ namespace SCATRA
   };  // class MeshtyingStrategyArtery
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H

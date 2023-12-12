@@ -19,6 +19,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -454,3 +456,5 @@ void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

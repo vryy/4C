@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
@@ -151,3 +153,5 @@ void LUBRICATION::TimIntStationary::UpdateIterIncrementally()
   //! bye
   return;
 }  // UpdateIterIncrementally()
+
+BACI_NAMESPACE_CLOSE

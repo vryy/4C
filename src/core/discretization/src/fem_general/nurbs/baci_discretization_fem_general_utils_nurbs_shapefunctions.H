@@ -16,6 +16,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::DRT::NURBS::UTILS
 {
@@ -3901,5 +3903,7 @@ namespace CORE::DRT::NURBS::UTILS
   }
 
 }  // namespace CORE::DRT::NURBS::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_H

@@ -16,6 +16,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   class MortarElement;
@@ -274,5 +276,7 @@ namespace CONTACT
   }  // namespace INTEGRATOR
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H

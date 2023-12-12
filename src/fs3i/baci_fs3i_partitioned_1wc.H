@@ -18,6 +18,8 @@
 
 #include "baci_fs3i_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FS3I
 {
@@ -42,5 +44,7 @@ namespace FS3I
   };
 
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,6 +16,8 @@
 #include <iostream>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*/
 namespace IO
 {
@@ -263,3 +265,5 @@ namespace IO
     header_line_written_ = true;
   }
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE

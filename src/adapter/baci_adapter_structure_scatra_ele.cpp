@@ -18,6 +18,7 @@
 #include "baci_truss3_scatra.H"
 #include "baci_w1_scatra.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -124,3 +125,4 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
 
   return impltype;
 }
+BACI_NAMESPACE_CLOSE

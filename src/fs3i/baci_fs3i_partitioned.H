@@ -23,6 +23,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -88,7 +89,7 @@ namespace FS3I
     void RedistributeInterface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
         Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
@@ -167,7 +168,7 @@ namespace FS3I
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
@@ -177,5 +178,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

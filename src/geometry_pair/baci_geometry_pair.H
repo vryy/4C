@@ -17,6 +17,7 @@ problems.
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace DRT
@@ -72,5 +73,7 @@ namespace GEOMETRYPAIR
     const DRT::Element* element2_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

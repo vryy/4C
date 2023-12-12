@@ -27,6 +27,8 @@ Validate a given BACI input file (after all preprocessing steps)
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
+  using namespace BACI;
+
   // read and check the provided header file
   // std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
 
@@ -90,7 +92,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
-    const CORE::FE::CellType distype = PreShapeToDrt(eb->GetShape());
+    const BACI::CORE::FE::CellType distype = PreShapeToDrt(eb->GetShape());
     // check and rewind if necessary
     ValidateElementJacobian(mymesh, distype, eb);
     // full check at all gausspoints
@@ -105,8 +107,10 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateElementJacobian(
-    Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const BACI::CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
+  using namespace BACI;
+
   // use one point gauss rule to calculate jacobian at element center
   CORE::DRT::UTILS::GaussRule3D integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
@@ -186,8 +190,10 @@ void EXODUS::ValidateElementJacobian(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::ValidateElementJacobian_fullgp(
-    Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const BACI::CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
+  using namespace BACI;
+
   CORE::DRT::UTILS::GaussRule3D integrationrule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
@@ -256,8 +262,10 @@ int EXODUS::ValidateElementJacobian_fullgp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
-    const CORE::LINALG::SerialDenseMatrix& deriv)
+    const BACI::CORE::LINALG::SerialDenseMatrix& deriv)
 {
+  using namespace BACI;
+
   const int iel = deriv.numCols();
   const int NSD = deriv.numRows();
   CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
@@ -292,6 +300,8 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 int EXODUS::EleSaneSign(
     const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords)
 {
+  using namespace BACI;
+
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
   CORE::LINALG::SerialDenseMatrix local_nodecoords(iel, 3);
@@ -397,8 +407,11 @@ int EXODUS::EleSaneSign(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE::CellType distype)
+std::vector<int> EXODUS::RewindEle(
+    std::vector<int> old_nodeids, const BACI::CORE::FE::CellType distype)
 {
+  using namespace BACI;
+
   std::vector<int> new_nodeids(old_nodeids.size());
   // rewinding of nodes to arrive at mathematically positive element
   switch (distype)

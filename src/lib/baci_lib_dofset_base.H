@@ -16,6 +16,8 @@
 
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -100,5 +102,7 @@ namespace DRT
 
   };  // class DofSetBase
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_BASE_H

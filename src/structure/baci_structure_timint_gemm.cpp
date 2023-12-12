@@ -16,6 +16,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntGEMM::TimIntGEMM(const Teuchos::ParameterList& timeparams,
@@ -636,3 +638,5 @@ void STR::TimIntGEMM::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> o
   output->WriteVector("fexternal", fext_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

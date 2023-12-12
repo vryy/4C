@@ -17,6 +17,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace ALE
@@ -59,5 +61,7 @@ namespace ADAPTER
   };  // class AleFsiWrapper
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_FSI_MSHT_H

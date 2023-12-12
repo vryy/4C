@@ -11,6 +11,8 @@
 
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -75,3 +77,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

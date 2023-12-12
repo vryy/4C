@@ -15,6 +15,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 template <unsigned int numfib>
 MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy)
@@ -217,3 +219,4 @@ int MAT::FiberAnisotropyExtension<numfib>::GetFibersPerElement() const
 // explicit instatiations of template classes
 template class MAT::FiberAnisotropyExtension<1u>;
 template class MAT::FiberAnisotropyExtension<2u>;
+BACI_NAMESPACE_CLOSE

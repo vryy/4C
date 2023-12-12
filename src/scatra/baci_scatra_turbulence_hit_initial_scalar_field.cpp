@@ -24,6 +24,8 @@ transport
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_turbulence_hit_initial_scalar_field.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*--------------------------------------------------------------*
@@ -485,3 +487,5 @@ namespace SCATRA
 
 
 };  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@
 
 #include <iterator>
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
@@ -2460,3 +2462,5 @@ template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>;
 template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

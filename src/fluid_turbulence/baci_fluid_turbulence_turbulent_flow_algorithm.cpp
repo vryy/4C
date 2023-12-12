@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -221,3 +223,5 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

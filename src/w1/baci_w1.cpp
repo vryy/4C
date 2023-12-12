@@ -17,6 +17,8 @@
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
 DRT::ELEMENTS::Wall1Type& DRT::ELEMENTS::Wall1Type::Instance() { return instance_; }
@@ -325,3 +327,5 @@ void DRT::ELEMENTS::Wall1::GreenLagrangePlane3d(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

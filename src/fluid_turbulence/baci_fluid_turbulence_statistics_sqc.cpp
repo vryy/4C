@@ -15,6 +15,8 @@ turbulent flow past a square cylinder
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)
@@ -2459,3 +2461,5 @@ void FLD::TurbulenceStatisticsSqc::ClearStatistics()
 
   return;
 }  // TurbulenceStatisticsSqc::ClearStatistics
+
+BACI_NAMESPACE_CLOSE

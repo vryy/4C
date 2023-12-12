@@ -24,6 +24,8 @@
 #include "baci_mat_membrane_material_interfaces.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | active strain membrane material                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
@@ -250,4 +252,6 @@ namespace MAT
 
 }  // namespace MAT
 // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_MEMBRANE_ACTIVE_STRAIN_H

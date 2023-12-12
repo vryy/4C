@@ -14,6 +14,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 // constructor of the parameters
 MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
@@ -317,3 +319,4 @@ bool MAT::Mixture::EvaluateOutputData(
 
   return out;
 }
+BACI_NAMESPACE_CLOSE

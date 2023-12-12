@@ -19,6 +19,8 @@
 #include <Ifpack_LocalFilter.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
     const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
@@ -376,3 +378,5 @@ const char* FSI::OverlappingBlockMatrixHybridSchwarz::Label() const
 {
   return "Unknown strategy in FSI::OverlappingBlockMatrixHybridSchwarz";
 }
+
+BACI_NAMESPACE_CLOSE

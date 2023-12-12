@@ -13,6 +13,8 @@
 #include "baci_linalg_krylov_projector.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// linear solver type base class
@@ -46,5 +48,7 @@ namespace CORE::LINEAR_SOLVER
     };
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

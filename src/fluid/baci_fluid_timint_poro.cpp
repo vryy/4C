@@ -18,6 +18,8 @@
 #include "baci_poroelast_utils.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
@@ -254,3 +256,5 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
   // derivatives of the pressure and thus do not split the state vectors
   CalculateAcceleration(velnp_, veln_, velnm_, accn_, accnp_);
 }
+
+BACI_NAMESPACE_CLOSE

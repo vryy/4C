@@ -18,6 +18,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_conditions,
@@ -538,3 +540,5 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveElements(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

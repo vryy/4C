@@ -24,6 +24,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 namespace DRT
@@ -597,4 +598,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELEMENT_H

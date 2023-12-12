@@ -19,6 +19,8 @@
 #include "baci_adapter_ale_fsi.H"
 #include "baci_ale_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
@@ -68,5 +70,7 @@ namespace ADAPTER
 
   };  // class AleXFFsiWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_ALE_XFFSI_H

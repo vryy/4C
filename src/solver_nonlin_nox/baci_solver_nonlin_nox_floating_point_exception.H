@@ -15,6 +15,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -82,5 +84,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_FLOATING_POINT_EXCEPTION_H

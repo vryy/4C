@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
@@ -88,3 +90,5 @@ void FBI::BeamToFluidMeshtyingParams::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

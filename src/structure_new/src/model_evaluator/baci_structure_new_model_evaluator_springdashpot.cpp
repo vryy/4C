@@ -26,6 +26,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
@@ -370,3 +372,5 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetLastTim
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::PostOutput() { CheckInitSetup(); }
+
+BACI_NAMESPACE_CLOSE

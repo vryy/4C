@@ -23,6 +23,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   class MortarElementNitscheContainer
@@ -233,5 +235,7 @@ namespace MORTAR
   };
 
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_NITSCHE_UTILS_H

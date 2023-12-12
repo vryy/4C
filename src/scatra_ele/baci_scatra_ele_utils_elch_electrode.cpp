@@ -13,6 +13,8 @@
 #include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -105,3 +107,5 @@ template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::te
 template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::pyramid5>;
 // template class
 // DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

@@ -29,6 +29,8 @@
 #include "baci_xfem_discretization_utils.H"
 #include "baci_xfem_edgestab.H"
 
+BACI_NAMESPACE_OPEN
+
 FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager)
     : discret_(discret), cond_manager_(cond_manager), firstoutputofrun_(true), restart_count_(0)
@@ -1398,3 +1400,5 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
 
   gmshfilecontent.close();
 }
+
+BACI_NAMESPACE_CLOSE

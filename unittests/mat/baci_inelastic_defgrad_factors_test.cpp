@@ -18,6 +18,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class InelasticDefgradFactorsTest : public ::testing::Test
   {
    protected:

@@ -15,6 +15,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace EHL
 {
   namespace Utils
@@ -34,5 +36,7 @@ namespace EHL
 
 }  // namespace EHL
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_UTILS_H

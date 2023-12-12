@@ -25,6 +25,8 @@ conjunction with XFluidFluid!
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
@@ -50,3 +52,5 @@ void ADAPTER::FluidFluidXFSI::Init()
   // use block matrix for fluid-fluid, do nothing otherwise
   xfluidfluid_->UseBlockMatrix();
 }
+
+BACI_NAMESPACE_CLOSE

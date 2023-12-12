@@ -16,6 +16,8 @@
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -178,3 +180,5 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::AddAffiliationPairToBuffer(
   // append packed affiliation pair to buffer
   buffer.insert(buffer.end(), data().begin(), data().end());
 }
+
+BACI_NAMESPACE_CLOSE

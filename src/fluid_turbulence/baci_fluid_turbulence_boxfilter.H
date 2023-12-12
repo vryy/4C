@@ -42,6 +42,8 @@ References are
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -771,5 +773,7 @@ namespace FLD
   };  // end class Boxfilter
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TURBULENCE_BOXFILTER_H

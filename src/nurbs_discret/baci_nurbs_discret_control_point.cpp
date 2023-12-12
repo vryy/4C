@@ -15,6 +15,8 @@
 
 #include "baci_nurbs_discret_control_point.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::NURBS::ControlPointType DRT::NURBS::ControlPointType::instance_;
 
 
@@ -115,3 +117,5 @@ void DRT::NURBS::ControlPoint::Print(std::ostream& os) const
   os << w_ << "\n";
   return;
 }
+
+BACI_NAMESPACE_CLOSE

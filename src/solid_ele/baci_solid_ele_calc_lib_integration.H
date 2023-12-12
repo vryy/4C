@@ -13,6 +13,8 @@
 #include "baci_lib_element_integration_select.H"
 
 #include <Teuchos_ParameterList.hpp>
+
+BACI_NAMESPACE_OPEN
 namespace DRT::ELEMENTS
 {
   /*!
@@ -82,4 +84,6 @@ namespace DRT::ELEMENTS
   }
   /// @}
 }  // namespace DRT::ELEMENTS
+BACI_NAMESPACE_CLOSE
+
 #endif  // BACI_SOLID_ELE_CALC_LIB_INTEGRATION_H

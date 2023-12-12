@@ -15,6 +15,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
@@ -1184,3 +1186,4 @@ void SCATRA::ScaTraTimIntElchSCLOST::AddTimeIntegrationSpecificVectors(bool forc
   TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
   ScaTraTimIntElchSCL::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 }
+BACI_NAMESPACE_CLOSE

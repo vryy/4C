@@ -11,6 +11,8 @@
 #ifndef BACI_SCATRA_CARDIAC_MONODOMAIN_DYN_H
 #define BACI_SCATRA_CARDIAC_MONODOMAIN_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 /*! entry point for the solution of electrochemistry problems */
 void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restart?  */
 );
@@ -18,5 +20,7 @@ void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restar
 /*! prints the BACI cardiac monodomain-module logo on the screen */
 void printheartlogo();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_CARDIAC_MONODOMAIN_DYN_H

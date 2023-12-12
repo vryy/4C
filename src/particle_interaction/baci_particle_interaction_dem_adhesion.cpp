@@ -29,6 +29,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -491,3 +493,5 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     visualization_data.SetPointDataVector<double>("surface energy", surfaceenergy, 1);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -426,3 +428,5 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
 template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
     PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
     std::vector<char>&, int, int, const PARTICLEINTERACTION::DEMHistoryPairAdhesion&) const;
+
+BACI_NAMESPACE_CLOSE

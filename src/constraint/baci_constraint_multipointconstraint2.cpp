@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -392,3 +394,5 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
   }
   return;
 }  // end of EvaluateCondition
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,7 @@
 #include "baci_coupling_adapter.H"
 #include "baci_fs3i_partitioned_1wc.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -208,5 +209,7 @@ namespace FS3I
   };
 
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

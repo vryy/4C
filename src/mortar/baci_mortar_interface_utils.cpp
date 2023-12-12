@@ -13,6 +13,8 @@
 #include <sstream>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 void MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
     const std::vector<int>& quantityAcrossAllRanks, int& minOverAllRanks, int& maxOverAllRanks,
     double& meanOverAllRanks)
@@ -49,3 +51,5 @@ void MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics
         maxOverAllRanks, meanOverAllRanks, maxToMinRatio.str().c_str());
   }
 }
+
+BACI_NAMESPACE_CLOSE

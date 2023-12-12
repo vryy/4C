@@ -36,6 +36,8 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 #define numbgp 10
 #define twice 20
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -292,5 +294,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ACTIVEFIBER_H

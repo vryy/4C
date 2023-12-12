@@ -12,6 +12,8 @@
 #include "baci_fluid_ele.H"
 #include "baci_io_linedefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -41,3 +43,5 @@ bool DRT::ELEMENTS::Fluid::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

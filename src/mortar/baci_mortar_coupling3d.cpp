@@ -20,6 +20,8 @@
 #include "baci_mortar_projector.H"
 #include "baci_mortar_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
@@ -4416,3 +4418,5 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

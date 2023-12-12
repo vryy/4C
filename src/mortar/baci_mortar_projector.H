@@ -15,6 +15,8 @@
 #include "baci_utils_pairedvector.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   // forward declarations
@@ -475,5 +477,7 @@ namespace MORTAR
   };
 }  // namespace MORTAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_PROJECTOR_H

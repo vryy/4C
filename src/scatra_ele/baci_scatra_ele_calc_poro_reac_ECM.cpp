@@ -21,6 +21,8 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -237,3 +239,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::pyram
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::nurbs9>;
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

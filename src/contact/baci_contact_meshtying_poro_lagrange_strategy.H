@@ -15,6 +15,8 @@
 #include "baci_contact_meshtying_lagrange_strategy.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class PoroMtLagrangeStrategy : public MtLagrangeStrategy
@@ -54,4 +56,6 @@ namespace CONTACT
 
   };  // class POROLagrangeStrategy
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_H

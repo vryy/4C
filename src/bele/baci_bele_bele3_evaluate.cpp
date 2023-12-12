@@ -19,6 +19,8 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -351,3 +353,5 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
   V *= invnumind;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

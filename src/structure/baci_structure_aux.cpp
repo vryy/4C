@@ -16,6 +16,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
@@ -115,3 +117,5 @@ Teuchos::RCP<std::set<int>> STR::AUX::MapExtractor::ConditionedElementMap(
       std::inserter(*condelements, condelements->begin()));
   return condelements;
 }
+
+BACI_NAMESPACE_CLOSE

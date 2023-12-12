@@ -18,6 +18,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class MixtureConstituent;
@@ -119,5 +121,7 @@ namespace MIXTURE
     MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_FULL_CONSTRAINED_MIXTURE_FIBER_H

@@ -15,6 +15,8 @@
 
 #include "baci_ale_utils_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
@@ -32,3 +34,5 @@ Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> ADAPTER::AleFsiMshtWrapper::FsiI
 {
   return fsiinterface_;
 }
+
+BACI_NAMESPACE_CLOSE

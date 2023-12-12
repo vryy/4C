@@ -30,6 +30,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::FactoryMT::Setup()
@@ -617,3 +619,5 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
   if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
   return strategy_ptr;
 }
+
+BACI_NAMESPACE_CLOSE

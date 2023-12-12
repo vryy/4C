@@ -14,6 +14,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LARGEROTATIONS
 {
@@ -529,5 +531,7 @@ namespace CORE::LARGEROTATIONS
   }
 
 }  // namespace CORE::LARGEROTATIONS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

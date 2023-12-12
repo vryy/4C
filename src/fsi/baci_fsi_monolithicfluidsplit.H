@@ -16,6 +16,8 @@ with condensed fluid interface velocities
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -203,8 +205,8 @@ namespace FSI
     void CreateSystemMatrix();
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -363,5 +365,7 @@ namespace FSI
     double energysum_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

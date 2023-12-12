@@ -25,6 +25,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -646,3 +648,5 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalP
       gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(gravity_.data(), &pos[statedim * i]);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_loma.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
@@ -329,7 +331,7 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
                  "STEP\n****************************************\n";
 
   // fsi convergence check
-  if (fsi_->NoxStatus() == NOX::StatusTest::Converged) fluidstopnonliniter = true;
+  if (fsi_->NoxStatus() == ::NOX::StatusTest::Converged) fluidstopnonliniter = true;
 
   // scatra convergence check
   scatrastopnonliniter = ScatraConvergenceCheck(itnum);
@@ -429,3 +431,5 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

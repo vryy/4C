@@ -12,6 +12,8 @@
 /* headers */
 #include "baci_structure_timint_expl.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -204,4 +206,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_CENTRDIFF_H

@@ -11,6 +11,7 @@
 
 #include "baci_cut_parentintersection.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -124,5 +125,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

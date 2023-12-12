@@ -139,6 +139,8 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
 void EXODUS::WriteDatConditions(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
+  using namespace BACI;
+
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> condlist =
       DRT::INPUT::ValidConditions();
 
@@ -307,6 +309,8 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 void EXODUS::WriteDatDesignTopology(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
+  using namespace BACI;
+
   // sort baciconds w.r.t. underlying topology
   std::map<int, EXODUS::cond_def> dpoints;
   std::map<int, EXODUS::cond_def> dlines;
@@ -569,7 +573,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << BACI::CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

@@ -15,6 +15,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class TimIntPoro : public virtual FluidImplicitTimeInt
@@ -120,5 +122,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_PORO_H

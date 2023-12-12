@@ -8,6 +8,8 @@
 
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Node;
@@ -31,5 +33,7 @@ namespace DRT::ELEMENTS
   */
   CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0);
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

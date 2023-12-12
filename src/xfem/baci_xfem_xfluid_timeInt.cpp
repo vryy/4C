@@ -40,6 +40,7 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
 
 // #define DEBUG_TIMINT
 
@@ -2291,3 +2292,5 @@ void XFEM::XFluidTimeInt::Output()
 
   if (myrank_ == 0) IO::cout << IO::endl;
 }
+
+BACI_NAMESPACE_CLOSE

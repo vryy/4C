@@ -16,6 +16,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -793,5 +794,7 @@ namespace CONTACT
 
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& strategy);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MESHTYING_ABSTRACT_STRATEGY_H

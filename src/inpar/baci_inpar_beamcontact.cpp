@@ -15,6 +15,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -184,9 +186,11 @@ void INPAR::BEAMCONTACT::SetValidConditions(
             condition_name, "Beam-to-beam contact conditions", DRT::Condition::BeamToBeamContact,
             true, DRT::Condition::Line));
     beam_to_beam_contact_condition->AddComponent(
-        Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLING_ID")));
+        Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_beam_contact_condition->AddComponent(
-        Teuchos::rcp(new ::INPUT::IntComponent("COUPLING_ID")));
+        Teuchos::rcp(new INPUT::IntComponent("COUPLING_ID")));
     condlist.push_back(beam_to_beam_contact_condition);
   }
 }
+
+BACI_NAMESPACE_CLOSE

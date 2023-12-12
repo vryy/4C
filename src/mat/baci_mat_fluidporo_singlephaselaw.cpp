@@ -14,6 +14,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -507,3 +509,5 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double
       ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
       .Evaluate(S_, {}, 0);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 #include "baci_inpar_beaminteraction.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::Factory::Factory()
@@ -76,3 +78,5 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BuildModelEvaluators(
   Factory factory;
   return factory.BuildModelEvaluators(submodeltypes);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_porofluidmultiphase_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROFLUIDMULTIPHASE
 {
   class TimIntOneStepTheta : public TimIntImpl
@@ -84,5 +86,7 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_TIMINT_OST_H

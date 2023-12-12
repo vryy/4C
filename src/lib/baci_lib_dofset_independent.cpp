@@ -13,6 +13,8 @@
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
@@ -56,3 +58,5 @@ int DRT::IndependentDofSet::GetMinimalNodeGIDIfRelevant(const Discretization& di
 {
   return ignoreminnodegid_ ? 0 : dis.NodeRowMap()->MinAllGID();
 }
+
+BACI_NAMESPACE_CLOSE

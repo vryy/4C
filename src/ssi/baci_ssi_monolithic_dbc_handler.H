@@ -13,6 +13,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class SSIStructureWrapper;
@@ -59,7 +61,7 @@ namespace SSI
     explicit DBCHandlerBase(bool is_scatra_manifold, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
     /*!
      * @brief apply Dirichlet boundary conditions to global right hand side vector
@@ -96,7 +98,7 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
     //! access to structural field
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; }
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; }
 
    private:
     /*!
@@ -126,7 +128,7 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
     /// structure field solver
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
   };
 
   //! Dirichlet boundary condition handler class for monolithic scalar-structure interaction if the
@@ -139,7 +141,7 @@ namespace SSI
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
    private:
     void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
@@ -157,7 +159,7 @@ namespace SSI
     explicit DBCHandlerBlock(bool is_scatra_manifold, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
    private:
     void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
@@ -183,6 +185,8 @@ namespace SSI
       CORE::LINALG::MatrixType matrixtype_ssi, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
       Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-      Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+      Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_DBC_HANDLER_H

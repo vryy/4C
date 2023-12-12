@@ -25,6 +25,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;  ///< number of nodes
 const int NODDOF_SONURBS27 = 3;   ///< number of dofs per node
@@ -375,5 +377,7 @@ namespace DRT
     }  // namespace NURBS
   }    // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_NURBS27_H

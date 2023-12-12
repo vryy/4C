@@ -15,6 +15,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   class CubicSplineFromCSVTest : public ::testing::Test
@@ -62,3 +64,4 @@ namespace
       EXPECT_NEAR(cubic_spline_from_csv_->EvaluateDerivative(x_test[i], 1), solutions[i], 1.0e-12);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

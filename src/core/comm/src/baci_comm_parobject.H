@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   /*!
@@ -956,5 +958,7 @@ namespace CORE::COMM
   int ExtractAndAssertId(std::vector<char>::size_type& position, const std::vector<char>& data,
       const int desired_type_id);
 }  // namespace CORE::COMM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_PAROBJECT_H

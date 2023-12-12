@@ -15,6 +15,8 @@
 
 #include "baci_fsi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   /**
@@ -116,5 +118,7 @@ namespace FSI
   };
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

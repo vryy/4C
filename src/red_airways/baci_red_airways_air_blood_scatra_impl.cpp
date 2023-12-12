@@ -29,6 +29,8 @@
 #include <fstream>
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -396,3 +398,5 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   scatra_acinus[ai[0]] = (vO2[ai[0]] - vO2ab) * nO2perVO2a / vAir;
   scatra_acinus[ci[0]] = (vO2[ci[0]] + vO2ab) * nO2perVO2b / vBlood;
 }
+
+BACI_NAMESPACE_CLOSE

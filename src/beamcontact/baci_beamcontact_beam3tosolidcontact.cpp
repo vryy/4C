@@ -26,6 +26,8 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | Constructor (public)                                     meier 01/14 |
  *----------------------------------------------------------------------*/
@@ -1113,16 +1115,16 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPEBTS> D(true);
 
   // Compute Lpar for all parametes
-  Lpar(0, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
-  Lpar(1, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
-  Lpar(0, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
-  Lpar(1, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) +
-               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
-  Lpar(0, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
-  Lpar(1, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
+  Lpar(0, 0) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) + CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
+  Lpar(1, 0) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) + CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
+  Lpar(0, 1) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) + CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
+  Lpar(1, 1) =
+      -CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) + CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
+  Lpar(0, 2) = CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
+  Lpar(1, 2) = CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
 
   // Assemble needed entries of Lpar in L
   L(0, 0) = Lpar(0, par_i[0]);
@@ -3736,3 +3738,5 @@ template class CONTACT::Beam3tosolidcontact<8, 2,
 // template class CONTACT::Beam3tosolidcontact<9,4,1>;
 // template class CONTACT::Beam3tosolidcontact<9,5,1>;
 // template class CONTACT::Beam3tosolidcontact<9,2,2>;
+
+BACI_NAMESPACE_CLOSE

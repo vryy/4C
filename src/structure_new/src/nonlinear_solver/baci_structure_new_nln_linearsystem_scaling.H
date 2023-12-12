@@ -16,6 +16,16 @@
 #include <Epetra_Map.h>
 #include <NOX_Epetra_Scaling.H>
 
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Scaling;
+  }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace STR
 {
@@ -31,21 +41,13 @@ namespace CORE::LINALG
   class SparseMatrix;
 }
 
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Scaling;
-  }
-}  // namespace NOX
-
 namespace STR
 {
   namespace NLN
   {
     namespace LinSystem
     {
-      class StcScaling : public NOX::Epetra::Scaling
+      class StcScaling : public ::NOX::Epetra::Scaling
       {
        public:
         //! Constructor.
@@ -75,5 +77,7 @@ namespace STR
     }  // namespace LinSystem
   }    // namespace NLN
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

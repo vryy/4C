@@ -32,6 +32,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicNoNOX(comm, timeparams)
@@ -1150,3 +1152,5 @@ bool FSI::FluidFluidMonolithicFluidSplitNoNOX::HasFluidDofMapChanged(
   bool isoldmap = fluidincrementmap.SameAs(*FluidField()->Interface()->OtherMap());
   return !isoldmap;
 }
+
+BACI_NAMESPACE_CLOSE

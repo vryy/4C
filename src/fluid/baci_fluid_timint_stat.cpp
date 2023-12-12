@@ -19,6 +19,8 @@
 #include "baci_fluid_volumetric_surfaceFlow_condition.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
@@ -251,3 +253,5 @@ void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& elepar
     FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velnp_, "velafgrad", alefluid_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

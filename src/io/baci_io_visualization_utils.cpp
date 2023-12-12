@@ -11,6 +11,8 @@
 
 #include "baci_io_visualization_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace IO
 {
@@ -65,3 +67,5 @@ namespace IO
       const std::vector<CORE::LINALG::Matrix<3, 1>>&, const std::vector<std::vector<int>>&);
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE

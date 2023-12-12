@@ -27,6 +27,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -1343,3 +1345,5 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
 
   return number_of_ouput_points;
 }
+
+BACI_NAMESPACE_CLOSE

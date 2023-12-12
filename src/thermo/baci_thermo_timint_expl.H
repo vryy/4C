@@ -12,6 +12,8 @@
 /* headers */
 #include "baci_thermo_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to thermal dynamics namespace */
 namespace THR
@@ -209,4 +211,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_TIMINT_EXPL_H

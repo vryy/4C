@@ -16,12 +16,14 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 // Forward declarations.
 class Epetra_Map;
 class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -93,7 +95,7 @@ namespace BEAMINTERACTION
      * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    BeamToSolidMortarManager(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
@@ -257,7 +259,7 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_rotational_;
 
     //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<const ::DRT::Discretization> discret_;
+    Teuchos::RCP<const BACI::DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
@@ -330,5 +332,7 @@ namespace BEAMINTERACTION
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -113,7 +114,7 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public ::ADAPTER::Structure
+  class TimInt : public ADAPTER::Structure
   {
     //! Structural time adaptivity is friend
     friend class TimAda;
@@ -1141,13 +1142,14 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<::TIMINT::TimIntMStep<double>> time_;  //!< time \f$t_{n}\f$ of last converged step
-    double timen_;                                      //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<::TIMINT::TimIntMStep<double>> dt_;    //!< time step size \f$\Delta t\f$
-    double timemax_;                                    //!< final time \f$t_\text{fin}\f$
-    int stepmax_;                                       //!< final step \f$N\f$
-    int step_;                                          //!< time step index \f$n\f$
-    int stepn_;                                         //!< time step index \f$n+1\f$
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>>
+        time_;      //!< time \f$t_{n}\f$ of last converged step
+    double timen_;  //!< target time \f$t_{n+1}\f$
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
+    double timemax_;                                      //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                                         //!< final step \f$N\f$
+    int step_;                                            //!< time step index \f$n\f$
+    int stepn_;                                           //!< time step index \f$n+1\f$
     double rand_tsfac_;      //!< random factor for modifying time-step size in case this way of
                              //!< continuing non-linear iteration was chosen
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
@@ -1163,16 +1165,16 @@ namespace STR
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
 
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dismat_;
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dismat_;
 
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
 
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
+    Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
 
     //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -1276,4 +1278,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_H

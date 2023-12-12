@@ -17,6 +17,8 @@ which govern the actual doings
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 06/15 |
@@ -164,3 +166,5 @@ void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
   // -> position check cannot be done in this case
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

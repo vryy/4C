@@ -13,6 +13,8 @@
 #include "baci_inpar_sti.H"
 #include "baci_sti_algorithm.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STI
 {
   //! partitioned coupling algorithm for scatra-thermo interaction
@@ -50,4 +52,6 @@ namespace STI
     const double omegamax_;
   };  // class Partitioned : public Algorithm
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

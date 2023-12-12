@@ -12,6 +12,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   /*!
@@ -52,5 +54,7 @@ namespace CORE::GEO
   }
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_COORDINATE_SYSTEM_UTILS_H

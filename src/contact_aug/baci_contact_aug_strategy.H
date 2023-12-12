@@ -18,6 +18,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -47,7 +49,7 @@ namespace CONTACT
     class ParallelDistributionController;
 
     /*--------------------------------------------------------------------------*/
-    class DataContainer : public ::CONTACT::AbstractStratDataContainer
+    class DataContainer : public CONTACT::AbstractStratDataContainer
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -708,7 +710,7 @@ namespace CONTACT
      *
      *  \author hiermeier
      *  \date 04/15*/
-    class Strategy : public ::CONTACT::CoAbstractStrategy
+    class Strategy : public CONTACT::CoAbstractStrategy
     {
       /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
        *  strategies and needs access to all methods. */
@@ -1466,5 +1468,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STRATEGY_H

@@ -13,6 +13,8 @@
 
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int CORE::LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
@@ -321,3 +323,5 @@ void CORE::LINALG::AllToAllCommunication(
     if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
   }
 }
+
+BACI_NAMESPACE_CLOSE

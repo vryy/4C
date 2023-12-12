@@ -13,6 +13,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
@@ -259,3 +261,5 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
   // ######################################################################################
 
 }  // CORE::GEO::CUT::LevelSetIntersection::Cut
+
+BACI_NAMESPACE_CLOSE

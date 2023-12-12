@@ -12,6 +12,8 @@
 #ifndef BACI_STRU_MULTI_MICROSTATIC_NPSUPPORT_H
 #define BACI_STRU_MULTI_MICROSTATIC_NPSUPPORT_H
 
+BACI_NAMESPACE_OPEN
+
 namespace STRUMULTI
 {
   // std::endless loop for supporting procs in multi scale problems
@@ -19,4 +21,6 @@ namespace STRUMULTI
 
 
 }  // namespace STRUMULTI
+BACI_NAMESPACE_CLOSE
+
 #endif

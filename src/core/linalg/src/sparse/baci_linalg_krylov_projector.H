@@ -23,6 +23,8 @@ class Epetra_MultiVector;
 class Epetra_Operator;
 class Epetra_BlockMap;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SerialDenseMatrix;
@@ -233,5 +235,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_KRYLOV_PROJECTOR_H

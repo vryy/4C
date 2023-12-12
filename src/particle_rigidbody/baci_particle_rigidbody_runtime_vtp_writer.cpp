@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_rigidbody_datastate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -212,3 +214,5 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::WriteToDisk(
 {
   visualization_manager_->WriteToDisk(time, timestep_number);
 }
+
+BACI_NAMESPACE_CLOSE

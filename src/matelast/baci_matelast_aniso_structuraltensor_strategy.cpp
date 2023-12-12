@@ -15,6 +15,8 @@ materials
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -324,3 +326,4 @@ double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 
   return restol;
 }
+BACI_NAMESPACE_CLOSE

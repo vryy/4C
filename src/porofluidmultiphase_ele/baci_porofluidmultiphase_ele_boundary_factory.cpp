@@ -15,6 +15,8 @@
 #include "baci_porofluidmultiphase_ele_boundary_calc.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
@@ -76,3 +78,5 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
   return DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
       numdofpernode, disname);
 }
+
+BACI_NAMESPACE_CLOSE

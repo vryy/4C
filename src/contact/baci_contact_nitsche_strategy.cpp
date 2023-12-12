@@ -22,6 +22,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
@@ -459,3 +461,5 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace DRT
@@ -61,5 +62,7 @@ namespace GEOMETRYPAIR
       const DRT::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

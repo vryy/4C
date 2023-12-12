@@ -30,6 +30,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
@@ -4090,3 +4092,5 @@ template void DRT::ELEMENTS::Beam3k::straintostress<Sacado::Fad::DFad<double>>(
     const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
     const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, Sacado::Fad::DFad<double>&) const;
+
+BACI_NAMESPACE_CLOSE

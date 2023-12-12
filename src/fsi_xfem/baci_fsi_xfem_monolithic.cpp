@@ -44,6 +44,8 @@
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
@@ -2680,3 +2682,5 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

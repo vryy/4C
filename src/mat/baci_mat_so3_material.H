@@ -16,6 +16,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class So3Material : public Material
@@ -333,4 +335,6 @@ namespace MAT
     //@}
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

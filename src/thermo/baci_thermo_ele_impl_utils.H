@@ -17,6 +17,8 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
@@ -324,4 +326,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELE_IMPL_UTILS_H

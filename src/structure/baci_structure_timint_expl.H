@@ -14,6 +14,8 @@
 /* headers */
 #include "baci_structure_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -314,21 +316,21 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    virtual Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       dserror("GetCardiovascular0DManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -391,4 +393,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_EXPL_H

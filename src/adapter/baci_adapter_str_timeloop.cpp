@@ -15,6 +15,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -77,3 +79,5 @@ int ADAPTER::StructureTimeLoop::Integrate()
   // that's it say what went wrong
   return convergencestatus;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 #include "baci_inpar_wear.H"
 #include "baci_mortar_coupling2d.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -155,5 +157,7 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_COUPLING2D_H

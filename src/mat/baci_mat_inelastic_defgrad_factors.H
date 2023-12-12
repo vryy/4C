@@ -12,6 +12,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::UTILS
 {
   class FunctionOfTime;
@@ -958,5 +960,7 @@ namespace MAT
     Teuchos::RCP<std::vector<double>> temperatures_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

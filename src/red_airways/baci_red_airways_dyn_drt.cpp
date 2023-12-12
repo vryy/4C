@@ -30,6 +30,8 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * Main control routine for reduced dimensional airway network including|
@@ -210,3 +212,5 @@ void redairway_tissue_dyn()
   // Do the actual testing
   DRT::Problem::Instance()->TestAll(actdis->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

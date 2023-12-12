@@ -26,6 +26,8 @@
 #include "baci_structure_new_model_evaluator_springdashpot.H"
 #include "baci_structure_new_model_evaluator_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -152,3 +154,5 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::BuildModelEvaluators
   Factory factory;
   return factory.BuildModelEvaluators(modeltypes, coupling_model_ptr);
 }
+
+BACI_NAMESPACE_CLOSE

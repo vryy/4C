@@ -57,6 +57,7 @@ interface
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor for basic XFluid class                     schott 03/12 |
@@ -5456,3 +5457,5 @@ void FLD::XFluid::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> 
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

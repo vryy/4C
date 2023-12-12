@@ -16,6 +16,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace CORE::LARGEROTATIONS
@@ -85,7 +87,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
@@ -175,7 +177,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void EvaluateAndAssemblePositionalCoupling(
-        const Teuchos::RCP<const ::DRT::Discretization>& discret,
+        const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
@@ -190,7 +192,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void EvaluateAndAssembleRotationalCoupling(
-        const Teuchos::RCP<const ::DRT::Discretization>& discret,
+        const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
@@ -212,5 +214,7 @@ namespace BEAMINTERACTION
     std::array<double, 2> position_in_parameterspace_;
   };  // namespace BEAMINTERACTION
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

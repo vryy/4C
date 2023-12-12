@@ -23,6 +23,8 @@
 #include "baci_mat_sutherland.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur
 // #define NO_VALUES_IN_PLANES
@@ -5875,3 +5877,5 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

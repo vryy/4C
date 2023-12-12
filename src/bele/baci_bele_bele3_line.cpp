@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Bele3LineType DRT::ELEMENTS::Bele3LineType::instance_;
 
@@ -103,3 +105,5 @@ void DRT::ELEMENTS::Bele3Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

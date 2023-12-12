@@ -17,6 +17,7 @@
 #include <array>
 #include <optional>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -247,3 +248,4 @@ double MIXTURE::TimestepAdaptivityInfo::GetIndexTime(
 {
   return base_time + GetBaseIndex(index) * base_dt;
 }
+BACI_NAMESPACE_CLOSE

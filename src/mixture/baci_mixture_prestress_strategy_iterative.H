@@ -16,6 +16,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_mixture_prestress_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -83,5 +85,7 @@ namespace MIXTURE
     const PAR::IterativePrestressStrategy* params_;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_PRESTRESS_STRATEGY_ITERATIVE_H

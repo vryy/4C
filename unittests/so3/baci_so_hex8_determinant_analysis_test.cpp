@@ -12,6 +12,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SoHex8DetermAnalys : public ::testing::Test
   {
    protected:

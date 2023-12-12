@@ -24,6 +24,8 @@
 void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
+  using namespace BACI;
+
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   int group = problem->GetCommunicators()->GroupId();

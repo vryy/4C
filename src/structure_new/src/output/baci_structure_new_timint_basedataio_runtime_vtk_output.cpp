@@ -16,6 +16,8 @@
 #include "baci_structure_new_discretization_runtime_vtu_output_params.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeOutput::Init(
@@ -87,3 +89,5 @@ void STR::TIMINT::ParamsRuntimeOutput::CheckInitSetup() const
 {
   dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
+
+BACI_NAMESPACE_CLOSE

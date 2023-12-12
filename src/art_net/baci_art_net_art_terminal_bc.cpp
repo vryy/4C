@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1022,3 +1024,5 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
   }
 
 }  // void ART::UTILS::SolveExplWindkesselBC
+
+BACI_NAMESPACE_CLOSE

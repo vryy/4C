@@ -23,6 +23,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -308,3 +310,5 @@ void printlogo()
   std::cout << "          \\____/          " << '\n';
   std::cout << "                           " << '\n';
 }
+
+BACI_NAMESPACE_CLOSE

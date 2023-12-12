@@ -11,6 +11,8 @@
 
 #include "baci_cut_options.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------*
  * create a new side (sidehandle) of the cutter discretization and return the sidehandle
@@ -935,3 +937,5 @@ void CORE::GEO::CUT::MeshHandle::MarkSubSideasUnphysical(CORE::GEO::CUT::Side* s
           side->Id());
   }
 }
+
+BACI_NAMESPACE_CLOSE

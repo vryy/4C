@@ -22,6 +22,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_poroelast_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
@@ -154,3 +156,5 @@ void FSI::AlgorithmXFEM::PrepareOutput(bool force_prepare)
 {
   StructurePoro()->PrepareOutput(force_prepare);
 }
+
+BACI_NAMESPACE_CLOSE

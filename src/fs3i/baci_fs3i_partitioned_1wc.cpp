@@ -22,6 +22,8 @@
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm) : PartFS3I(comm) {}
@@ -242,3 +244,5 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

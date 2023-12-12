@@ -15,13 +15,13 @@ functions for the traction.
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
-
 // Forward declarations.
 namespace
 {
   class BeamToSolidVolumeMeshtyingPairMortarTest;
 }
 
+BACI_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    void EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -106,5 +106,7 @@ namespace BEAMINTERACTION
     unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

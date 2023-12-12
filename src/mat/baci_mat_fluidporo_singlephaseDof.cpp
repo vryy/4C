@@ -13,6 +13,8 @@
 #include "baci_mat_fluidporo_singlephaselaw.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
@@ -389,3 +391,5 @@ double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateDerivOfDofWrtPressure(
 
 /************************************************************************/
 /************************************************************************/
+
+BACI_NAMESPACE_CLOSE

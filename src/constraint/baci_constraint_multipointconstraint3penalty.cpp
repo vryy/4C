@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint3Penalty::MPConstraint3Penalty(
@@ -497,3 +499,5 @@ void UTILS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization
   systemvector->Import(*acterrdist, *errorimport_, Insert);
   return;
 }  // end of EvaluateError
+
+BACI_NAMESPACE_CLOSE

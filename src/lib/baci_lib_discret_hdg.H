@@ -22,6 +22,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -170,5 +172,7 @@ namespace DRT
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_HDG_H

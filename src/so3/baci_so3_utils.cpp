@@ -16,6 +16,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
     CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R)
@@ -360,3 +362,5 @@ template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<CORE::FE::Ce
 template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<CORE::FE::CellType::tet4>(
     const CORE::LINALG::Matrix<4, 3>& xrefe, const CORE::LINALG::Matrix<3, 4>& derivs,
     CORE::LINALG::Matrix<3, 3>& inverseJacobian);
+
+BACI_NAMESPACE_CLOSE

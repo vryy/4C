@@ -14,6 +14,8 @@
 #include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_inpar_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FluidFluidFSI;
@@ -61,5 +63,7 @@ namespace FSI
     Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_H

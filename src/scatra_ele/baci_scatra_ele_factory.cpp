@@ -41,6 +41,8 @@
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_parameter_std.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -478,3 +480,5 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

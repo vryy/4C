@@ -19,6 +19,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -325,3 +327,5 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputContr
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
 }
+
+BACI_NAMESPACE_CLOSE

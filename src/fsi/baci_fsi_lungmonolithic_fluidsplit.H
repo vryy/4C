@@ -14,6 +14,8 @@
 
 #include "baci_fsi_lungmonolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -128,5 +130,7 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> caiGtransform_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

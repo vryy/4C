@@ -15,6 +15,8 @@
 
 #include "baci_structure_new_timint_implicitbase.H"  // base class
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations ...
 namespace STR
 {
@@ -131,10 +133,10 @@ namespace STR
 
      protected:
       //! returns the current solution group
-      [[nodiscard]] const NOX::Abstract::Group& GetSolutionGroup() const override;
+      [[nodiscard]] const ::NOX::Abstract::Group& GetSolutionGroup() const override;
 
       //! returns the current solution group ptr
-      Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() override;
+      Teuchos::RCP<::NOX::Abstract::Group> SolutionGroupPtr() override;
 
       STR::IMPLICIT::Generic& ImplInt()
       {
@@ -207,10 +209,12 @@ namespace STR
       Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolver_ptr_;
 
       //! ptr to the nox group object
-      Teuchos::RCP<NOX::Abstract::Group> grp_ptr_;
+      Teuchos::RCP<::NOX::Abstract::Group> grp_ptr_;
     };
   }  // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_IMPLICIT_H

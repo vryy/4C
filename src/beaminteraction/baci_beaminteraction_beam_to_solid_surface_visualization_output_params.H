@@ -16,6 +16,8 @@
 #include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -175,5 +177,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

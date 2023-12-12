@@ -14,6 +14,7 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -71,5 +72,7 @@ namespace ALE
   }  // namespace UTILS
 }  // namespace ALE
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_UTILS_H

@@ -13,6 +13,8 @@ electric potential as degrees of freedom
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -816,3 +818,5 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
 
   return firstderivfunctval;
 }
+
+BACI_NAMESPACE_CLOSE

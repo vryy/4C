@@ -15,6 +15,8 @@
 
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEN
 {
   /// struct containing the base type of the pairedmatrix class
@@ -493,5 +495,7 @@ namespace CORE::GEN
       quick_insert_policy<Key, quick_pairedvector<Key, T>>>;
 }  // namespace CORE::GEN
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,6 +19,8 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -395,3 +397,5 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
       t_line4>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

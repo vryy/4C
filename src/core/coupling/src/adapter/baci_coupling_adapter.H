@@ -13,6 +13,18 @@
 #define BACI_COUPLING_ADAPTER_H
 
 /*----------------------------------------------------------------------------*/
+/* headers */
+#include "baci_coupling_adapter_base.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
+#include <Epetra_IntVector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace CORE::LINALG
 {
@@ -23,16 +35,6 @@ namespace DRT
 {
   class Discretization;
 }  // namespace DRT
-
-/*----------------------------------------------------------------------------*/
-/* headers */
-#include "baci_coupling_adapter_base.H"
-
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
-#include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -98,13 +100,13 @@ namespace CORE::ADAPTER
       DOF 0 (master) with DOF 1 slave, DOF 3 (master) with DOF 2 slave, etc.
 
      */
-    void SetupConditionCoupling(const ::DRT::Discretization& masterdis,
-        Teuchos::RCP<const Epetra_Map> mastercondmap, const ::DRT::Discretization& slavedis,
+    void SetupConditionCoupling(const BACI::DRT::Discretization& masterdis,
+        Teuchos::RCP<const Epetra_Map> mastercondmap, const BACI::DRT::Discretization& slavedis,
         Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
         bool matchall = true, const int nds_master = 0, const int nds_slave = 0);
 
-    void SetupConditionCoupling(const ::DRT::Discretization& masterdis,
-        Teuchos::RCP<const Epetra_Map> mastercondmap, const ::DRT::Discretization& slavedis,
+    void SetupConditionCoupling(const BACI::DRT::Discretization& masterdis,
+        Teuchos::RCP<const Epetra_Map> mastercondmap, const BACI::DRT::Discretization& slavedis,
         Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
         const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall = true,
         const int nds_master = 0, const int nds_slave = 0);
@@ -117,9 +119,9 @@ namespace CORE::ADAPTER
 
      */
     void SetupConstrainedConditionCoupling(
-        const ::DRT::Discretization& masterdis,        ///< discretization of master side
+        const BACI::DRT::Discretization& masterdis,    ///< discretization of master side
         Teuchos::RCP<const Epetra_Map> mastercondmap,  ///< map with condition DOFs of master side
-        const ::DRT::Discretization& slavedis,         ///< discretization of slave side
+        const BACI::DRT::Discretization& slavedis,     ///< discretization of slave side
         Teuchos::RCP<const Epetra_Map> slavecondmap,   ///< map with condition DOFs of slave side
         const std::string& condname1,                  ///< condition name
         const std::string& condname2,                  ///< condition name
@@ -152,8 +154,8 @@ namespace CORE::ADAPTER
      *  \param matchall    (i) flag indicating matching slave and master nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
-    void SetupCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
+    void SetupCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
         const std::vector<int>& slavenodes, const std::vector<int>& masterdofs,
         const std::vector<int>& slavedofs, const bool matchall = true,
         const double tolerance = 1.e-3, const int nds_master = 0, const int nds_slave = 0);
@@ -165,8 +167,8 @@ namespace CORE::ADAPTER
      *
      *  \param numdof      (i) number of dofs per node to be coupled
      */
-    void SetupCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
+    void SetupCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, const std::vector<int>& masternodes,
         const std::vector<int>& slavenodes, const int numdof, const bool matchall = true,
         const double tolerance = 1.e-3, const int nds_master = 0, const int nds_slave = 0);
 
@@ -192,8 +194,8 @@ namespace CORE::ADAPTER
      *  \param matchall    (i) flag indicating matching slave and master nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
-    void SetupCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const Epetra_Map& masternodes,
+    void SetupCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, const Epetra_Map& masternodes,
         const Epetra_Map& slavenodes, const int numdof, const bool matchall = true,
         const double tolerance = 1.e-3, const int nds_master = 0, const int nds_slave = 0);
 
@@ -217,8 +219,8 @@ namespace CORE::ADAPTER
      *  \param permslavenodemap  (i) permuted node map of the slave side
      *  \param numdof            (i) number of dofs per node to be coupled
      */
-    void SetupCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const Epetra_Map& masternodemap,
+    void SetupCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, const Epetra_Map& masternodemap,
         const Epetra_Map& slavenodemap, const Epetra_Map& permslavenodemap, const int numdof);
 
     /*! \brief Setup coupling of given master and slave discretization
@@ -235,7 +237,7 @@ namespace CORE::ADAPTER
      *  \param slavedis          (i) slave side mesh
      */
     void SetupCoupling(
-        const ::DRT::Discretization& masterdis, const ::DRT::Discretization& slavedis);
+        const BACI::DRT::Discretization& masterdis, const BACI::DRT::Discretization& slavedis);
 
     /*! \brief Setup coupling of given nodes
      *
@@ -259,8 +261,9 @@ namespace CORE::ADAPTER
      *  \param nds_master      (i) dofset ID of master side
      *  \param nds_slave       (i) dofset ID of slave side
      */
-    void SetupCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
+    void SetupCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis,
+        const std::vector<std::vector<int>>& masternodes_vec,
         const std::vector<std::vector<int>>& slavenodes_vec, const int numdof,
         const bool matchall = true, const double tolerance = 1.0e-3, const int nds_master = 0,
         const int nds_slave = 0);
@@ -441,8 +444,9 @@ namespace CORE::ADAPTER
     //@}
 
    protected:
-    virtual void BuildDofMaps(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
+    virtual void BuildDofMaps(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis,
+        const Teuchos::RCP<const Epetra_Map>& masternodemap,
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
         const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
@@ -471,13 +475,14 @@ namespace CORE::ADAPTER
      *  \param matchall (i) bool indicating match of all slave and master nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
-    void MatchNodes(const ::DRT::Discretization& masterdis, const ::DRT::Discretization& slavedis,
-        std::vector<int>& masternodes, std::vector<int>& permslavenodes,
-        const std::vector<int>& slavenodes, const bool matchall, const double tolerance);
+    void MatchNodes(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, std::vector<int>& masternodes,
+        std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
+        const double tolerance);
 
     /// build slave to master permutation and dof all maps
-    void FinishCoupling(const ::DRT::Discretization& masterdis,
-        const ::DRT::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
+    void FinishCoupling(const BACI::DRT::Discretization& masterdis,
+        const BACI::DRT::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
         Teuchos::RCP<Epetra_Map> slavenodemap, Teuchos::RCP<Epetra_Map> permslavenodemap,
         const std::vector<int>& masterdofs, const std::vector<int>& slavedofs,
         const int nds_master = 0, const int nds_slave = 0);
@@ -487,7 +492,7 @@ namespace CORE::ADAPTER
       \note It is assumed that the first numdof dofs of each
       node as specified in vector coupled_dofs are of interest.
      */
-    void BuildDofMaps(const ::DRT::Discretization& dis, Teuchos::RCP<const Epetra_Map> nodemap,
+    void BuildDofMaps(const BACI::DRT::Discretization& dis, Teuchos::RCP<const Epetra_Map> nodemap,
         Teuchos::RCP<const Epetra_Map> permnodemap, Teuchos::RCP<const Epetra_Map>& dofmap,
         Teuchos::RCP<const Epetra_Map>& permdofmap, Teuchos::RCP<Epetra_Export>& exporter,
         const std::vector<int>& coupled_dofs, const int nds = 0) const;
@@ -567,5 +572,7 @@ namespace CORE::ADAPTER
     //@}
   };
 }  // namespace CORE::ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_ADAPTER_H

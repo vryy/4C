@@ -10,6 +10,8 @@
 
 #include "baci_io_visualization_writer_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -48,3 +50,4 @@ void IO::VisualizationWriterBase::WriteVisualizationDataToDisk(
   }
   FinalizeTimeStep();
 }
+BACI_NAMESPACE_CLOSE

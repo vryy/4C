@@ -31,6 +31,8 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::BeamPotential()
@@ -522,7 +524,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
-    const NOX::Solver::Generic& solver)
+    const ::NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
 
@@ -1147,3 +1149,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeBeamPo
   // finalize everything and write all required vtk files to filesystem
   visualization_manager_->WriteToDisk(time, timestep_number);
 }
+
+BACI_NAMESPACE_CLOSE

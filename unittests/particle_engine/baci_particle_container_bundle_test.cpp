@@ -12,6 +12,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class ParticleContainerBundleTest : public ::testing::Test
   {
    protected:

@@ -24,6 +24,8 @@
 // forward declarations
 class Epetra_IntVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -343,8 +345,8 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/18 */
   void ComputeDofMapsFromNodeMaps(const int dofset_id,
-      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const ::DRT::Discretization& discret,
-      std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
+      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
+      const BACI::DRT::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
 
   /*! \brief Compute a dof map corresponding to the given node map
    *
@@ -356,7 +358,7 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/18 */
   Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
-      const int dofset_id, const Epetra_Map& node_map, const ::DRT::Discretization& discret);
+      const int dofset_id, const Epetra_Map& node_map, const BACI::DRT::Discretization& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
@@ -383,5 +385,7 @@ namespace CORE::LINALG
       std::vector<double>& stdVector, const int blockSize);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H

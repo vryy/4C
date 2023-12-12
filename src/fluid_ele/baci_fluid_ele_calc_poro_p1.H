@@ -14,6 +14,8 @@
 
 #include "baci_fluid_ele_calc_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class StructPoro;
@@ -400,5 +402,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_CALC_PORO_P1_H

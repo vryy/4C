@@ -11,6 +11,8 @@
 
 #include "baci_fluid_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
 DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance() { return instance_; }
@@ -152,3 +154,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
+
+BACI_NAMESPACE_CLOSE

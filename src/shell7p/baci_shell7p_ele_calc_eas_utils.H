@@ -16,6 +16,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS::SHELL::EAS
 {
   /*!
@@ -729,5 +731,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
     stiffness_matrix.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1., LinvDTilde, transL, 1.0);
   }
 }  // namespace DRT::ELEMENTS::SHELL::EAS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SHELL7P_ELE_CALC_EAS_UTILS_H

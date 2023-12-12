@@ -31,6 +31,8 @@
 
 #include <Epetra_Time.h>
 
+BACI_NAMESPACE_OPEN
+
 
 bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
 {
@@ -208,3 +210,5 @@ void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(voldis[1]);
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
+
+BACI_NAMESPACE_CLOSE

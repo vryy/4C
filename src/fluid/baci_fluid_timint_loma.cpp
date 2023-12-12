@@ -19,6 +19,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_sutherland.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -323,3 +325,5 @@ void FLD::TimIntLoma::AVM3Preparation()
 
   return;
 }  // TimIntLoma::AVM3Preparation
+
+BACI_NAMESPACE_CLOSE

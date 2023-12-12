@@ -22,6 +22,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   template <CORE::FE::CellType celltype, typename Enable = void>
@@ -121,7 +123,7 @@ namespace DRT::ELEMENTS::DETAILS
     auto coordinates = GetNodalCoordinates<celltype>(ele, displacements, lm);
 
     // Obtain the information required for a NURBS element
-    bool zero_size = ::DRT::NURBS::GetMyNurbsKnotsAndWeights(
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
         discretization, &ele, coordinates.knots_, coordinates.weights_);
     if (zero_size)
       dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
@@ -1071,5 +1073,7 @@ namespace DRT::ELEMENTS
   }
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_LIB_H

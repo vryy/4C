@@ -21,6 +21,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace ADAPTER
@@ -238,5 +240,7 @@ namespace FS3I
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

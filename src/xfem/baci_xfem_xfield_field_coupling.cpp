@@ -18,6 +18,8 @@
 
 #include <Epetra_Export.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::XFieldField::Coupling::Coupling()
@@ -38,7 +40,7 @@ void XFEM::XFieldField::Coupling::Init(const enum MinDofDiscretization& min_dof_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::MasterToSlave(
-    const Teuchos::RCP<const Epetra_Vector>& mv, const enum ::XFEM::MapType& map_type) const
+    const Teuchos::RCP<const Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const
 {
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::null;
   switch (map_type)
@@ -58,7 +60,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::MasterToSlave(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::SlaveToMaster(
-    const Teuchos::RCP<const Epetra_Vector>& sv, const enum ::XFEM::MapType& map_type) const
+    const Teuchos::RCP<const Epetra_Vector>& sv, const enum XFEM::MapType& map_type) const
 {
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::null;
   switch (map_type)
@@ -78,7 +80,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::SlaveToMaster(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::MasterToSlave(
-    const Teuchos::RCP<const Epetra_MultiVector>& mv, const enum ::XFEM::MapType& map_type) const
+    const Teuchos::RCP<const Epetra_MultiVector>& mv, const enum XFEM::MapType& map_type) const
 {
   Teuchos::RCP<Epetra_MultiVector> sv = Teuchos::null;
   switch (map_type)
@@ -98,7 +100,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::MasterToSlave(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::SlaveToMaster(
-    const Teuchos::RCP<const Epetra_MultiVector>& sv, const enum ::XFEM::MapType& map_type) const
+    const Teuchos::RCP<const Epetra_MultiVector>& sv, const enum XFEM::MapType& map_type) const
 {
   Teuchos::RCP<Epetra_MultiVector> mv = Teuchos::null;
   switch (map_type)
@@ -118,7 +120,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::SlaveToMaster(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::MasterToSlave(const Teuchos::RCP<const Epetra_MultiVector>& mv,
-    const enum ::XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> sv) const
+    const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
   switch (map_type)
   {
@@ -148,7 +150,7 @@ void XFEM::XFieldField::Coupling::MasterToSlave(const Teuchos::RCP<const Epetra_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_MultiVector>& sv,
-    const enum ::XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> mv) const
+    const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
   switch (map_type)
   {
@@ -380,3 +382,5 @@ void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::Discretization& max
    * dof map */
   max_exporter = Teuchos::rcp<Epetra_Export>(new Epetra_Export(*max_permdofmap, *max_dofmap));
 }
+
+BACI_NAMESPACE_CLOSE

@@ -27,6 +27,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
@@ -1177,3 +1179,5 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
  |  set the local trafo map (protected)                kronbichler 03/15|
  *----------------------------------------------------------------------*/
 void DRT::FaceElement::SetLocalTrafoMap(const std::vector<int>& trafo) { localtrafomap_ = trafo; }
+
+BACI_NAMESPACE_CLOSE

@@ -16,12 +16,14 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void CORE::GEO::checkGeoType(const ::DRT::Element* element,
+void CORE::GEO::checkGeoType(const BACI::DRT::Element* element,
     const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
@@ -42,12 +44,12 @@ void CORE::GEO::checkGeoType(const ::DRT::Element* element,
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
         CORE::DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    std::vector<Teuchos::RCP<::DRT::Element>> surfaces =
-        (const_cast<::DRT::Element*>(element))->Surfaces();
+    std::vector<Teuchos::RCP<BACI::DRT::Element>> surfaces =
+        (const_cast<BACI::DRT::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;
-      const ::DRT::Element* surfaceP = surfaces[i].get();
+      const BACI::DRT::Element* surfaceP = surfaces[i].get();
 
       for (int k = 0; k < dimCoord; k++)
       {
@@ -101,14 +103,14 @@ void CORE::GEO::checkGeoType(const ::DRT::Element* element,
  | discretization                                                       |
  *----------------------------------------------------------------------*/
 std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
-    const ::DRT::Discretization& dis,
+    const BACI::DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   std::map<int, CORE::LINALG::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const ::DRT::Element* element = dis.lColElement(j);
+    const BACI::DRT::Element* element = dis.lColElement(j);
     const CORE::LINALG::SerialDenseMatrix xyze_element(
         CORE::GEO::getCurrentNodalPositions(element, currentpositions));
     CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
@@ -167,3 +169,5 @@ bool CORE::GEO::overlap(double smin, double smax, double omin, double omax)
   return ((omax > smin - CORE::GEO::TOL7 and omin < smax + CORE::GEO::TOL7) or
           (smax > omin - CORE::GEO::TOL7 and smin < omax + CORE::GEO::TOL7));
 }
+
+BACI_NAMESPACE_CLOSE

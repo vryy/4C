@@ -14,6 +14,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
@@ -160,3 +162,5 @@ template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

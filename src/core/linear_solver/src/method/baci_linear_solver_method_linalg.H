@@ -20,6 +20,8 @@
 // forward declarations
 class Epetra_LinearProblem;
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -309,5 +311,7 @@ namespace CORE::LINALG
   };  // class Solver
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_LINALG_SOLVER_H

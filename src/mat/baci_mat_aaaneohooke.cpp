@@ -23,6 +23,8 @@ the input line should read
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -415,3 +417,5 @@ bool MAT::AAAneohooke::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

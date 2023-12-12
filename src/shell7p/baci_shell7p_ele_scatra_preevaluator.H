@@ -13,6 +13,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -52,5 +54,7 @@ namespace DRT::ELEMENTS::SHELL
       DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array);
 
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

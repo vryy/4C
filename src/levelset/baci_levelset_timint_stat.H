@@ -15,6 +15,8 @@
 #include "baci_levelset_algorithm.H"
 #include "baci_scatra_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -77,5 +79,7 @@ namespace SCATRA
   };  // class TimIntStationary
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_TIMINT_STAT_H

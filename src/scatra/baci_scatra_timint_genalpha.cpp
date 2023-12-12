@@ -18,6 +18,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
@@ -464,3 +466,5 @@ void SCATRA::TimIntGenAlpha::PostCalcInitialTimeDerivative()
   SetElementTimeParameter();
   SetElementTurbulenceParameters();
 }
+
+BACI_NAMESPACE_CLOSE

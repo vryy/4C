@@ -15,6 +15,8 @@
 #include "baci_structure_new_model_evaluator_generic.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CONTACT
 {
@@ -96,7 +98,7 @@ namespace STR
           const NOX::NLN::Group& curr_grp) override{};
 
       //! [derived]
-      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! [derived]
       void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
@@ -228,5 +230,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_MESHTYING_H

@@ -13,6 +13,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR::SOLVER
 {
   /* A very good tutorial and explanation on how to choose your linear solver and the related
@@ -98,5 +100,7 @@ namespace INPAR::SOLVER
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
 }  // namespace INPAR::SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -11,6 +11,8 @@ Implementation of a coupled Saint-Venant-Kirchhoff material
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
@@ -85,3 +87,4 @@ void MAT::ELASTIC::CoupSVK::AddCoupDerivVol(
              56. / 27. * (3. / 4. * lambda + mu / 2.) * pow(J, -10. / 3.) -
              20. / 27. * mu * pow(J, -8. / 3.);
 }
+BACI_NAMESPACE_CLOSE

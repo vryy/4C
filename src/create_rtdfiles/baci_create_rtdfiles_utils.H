@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace RTD
@@ -242,5 +244,7 @@ namespace DRT
 
 std::ostream& operator<<(std::ostream& os, const DRT::RTD::Table& table);
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CREATE_RTDFILES_UTILS_H

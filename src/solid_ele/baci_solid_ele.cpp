@@ -22,6 +22,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
@@ -351,3 +353,5 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
 
   return SolidMaterial()->VisData(name, data, Id());
 }
+
+BACI_NAMESPACE_CLOSE

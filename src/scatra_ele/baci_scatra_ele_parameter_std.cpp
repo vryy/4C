@@ -23,6 +23,8 @@ coexist with this general class.
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance(
@@ -309,3 +311,4 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsWss() const
       "having set it!");
   return nds_wss_;
 }
+BACI_NAMESPACE_CLOSE

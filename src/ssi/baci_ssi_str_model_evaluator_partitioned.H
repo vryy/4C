@@ -14,6 +14,8 @@
 
 #include "baci_ssi_str_model_evaluator_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Structure;
@@ -64,5 +66,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_STR_MODEL_EVALUATOR_PARTITIONED_H

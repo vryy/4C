@@ -19,8 +19,6 @@
 #include <Epetra_SerialComm.h>
 
 
-using namespace GEOMETRYPAIR;
-
 namespace
 {
   /**
@@ -36,14 +34,14 @@ namespace
     {
       Teuchos::RCP<Epetra_SerialComm> comm =
           Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm));
+      discret_ = Teuchos::rcp(new BACI::DRT::Discretization("unit_test", comm));
     }
 
     /**
      * \brief Return a reference to the connected faces of a face element.
      */
     template <typename A>
-    std::map<int, ConnectedFace>& GetConnectedFaces(A& face_element)
+    std::map<int, BACI::GEOMETRYPAIR::ConnectedFace>& GetConnectedFaces(A& face_element)
     {
       return face_element->connected_faces_;
     }
@@ -58,7 +56,7 @@ namespace
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<BACI::DRT::Discretization> discret_;
   };
 
   /**
@@ -66,6 +64,8 @@ namespace
    */
   TEST_F(GeometryPairLineToSurfacePatchTest, TestSurfacePatchAveragedNormalsQuad4)
   {
+    using namespace BACI;
+
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;
     using scalar_type = GEOMETRYPAIR::line_to_surface_patch_scalar_type;

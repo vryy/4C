@@ -12,6 +12,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 
 namespace DRT::INPUT
@@ -99,5 +101,7 @@ namespace INPAR::S2I
   //! set valid conditions for scatra-scatra interface coupling
   void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 }  // namespace INPAR::S2I
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_INPAR_S2I_H

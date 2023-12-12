@@ -21,6 +21,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   namespace DETAILS
@@ -295,4 +297,6 @@ namespace DRT::ELEMENTS
     }
   }
 }  // namespace DRT::ELEMENTS
+BACI_NAMESPACE_CLOSE
+
 #endif  // SOLID_ELE_CALC_LIB_IO_H

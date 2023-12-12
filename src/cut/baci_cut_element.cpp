@@ -24,6 +24,8 @@
 #include <stack>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  * struct for comparison of position of sides using ray-tracing techniques
  * shoot a ray starting from startpoint through the midpoint of one side
@@ -1326,7 +1328,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (elementtype)
   {
     case CORE::FE::CellType::line2:
@@ -1383,7 +1385,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsi
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
-  return Create(::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(BACI::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
 template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::line2>;
@@ -1395,3 +1397,5 @@ template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::quad4>;
 template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::hex8>;
 template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::pyramid5>;
 template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::wedge6>;
+
+BACI_NAMESPACE_CLOSE

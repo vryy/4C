@@ -19,6 +19,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -78,3 +80,5 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList
   if (gas_constant_ <= 0.0) dserror("(universal) gas constant is non-positive!");
   if (temperature_ < 0.0) dserror("temperature is non-positive!");
 }
+
+BACI_NAMESPACE_CLOSE

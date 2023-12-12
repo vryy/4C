@@ -19,6 +19,8 @@ reactive scalars
 #include "baci_mat_scatra_mat.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -184,3 +186,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::pyramid5>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs9>;
 // template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

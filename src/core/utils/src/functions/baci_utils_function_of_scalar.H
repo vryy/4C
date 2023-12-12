@@ -6,6 +6,8 @@
 #ifndef BACI_UTILS_FUNCTION_OF_SCALAR_H
 #define BACI_UTILS_FUNCTION_OF_SCALAR_H
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   /**
@@ -31,5 +33,7 @@ namespace CORE::UTILS
     [[nodiscard]] virtual double EvaluateDerivative(double scalar, int deriv_order) const = 0;
   };
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -18,6 +18,8 @@
 #include <map>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace BEAMINTERACTION
@@ -108,5 +110,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

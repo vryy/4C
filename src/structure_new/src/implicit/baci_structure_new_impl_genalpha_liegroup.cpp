@@ -24,6 +24,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -301,3 +303,5 @@ void STR::IMPLICIT::GenAlphaLieGroup::ResetEvalParams()
     EvalData().GetBeamData().SetAlpham(alpham_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_structure_new_integrator.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace EXPLICIT
@@ -56,7 +58,7 @@ namespace STR
       /*! \brief Calculate characteristic/reference norms for forces (derived)
        */
       [[nodiscard]] double CalcRefNormForce(
-          const enum NOX::Abstract::Vector::NormType& type) const override;
+          const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! return the default step length
       [[nodiscard]] double GetDefaultStepLength() const;
@@ -136,17 +138,17 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const ::STR::EXPLICIT::Generic& expl)
+          Generic(const STR::EXPLICIT::Generic& expl)
               : expl_(expl), default_step_(expl.GetDefaultStepLength())
           {
           }
 
 
           //! derived
-          void runPreIterate(const NOX::Solver::Generic& solver) override;
+          void runPreIterate(const ::NOX::Solver::Generic& solver) override;
 
           //! derived
-          void runPreSolve(const NOX::Solver::Generic& nlnSolver) override;
+          void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
 
           //! derived
           void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
@@ -158,7 +160,7 @@ namespace NOX
 
          private:
           //! reference to the STR::IMPLICIT::Generic object (read-only)
-          const ::STR::EXPLICIT::Generic& expl_;
+          const STR::EXPLICIT::Generic& expl_;
 
           //! default step length
           const double default_step_;
@@ -167,5 +169,7 @@ namespace NOX
     }       // namespace PrePostOp
   }         // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_STRUCTURE_NEW_EXPL_GENERIC_H

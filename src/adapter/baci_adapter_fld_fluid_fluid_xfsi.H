@@ -15,6 +15,8 @@ conjunction with XFluidFluid!
 
 #include "baci_adapter_fld_fluid_xfsi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class XFluidFluid;
@@ -40,5 +42,7 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_FLD_FLUID_FLUID_XFSI_H

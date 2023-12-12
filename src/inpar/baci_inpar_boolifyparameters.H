@@ -17,6 +17,8 @@
 /* headers */
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* content */
 namespace DRT
@@ -36,4 +38,6 @@ namespace DRT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // INPAR_BOOLIFYPARAMETERS_H

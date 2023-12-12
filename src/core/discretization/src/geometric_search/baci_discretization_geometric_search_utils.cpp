@@ -16,6 +16,8 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   void PrintGeometricSearchDetails(const Epetra_Comm& comm, const GeometricSearchInfo info)
@@ -309,3 +311,5 @@ namespace CORE::GEOMETRICSEARCH
 #endif
   }
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
 
 
@@ -102,7 +104,7 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
         DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
-  if (::UTILS::PRESTRESS::IsMulf(pstype_))
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }
@@ -178,3 +180,5 @@ void DRT::ELEMENTS::So_pyramid5fbar::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

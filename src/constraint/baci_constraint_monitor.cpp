@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
@@ -161,3 +163,5 @@ void UTILS::Monitor::SetState(const std::string& state,  ///< name of state to s
 {
   actdisc_->SetState(state, V);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 /*
  \brief class for VTU output generation
@@ -66,5 +67,7 @@ class VtuWriter : public VtkWriterBase
   //! Return the file suffix including the dot for this file type
   const std::string& WriterSuffix() const override;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

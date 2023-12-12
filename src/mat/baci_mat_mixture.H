@@ -19,6 +19,8 @@
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_rule.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -231,5 +233,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_MIXTURE_H

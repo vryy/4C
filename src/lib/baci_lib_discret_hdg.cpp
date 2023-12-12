@@ -21,6 +21,8 @@
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
@@ -674,3 +676,5 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -25,6 +25,7 @@
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -2671,3 +2672,5 @@ template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

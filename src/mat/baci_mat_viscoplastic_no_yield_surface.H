@@ -15,6 +15,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -328,4 +330,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H

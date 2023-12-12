@@ -14,6 +14,8 @@
 #include "baci_io_runtime_csv_writer.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
@@ -471,4 +473,6 @@ namespace SCATRA
   };  // class ScalarHandlerElch
 
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -22,6 +22,8 @@ the input line should read
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -174,5 +176,7 @@ namespace MAT
     MAT::PAR::AAA_mixedeffects* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_AAA_MIXEDEFFECTS_H

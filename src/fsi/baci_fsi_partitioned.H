@@ -31,6 +31,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -91,7 +93,7 @@ namespace FSI
    * Output() to finish the current step, save the result and write the
    * files.
    */
-  class Partitioned : public Algorithm, public NOX::Epetra::Interface::Required
+  class Partitioned : public Algorithm, public ::NOX::Epetra::Interface::Required
   {
    public:
     /*! \brief Constructor
@@ -107,7 +109,7 @@ namespace FSI
      *
      * @param interface Our interface to NOX
      */
-    virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    virtual void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     /// compute FSI interface residual S^{-1}(F(d)) - d
     bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
@@ -191,7 +193,7 @@ namespace FSI
 
     /// create convergence tests
     virtual void CreateStatusTest(Teuchos::ParameterList& nlParams,
-        Teuchos::RCP<NOX::Epetra::Group> grp, Teuchos::RCP<NOX::StatusTest::Combo> converged);
+        Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged);
 
     Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
@@ -222,13 +224,13 @@ namespace FSI
 
    private:
     /// create linear solver framework
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils);
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils);
 
     /// create convergence tests including testing framework
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp);
 
     //! connection of interface dofs for finite differences
     Teuchos::RCP<Epetra_CrsGraph> rawGraph_;
@@ -249,7 +251,7 @@ namespace FSI
     /*!
       \warning This variable is only valid during when the time loop runs.
      */
-    Teuchos::RCP<NOX::Utils> utils_;
+    Teuchos::RCP<::NOX::Utils> utils_;
 
    protected:
     int mfresitemax_;
@@ -269,5 +271,7 @@ namespace FSI
   };
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

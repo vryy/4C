@@ -16,6 +16,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::Gemm::Gemm()
@@ -113,7 +115,8 @@ void STR::IMPLICIT::Gemm::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Gemm::CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const
+double STR::IMPLICIT::Gemm::CalcRefNormForce(
+    const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -173,3 +176,5 @@ bool STR::IMPLICIT::Gemm::PredictConstAcc(
   dserror("Not yet implemented! (see the Statics integration for an example)");
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -30,6 +30,8 @@ continuous interior penalty) scheme
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |
  |  and calls evaluate routine                             schott 03/12 |
@@ -780,3 +782,5 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

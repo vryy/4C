@@ -16,6 +16,8 @@
 #include "baci_porofluidmultiphase_ele_calc_utils.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -115,5 +117,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_ELE_BOUNDARY_CALC_H

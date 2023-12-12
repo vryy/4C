@@ -17,6 +17,8 @@
 #include "baci_mortar_node.H"
 #include "baci_mortar_shape_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|
  *----------------------------------------------------------------------*/
@@ -4847,3 +4849,5 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

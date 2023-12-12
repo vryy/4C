@@ -21,6 +21,8 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -607,3 +609,5 @@ int DRT::ELEMENTS::So_tet4avType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

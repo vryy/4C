@@ -27,6 +27,8 @@ CORRLENGTH 5.0
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -470,3 +472,5 @@ bool MAT::AAAneohooke_stopro::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

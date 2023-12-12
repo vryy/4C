@@ -19,6 +19,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /// Block Gauss-Seidel preconditioner for a 2x2 system
@@ -125,5 +127,7 @@ namespace CORE::LINALG
   };
 }  // namespace CORE::LINALG
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,6 +13,8 @@
 #include <iterator>
 #include <tuple>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   /*!
@@ -218,5 +220,7 @@ namespace CORE::UTILS
     return integration_result;
   }
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

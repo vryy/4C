@@ -18,6 +18,8 @@
 #include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
 
 DRT::ELEMENTS::So_sh18Type& DRT::ELEMENTS::So_sh18Type::Instance() { return instance_; }
@@ -195,3 +197,5 @@ void DRT::ELEMENTS::So_sh18::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

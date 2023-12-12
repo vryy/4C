@@ -16,6 +16,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ArtNet;
@@ -169,5 +171,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_RED_H

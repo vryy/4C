@@ -14,6 +14,8 @@
 #define BACI_CREATE_RTDFILES_WRAPPER_H
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace RTD
@@ -66,5 +68,7 @@ namespace DRT
 
   }  // namespace RTD
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CREATE_RTDFILES_WRAPPER_H

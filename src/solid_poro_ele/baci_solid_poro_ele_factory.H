@@ -18,6 +18,8 @@
 #include <memory>
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   /*!
@@ -56,5 +58,7 @@ namespace DRT::ELEMENTS
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype);
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_PORO_ELE_FACTORY_H

@@ -37,6 +37,8 @@ between the xfluid class and the cut-library
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::MeshCoupling::MeshCoupling(
@@ -2688,3 +2690,5 @@ void XFEM::MeshCouplingFluidFluid::Output(
     cutter_output_->WriteVector("idispnpi_res", idispnpi_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

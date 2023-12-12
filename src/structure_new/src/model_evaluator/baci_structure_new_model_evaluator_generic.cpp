@@ -20,6 +20,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Generic::Generic()
@@ -250,3 +252,5 @@ bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
   gstate_ptr_->GetComm().SumAll(&lerr, &gerr, 1);
   return (gerr == 0);
 }
+
+BACI_NAMESPACE_CLOSE

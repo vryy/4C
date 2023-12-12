@@ -30,6 +30,8 @@
 #include "baci_w1_poro_eletypes.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
@@ -473,3 +475,5 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
     dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 }
+
+BACI_NAMESPACE_CLOSE

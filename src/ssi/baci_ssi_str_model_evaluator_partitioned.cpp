@@ -25,6 +25,8 @@
 #include "baci_structure_new_impl_generic.H"
 #include "baci_structure_new_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart> ssi_part)
@@ -171,3 +173,5 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -69,5 +71,7 @@ namespace ART
   };
 
 }  // namespace ART
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ARTERY_RESULTTEST_H

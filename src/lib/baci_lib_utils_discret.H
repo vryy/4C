@@ -18,14 +18,20 @@
 #include "baci_lib_condition.H"
 
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+
+  template <class T>
+  class RCP;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MapExtractor;
 }  // namespace CORE::LINALG
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 namespace DRT
 {
   class AssembleStrategy;
@@ -438,5 +444,7 @@ namespace DRT
   }     // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_DISCRET_H

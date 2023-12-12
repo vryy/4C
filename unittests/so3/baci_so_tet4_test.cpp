@@ -16,6 +16,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SoTet4Test : public ::testing::Test
   {
    protected:

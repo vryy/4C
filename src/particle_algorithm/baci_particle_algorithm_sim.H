@@ -11,6 +11,8 @@
 #ifndef BACI_PARTICLE_ALGORITHM_SIM_H
 #define BACI_PARTICLE_ALGORITHM_SIM_H
 
+BACI_NAMESPACE_OPEN
+
 /*!
  * \brief main control routine for particle simulations
  *
@@ -19,4 +21,6 @@
 void particle_drt();
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

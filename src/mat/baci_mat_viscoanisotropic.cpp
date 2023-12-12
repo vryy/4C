@@ -20,6 +20,8 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -741,3 +743,5 @@ bool MAT::ViscoAnisotropic::VisData(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

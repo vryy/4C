@@ -16,6 +16,8 @@
 #include "baci_inpar_beamcontact.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   class BeamToBeamContactParams
@@ -142,5 +144,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

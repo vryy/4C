@@ -14,6 +14,8 @@ created
 #include "baci_cut_output.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------*
  * If a point with the coordinates "x" does not exists, it creates a new point correspondingly
@@ -596,7 +598,7 @@ void CORE::GEO::CUT::OctTreeNode::Print(int level, std::ostream& stream)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::PointPool::PointPool(double norm)
-    : tree_(norm), probdim_(::DRT::Problem::Instance()->NDim())
+    : tree_(norm), probdim_(BACI::DRT::Problem::Instance()->NDim())
 {
 }
 
@@ -646,3 +648,5 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::FindNode(const double*
   }
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

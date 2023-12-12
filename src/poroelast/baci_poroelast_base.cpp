@@ -34,6 +34,8 @@
 
 #include <cstddef>
 
+BACI_NAMESPACE_OPEN
+
 
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
@@ -90,8 +92,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         ADAPTER::STR::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr->Setup();
-    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::FPSIStructureWrapper>(
-        adapterbase_ptr->StructureField());
+    structure_ =
+        Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(adapterbase_ptr->StructureField());
   }
 
   if (structure_ == Teuchos::null)
@@ -629,3 +631,5 @@ POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::co
   }
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,7 @@
 
 #define DEBUGGING_ANA 0  // turn on to get debugging printouts
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -2288,5 +2289,7 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_LINALG_ANA_H

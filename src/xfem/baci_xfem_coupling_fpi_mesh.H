@@ -19,6 +19,8 @@ xfluid class and the cut-library
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_xfem_coupling_mesh.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -266,5 +268,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_FPI_MESH_H

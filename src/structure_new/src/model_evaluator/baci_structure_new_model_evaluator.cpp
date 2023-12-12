@@ -23,6 +23,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::ModelEvaluator::ModelEvaluator()
@@ -584,7 +586,7 @@ void STR::ModelEvaluator::RunPreComputeX(const Epetra_Vector& xold, Epetra_Vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPostIterate(const NOX::Solver::Generic& solver, const double step,
+void STR::ModelEvaluator::RunPostIterate(const ::NOX::Solver::Generic& solver, const double step,
     const bool isdefaultstep, const int num_corrs) const
 {
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
@@ -599,7 +601,7 @@ void STR::ModelEvaluator::RunPostIterate(const NOX::Solver::Generic& solver, con
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::RunPreSolve(
-    const NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const
+    const ::NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const
 {
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
   eval_data_ptr_->SetStepLength(step);
@@ -903,3 +905,5 @@ void STR::ModelEvaluator::RecoverFromBackupState()
   CheckInitSetup();
   for (const auto& me_iter : *me_vec_ptr_) me_iter->RecoverFromBackupState();
 }
+
+BACI_NAMESPACE_CLOSE

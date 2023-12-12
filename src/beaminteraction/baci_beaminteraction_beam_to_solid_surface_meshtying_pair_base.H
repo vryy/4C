@@ -17,6 +17,8 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace CORE::LINALG
@@ -135,7 +137,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const ::DRT::Discretization& discret) const;
+    std::vector<int> GetPairGID(const BACI::DRT::Discretization& discret) const;
 
    private:
     /**
@@ -158,5 +160,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

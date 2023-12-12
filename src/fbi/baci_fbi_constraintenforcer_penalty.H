@@ -15,6 +15,8 @@ fluid-beam interaction).
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FSIStructureWrapper;
@@ -116,4 +118,6 @@ namespace ADAPTER
     FBIPenaltyConstraintenforcer() = delete;
   };
 }  // namespace ADAPTER
+BACI_NAMESPACE_CLOSE
+
 #endif

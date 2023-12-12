@@ -16,6 +16,8 @@
 #include "baci_geometry_pair_scalar_types.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace INPAR
@@ -59,7 +61,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    void EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -86,5 +88,7 @@ namespace BEAMINTERACTION
       const CORE::FE::CellType surface_shape,
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction);
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

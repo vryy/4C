@@ -21,6 +21,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
@@ -591,3 +593,5 @@ template class DRT::ELEMENTS::Shell7pEleCalc<CORE::FE::CellType::quad8>;
 template class DRT::ELEMENTS::Shell7pEleCalc<CORE::FE::CellType::quad9>;
 template class DRT::ELEMENTS::Shell7pEleCalc<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::Shell7pEleCalc<CORE::FE::CellType::tri6>;
+
+BACI_NAMESPACE_CLOSE

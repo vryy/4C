@@ -15,13 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 // forward declarations
 class Epetra_LinearProblem;
-namespace CORE::LINALG
-{
-  class SparseOperator;
-}  // namespace CORE::LINALG
 namespace Teuchos
 {
   class ParameterList;
@@ -33,6 +28,16 @@ namespace NOX
   {
     class Vector;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class SparseOperator;
+}  // namespace CORE::LINALG
+namespace NOX
+{
   namespace NLN
   {
     class LinearSystem;
@@ -91,7 +96,7 @@ namespace NOX
            \param jac    : full access to the jacobian
            \param linsys : read only access to the linear system object
          */
-        virtual void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+        virtual void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys);
 
         /*! User defined method that will be executed at the end
@@ -102,8 +107,8 @@ namespace NOX
            \param jac    : full access to the jacobian
            \param linsys : read only access to the linear system object
          */
-        virtual void runPostApplyJacobianInverse(NOX::Abstract::Vector& result,
-            NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
+        virtual void runPostApplyJacobianInverse(::NOX::Abstract::Vector& result,
+            ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
             const NOX::NLN::LinearSystem& linsys);
 
         /** User defined method that will be executed at the start of a call to
@@ -170,7 +175,7 @@ namespace NOX
 }  // namespace NOX
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
-    NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
+    ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
@@ -182,8 +187,8 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
-    NOX::Abstract::Vector& result, NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
-    const NOX::NLN::LinearSystem& linsys)
+    ::NOX::Abstract::Vector& result, ::NOX::Abstract::Vector& rhs,
+    CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
@@ -236,5 +241,7 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(Epe
       it->second->runPostComputeFandJacobian(rhs, jac, x, linsys);
   }
 }
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H

@@ -12,6 +12,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -130,3 +132,5 @@ ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
 
   return ProblemType::none;
 }
+
+BACI_NAMESPACE_CLOSE

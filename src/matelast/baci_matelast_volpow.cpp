@@ -10,6 +10,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::VolPow::VolPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), a_(matdata->GetDouble("A")), expon_(matdata->GetDouble("EXPON"))
@@ -50,3 +52,4 @@ void MAT::ELASTIC::VolPow::Add3rdVolDeriv(
 
   d3PsiVolDJ3 += -expon * a * (expon + 1.) * std::pow(modinv(2), -(expon + 2.));
 }
+BACI_NAMESPACE_CLOSE

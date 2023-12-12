@@ -20,6 +20,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -501,5 +502,7 @@ namespace GEOMETRYPAIR
       ElementDiscretizationNurbs<ElementDiscretizationBase<CORE::FE::CellType::nurbs27, 1>>;
 
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

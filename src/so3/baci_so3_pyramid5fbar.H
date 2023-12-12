@@ -11,6 +11,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_pyramid5.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -231,5 +233,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_PYRAMID5FBAR_H

@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -372,3 +374,5 @@ void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   ScatraMat::Unpack(basedata);
 }
+
+BACI_NAMESPACE_CLOSE

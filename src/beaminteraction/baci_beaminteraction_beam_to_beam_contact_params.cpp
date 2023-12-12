@@ -12,6 +12,8 @@
 
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -222,3 +224,5 @@ void BEAMINTERACTION::BeamToBeamContactParams::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

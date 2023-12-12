@@ -27,6 +27,9 @@ namespace Teuchos
 {
   class Time;
 };
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class Solver;
@@ -352,7 +355,7 @@ namespace STR
       }
 
       /// Returns the NOX normtype
-      const enum NOX::Abstract::Vector::NormType& GetNoxNormType() const
+      const enum ::NOX::Abstract::Vector::NormType& GetNoxNormType() const
       {
         CheckInitSetup();
         return nox_normtype_;
@@ -824,7 +827,7 @@ namespace STR
       enum INPAR::STR::VectorNorm normtype_;
 
       /// vector norm type for the status/convergence test
-      enum NOX::Abstract::Vector::NormType nox_normtype_;
+      enum ::NOX::Abstract::Vector::NormType nox_normtype_;
 
       /// @name primary variables
       ///@{
@@ -1145,5 +1148,7 @@ namespace STR
   }  // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_BASEDATASDYN_H

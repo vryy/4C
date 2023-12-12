@@ -26,6 +26,8 @@ functionality
 #include "baci_inpar_scatra.H"
 #include "baci_w1_poro_p1.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -135,5 +137,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_P1_SCATRA_H

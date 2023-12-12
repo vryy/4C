@@ -28,6 +28,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 template <typename beam, typename fluid>
@@ -275,3 +277,5 @@ template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_her
 // Hermite beam element, tet10 solid element.
 template class BEAMINTERACTION::BeamToFluidMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+
+BACI_NAMESPACE_CLOSE

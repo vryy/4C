@@ -18,6 +18,8 @@ equations
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*!
 \brief Performs integration of  base functions along the line using the standard Gaussian rule
 */
@@ -70,5 +72,7 @@ class LineIntegration
   //! integration
   CORE::GEO::CUT::ProjectionDirection intType_;
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

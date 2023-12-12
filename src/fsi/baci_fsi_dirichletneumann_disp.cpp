@@ -18,6 +18,8 @@ based on the interface displacements
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannDisp::DirichletNeumannDisp(const Epetra_Comm& comm) : DirichletNeumann(comm)
@@ -113,3 +115,5 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::InitialGuess()
     return InterfaceForce();
   }
 }
+
+BACI_NAMESPACE_CLOSE

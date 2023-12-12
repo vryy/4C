@@ -29,6 +29,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
@@ -12975,3 +12977,5 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
   }
   return J;
 }
+
+BACI_NAMESPACE_CLOSE

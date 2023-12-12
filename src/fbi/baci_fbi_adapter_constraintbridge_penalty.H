@@ -16,6 +16,8 @@ approach for Fluid-beam interaction.
 #include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   class BeamToFluidMeshtyingVtkOutputWriter;
@@ -147,5 +149,7 @@ namespace ADAPTER
     bool structure_scaled_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H

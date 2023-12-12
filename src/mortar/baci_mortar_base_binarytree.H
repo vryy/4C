@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -305,5 +307,7 @@ namespace MORTAR
     int kdop_;
   };  // class BaseBinaryTree
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_BASE_BINARYTREE_H

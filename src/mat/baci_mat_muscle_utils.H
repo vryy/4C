@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace UTILS
@@ -305,4 +307,6 @@ namespace MAT
     }  // namespace MUSCLE
   }    // namespace UTILS
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

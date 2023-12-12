@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -105,14 +106,14 @@ namespace CORE::COMM
     ParObject* Create(const std::vector<char>& data);
 
     /// create an element from its name (and dis type if needed)
-    Teuchos::RCP<::DRT::Element> Create(
+    Teuchos::RCP<BACI::DRT::Element> Create(
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
-    void InitializeElements(::DRT::Discretization& dis);
+    void InitializeElements(BACI::DRT::Discretization& dis);
 
     /// preevaluate elements (via element types)
-    void PreEvaluate(::DRT::Discretization& dis, Teuchos::ParameterList& p,
+    void PreEvaluate(BACI::DRT::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -120,7 +121,8 @@ namespace CORE::COMM
 
     /// setup definition of element input file lines
     void SetupElementDefinition(
-        std::map<std::string, std::map<std::string, ::DRT::INPUT::LineDefinition>>& definitions);
+        std::map<std::string, std::map<std::string, BACI::DRT::INPUT::LineDefinition>>&
+            definitions);
 
    private:
     void Register(ParObjectType* object_type);
@@ -135,13 +137,13 @@ namespace CORE::COMM
     std::map<int, ParObjectType*> type_map_;
 
     /// element name cache
-    std::map<std::string, ::DRT::ElementType*> element_cache_;
+    std::map<std::string, BACI::DRT::ElementType*> element_cache_;
 
     /// preregistered types
     std::vector<ParObjectType*> types_;
 
     /// element types that are actually used
-    std::map<::DRT::Discretization*, std::set<::DRT::ElementType*>> active_elements_;
+    std::map<BACI::DRT::Discretization*, std::set<BACI::DRT::ElementType*>> active_elements_;
 
     // no copying
 
@@ -150,5 +152,7 @@ namespace CORE::COMM
   };
 
 }  // namespace CORE::COMM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

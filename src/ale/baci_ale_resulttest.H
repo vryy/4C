@@ -19,6 +19,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace DRT
@@ -57,5 +59,7 @@ namespace ALE
   };
 
 }  // namespace ALE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ALE_RESULTTEST_H

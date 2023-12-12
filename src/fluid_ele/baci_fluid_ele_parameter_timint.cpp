@@ -20,6 +20,8 @@ with different parameters in more than one fluid field is not yet supported.
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
     CORE::UTILS::SingletonAction action)
 {
@@ -267,3 +269,5 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
   std::cout << std::endl
             << "|-----------------------------------------------------------" << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

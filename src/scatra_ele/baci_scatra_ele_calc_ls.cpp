@@ -12,6 +12,8 @@
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
@@ -68,3 +70,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet10>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

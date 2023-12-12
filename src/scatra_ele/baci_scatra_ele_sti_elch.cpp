@@ -13,6 +13,8 @@ transport within electrochemical substances
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------------------------------------------------------------------*
  | element matrix and right-hand side vector contributions arising from thermal source terms in
  discrete thermo residuals   fang 11/15 |
@@ -126,3 +128,5 @@ template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tet10>;
 // template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

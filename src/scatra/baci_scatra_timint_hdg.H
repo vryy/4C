@@ -12,6 +12,8 @@
 #include "baci_lib_discret_hdg.H"
 #include "baci_scatra_timint_genalpha.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*!
@@ -196,5 +198,7 @@ namespace SCATRA
 
   };  // class TimIntHDG
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_HDG_H

@@ -17,6 +17,8 @@
 #include "baci_structure_new_nln_solver_singlestep.H"
 #include "baci_structure_new_nln_solver_uzawa.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -69,3 +71,5 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::BuildNlnSolver(
   Factory factory;
   return factory.BuildNlnSolver(nlnSolType);
 }
+
+BACI_NAMESPACE_CLOSE

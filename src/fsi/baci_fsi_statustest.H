@@ -18,6 +18,8 @@
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::ADAPTER
 {
@@ -36,17 +38,17 @@ namespace NOX
 {
   namespace FSI
   {
-    /// a copy of NOX::StatusTest::NormF that works on a vector part only
+    /// a copy of ::NOX::StatusTest::NormF that works on a vector part only
     /*!
 
-      This is a copy of NOX::StatusTest::NormF that allows subclasses to
+      This is a copy of ::NOX::StatusTest::NormF that allows subclasses to
       define what vector to test. This way we can specify tests on
       vectors that cover only parts of our field.
 
       \author u.kue
       \date 11/07
      */
-    class GenericNormF : public NOX::StatusTest::Generic
+    class GenericNormF : public ::NOX::StatusTest::Generic
     {
      public:
       //! Type that determines whether to scale the norm by the problem size.
@@ -68,15 +70,15 @@ namespace NOX
       };
 
       GenericNormF(std::string name, double tolerance,
-          NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
+          ::NOX::Abstract::Vector::NormType normType = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled);
 
       /// do the check
-      NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+      ::NOX::StatusTest::StatusType checkStatus(
+          const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
       /// get the result
-      NOX::StatusTest::StatusType getStatus() const override;
+      ::NOX::StatusTest::StatusType getStatus() const override;
 
       /// output
       std::ostream& print(std::ostream& stream, int indent = 0) const override;
@@ -107,23 +109,23 @@ namespace NOX
         \note Returns -1.0 if F(x) has not been calculated for the given
         grp (i.e., grp.isF() is false).
       */
-      virtual double computeNorm(const NOX::Abstract::Group& grp) = 0;
+      virtual double computeNorm(const ::NOX::Abstract::Group& grp) = 0;
 
       /// compute the norm of a given vector
       double computeNorm(const Epetra_Vector& v);
 
       /*! In the case of a relative norm calculation, initializes
         \c trueTolerance based on the F-value at the initial guess.*/
-      // void relativeSetup(NOX::Abstract::Group& initialGuess);
+      // void relativeSetup(::NOX::Abstract::Group& initialGuess);
 
       double Tolerance() const { return trueTolerance_; }
 
      private:
       //! %Status
-      NOX::StatusTest::StatusType status_;
+      ::NOX::StatusTest::StatusType status_;
 
       //! Type of norm to use
-      NOX::Abstract::Vector::NormType normType_;
+      ::NOX::Abstract::Vector::NormType normType_;
 
       //! Scaling to use
       ScaleType scaleType_;
@@ -150,7 +152,7 @@ namespace NOX
     {
      public:
       AdaptiveNewtonNormF(std::string name, double tolerance,
-          NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
+          ::NOX::Abstract::Vector::NormType normType = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled)
           : GenericNormF(name, tolerance, normType, stype)
       {
@@ -180,11 +182,11 @@ namespace NOX
      public:
       PartialNormF(std::string name, const CORE::LINALG::MultiMapExtractor& extractor, int blocknum,
           double tolerance,
-          NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
+          ::NOX::Abstract::Vector::NormType normType = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const NOX::Abstract::Group& grp) override;
+      double computeNorm(const ::NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MultiMapExtractor extractor_;
@@ -202,7 +204,7 @@ namespace NOX
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const NOX::Abstract::Group& grp) override;
+      double computeNorm(const ::NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MapExtractor extractor1_;
@@ -213,14 +215,14 @@ namespace NOX
     };
 
 
-    /// Copy of NOX::StatusTest::NormUpdate
+    /// Copy of ::NOX::StatusTest::NormUpdate
     /*!
      *  Compute norm of the iterative solution increment.
      *
      *  The iterative solution increment is computed as difference of solutions
      *  of two subsequent nonlinear iterations.
      */
-    class GenericNormUpdate : public NOX::StatusTest::Generic
+    class GenericNormUpdate : public ::NOX::StatusTest::Generic
     {
      public:
       //! Type that determines whether to scale the norm by the problem size.
@@ -234,7 +236,7 @@ namespace NOX
 
       //! Constructor for absolute norm.
       /*! This constructor defaults to the \c Absolute tolerance type. */
-      GenericNormUpdate(std::string name, double tolerance, NOX::Abstract::Vector::NormType ntype,
+      GenericNormUpdate(std::string name, double tolerance, ::NOX::Abstract::Vector::NormType ntype,
           ScaleType stype = Scaled);
 
       //! Constructor for absolute norm
@@ -242,10 +244,10 @@ namespace NOX
       GenericNormUpdate(std::string name, double tol, ScaleType stype = Scaled);
 
 
-      NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+      ::NOX::StatusTest::StatusType checkStatus(
+          const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
-      NOX::StatusTest::StatusType getStatus() const override;
+      ::NOX::StatusTest::StatusType getStatus() const override;
 
       std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
@@ -268,13 +270,13 @@ namespace NOX
 
      private:
       //! %Status
-      NOX::StatusTest::StatusType status_;
+      ::NOX::StatusTest::StatusType status_;
 
       //! Vector containing the update for the current outer iteration
-      Teuchos::RCP<NOX::Abstract::Vector> updateVectorPtr_;
+      Teuchos::RCP<::NOX::Abstract::Vector> updateVectorPtr_;
 
       //! Type of norm to use
-      NOX::Abstract::Vector::NormType normType_;
+      ::NOX::Abstract::Vector::NormType normType_;
 
       //! Scaling to use
       ScaleType scaleType_;
@@ -298,7 +300,7 @@ namespace NOX
       /*! This constructor defaults to the \c Absolute tolerance type. */
       PartialNormUpdate(std::string name, const CORE::LINALG::MultiMapExtractor& extractor,
           int blocknum, double tolerance,
-          NOX::Abstract::Vector::NormType ntype = NOX::Abstract::Vector::TwoNorm,
+          ::NOX::Abstract::Vector::NormType ntype = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled);
 
       //! Constructor for absolute norm
@@ -317,7 +319,7 @@ namespace NOX
 
 
     /// require some iterations at least
-    class MinIters : public NOX::StatusTest::Generic
+    class MinIters : public ::NOX::StatusTest::Generic
     {
      public:
       /*! \brief Constructor
@@ -326,13 +328,13 @@ namespace NOX
        *  and optionally an error stream for printing errors.
        *
        */
-      MinIters(int minIterations, const NOX::Utils* u = nullptr);
+      MinIters(int minIterations, const ::NOX::Utils* u = nullptr);
 
 
-      NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+      ::NOX::StatusTest::StatusType checkStatus(
+          const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
-      NOX::StatusTest::StatusType getStatus() const override;
+      ::NOX::StatusTest::StatusType getStatus() const override;
 
       std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
@@ -342,7 +344,7 @@ namespace NOX
       /*!
       \brief Returns the current number of iterations taken by the solver.
 
-      Returns -1 if the status of this test is NOX::StatusTest::Unevaluated.
+      Returns -1 if the status of this test is ::NOX::StatusTest::Unevaluated.
       */
       virtual int getNumIters() const;
 
@@ -354,13 +356,15 @@ namespace NOX
       int niters;
 
       //! Status
-      NOX::StatusTest::StatusType status;
+      ::NOX::StatusTest::StatusType status;
 
       //! Ostream used to print errors
-      NOX::Utils utils;
+      ::NOX::Utils utils;
     };
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

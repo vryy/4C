@@ -10,6 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_enums.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -294,3 +296,5 @@ std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& status)
 
   return name;
 }
+
+BACI_NAMESPACE_CLOSE

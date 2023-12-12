@@ -28,6 +28,8 @@
 #include <MLAPI_Operator_Utils.h>
 #include <MLAPI_Workspace.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
@@ -1417,3 +1419,5 @@ const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
   }
   return "Unknown strategy in FSI::OverlappingBlockMatrixFSIAMG";
 }
+
+BACI_NAMESPACE_CLOSE

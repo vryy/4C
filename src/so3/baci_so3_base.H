@@ -15,6 +15,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace STR
 {
@@ -331,5 +333,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_BASE_H

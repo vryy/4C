@@ -14,6 +14,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -463,9 +465,9 @@ void INPAR::FSI::SetValidConditions(
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fsicomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> fsicomponents;
 
-  fsicomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
+  fsicomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
   Teuchos::RCP<ConditionDefinition> linefsi =
       Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS", "FSICoupling",
@@ -514,10 +516,10 @@ void INPAR::FSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and ale fields (for lung fsi)
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> saccomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> saccomponents;
 
-  saccomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
-  saccomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("field", "structure",
+  saccomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+  saccomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("field", "structure",
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
@@ -532,10 +534,10 @@ void INPAR::FSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and fluid volumes (for lung fsi)
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> sfvcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> sfvcomponents;
 
-  sfvcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
-  sfvcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("field", "structure",
+  sfvcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+  sfvcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("field", "structure",
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
@@ -557,3 +559,5 @@ void INPAR::FSI::SetValidConditions(
   condlist.push_back(surfsfv);
   condlist.push_back(volsfv);
 }
+
+BACI_NAMESPACE_CLOSE

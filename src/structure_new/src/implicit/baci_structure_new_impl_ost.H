@@ -17,6 +17,8 @@
 // forward declarations
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace IMPLICIT
@@ -59,7 +61,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
+      double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! (derived)
       double GetIntParam() const override;
@@ -243,5 +245,7 @@ namespace STR
   }  // namespace IMPLICIT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_OST_H

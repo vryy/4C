@@ -17,6 +17,8 @@
 #include "baci_lib_utils.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   /**
@@ -301,5 +303,7 @@ namespace DRT::ELEMENTS
   }
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -8,6 +8,8 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_H
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE
 {
   enum class CellType
@@ -54,5 +56,7 @@ namespace CORE::FE
   {
   };
 }  // namespace CORE::FE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

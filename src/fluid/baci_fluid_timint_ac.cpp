@@ -14,6 +14,8 @@
 #include "baci_io.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
@@ -59,3 +61,5 @@ void FLD::TimIntAC::Output()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

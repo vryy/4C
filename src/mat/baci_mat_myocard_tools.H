@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_MYOCARD_TOOLS_H
 #define BACI_MAT_MYOCARD_TOOLS_H
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /// Myocard math tools general to all materials
@@ -37,5 +39,7 @@ class Myocard_Tools
   double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
 };  // Myocard_Tools
+
+BACI_NAMESPACE_CLOSE
 
 #endif

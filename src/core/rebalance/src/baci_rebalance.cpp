@@ -26,6 +26,8 @@
 #include <Isorropia_Exception.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> CORE::REBALANCE::RebalanceNodeMaps(
@@ -105,7 +107,7 @@ CORE::REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-CORE::REBALANCE::BuildWeights(const ::DRT::Discretization& dis)
+CORE::REBALANCE::BuildWeights(const BACI::DRT::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.NodeRowMap();
 
@@ -116,8 +118,8 @@ CORE::REBALANCE::BuildWeights(const ::DRT::Discretization& dis)
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
-    ::DRT::Element* ele = dis.lRowElement(i);
-    ::DRT::Node** nodes = ele->Nodes();
+    BACI::DRT::Element* ele = dis.lRowElement(i);
+    BACI::DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->NumNode();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);
@@ -144,7 +146,7 @@ CORE::REBALANCE::BuildWeights(const ::DRT::Discretization& dis)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
-    Teuchos::RCP<::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
+    Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
   const int myrank = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
@@ -153,7 +155,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::set<int> mynodes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    ::DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    BACI::DRT::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->NumNode();
     const int* nodeids = ele->NodeIds();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
@@ -204,7 +206,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::map<int, std::set<int>> remotes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    ::DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    BACI::DRT::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->NumNode();
     const int* nodeids = ele->NodeIds();
     for (int i = 0; i < numnode; ++i)
@@ -323,7 +325,8 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
-    const ::DRT::Discretization& dis, const CORE::GEOMETRICSEARCH::GeometricSearchParams& params)
+    const BACI::DRT::Discretization& dis,
+    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
   Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);
@@ -436,3 +439,4 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
 
   return my_graph;
 }
+BACI_NAMESPACE_CLOSE

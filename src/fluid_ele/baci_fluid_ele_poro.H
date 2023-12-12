@@ -19,6 +19,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_fluid_ele.H"
 #include "baci_inpar_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -369,5 +371,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_PORO_H

@@ -18,6 +18,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   /// supported field names
@@ -81,5 +83,7 @@ namespace XFEM
   }  // namespace MULTIFIELD
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_ENUM_LISTS_H

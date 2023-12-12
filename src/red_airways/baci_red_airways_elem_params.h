@@ -8,6 +8,8 @@
 #ifndef BACI_RED_AIRWAYS_ELEM_PARAMS_H
 #define BACI_RED_AIRWAYS_ELEM_PARAMS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::REDAIRWAYS
 {
   struct ElemParams
@@ -63,5 +65,7 @@ namespace DRT::REDAIRWAYS
     int generation{-1};
   };
 }  // namespace DRT::REDAIRWAYS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -17,6 +17,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -481,3 +483,5 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::UpdateAndOutput()
     FluidField()->Discretization()->Writer()->WriteVector("fluidphioldnp_", fluidphioldnp_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

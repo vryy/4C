@@ -21,6 +21,8 @@
 #include <iostream>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -51,5 +53,7 @@ namespace DRT
 /// print empty contact constitutivelaw sections
 void PrintContactConstitutiveLawDatHeader();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

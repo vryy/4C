@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_utils_splitstrategy.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -103,3 +105,5 @@ void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
 }  // SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy
+
+BACI_NAMESPACE_CLOSE

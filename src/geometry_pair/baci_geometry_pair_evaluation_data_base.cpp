@@ -8,3 +8,7 @@
 
 
 #include "baci_geometry_pair_evaluation_data_base.H"
+
+BACI_NAMESPACE_OPEN
+
+BACI_NAMESPACE_CLOSE

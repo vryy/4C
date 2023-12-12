@@ -20,6 +20,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"  // CORE::LINALG::Export
 
+BACI_NAMESPACE_OPEN
+
 
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
@@ -761,3 +763,5 @@ std::string IO::GMSH::GetFileName(const std::string& filename_base,
 
   return filename.str();
 }
+
+BACI_NAMESPACE_CLOSE

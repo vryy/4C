@@ -23,6 +23,8 @@ performed afterwards
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace BINSTRATEGY
 {
   class BinningStrategy;
@@ -135,5 +137,7 @@ namespace FBI
     Teuchos::RCP<Epetra_Map> binrowmap_;
   };
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

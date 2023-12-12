@@ -16,6 +16,8 @@
 #include "baci_inpar_scatra.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -157,3 +159,5 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter(
       "LARGE_TIMESCALE_TIMESTEP", -1.0, "time step of the large time scale", &fs3idynac);
 }
+
+BACI_NAMESPACE_CLOSE

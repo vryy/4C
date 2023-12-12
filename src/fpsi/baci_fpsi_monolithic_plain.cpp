@@ -39,6 +39,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
@@ -1112,3 +1114,5 @@ void FPSI::Monolithic_Plain::RecoverLagrangeMultiplier()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

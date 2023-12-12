@@ -26,6 +26,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 // Project the integration rule available in the local coordinates of the
@@ -1613,3 +1615,5 @@ void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
   }
   pos->LocalCoordinates(rst);
 }
+
+BACI_NAMESPACE_CLOSE

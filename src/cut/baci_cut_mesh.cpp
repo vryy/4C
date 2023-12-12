@@ -21,6 +21,7 @@ mesh
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------------*
  * constructor
@@ -3269,3 +3270,5 @@ template CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 template CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
+
+BACI_NAMESPACE_CLOSE

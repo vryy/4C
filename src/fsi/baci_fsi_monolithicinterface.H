@@ -13,6 +13,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   /// Interface of monolithic algorithms to NOX group
@@ -41,5 +43,7 @@ namespace FSI
     //@}
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

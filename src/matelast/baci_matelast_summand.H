@@ -16,6 +16,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -764,5 +766,7 @@ namespace MAT
   }  // namespace ELASTIC
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

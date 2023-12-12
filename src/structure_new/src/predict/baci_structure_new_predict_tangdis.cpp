@@ -28,6 +28,7 @@
 
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -59,7 +60,7 @@ void STR::PREDICT::TangDis::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
+void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
@@ -77,7 +78,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // We create at this point a new solution vector and initialize it
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<NOX::Epetra::Vector> x_ptr = GlobalState().CreateGlobalVector(
+  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = GlobalState().CreateGlobalVector(
       TIMINT::BaseDataGlobalState::VecInitType::last_time_step, ImplInt().ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
@@ -125,7 +126,8 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   CORE::LINALG::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
   // Reset the state variables
-  const NOX::Epetra::Vector& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
+  const ::NOX::Epetra::Vector& x_eptra =
+      dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
   ImplInt().ResetModelStates(x_eptra.getEpetraVector());
 
@@ -171,7 +173,7 @@ bool STR::PREDICT::TangDis::PreApplyForceExternal(Epetra_Vector& fextnp) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOp::TangDis::TangDis(
-    const Teuchos::RCP<const ::STR::PREDICT::TangDis>& tang_predict_ptr)
+    const Teuchos::RCP<const STR::PREDICT::TangDis>& tang_predict_ptr)
     : tang_predict_ptr_(tang_predict_ptr)
 {
   // empty
@@ -208,5 +210,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
   if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) dserror("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  ::CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
+  CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
 }
+
+BACI_NAMESPACE_CLOSE

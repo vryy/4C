@@ -17,6 +17,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 
 CORE::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
 
@@ -532,3 +534,5 @@ CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::FindPieceForTime(
 
   return **active_piece;
 }
+
+BACI_NAMESPACE_CLOSE

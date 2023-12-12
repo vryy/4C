@@ -15,6 +15,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // Several parameters which are fixed for Solid Hex18
 const int NUMNOD_SOH18 = 18;         ///< number of nodes
 const int NODDOF_SOH18 = 3;          ///< number of dofs per node
@@ -407,5 +409,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX18_H

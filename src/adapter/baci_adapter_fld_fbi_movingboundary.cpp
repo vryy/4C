@@ -17,6 +17,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
@@ -170,3 +172,5 @@ Teuchos::RCP<const FLD::Meshtying> ADAPTER::FBIFluidMB::GetMeshtying()
 {
   return Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->GetMeshtying();
 }
+
+BACI_NAMESPACE_CLOSE

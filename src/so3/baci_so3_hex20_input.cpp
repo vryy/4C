@@ -9,6 +9,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_so3_hex20.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -45,3 +47,5 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

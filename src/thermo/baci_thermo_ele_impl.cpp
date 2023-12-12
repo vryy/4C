@@ -30,6 +30,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
   switch (ele->Shape())
@@ -3644,3 +3646,5 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
   // -------------------------------------- end reactive term check
 }
 #endif  // CALCSTABILOFREACTTERM
+
+BACI_NAMESPACE_CLOSE

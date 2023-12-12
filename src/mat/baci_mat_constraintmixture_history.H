@@ -15,6 +15,8 @@
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class ConstraintMixtureHistoryType : public CORE::COMM::ParObjectType
@@ -120,5 +122,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_CONSTRAINTMIXTURE_HISTORY_H

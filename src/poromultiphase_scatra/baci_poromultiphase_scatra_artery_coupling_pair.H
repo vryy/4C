@@ -22,12 +22,14 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
-
 // define Fad object for evaluation
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -723,5 +725,7 @@ namespace POROMULTIPHASESCATRA
 
 }  // namespace POROMULTIPHASESCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H

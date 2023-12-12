@@ -16,6 +16,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_mixture_constituent.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MIXTURE
 {
@@ -82,5 +84,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_SOLIDMATERIAL_H

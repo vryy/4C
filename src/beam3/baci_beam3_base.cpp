@@ -22,6 +22,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
@@ -478,3 +480,5 @@ template MAT::BeamMaterialTemplated<double>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
 template MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;
+
+BACI_NAMESPACE_CLOSE

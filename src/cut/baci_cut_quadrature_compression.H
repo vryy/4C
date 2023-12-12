@@ -25,6 +25,7 @@ namespace Teuchos
   class RCP;
 }  // namespace Teuchos
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -99,4 +100,6 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+BACI_NAMESPACE_CLOSE
+
 #endif  // CUT_QUADRATURE_COMPRESSION_H

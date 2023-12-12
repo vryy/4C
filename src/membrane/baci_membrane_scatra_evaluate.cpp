@@ -13,6 +13,8 @@
 #include "baci_lib_utils.H"
 #include "baci_membrane_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  pre-evaluate the element (public)                      sfuchs 05/18 |
  *----------------------------------------------------------------------*/
@@ -119,3 +121,5 @@ template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

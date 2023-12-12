@@ -17,6 +17,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /**
@@ -147,5 +149,7 @@ namespace IO
     std::string visualization_data_name_;
   };
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

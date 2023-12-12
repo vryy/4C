@@ -18,6 +18,8 @@ to be called!
 #include "baci_contact_lagrange_strategy.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -137,5 +139,7 @@ namespace CONTACT
   };  // class MonoCoupledLagrangeStrategy
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H

@@ -33,6 +33,8 @@
 #include <fstream>
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1522,3 +1524,5 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
   // set nodal surface area
   nodal_surface[1] = surfAcinus;
 }
+
+BACI_NAMESPACE_CLOSE

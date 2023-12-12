@@ -14,6 +14,8 @@
 #include "baci_scatra_resulttest.H"
 #include "baci_scatra_timint_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
 
@@ -36,4 +38,6 @@ namespace SCATRA
     ) const override;
   };  // class ElchResultTest : public ScaTraResultTest
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

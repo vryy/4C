@@ -26,6 +26,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -682,3 +684,5 @@ void CONTACT::MtManager::PostprocessQuantitiesPerInterface(
 {
   GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
 }
+
+BACI_NAMESPACE_CLOSE

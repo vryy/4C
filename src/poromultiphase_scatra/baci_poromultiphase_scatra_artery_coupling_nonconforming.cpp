@@ -26,6 +26,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -890,3 +892,5 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetNearbyE
 {
   nearbyelepairs_ = *nearbyelepairs;
 }
+
+BACI_NAMESPACE_CLOSE

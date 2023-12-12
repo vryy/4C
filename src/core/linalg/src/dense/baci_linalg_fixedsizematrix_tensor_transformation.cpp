@@ -5,7 +5,11 @@
 
 #include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 
+BACI_NAMESPACE_OPEN
+
 template void UTILS::TENSOR::TensorRotation<3>(const CORE::LINALG::Matrix<3, 3>&,
     const CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<3, 3>&);
 template void UTILS::TENSOR::InverseTensorRotation<3>(const CORE::LINALG::Matrix<3, 3>&,
     const CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<3, 3>&);
+
+BACI_NAMESPACE_CLOSE

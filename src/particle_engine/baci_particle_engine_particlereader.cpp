@@ -23,6 +23,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
@@ -202,3 +204,5 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
           time.totalElapsedTime(true));
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@ lid-driven cavity.
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)
@@ -1740,3 +1742,5 @@ void FLD::TurbulenceStatisticsLdc::WriteRestart(IO::DiscretizationWriter& writer
   //  writer.WriteRedundantDoubleVector("x3sumvT", x3sumvT_);
   //  writer.WriteRedundantDoubleVector("x3sumwT", x3sumwT_);
 }
+
+BACI_NAMESPACE_CLOSE

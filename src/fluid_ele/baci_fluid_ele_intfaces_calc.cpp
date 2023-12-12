@@ -21,6 +21,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -378,3 +379,5 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

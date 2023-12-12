@@ -20,6 +20,8 @@
 #include "baci_mat_scatra_mat.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
@@ -215,3 +217,5 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
   params_.set<double>("Dt_vreman", Dt);
   return;
 }  // end FLD::Vreman::DynVremanComputeDt()
+
+BACI_NAMESPACE_CLOSE

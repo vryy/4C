@@ -21,6 +21,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   void CreateMaterialInGlobalProblem()
   {
     const auto mat_stvenant = Teuchos::rcp(new MAT::PAR::Material(

@@ -19,6 +19,8 @@
 #include "baci_ssti_monolithic.H"
 #include "baci_ssti_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::AssembleStrategyBase::AssembleStrategyBase(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
@@ -1320,3 +1322,5 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
 
   return assemblestrategy;
 }
+
+BACI_NAMESPACE_CLOSE

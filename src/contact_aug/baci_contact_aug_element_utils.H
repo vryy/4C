@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -275,5 +277,7 @@ namespace CONTACT
     /// @}
   }  // namespace AUG
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_ELEMENT_UTILS_H

@@ -21,6 +21,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FBI
 {
@@ -54,5 +56,7 @@ namespace FBI
     };
   }  // namespace UTILS
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

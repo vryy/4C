@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
@@ -391,3 +393,5 @@ size_t IO::RestartFinder(const std::string& filename)
   }
   return std::string::npos;
 }
+
+BACI_NAMESPACE_CLOSE

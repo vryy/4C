@@ -20,6 +20,8 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_inpar_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class MortarVolCoupl;
@@ -127,5 +129,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H

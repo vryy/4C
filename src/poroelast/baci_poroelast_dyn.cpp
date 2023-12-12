@@ -16,6 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 void poroelast_drt()
 {
@@ -53,3 +55,5 @@ void poroelast_drt()
   // perform the result test
   poroalgo->TestResults(comm);
 }
+
+BACI_NAMESPACE_CLOSE

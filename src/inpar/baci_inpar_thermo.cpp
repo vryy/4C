@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -153,29 +155,29 @@ void INPAR::THR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> thermoconvectcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> thermoconvectcomponents;
 
   // decide here if approximation is sufficient
   // --> Tempn (old temperature T_n)
   // or if the exact solution is needed
   // --> Tempnp (current temperature solution T_n+1) with linearisation
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
-      "temperature state", "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("temperature state",
+      "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
       Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
   // heat transfer coefficient h
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("coeff")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("coeff")));
   // surrounding (fluid) temperature T_oo
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("surtemp")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("surtempfunct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("surtempfunct")));
   thermoconvectcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("surtempfunct", {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("surtempfunct", {0, true, true})));
   // time curve to increase the complete boundary condition, i.e., the heat flux
-  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("funct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("funct")));
   thermoconvectcomponents.push_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("funct", {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("funct", {0, true, true})));
 
   Teuchos::RCP<ConditionDefinition> linethermoconvect = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO CONVECTION LINE CONDITIONS", "ThermoConvections", "Line Thermo Convections",
@@ -203,18 +205,18 @@ void INPAR::THR::SetValidConditions(
       "DESIGN THERMO ROBIN SURF CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
       DRT::Condition::ThermoRobin, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> thermorobincomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> thermorobincomponents;
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMSCAL")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numscal")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
   thermorobincomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", ::INPUT::LengthFromInt("numscal"))));
+      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numscal"))));
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("PREFACTOR")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("prefactor")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("REFVALUE")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("refvalue")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("PREFACTOR")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("prefactor")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("REFVALUE")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("refvalue")));
 
   for (const auto& thermorobincomponent : thermorobincomponents)
   {
@@ -225,3 +227,5 @@ void INPAR::THR::SetValidConditions(
   condlist.push_back(thermorobinline);
   condlist.push_back(thermorobinsurf);
 }
+
+BACI_NAMESPACE_CLOSE

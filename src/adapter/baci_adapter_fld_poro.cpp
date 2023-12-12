@@ -23,6 +23,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
@@ -192,3 +194,5 @@ void ADAPTER::FluidPoro::Output(const int step, const double time)
 
   }  // write extra output
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@ mapping
 
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   //! 2 surfaces on a Hex16 element with 8 nodes per surface
@@ -1158,5 +1160,7 @@ namespace CORE::DRT::UTILS
   bool IsNurbsDisType(const CORE::FE::CellType dis_type);
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_H

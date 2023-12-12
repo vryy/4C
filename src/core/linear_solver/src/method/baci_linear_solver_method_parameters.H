@@ -13,6 +13,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterListAcceptor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -31,7 +33,7 @@ namespace CORE::LINEAR_SOLVER
       into the solver parameter list.
     */
     static void ComputeSolverParameters(
-        ::DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
+        BACI::DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
 
     /*!
      * \brief Fix the nullspace to match a new given map
@@ -48,5 +50,7 @@ namespace CORE::LINEAR_SOLVER
         Teuchos::ParameterList& solveparams);
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,29 +19,32 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace FSI
   {
     /// NOX Newton direction with adaptive linear solver tolerance
-    class Newton : public NOX::Direction::Newton
+    class Newton : public ::NOX::Direction::Newton
     {
      public:
-      Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
+      bool reset(
+          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
       // derived
-      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::Generic& solver) override;
+      bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+          const ::NOX::Solver::Generic& solver) override;
 
       void Residual(double current, double desired);
 
      private:
       /// Printing Utilities
-      Teuchos::RCP<NOX::Utils> utils_;
+      Teuchos::RCP<::NOX::Utils> utils_;
 
       //! "Direction" sublist with parameters for the direction vector
       Teuchos::ParameterList* paramsPtr;
@@ -66,5 +69,7 @@ namespace NOX
     };
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,6 +13,8 @@
 
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 
 FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -38,3 +40,5 @@ void FLD::TimIntPoroStat::ReadRestart(int step)
   TimIntStationary::ReadRestart(step);
   TimIntPoro::ReadRestart(step);
 }
+
+BACI_NAMESPACE_CLOSE

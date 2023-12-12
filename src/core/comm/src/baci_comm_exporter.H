@@ -23,6 +23,8 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::COMM
 {
@@ -843,5 +845,7 @@ void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
   PODMapExporterHelper<T, U> helper(data);
   GenericExport(helper);
 }
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_EXPORTER_H

@@ -24,6 +24,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
@@ -273,3 +275,5 @@ void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBMatrixContributi
     interface.AssembleGradientBMatrixContribution(dincr, str_grad, lmincr);
   }
 }
+
+BACI_NAMESPACE_CLOSE

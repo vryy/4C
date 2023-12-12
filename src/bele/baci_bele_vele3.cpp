@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
 DRT::ELEMENTS::Vele3Type& DRT::ELEMENTS::Vele3Type::Instance() { return instance_; }
@@ -227,3 +229,5 @@ bool DRT::ELEMENTS::Vele3::ReadElement(
 {
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

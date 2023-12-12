@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
@@ -222,3 +224,5 @@ void BEAMINTERACTION::BeamPotentialParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

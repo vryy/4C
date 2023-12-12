@@ -20,6 +20,8 @@
 
 #include <map>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::ADAPTER
 {
@@ -306,5 +308,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

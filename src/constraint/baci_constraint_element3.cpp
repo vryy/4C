@@ -8,6 +8,8 @@
 
 #include "baci_constraint_element3.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::ConstraintElement3Type DRT::ELEMENTS::ConstraintElement3Type::instance_;
 
@@ -126,3 +128,5 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_so3_tet10.H"
 #include "baci_so3_tet4.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -169,5 +171,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_PORO_ELETYPES_H

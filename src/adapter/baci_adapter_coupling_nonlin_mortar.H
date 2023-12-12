@@ -24,6 +24,8 @@
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
  *---------------------------------------------------------------------*/
@@ -224,5 +226,7 @@ namespace ADAPTER
     Teuchos::RCP<CONTACT::CoInterface> interface_;  ///< interface
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_COUPLING_NONLIN_MORTAR_H

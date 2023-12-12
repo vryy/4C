@@ -25,6 +25,8 @@
 #include <ml_MultiLevelPreconditioner.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -38,8 +40,9 @@ CORE::LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<::DRT::Discretization> fdis,
-    Teuchos::RCP<Epetra_Map> inodes, bool structuresplit)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex,
+    Teuchos::RCP<BACI::DRT::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
+    bool structuresplit)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Preconditioner::Setup");
 
@@ -214,3 +217,5 @@ const Epetra_Map& CORE::LINALG::Preconditioner::OperatorRangeMap() const
 {
   return prec_->OperatorRangeMap();
 }
+
+BACI_NAMESPACE_CLOSE

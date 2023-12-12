@@ -31,6 +31,8 @@
 
 #include <Epetra_LinearProblem.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)|
@@ -1117,3 +1119,5 @@ void STRUMULTI::stop_np_multiscale()
   subcomm->Broadcast(task, 2, 0);
   return;
 }
+
+BACI_NAMESPACE_CLOSE
