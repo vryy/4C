@@ -69,8 +69,6 @@ RANDSEED                        -1
 RESTART                         0
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      Statics

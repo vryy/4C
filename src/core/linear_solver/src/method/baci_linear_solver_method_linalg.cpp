@@ -71,53 +71,59 @@ int CORE::LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 void CORE::LINALG::Solver::AdaptTolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
-  if (!Params().isSublist("Belos Parameters")) return;
+  if (!Params().isSublist("Belos Parameters")) dserror("Adaptive tolerance only for Belos.");
 
-  const int myrank = Comm().MyPID();
+  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
 
-  Teuchos::ParameterList& solverParams = Params().sublist("Belos Parameters");
-  int output = solverParams.get<int>("Output Frequency", 1);
+  if (!solver_params.isParameter("Convergence Tolerance"))
+    dserror("No iterative solver tolerance in ParameterList");
 
-  std::string convtest = solverParams.get<std::string>(
+  const bool do_output = solver_params.get<int>("Output Frequency", 1) and !Comm().MyPID();
+
+  const std::string conv_test_strategy = solver_params.get<std::string>(
       "Implicit Residual Scaling", Belos::convertScaleTypeToString(Belos::ScaleType::None));
 
-  if (convtest != Belos::convertScaleTypeToString(Belos::ScaleType::NormOfInitRes))
-    dserror("Using convergence adaptivity: Use AZ_r0 in input file");
-
-  bool havesavedvalue = solverParams.isParameter("Convergence Tolerance Save");
-  if (!havesavedvalue)
+  if (conv_test_strategy != Belos::convertScaleTypeToString(Belos::ScaleType::NormOfInitRes))
   {
-    if (!solverParams.isParameter("Convergence Tolerance"))
-    {
-      std::cout << solverParams;
-      dserror("No iterative solver tolerance in ParameterList");
-    }
-    solverParams.set<double>(
-        "Convergence Tolerance Save", solverParams.get<double>("Convergence Tolerance", 1.e-8));
+    dserror(
+        "You are using an adaptive tolerance for the linear solver. Therefore, the iterative "
+        "solver needs to work with a relative residual norm. This can be achieved by setting "
+        "'AZCONV' to 'AZ_r0' in the input file.");
   }
 
-  double tol = solverParams.get<double>("Convergence Tolerance Save", 1.e-8);
-
-  if (!myrank && output)
-    printf("                --- Solver input relative tolerance %10.3E\n", tol);
-  if (currentnlnres * tol < desirednlnres)
+  // save original value of convergence
+  const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
+  if (!have_saved_value)
   {
-    double tolnew = desirednlnres * better / currentnlnres;
-    if (tolnew > 1.0)
+    solver_params.set<double>(
+        "Convergence Tolerance Saved", solver_params.get<double>("Convergence Tolerance"));
+  }
+
+  const double input_tolerance = solver_params.get<double>("Convergence Tolerance Saved");
+
+  if (do_output)
+    std::cout << "                --- Solver input relative tolerance " << input_tolerance << "\n";
+  if (currentnlnres * input_tolerance < desirednlnres)
+  {
+    double adapted_tolerance = desirednlnres * better / currentnlnres;
+    if (adapted_tolerance > 1.0)
     {
-      tolnew = 1.0;
-      if (!myrank && output)
+      adapted_tolerance = 1.0;
+      if (do_output)
       {
-        printf(
-            "WARNING:  Computed adapted relative tolerance bigger than 1\n"
-            "          Value constrained to 1, but consider adapting Parameter ADAPTCONV_BETTER\n");
+        std::cout << "WARNING:  Computed adapted relative tolerance bigger than 1\n";
+        std::cout << "          Value constrained to 1, but consider adapting Parameter "
+                     "ADAPTCONV_BETTER\n";
       }
     }
-    if (tolnew < tol) tolnew = tol;
-    if (!myrank && output && tolnew > tol)
-      printf("                *** Solver adapted relative tolerance %10.3E\n", tolnew);
+    if (adapted_tolerance < input_tolerance) adapted_tolerance = input_tolerance;
+    if (do_output && adapted_tolerance > input_tolerance)
+    {
+      std::cout << "                *** Solver adapted relative tolerance " << adapted_tolerance
+                << "\n";
+    }
 
-    solverParams.set<double>("Convergence Tolerance", tolnew);
+    solver_params.set<double>("Convergence Tolerance", adapted_tolerance);
   }
 }
 
@@ -127,13 +133,13 @@ void CORE::LINALG::Solver::ResetTolerance()
 {
   if (!Params().isSublist("Belos Parameters")) return;
 
-  Teuchos::ParameterList& solverParams = Params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
 
-  bool havesavedvalue = solverParams.isParameter("Convergence Tolerance Save");
-  if (!havesavedvalue) return;
+  const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
+  if (!have_saved_value) return;
 
-  solverParams.set<double>(
-      "Convergence Tolerance", solverParams.get<double>("Convergence Tolerance Save", 1.e-8));
+  solver_params.set<double>(
+      "Convergence Tolerance", solver_params.get<double>("Convergence Tolerance Saved"));
 }
 
 /*----------------------------------------------------------------------*

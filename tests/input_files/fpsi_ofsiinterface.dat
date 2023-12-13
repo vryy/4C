@@ -82,8 +82,6 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 UZAWAMAXITER                    1
 UZAWAALGO                       direct
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   2
@@ -116,8 +114,6 @@ GRIDVEL                         OST
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 SIMPLER                         no
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

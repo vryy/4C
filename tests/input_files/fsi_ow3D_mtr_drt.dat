@@ -19,8 +19,6 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm

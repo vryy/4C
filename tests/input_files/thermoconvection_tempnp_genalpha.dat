@@ -42,8 +42,6 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------THERMAL DYNAMIC
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 INITFUNCNO                      1

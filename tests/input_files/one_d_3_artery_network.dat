@@ -38,8 +38,6 @@ ALPHA_F                         1.00
 ALPHA_M                         1.50
 GAMMA                           1.00
 LIFTDRAG                        no
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.01
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-6
 TOL_VEL_INC	  1.0E-6

@@ -75,8 +75,6 @@ ITEMAX                          10
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ABSTOLRES                       1e-12
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   4
 SOLVERTYPE                      nonlinear

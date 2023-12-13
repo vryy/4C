@@ -78,8 +78,6 @@ INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
 CONVFORM                        convective
 ALLDOFCOUPLED                   Yes
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 GMSH_OUTPUT                     Yes
 RESULTSEVRY                     1
 RESTARTEVRY                     20

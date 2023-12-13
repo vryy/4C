@@ -69,7 +69,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   DoubleParameter("CONVTOL", 1e-13, "Tolerance for convergence check", &lubricationdyn);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &lubricationdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,

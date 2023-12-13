@@ -113,8 +113,6 @@ ML_SMOTIMES                     4 4 4 1 1
 SOLVER                          Belos
 -------------------------------------------------------------THERMAL DYNAMIC
 LINEAR_SOLVER                   3
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1

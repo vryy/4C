@@ -76,8 +76,6 @@ ITEMAX                          3
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ABSTOLRES                       1e-14
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 SUGRVEL                         no

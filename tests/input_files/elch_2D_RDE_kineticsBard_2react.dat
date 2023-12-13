@@ -49,8 +49,6 @@ VELFUNCNO                       2
 VELOCITYFIELD                   function
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-18
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-09
 EXPLPREDICT                     no
 ITEMAX                          100

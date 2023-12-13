@@ -40,8 +40,6 @@ SHAPEFCT                        Polynomial
 ------------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
 -------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha

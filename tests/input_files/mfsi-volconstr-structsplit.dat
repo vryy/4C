@@ -20,8 +20,6 @@ NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
@@ -112,8 +110,6 @@ SHAPEFCT                        Polynomial
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or

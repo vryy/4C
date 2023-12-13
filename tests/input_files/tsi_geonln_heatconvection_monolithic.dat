@@ -47,8 +47,6 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
@@ -71,8 +69,6 @@ TOLRES                          2e-06
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1

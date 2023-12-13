@@ -56,7 +56,7 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &porofluidmultiphasedyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,

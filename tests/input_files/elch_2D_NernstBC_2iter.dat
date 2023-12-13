@@ -37,8 +37,6 @@ CONVTOL                         1e-09
 ABSTOLRES                       1e-16
 ITEMAX                          2
 EXPLPREDICT                     no
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero

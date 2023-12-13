@@ -77,8 +77,6 @@ LINEAR_SOLVER                   3
 ITEMAX                          10
 ABSTOLRES                       1.0e-14
 CONVTOL                         1.0e-6
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
 ROUGHNESS_STD_DEVIATION         0.002
 MODIFIED_REYNOLDS_EQU           no
@@ -107,8 +105,6 @@ ITERNORM                        Rms
 NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   3
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  yes
 MERGE_EHL_BLOCK_MATRIX          yes
 -----------------------------------ELASTO HYDRO DYNAMIC/PARTITIONED

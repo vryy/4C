@@ -235,7 +235,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
       &fdyn);
 
-  BoolParameter("ADAPTCONV", "yes",
+  BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "

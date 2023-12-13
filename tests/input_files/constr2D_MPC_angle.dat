@@ -55,8 +55,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And

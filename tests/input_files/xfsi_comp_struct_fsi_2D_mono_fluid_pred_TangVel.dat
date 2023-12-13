@@ -30,8 +30,6 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
@@ -109,8 +107,6 @@ RELAX                           0.825
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 RESTARTEVRY                     0
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 INITIALFIELD                    zero_field

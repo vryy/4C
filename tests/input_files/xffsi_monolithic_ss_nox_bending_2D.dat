@@ -28,8 +28,6 @@ CONVTOL                         1.0E-8
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
@@ -95,8 +93,6 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 TOLCONSTR                       1.0E-06
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   2
 --------------------------------------------------------------------SOLVER 1

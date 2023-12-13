@@ -61,8 +61,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-09
 TOLRES                          1.0E-09
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.01
 MAXITER                         100
 MATERIALTANGENT                 analytical
 --------------------------------------------------------------------SOLVER 1

@@ -58,8 +58,6 @@ SUGRVEL                         no
 // unused for linear solve
 CONVTOL                         1e-8
 ITEMAX                          2
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

@@ -110,8 +110,6 @@ V_ar_pul_u                      84900.0
 V_ven_pul_u                     93000.0
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
