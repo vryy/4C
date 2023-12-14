@@ -12,6 +12,7 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_solid_ele_calc.H"
+#include "baci_solid_ele_calc_displacement_based.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
 #include "baci_solid_ele_calc_mulf.H"
@@ -50,7 +51,8 @@ namespace DRT::ELEMENTS
         CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
-        CORE::FE::apply_celltype_sequence<SolidEleCalc, ImplementedSolidCellTypes>;
+        CORE::FE::apply_celltype_sequence<DisplacementBasedSolidIntegrator,
+            ImplementedSolidCellTypes>;
 
     using FbarEvaluators = CORE::FE::apply_celltype_sequence<SolidEleCalcFbar,
         CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;

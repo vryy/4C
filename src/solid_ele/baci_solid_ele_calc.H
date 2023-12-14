@@ -10,10 +10,15 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_element.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_solid_ele_calc_interface.H"
+#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib_integration.H"
+#include "baci_solid_ele_calc_lib_io.H"
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 BACI_NAMESPACE_OPEN
@@ -26,68 +31,95 @@ namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
 }
-namespace DRT
+namespace DRT::ELEMENTS
 {
 
-  namespace ELEMENTS
+  /*!
+   * @brief A solid evaluator for different element formulations
+   *
+   * This is a class that takes the element formulation @p ElementFormulation as a template
+   * parameter and generates all necessary code that is needed such that a solid element can be
+   * evaluated. The two additional template parameter @p PreparationData and @p HistoryData store
+   * preparation data and history data.
+   *
+   * The type @p ElementFormulation defines static member function @p Evaluate(...) for the
+   * evaluation of the deformation gradient at a specific position @p xi. Additionally, it has to
+   * provide @p Prepare(...) for eventual preparation of data that is constant. It should return the
+   * type @p PreparationData that is passed to every subsequent call. The static functions
+   * @p AddInternalForceVector(...) and @p AddStiffnessMatrix(...) are adding the gauss point
+   * contribution to the force vector or stiffness matrix, respectively. Some element formulations
+   * require to store data @p HistoryData. This type needs to be default constructable. The static
+   * member functions @p Pack(...) and @p Unpack(...) need to be defined to allow parallel
+   * distribution and restarts.
+   *
+   * @tparam celltype : celltype of the evaluator
+   * @tparam ElementFormulation : A type that defines the element formulation in static member
+   * functions
+   * @tparam PreparationData : evaluation data that is constant within the element
+   * @tparam HistoryData : default constructable history data
+   */
+  template <CORE::FE::CellType celltype, typename ElementFormulation, typename PreparationData,
+      typename HistoryData>
+  class SolidEleCalc
   {
-    template <CORE::FE::CellType celltype>
-    class SolidEleCalc
-    {
-     public:
-      SolidEleCalc();
+   public:
+    SolidEleCalc();
 
-      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
+    void Pack(CORE::COMM::PackBuffer& data) const;
 
-      void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-      void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          CORE::LINALG::SerialDenseVector* force_vector,
-          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix);
+    void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
 
-      void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params);
+    void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-      void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
-          const StressIO& stressIO, const StrainIO& strainIO,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
+    void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+        const std::vector<int>& lm, Teuchos::ParameterList& params,
+        CORE::LINALG::SerialDenseVector* force_vector,
+        CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
+        CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
-      double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
+    void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
+        const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
+    void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const DRT::Discretization& discretization, const std::vector<int>& lm,
+        Teuchos::ParameterList& params);
 
-      void InitializeGaussPointDataOutput(const DRT::Element& ele,
-          const MAT::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+    void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const StressIO& stressIO, const StrainIO& strainIO,
+        const DRT::Discretization& discretization, const std::vector<int>& lm,
+        Teuchos::ParameterList& params);
 
-      void EvaluateGaussPointDataOutput(const DRT::Element& ele,
-          const MAT::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+    double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const DRT::Discretization& discretization, const std::vector<int>& lm,
+        Teuchos::ParameterList& params);
 
-      void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void InitializeGaussPointDataOutput(const DRT::Element& ele,
+        const MAT::So3Material& solid_material,
+        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-     private:
-      /// static values for matrix sizes
-      static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
-      static constexpr int num_dim_ = CORE::FE::dim<celltype>;
-      static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
-      static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
+    void EvaluateGaussPointDataOutput(const DRT::Element& ele,
+        const MAT::So3Material& solid_material,
+        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      CORE::FE::GaussIntegration stiffness_matrix_integration_;
-      CORE::FE::GaussIntegration mass_matrix_integration_;
+    void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-    };  // class SolidEleCalc
-  }     // namespace ELEMENTS
-}  // namespace DRT
+   private:
+    /// static values for matrix sizes
+    static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
+    static constexpr int num_dim_ = CORE::FE::dim<celltype>;
+    static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
+    static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
+
+    CORE::FE::GaussIntegration stiffness_matrix_integration_;
+    CORE::FE::GaussIntegration mass_matrix_integration_;
+
+    HistoryData history_data_{};
+
+  };  // class SolidEleCalc
+}  // namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
-
-#endif  // SOLID_ELE_CALC_H
+#endif  // BACI_SOLID_ELE_CALC_H
