@@ -81,8 +81,6 @@ find_package(
   )
 find_package(MPI REQUIRED)
 find_package(Qhull REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
 find_package(Trilinos REQUIRED)
 find_package(
   Boost
