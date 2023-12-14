@@ -30,6 +30,7 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparsematrix.H"
@@ -2010,11 +2011,10 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
     merge_fsi_blockmatrix_ = true;
 
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    if (solvertype == INPAR::SOLVER::SolverType::umfpack)
-      solverparams->set("solver", "umfpack");
-    else if (solvertype == INPAR::SOLVER::SolverType::superlu)
-      solverparams->set("solver", "superlu");
+    Teuchos::ParameterList solverparams;
+    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>("SOLVER",
+        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(xfsisolverparams, "SOLVER"),
+        solverparams);
 
     solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 

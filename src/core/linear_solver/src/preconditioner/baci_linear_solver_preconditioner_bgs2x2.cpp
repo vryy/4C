@@ -71,16 +71,14 @@ CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
  *----------------------------------------------------------------------*/
 void CORE::LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 {
-  Teuchos::RCP<Teuchos::ParameterList> rcplist1 = Teuchos::rcp(&list1_, false);
   Teuchos::RCP<CORE::LINALG::Solver> s1 =
-      Teuchos::rcp(new CORE::LINALG::Solver(rcplist1, A_->Comm()));
+      Teuchos::rcp(new CORE::LINALG::Solver(list1_, A_->Comm(), false));
   solver1_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s1));
   const CORE::LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_, firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
-  Teuchos::RCP<Teuchos::ParameterList> rcplist2 = Teuchos::rcp(&list2_, false);
   Teuchos::RCP<CORE::LINALG::Solver> s2 =
-      Teuchos::rcp(new CORE::LINALG::Solver(rcplist2, A_->Comm()));
+      Teuchos::rcp(new CORE::LINALG::Solver(list2_, A_->Comm(), false));
   solver2_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s2));
   const CORE::LINALG::SparseMatrix& Op22 = A_->Matrix(secind_, secind_);
   solver2_->Setup(Op22.EpetraMatrix());

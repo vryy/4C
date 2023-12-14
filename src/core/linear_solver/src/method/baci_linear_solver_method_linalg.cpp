@@ -27,29 +27,14 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm)
-    : comm_(comm), params_(params)
-{
-  Setup();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(const Epetra_Comm& comm)
+CORE::LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
+    const bool translate_params_to_belos)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
 {
-  // set the default solver to umfpack
-  Params().set("solver", "umfpack");
-  Setup();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-CORE::LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm)
-    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
-{
-  *params_ = TranslateSolverParameters(inparams);
-  Setup();
+  if (translate_params_to_belos)
+    *params_ = TranslateSolverParameters(inparams);
+  else
+    *params_ = inparams;
 }
 
 /*----------------------------------------------------------------------*
@@ -827,7 +812,8 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  0)   TranslateSolverParameters");
 
   Teuchos::ParameterList outparams;
-  outparams.set<std::string>("name", inparams.get<std::string>("NAME"));
+  if (inparams.isParameter("NAME"))
+    outparams.set<std::string>("name", inparams.get<std::string>("NAME"));
 
   switch (Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(inparams, "SOLVER"))
   {

@@ -512,7 +512,8 @@ void FS3I::PartFPS3I::SetupSystem()
       (scatravec_[0])->ScaTraField()->Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  scatrasolvparams->set("solver", "umfpack");
+  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
   scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();

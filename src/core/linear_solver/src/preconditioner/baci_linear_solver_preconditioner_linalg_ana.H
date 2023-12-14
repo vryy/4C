@@ -10,6 +10,7 @@
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_H
 
 // Trilinos includes
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_utils_exceptions.H"
@@ -569,7 +570,14 @@ namespace CORE::LINALG
 
       OperatorInverse(const Epetra_Operator& op)
           : reset_(true),
-            defaultsolver_(Teuchos::rcp(new CORE::LINALG::Solver(op.Comm()))),
+            defaultsolver_(std::invoke(
+                [&]()
+                {
+                  Teuchos::ParameterList solvparams;
+                  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+                      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+                  return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
+                })),
             solver_(*defaultsolver_),
             op_(op)
       {
@@ -577,7 +585,14 @@ namespace CORE::LINALG
 
       OperatorInverse(const CORE::LINALG::SparseOperator& op)
           : reset_(true),
-            defaultsolver_(Teuchos::rcp(new CORE::LINALG::Solver(op.Comm()))),
+            defaultsolver_(std::invoke(
+                [&]()
+                {
+                  Teuchos::ParameterList solvparams;
+                  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+                      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+                  return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
+                })),
             solver_(*defaultsolver_),
             op_(*(const_cast<CORE::LINALG::SparseOperator&>(op).EpetraOperator()))
       {

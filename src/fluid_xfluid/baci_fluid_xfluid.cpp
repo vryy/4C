@@ -4099,18 +4099,18 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
 
   // ---------------------------------------------- setup solver
 
-  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::ParameterList solverparams;
 
   // use iterative solver
-  solverparams->set("solver", "belos");
-  Teuchos::ParameterList& solverlist = solverparams->sublist("Belos Parameters");
+  solverparams.set("solver", "belos");
+  Teuchos::ParameterList& solverlist = solverparams.sublist("Belos Parameters");
   solverlist.set("Solver Type", "GMRES");
   solverlist.set<double>("Convergence Tolerance", 1.0e-12);
   solverlist.set<int>("reuse", 0);
-  solverparams->sublist("IFPACK Parameters");
+  solverparams.sublist("IFPACK Parameters");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver_gp =
-      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
+      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm(), false));
 
   // ---------------------------------------------- new matrix and vectors
 
