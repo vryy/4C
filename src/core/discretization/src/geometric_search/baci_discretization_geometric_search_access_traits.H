@@ -19,6 +19,8 @@
 
 namespace ArborX
 {
+  using namespace BACI;
+
   template <>
   struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
       PrimitivesTag>

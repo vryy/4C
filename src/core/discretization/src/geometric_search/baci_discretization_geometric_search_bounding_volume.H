@@ -12,6 +12,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BOUNDING_VOLUME_H
 
+#include "baci_config_mpi.H"
+
 #include "baci_linalg_fixedsizematrix.H"
 
 #ifdef BACI_WITH_ARBORX
@@ -34,8 +36,13 @@ namespace ArborX::Details
   };
 }  // namespace ArborX::Details
 
+#endif
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
+#ifdef BACI_WITH_ARBORX
   //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
   //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
   //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
@@ -45,13 +52,8 @@ namespace CORE::GEOMETRICSEARCH
   //! kdop_k is the number of bounding slabs for the k-DOP, i.e., the resulting polytope can have a
   //! maximum of kdop_k faces
   constexpr int kdop_k = 2 * kdop_directions;
-}  // namespace CORE::GEOMETRICSEARCH
 #endif
 
-BACI_NAMESPACE_OPEN
-
-namespace CORE::GEOMETRICSEARCH
-{
   /*!
    * \brief Class representing a bounding volume of a set of points.
    *
