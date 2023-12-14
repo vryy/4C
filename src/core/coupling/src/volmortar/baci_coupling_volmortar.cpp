@@ -1383,7 +1383,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
 
     // solve with default solver
     Teuchos::ParameterList solvparams;
-    ::DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    BACI::DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, *comm_);
     solver.Solve(k->EpetraOperator(), mergedsol, mergedX, true);
