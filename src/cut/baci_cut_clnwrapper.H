@@ -566,42 +566,43 @@ namespace cln
 
 #else
 
-  inline CORE::GEO::CUT::ClnWrapper fabs(const CORE::GEO::CUT::ClnWrapper& a)
+  inline BACI::CORE::GEO::CUT::ClnWrapper fabs(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
         "on!");
     return a;
   };
-  inline cln::float_format_t float_format(const CORE::GEO::CUT::ClnWrapper& a)
+  inline cln::float_format_t float_format(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
         "on!");
     return cln::float_format_t();
   }
-  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
+  inline BACI::CORE::GEO::CUT::ClnWrapper abs(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
         "on!");
     return a;
   };
-  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
+  inline BACI::CORE::GEO::CUT::ClnWrapper sqrt(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
         "on!");
     return a;
   };
-  inline double double_approx(const CORE::GEO::CUT::ClnWrapper& a)
+  inline double double_approx(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
         "on!");
     return a;
   };
-  inline cln::cl_F cl_float(const CORE::GEO::CUT::ClnWrapper& a, const cln::float_format_t& format)
+  inline cln::cl_F cl_float(
+      const BACI::CORE::GEO::CUT::ClnWrapper& a, const cln::float_format_t& format)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
@@ -625,7 +626,8 @@ namespace cln
     return cln::cl_F();
   }
 
-  inline CORE::GEO::CUT::ClnWrapper pow(const CORE::GEO::CUT::ClnWrapper& base, int exponent)
+  inline BACI::CORE::GEO::CUT::ClnWrapper pow(
+      const BACI::CORE::GEO::CUT::ClnWrapper& base, int exponent)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
@@ -710,7 +712,7 @@ namespace std
 //  }
 #else
 
-  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
+  inline BACI::CORE::GEO::CUT::ClnWrapper abs(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
@@ -718,7 +720,7 @@ namespace std
     return a;
   };
 
-  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
+  inline BACI::CORE::GEO::CUT::ClnWrapper sqrt(const BACI::CORE::GEO::CUT::ClnWrapper& a)
   {
     dserror(
         "In order to call this function BACI should be compiled with CLN library and CLN_CALC flag "
@@ -726,7 +728,8 @@ namespace std
     return a;
   };
 
-    //  inline CORE::GEO::CUT::ClnWrapper pow(const CORE::GEO::CUT::ClnWrapper& base, int exponent)
+    //  inline BACI::CORE::GEO::CUT::ClnWrapper pow(const BACI::CORE::GEO::CUT::ClnWrapper& base,
+    //  int exponent)
     //  {
     //    dserror(
     //        "In order to call this function BACI should be compiled with CLN library and CLN_CALC
