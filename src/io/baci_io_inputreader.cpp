@@ -28,8 +28,6 @@
 
 #ifdef TRAP_FE
 #include <cfenv>
-
-BACI_NAMESPACE_OPEN
 #endif /* TRAP_FE */
 
 #ifdef TOL_N
@@ -37,7 +35,7 @@ BACI_NAMESPACE_OPEN
 #endif
 #define TOL_N 1.0e-14
 
-
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
