@@ -82,6 +82,6 @@ if(IGNORE_UNSTABLE_CUTTEST)
   target_compile_definitions(cut_test PRIVATE IGNORE_UNSTABLE_CUTTEST)
 endif(IGNORE_UNSTABLE_CUTTEST)
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-baci_add_dependency(cut_test cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES})
+baci_add_dependency(cut_test cut ${QHULL_LIBRARIES})
 
 baci_target_requires_cyclic_legacy_linking(cut_test)

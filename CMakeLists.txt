@@ -87,8 +87,6 @@ find_package(
   )
 find_package(MPI REQUIRED)
 find_package(Qhull REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
 find_package(Trilinos REQUIRED)
 find_package(
   Boost
@@ -98,8 +96,6 @@ find_package(
 find_package(Netcdf REQUIRED)
 find_package(ArborX)
 find_package(FFTW)
-find_package(ACML)
-find_package(AMDLIBM)
 find_package(CLN REQUIRED)
 find_package(MIRCO)
 
