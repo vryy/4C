@@ -11,6 +11,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(InterfaceUtilsTestSuite, TestComputeParallelDistributionStatistics)
   {
     std::vector<int> quantityAcrossAllRanks = {2, 1, 4, 3};
@@ -19,7 +21,7 @@ namespace
     int maxElement = 0;
     double meanOfAllElements = 0;
 
-    BACI::MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
+    MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
         quantityAcrossAllRanks, minElement, maxElement, meanOfAllElements);
 
     EXPECT_EQ(minElement, 1);
