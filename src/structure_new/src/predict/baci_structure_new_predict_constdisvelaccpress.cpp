@@ -19,6 +19,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -46,7 +48,7 @@ void STR::PREDICT::ConstDisVelAccPress::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
+void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
 
@@ -93,3 +95,5 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
   // we use the tangdis predictor as fallback predictor.
   if (not ok) tangdis_ptr_->Compute(grp);
 }
+
+BACI_NAMESPACE_CLOSE

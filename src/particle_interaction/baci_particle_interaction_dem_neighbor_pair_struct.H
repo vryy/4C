@@ -15,6 +15,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -66,4 +68,6 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

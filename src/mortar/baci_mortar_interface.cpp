@@ -44,6 +44,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 MORTAR::InterfaceDataContainer::InterfaceDataContainer()
@@ -4385,3 +4387,5 @@ bool MORTAR::MortarInterface::CheckOutputList(
   // We only make it to here, if all checks passed. So it's safe to return 'true'.
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

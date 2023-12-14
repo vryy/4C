@@ -17,6 +17,8 @@
 #include "baci_linear_solver_preconditioner_type.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /*!
@@ -282,5 +284,7 @@ namespace CORE::LINEAR_SOLVER
     std::string label_;  // label
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

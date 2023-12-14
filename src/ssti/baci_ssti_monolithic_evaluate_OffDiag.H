@@ -12,6 +12,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -52,7 +54,7 @@ namespace SSTI
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
@@ -93,10 +95,13 @@ namespace SSTI
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying_;
 
     //! structure problem
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
 
     //! thermo problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
   };
 }  // namespace SSTI
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H

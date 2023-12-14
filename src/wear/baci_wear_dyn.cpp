@@ -25,6 +25,8 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | entry point for structure ale in DRT                      mgit 04/11 |
  *----------------------------------------------------------------------*/
@@ -120,3 +122,5 @@ void wear_dyn_drt(int restart)
 }  // wear_dyn_drt()
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

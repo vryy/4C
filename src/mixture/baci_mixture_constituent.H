@@ -20,6 +20,8 @@
 #include <memory>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace MAT
 {
@@ -323,5 +325,7 @@ namespace MIXTURE
   };
 
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_CONSTITUENT_H

@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_poro_p1.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |
  *----------------------------------------------------------------------*/
@@ -168,3 +170,5 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpa
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
+
+BACI_NAMESPACE_CLOSE

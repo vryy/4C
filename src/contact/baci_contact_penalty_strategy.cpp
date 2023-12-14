@@ -31,6 +31,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -1105,3 +1107,5 @@ Teuchos::RCP<const Epetra_Map> CONTACT::CoPenaltyStrategy::LMDoFRowMapPtr(const 
   else
     return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

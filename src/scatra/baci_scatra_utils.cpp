@@ -17,6 +17,8 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -482,3 +484,5 @@ template CORE::LINALG::Matrix<3, 1>
 SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<3, CORE::FE::CellType::hex27>(
     Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
+
+BACI_NAMESPACE_CLOSE

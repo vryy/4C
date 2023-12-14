@@ -33,6 +33,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
@@ -5222,3 +5224,5 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

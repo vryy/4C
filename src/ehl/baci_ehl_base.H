@@ -19,6 +19,8 @@ algorithms
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -82,7 +84,7 @@ namespace EHL
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     /// underlying structure of the EHL problem
-    Teuchos::RCP<::ADAPTER::Structure> structure_;
+    Teuchos::RCP<ADAPTER::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
     Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubrication_;
@@ -161,5 +163,7 @@ namespace EHL
   };
 }  // namespace EHL
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_BASE_H

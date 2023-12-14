@@ -57,6 +57,8 @@
 #include <Epetra_SerialComm.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
  *----------------------------------------------------------------------*/
@@ -1762,3 +1764,5 @@ void WEAR::Partitioned::ReadRestart(int step)
   return;
 }
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

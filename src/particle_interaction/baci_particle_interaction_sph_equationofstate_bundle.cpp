@@ -15,6 +15,8 @@
 #include "baci_particle_interaction_sph_equationofstate.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -93,3 +95,5 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Setup()
 {
   for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->Setup();
 }
+
+BACI_NAMESPACE_CLOSE

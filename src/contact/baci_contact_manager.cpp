@@ -44,6 +44,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -1760,3 +1762,5 @@ void CONTACT::CoManager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslav
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

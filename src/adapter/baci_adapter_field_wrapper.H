@@ -15,6 +15,8 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 
 #include "baci_adapter_field.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// Just wrap, do nothing new, meant to be derived from
@@ -128,5 +130,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> stepinc_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

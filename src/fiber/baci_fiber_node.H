@@ -11,6 +11,8 @@
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace FIBER
@@ -158,5 +160,7 @@ namespace DRT
   }  // namespace FIBER
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FIBER_NODE_H

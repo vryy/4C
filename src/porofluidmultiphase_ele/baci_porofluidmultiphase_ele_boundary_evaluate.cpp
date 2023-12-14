@@ -13,6 +13,8 @@
 #include "baci_porofluidmultiphase_ele_boundary_factory.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -77,3 +79,5 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::EvaluateNeumann(Teuchos::Paramet
   // evaluate boundary element
   return Evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace MESHFREE
@@ -318,5 +320,7 @@ namespace DRT
 
 //! << operator
 std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BINSTRATEGY_MESHFREE_MULTIBIN_H

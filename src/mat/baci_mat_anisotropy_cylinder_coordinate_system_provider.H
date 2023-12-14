@@ -14,6 +14,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -49,5 +51,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_PROVIDER_H

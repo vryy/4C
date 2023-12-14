@@ -24,6 +24,7 @@
 #include "baci_porofluidmultiphase_timint_ost.H"
 #include "baci_rebalance_utils.H"
 
+BACI_NAMESPACE_OPEN
 
 
 namespace
@@ -563,3 +564,5 @@ void POROFLUIDMULTIPHASE::PrintLogo()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

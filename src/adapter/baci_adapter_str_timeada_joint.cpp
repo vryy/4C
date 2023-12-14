@@ -28,6 +28,8 @@
 
 #include <tuple>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> structure)
@@ -241,3 +243,5 @@ void ADAPTER::StructureTimeAdaJoint::ResetStep()
   // reset the integrator
   sta_->ResetStep();
 }
+
+BACI_NAMESPACE_CLOSE

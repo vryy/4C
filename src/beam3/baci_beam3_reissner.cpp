@@ -24,6 +24,8 @@
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3rType DRT::ELEMENTS::Beam3rType::instance_;
@@ -2094,3 +2096,5 @@ template void
 DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads<5, double>(
     const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
     std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
+
+BACI_NAMESPACE_CLOSE

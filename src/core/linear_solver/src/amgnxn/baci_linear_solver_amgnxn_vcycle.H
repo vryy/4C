@@ -25,6 +25,8 @@
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::LINEAR_SOLVER::AMGNXN
 {
@@ -99,5 +101,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     bool flag_set_up_Pos_;
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_AMGNXN_VCYCLE_H

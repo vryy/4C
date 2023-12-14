@@ -29,6 +29,8 @@
 #include <fstream>
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                         ismail 01/10 |
@@ -415,3 +417,5 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
     }    // END of if node is available on this processor
   }      // End of node i has a condition
 }
+
+BACI_NAMESPACE_CLOSE

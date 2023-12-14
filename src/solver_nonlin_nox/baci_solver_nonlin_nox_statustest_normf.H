@@ -21,6 +21,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -39,16 +41,16 @@ namespace NOX
        The norms are calculated in the corresponding required interfaces.
        */
 
-      class NormF : public NOX::StatusTest::Generic
+      class NormF : public ::NOX::StatusTest::Generic
       {
        public:
         //! Constructor
         NormF(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
-            const std::vector<NOX::StatusTest::NormF::ToleranceType>& toltype,
+            const std::vector<::NOX::StatusTest::NormF::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
-            const std::vector<NOX::Abstract::Vector::NormType>& ntype,
-            const std::vector<NOX::StatusTest::NormF::ScaleType>& stype,
-            const NOX::Utils* u = nullptr);
+            const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
+            const std::vector<::NOX::StatusTest::NormF::ScaleType>& stype,
+            const ::NOX::Utils* u = nullptr);
 
         /* @name Accessor Functions
            Used to query current values of variables in the status test.
@@ -76,18 +78,18 @@ namespace NOX
         bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
         //@}
 
-        NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
+        ::NOX::StatusTest::StatusType checkStatus(
+            const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         //! NOTE: returns the global status of all normF tests
-        NOX::StatusTest::StatusType getStatus() const override;
+        ::NOX::StatusTest::StatusType getStatus() const override;
 
         std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
        protected:
         /*! In the case of a relative norm calculation, initializes
           \c trueTolerance based on the F-value at the initial guess.*/
-        void relativeSetup(Teuchos::RCP<const NOX::Abstract::Group>& initialGuess);
+        void relativeSetup(Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess);
 
         /*! \brief Calculate the norm of the specified quantities
           of the rhs for the given group according to the scaling
@@ -97,7 +99,7 @@ namespace NOX
           grp (i.e., grp.isF() is false).
         */
         Teuchos::RCP<const std::vector<double>> ComputeNorm(
-            Teuchos::RCP<const NOX::Abstract::Group>& grp);
+            Teuchos::RCP<const ::NOX::Abstract::Group>& grp);
 
        protected:
         //! number of status tests
@@ -107,19 +109,19 @@ namespace NOX
         std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
 
         //! global status
-        NOX::StatusTest::StatusType gStatus_;
+        ::NOX::StatusTest::StatusType gStatus_;
 
         //! local/entry-wise status
-        std::vector<NOX::StatusTest::StatusType> status_;
+        std::vector<::NOX::StatusTest::StatusType> status_;
 
         //! Type of norm to use
-        std::vector<NOX::Abstract::Vector::NormType> normType_;
+        std::vector<::NOX::Abstract::Vector::NormType> normType_;
 
         //! Scaling to use
-        std::vector<NOX::StatusTest::NormF::ScaleType> scaleType_;
+        std::vector<::NOX::StatusTest::NormF::ScaleType> scaleType_;
 
         //! Tolerance type (i.e., relative or absolute)
-        std::vector<NOX::StatusTest::NormF::ToleranceType> toleranceType_;
+        std::vector<::NOX::StatusTest::NormF::ToleranceType> toleranceType_;
 
         //! Tolerance required for convergence.
         std::vector<double> specifiedTolerance_;
@@ -134,11 +136,13 @@ namespace NOX
         Teuchos::RCP<const std::vector<double>> normF_;
 
         //! Ostream used to print errors
-        NOX::Utils utils_;
+        ::NOX::Utils utils_;
       };  // class NormF
     }     // namespace StatusTest
   }       // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_STATUSTEST_NORMF_H

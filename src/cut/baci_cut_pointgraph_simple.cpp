@@ -17,6 +17,8 @@
 #include "baci_cut_line.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::IMPL::SimplePointGraph_1D::SimplePointGraph_1D(Mesh &mesh, Element *element,
@@ -52,7 +54,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::BuildCycle(
 void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::AddCutLinesToGraph(
     Element *element, Side *side, Strategy strategy, Cycle &cycle)
 {
-  // this is completely unneccesary for the element_side
+  // this is completely unnecessary for the element_side
   if (not side->IsCutSide()) return;
 
   AddCutPointsToCycle(element, side, cycle);
@@ -300,3 +302,5 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::CorrectRotationDirection(
     invert_cycle.clear();
   }
 }
+
+BACI_NAMESPACE_CLOSE

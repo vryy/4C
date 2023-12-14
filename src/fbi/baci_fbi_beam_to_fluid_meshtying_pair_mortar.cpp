@@ -20,6 +20,8 @@ functions.
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -315,3 +317,5 @@ template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_h
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
 template class BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
+
+BACI_NAMESPACE_CLOSE

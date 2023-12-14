@@ -19,6 +19,8 @@ based with MULF prestressing
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+BACI_NAMESPACE_OPEN
 namespace MAT
 {
   class So3Material;
@@ -172,5 +174,7 @@ namespace DRT::ELEMENTS
     std::visit(DETAILS::UpdatePrestressAction(element, mat, discretization, lm, params), variant);
   }
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_CALC_MULF_H

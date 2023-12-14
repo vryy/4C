@@ -12,6 +12,8 @@
 
 #include "baci_fluid_meshtying.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -69,3 +71,5 @@ void SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy()
 
   return;
 }  // SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy
+
+BACI_NAMESPACE_CLOSE

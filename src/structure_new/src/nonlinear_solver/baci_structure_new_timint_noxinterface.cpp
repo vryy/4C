@@ -26,6 +26,8 @@
 
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::NoxInterface::NoxInterface()
@@ -148,7 +150,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
-    const NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
+    const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
     Epetra_Operator& jac)
 {
   CheckInitSetup();
@@ -183,7 +185,7 @@ bool STR::TIMINT::NoxInterface::computePreconditioner(
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
+    const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
   double rhsnorm = -1.0;
@@ -303,7 +305,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(const Epetra_Vecto
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew,
     const Epetra_Vector& xold, const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
+    const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
 
@@ -374,7 +376,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(const Epetra_Vec
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
+    const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
 
@@ -436,10 +438,10 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(const Epetra_V
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::NoxInterface::CalculateNorm(Teuchos::RCP<Epetra_Vector> quantity,
-    const NOX::Abstract::Vector::NormType type, const bool isscaled) const
+    const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
-  Teuchos::RCP<const NOX::Epetra::Vector> quantity_nox =
-      Teuchos::rcp(new NOX::Epetra::Vector(quantity, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> quantity_nox =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(quantity, ::NOX::Epetra::Vector::CreateView));
 
   double norm = quantity_nox->norm(type);
   // do the scaling if desired
@@ -488,7 +490,7 @@ double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Ep
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(const NOX::Abstract::Group* group,
+double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(const ::NOX::Abstract::Group* group,
     const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
@@ -514,7 +516,7 @@ double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(const NOX::Abstract::G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const NOX::Abstract::Group* group,
+double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const ::NOX::Abstract::Group* group,
     const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
@@ -565,7 +567,7 @@ double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const NOX::Abstr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::FindConstraintModels(
-    const NOX::Abstract::Group* grp, std::vector<INPAR::STR::ModelType>& constraint_models) const
+    const ::NOX::Abstract::Group* grp, std::vector<INPAR::STR::ModelType>& constraint_models) const
 {
   const NOX::NLN::CONSTRAINT::Group* constr_grp =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(grp);
@@ -592,7 +594,7 @@ void STR::TIMINT::NoxInterface::FindConstraintModels(
 double STR::TIMINT::NoxInterface::CalcRefNormForce()
 {
   CheckInitSetup();
-  const NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
+  const ::NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
   return int_ptr_->CalcRefNormForce(nox_normtype);
 }
 
@@ -657,3 +659,5 @@ void STR::TIMINT::NoxInterface::getDofsFromElements(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

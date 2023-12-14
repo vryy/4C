@@ -13,6 +13,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class SSIStructureWrapper;
@@ -47,7 +49,7 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
     virtual ~ScatraStructureOffDiagCoupling() = default;
 
@@ -106,7 +108,7 @@ namespace SSI
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
     //! structure problem
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
@@ -122,7 +124,7 @@ namespace SSI
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockScatraManifoldStructureDomain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock) override;
@@ -148,7 +150,7 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockStructureScatraDomain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const override;
@@ -158,4 +160,6 @@ namespace SSI
     Teuchos::RCP<const Epetra_Map> full_map_scatra_;
   };
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_MONOLITHIC_EVALUATE_OFFDIAG_H

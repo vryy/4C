@@ -17,6 +17,8 @@
 #include "baci_rigidsphere.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
@@ -427,3 +429,5 @@ double BEAMINTERACTION::DetermineSearchboxInc(Teuchos::ParameterList& beamcontac
 
   return searchboxinc;
 }
+
+BACI_NAMESPACE_CLOSE

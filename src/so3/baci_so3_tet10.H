@@ -27,6 +27,8 @@
 #define NUMNOD_SOTET10_FACE 6   ///< number of nodes on a TET10 face (which is a TRI6)
 #define NUMGPT_SOTET10_FACE 3   ///< number of GP    on a TET10 face (which is a TRI6)
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -451,5 +453,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_TET10_H

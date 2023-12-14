@@ -12,6 +12,8 @@
 #include "baci_mat_micromaterial.H"
 #include "baci_so3_nstet5.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -57,3 +59,5 @@ void DRT::ELEMENTS::NStet5::nstet5_read_restart_multi()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

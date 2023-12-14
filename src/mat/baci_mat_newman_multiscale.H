@@ -12,6 +12,8 @@
 #include "baci_mat_newman.H"
 #include "baci_mat_scatra_multiscale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -127,4 +129,6 @@ namespace MAT
     MAT::PAR::NewmanMultiScale* params_;
   };  // wrapper for Newman multi-scale material
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

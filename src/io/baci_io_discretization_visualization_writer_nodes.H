@@ -15,10 +15,12 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 // forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -106,4 +108,6 @@ namespace IO
     Teuchos::RCP<VisualizationManager> visualization_manager_;
   };
 }  // namespace IO
+BACI_NAMESPACE_CLOSE
+
 #endif

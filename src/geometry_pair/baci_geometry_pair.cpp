@@ -9,3 +9,7 @@ problems.
 
 
 #include "baci_geometry_pair.H"
+
+BACI_NAMESPACE_OPEN
+
+BACI_NAMESPACE_CLOSE

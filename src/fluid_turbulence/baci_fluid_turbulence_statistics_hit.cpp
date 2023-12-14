@@ -23,6 +23,8 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*--------------------------------------------------------------*
@@ -2192,3 +2194,5 @@ namespace FLD
 
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE

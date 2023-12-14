@@ -26,6 +26,8 @@
 #include "baci_ssti_utils.H"
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -751,3 +753,5 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibra
 
   return equilibration_method_vector;
 }
+
+BACI_NAMESPACE_CLOSE

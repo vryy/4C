@@ -17,6 +17,8 @@
 #include "baci_discretization_geometry_element_coordtrafo.H"
 #include "baci_discretization_geometry_integrationcell.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
@@ -32,5 +34,7 @@ namespace CORE::GEO
     return;
   }
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

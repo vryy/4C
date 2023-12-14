@@ -14,6 +14,8 @@
 #include "baci_contact_interface.H"
 #include "baci_contact_nitsche_strategy_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void CONTACT::CoNitscheStrategyFpi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
@@ -46,3 +48,5 @@ bool CONTACT::CoNitscheStrategyFpi::CheckNitscheContactState(
   return CONTACT::UTILS::CheckNitscheContactState(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
+
+BACI_NAMESPACE_CLOSE

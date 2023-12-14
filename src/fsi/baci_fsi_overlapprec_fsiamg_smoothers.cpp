@@ -20,6 +20,8 @@
 #include <MLAPI_Workspace.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // #define PRINTOUT
 /*----------------------------------------------------------------------*
@@ -1067,3 +1069,5 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(const std::string field, c
   else
     return 0.0;
 }
+
+BACI_NAMESPACE_CLOSE

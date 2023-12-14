@@ -17,6 +17,8 @@
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_sparseoperator.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -150,17 +152,17 @@ void INPAR::SSTI::SetValidConditions(
           DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Surface));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> sstiinterfacemeshtyingcomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> sstiinterfacemeshtyingcomponents;
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
-  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
+      Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new INPUT::SelectionComponent(
       "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
       Teuchos::tuple<int>(
           INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("S2I_KINETICS_ID")));
+      Teuchos::rcp(new INPUT::SeparatorComponent("S2I_KINETICS_ID")));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new ::INPUT::IntComponent("S2IKineticsID")));
+      Teuchos::rcp(new INPUT::IntComponent("S2IKineticsID")));
 
   // insert input file line components into condition definitions
   for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)
@@ -172,3 +174,5 @@ void INPAR::SSTI::SetValidConditions(
   condlist.emplace_back(linesstiinterfacemeshtying);
   condlist.emplace_back(surfsstiinterfacemeshtying);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -36,6 +36,8 @@
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using Map = Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>;
 using Matrix = Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
 using CrsMatrix = Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
@@ -855,3 +857,5 @@ CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::GetOperatorNonConst(
 //----------------------------------------------------------------------------------
 // explicit initialization
 template class CORE::LINEAR_SOLVER::KrylovSolver<Epetra_Operator, Epetra_MultiVector>;
+
+BACI_NAMESPACE_CLOSE

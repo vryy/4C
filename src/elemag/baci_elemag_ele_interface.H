@@ -19,6 +19,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Material;
@@ -66,5 +68,7 @@ namespace DRT
 
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_ELE_INTERFACE_H

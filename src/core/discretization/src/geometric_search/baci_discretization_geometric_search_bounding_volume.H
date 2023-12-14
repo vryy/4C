@@ -48,6 +48,8 @@ namespace CORE::GEOMETRICSEARCH
 }  // namespace CORE::GEOMETRICSEARCH
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   /*!
@@ -109,5 +111,7 @@ namespace CORE::GEOMETRICSEARCH
 #endif
   };
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

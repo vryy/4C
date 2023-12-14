@@ -14,6 +14,8 @@
 #include "baci_mixture_constituent_remodelfiber_material_exponential.H"
 #include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
 
+BACI_NAMESPACE_OPEN
+
 [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* MIXTURE::PAR::FiberMaterialFactory(
     int matid)
 {
@@ -52,3 +54,4 @@
   // we will not end up here, so make the compiler happy
   std::exit(1);
 }
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -74,10 +76,10 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
 
     //! access to fluid field
-    const Teuchos::RCP<::FLD::XFluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<FLD::XFluid>& FluidField() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP<::ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
 
     //! is an monolithic ale computations
     bool HaveAle() { return (AleField() != Teuchos::null); }
@@ -109,10 +111,10 @@ namespace FSI
     //! @name Underlying fields
 
     //! underlying structure / poro of the FSI/FPSI problem
-    Teuchos::RCP<::ADAPTER::StructurePoroWrapper> structureporo_;
+    Teuchos::RCP<ADAPTER::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<::FLD::XFluid> fluid_;
+    Teuchos::RCP<FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
     Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
@@ -135,4 +137,6 @@ namespace FSI
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // FSI_XFEM_ALGORITHM_H

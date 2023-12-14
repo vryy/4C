@@ -15,6 +15,8 @@
 
 #include "baci_lib_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -76,5 +78,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_ELEMENTS_PARAMSMINIMAL_H

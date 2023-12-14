@@ -19,6 +19,9 @@
 #include <vector>
 
 class Epetra_Comm;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -148,5 +151,7 @@ namespace XFEM
   }     // namespace UTILS
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_DISCRETIZATION_UTILS_H

@@ -14,6 +14,8 @@
 #include "baci_contact_nitsche_integrator_fsi.H"
 #include "baci_contact_node.H"
 #include "baci_xfem_xfluid_contact_communicator.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegratorNitscheFpi::CoIntegratorNitscheFpi(
@@ -304,3 +306,5 @@ double CONTACT::CoIntegratorNitscheFpi::GetNormalContactTransition(MORTAR::Morta
     return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, CORE::LINALG::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc);
 }
+
+BACI_NAMESPACE_CLOSE

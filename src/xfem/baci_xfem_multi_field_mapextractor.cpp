@@ -24,6 +24,8 @@
 #include "baci_xfem_xfield_field_coupling.H"
 #include "baci_xfem_xfield_field_coupling_dofset.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::MultiFieldMapExtractor::MultiFieldMapExtractor()
@@ -1200,3 +1202,5 @@ const Epetra_Map& XFEM::MultiFieldMapExtractor::SlaveNodeRowMap(
   CheckInit();
   return *(SlMapExtractor(dis_id, map_nodes).Map(btype));
 }
+
+BACI_NAMESPACE_CLOSE

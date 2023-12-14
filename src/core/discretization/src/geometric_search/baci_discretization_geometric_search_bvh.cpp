@@ -23,6 +23,8 @@
 #include <ArborX.hpp>
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
@@ -101,3 +103,5 @@ namespace CORE::GEOMETRICSEARCH
 #endif
   }
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE

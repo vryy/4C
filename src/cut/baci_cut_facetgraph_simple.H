@@ -15,6 +15,8 @@
 
 #include "baci_cut_facetgraph.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -49,5 +51,7 @@ namespace CORE::GEO
   }     // namespace CUT
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CUT_FACETGRAPH_SIMPLE_H

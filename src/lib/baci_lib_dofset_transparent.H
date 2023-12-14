@@ -17,6 +17,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -92,5 +94,7 @@ namespace DRT
 
   };  // class TransparentDofSet
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_TRANSPARENT_H

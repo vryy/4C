@@ -24,6 +24,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -299,3 +301,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_tet10>;
   template class BeamToSolidVolumeMeshtyingPairBase<t_hermite, t_nurbs27>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

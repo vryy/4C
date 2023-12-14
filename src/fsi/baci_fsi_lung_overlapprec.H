@@ -12,6 +12,8 @@
 
 #include "baci_fsi_overlapprec.H"
 
+BACI_NAMESPACE_OPEN
+
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
@@ -85,5 +87,7 @@ namespace FSI
     INPAR::FSI::PrecConstr prec_;  /// preconditioner for constraint system
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

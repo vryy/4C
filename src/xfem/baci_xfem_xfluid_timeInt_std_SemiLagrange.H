@@ -15,6 +15,8 @@
 
 #include "baci_xfem_xfluid_timeInt_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -193,5 +195,7 @@ namespace XFEM
   };  // class XFLUID_SemiLagrange
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_H

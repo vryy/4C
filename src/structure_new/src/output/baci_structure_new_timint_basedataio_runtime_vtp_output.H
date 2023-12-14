@@ -21,6 +21,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -179,5 +181,7 @@ namespace STR
 
   }  // namespace TIMINT
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

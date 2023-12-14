@@ -12,6 +12,8 @@
 #include "baci_lib_element.H"
 #include "baci_solid_ele_calc_eas.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   enum class EasType;
@@ -33,10 +35,12 @@ namespace STR::UTILS
 
     INPAR::STR::KinemType ReadElementKinematicType(DRT::INPUT::LineDefinition* linedef);
 
-    void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, ::STR::ELEMENTS::EasType& eastype,
+    void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, STR::ELEMENTS::EasType& eastype,
         std::set<INPAR::STR::EleTech>& eletech);
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_UTILS_H

@@ -12,6 +12,8 @@
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -131,5 +133,7 @@ namespace DRT
   }     // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_PRESTRESS_H

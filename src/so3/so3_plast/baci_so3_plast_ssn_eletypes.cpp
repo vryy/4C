@@ -9,6 +9,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_plast_ssn.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *  HEX8 element
  *----------------------------------------------------------------------------*/
@@ -487,3 +489,5 @@ int DRT::ELEMENTS::So_nurbs27PlastType::Initialize(DRT::Discretization& dis)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

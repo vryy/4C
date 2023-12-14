@@ -20,6 +20,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
@@ -669,3 +671,5 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   return;
 
 }  // DRT::ELEMENTS::Torsion3::NodeShift
+
+BACI_NAMESPACE_CLOSE

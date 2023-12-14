@@ -18,6 +18,8 @@
 #include "baci_utils_singleton_owner.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class CouplingBase;
@@ -465,5 +467,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

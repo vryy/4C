@@ -14,6 +14,8 @@
 #include "baci_contact_nitsche_integrator.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class XFluid_Contact_Comm;
@@ -146,4 +148,6 @@ namespace CONTACT
     );
   }  // namespace UTILS
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_FSI_H

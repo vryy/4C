@@ -21,6 +21,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /**
@@ -40,7 +42,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    mortar_rot>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -323,7 +325,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
+    mortar_rot>::EvaluateAndAssemble(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -644,3 +646,5 @@ namespace BEAMINTERACTION
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line3);
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line4);
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,18 @@
 #include <NOX_Abstract_Vector.H>
 #include <NOX_StatusTest_Generic.H>
 
+class Epetra_Operator;
+class Epetra_Vector;
+class Epetra_Map;
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Vector;
+  }  // namespace Epetra
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration...
 namespace CORE::LINALG
@@ -30,16 +42,8 @@ namespace CORE::LINALG
   class SerialDenseVector;
 }  // namespace CORE::LINALG
 
-class Epetra_Operator;
-class Epetra_Vector;
-class Epetra_Map;
-
 namespace NOX
 {
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace Epetra
   namespace NLN
   {
     namespace CONSTRAINT
@@ -92,15 +96,15 @@ namespace NOX
           double GetConstraintRHSNorms(
               const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ) const
           {
-            return GetConstraintRHSNorms(F, chQ, NOX::Abstract::Vector::TwoNorm, false);
+            return GetConstraintRHSNorms(F, chQ, ::NOX::Abstract::Vector::TwoNorm, false);
           };
           double GetConstraintRHSNorms(const Epetra_Vector& F,
-              NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type) const
+              NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type) const
           {
             return GetConstraintRHSNorms(F, chQ, type, false);
           };
           virtual double GetConstraintRHSNorms(const Epetra_Vector& F,
-              NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
+              NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
               bool isScaled) const = 0;
 
           //! Returns the Root Mean Square (abbr.: RMS) of the Lagrange multiplier updates
@@ -118,23 +122,23 @@ namespace NOX
           //! Returns the increment norm of the largange multiplier DoFs
           virtual double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
-              NOX::Abstract::Vector::NormType type = NOX::Abstract::Vector::TwoNorm,
+              ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
           //! Returns the previous solution norm of the largange multiplier DoFs
           virtual double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
               NOX::NLN::StatusTest::QuantityType checkQuantity,
-              NOX::Abstract::Vector::NormType type = NOX::Abstract::Vector::TwoNorm,
+              ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
           /*! @name Handle active set changes.
            *  This is optional and only relevant for inequality constraint problems. */
           //! @{
-          virtual enum NOX::StatusTest::StatusType GetActiveSetInfo(
+          virtual enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
               enum NOX::NLN::StatusTest::QuantityType qt, int& activeset_size) const
           {
             activeset_size = -1;
-            return NOX::StatusTest::Unevaluated;
+            return ::NOX::StatusTest::Unevaluated;
           }
 
           virtual Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
@@ -153,12 +157,14 @@ namespace NOX
         };
       }  // end namespace Interface
       // typedef
-      typedef std::map<::NOX::NLN::SolutionType,
+      typedef std::map<NOX::NLN::SolutionType,
           Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>>
           ReqInterfaceMap;
     }  // namespace CONSTRAINT
   }    // end namespace NLN
 }  // end namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_H

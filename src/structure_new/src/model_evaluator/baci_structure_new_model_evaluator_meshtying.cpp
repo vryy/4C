@@ -39,6 +39,8 @@
 #include "baci_structure_new_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -525,3 +527,5 @@ void STR::MODELEVALUATOR::Meshtying::SetTimeIntegrationInfo(
 
   strategy.SetTimeIntegrationInfo(time_fac, dyntype);
 }
+
+BACI_NAMESPACE_CLOSE

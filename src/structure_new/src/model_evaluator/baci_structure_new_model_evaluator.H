@@ -19,6 +19,15 @@
 
 // forward declarations
 class Epetra_Vector;
+namespace NOX
+{
+  namespace Solver
+  {
+    class Generic;
+  }  // namespace Solver
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -34,10 +43,6 @@ namespace CORE::LINALG
 
 namespace NOX
 {
-  namespace Solver
-  {
-    class Generic;
-  }  // namespace Solver
   namespace NLN
   {
     enum class CorrectionType : int;
@@ -397,17 +402,17 @@ namespace STR
     void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const double& step,
         const NOX::NLN::Group& curr_grp, const bool isdefaultstep) const;
 
-    /*! \brief Executed at the end of the NOX::Solver::Step() (f.k.a. Iterate()) method
+    /*! \brief Executed at the end of the ::NOX::Solver::Step() (f.k.a. Iterate()) method
      *
      *  \author hiermeier \date 03/17 */
-    void RunPostIterate(const NOX::Solver::Generic& solver, const double step,
+    void RunPostIterate(const ::NOX::Solver::Generic& solver, const double step,
         const bool isdefaultstep, const int num_corrs) const;
 
-    /*! \brief Executed at the beginning of the NOX::Solver::solve() method
+    /*! \brief Executed at the beginning of the ::NOX::Solver::solve() method
      *
      *  \author hiermeier */
     void RunPreSolve(
-        const NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const;
+        const ::NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse
      *  method
@@ -524,5 +529,7 @@ namespace STR
   };  // class ModelEvaluator
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_H

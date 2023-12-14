@@ -21,6 +21,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType
     BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::instance_;
@@ -607,3 +609,5 @@ double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::GetKineticEnergy() const
 {
   return linkele_->GetKineticEnergy();
 }
+
+BACI_NAMESPACE_CLOSE

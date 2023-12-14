@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -552,3 +554,5 @@ std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta)
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

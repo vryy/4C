@@ -13,6 +13,8 @@
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition,
     std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& elevec1,
@@ -129,3 +131,4 @@ void DRT::ELEMENTS::Shell7pLine::LineIntegration(double& dL,
 
   dL = sqrt(dL);
 }
+BACI_NAMESPACE_CLOSE

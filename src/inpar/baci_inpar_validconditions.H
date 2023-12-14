@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -39,5 +41,7 @@ namespace DRT
 
 /// print empty condition sections
 void PrintConditionDatHeader();
+
+BACI_NAMESPACE_CLOSE
 
 #endif

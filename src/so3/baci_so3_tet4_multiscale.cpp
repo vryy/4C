@@ -10,6 +10,8 @@
 #include "baci_mat_micromaterial.H"
 #include "baci_so3_tet4.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -58,3 +60,5 @@ void DRT::ELEMENTS::So_tet4::sotet4_read_restart_multi()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

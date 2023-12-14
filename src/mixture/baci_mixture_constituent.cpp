@@ -24,6 +24,8 @@
 #include "baci_mixture_constituent_remodelfiber_impl.H"
 #include "baci_mixture_constituent_solidmaterial.H"
 
+BACI_NAMESPACE_OPEN
+
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -181,3 +183,5 @@ void MIXTURE::MixtureConstituent::EvaluateElasticPart(const CORE::LINALG::Matrix
 {
   dserror("This constituent cannot handle an additional inelastic part.");
 }
+
+BACI_NAMESPACE_CLOSE

@@ -10,6 +10,8 @@
 
 #ifndef BACI_MAT_TRAIT_THERMO_SOLID_H
 #define BACI_MAT_TRAIT_THERMO_SOLID_H
+
+BACI_NAMESPACE_OPEN
 namespace MAT
 {
   namespace TRAIT
@@ -51,5 +53,7 @@ namespace MAT
     };
   }  // namespace TRAIT
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

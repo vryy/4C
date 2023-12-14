@@ -18,6 +18,8 @@
 #include "baci_mat_par_material.H"
 #include "baci_scatra_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::ConditionsToCopy() const
@@ -161,3 +163,5 @@ bool SSI::ScatraStructureCloneStrategy::DetermineEleType(
 
   return true;  // yes, we copy EVERY element (no submeshes)
 }
+
+BACI_NAMESPACE_CLOSE

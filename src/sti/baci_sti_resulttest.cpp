@@ -13,6 +13,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_sti_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |
  *----------------------------------------------------------------------*/
@@ -97,3 +99,5 @@ const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
     dserror("Couldn't access time integrator for monolithic scatra-thermo interaction!");
   return *sti_monolithic;
 }
+
+BACI_NAMESPACE_CLOSE

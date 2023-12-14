@@ -10,6 +10,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -62,3 +64,4 @@ void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>
     ddPmodII(0) += k1 * d * d * k2 * 0.5 * expf * pow((modinv(0) - 3.), 2. * (d - 1.)) +
                    k1 * d * 0.5 * expf * (d - 1.) * pow((modinv(0) - 3.), (d - 2.));
 }
+BACI_NAMESPACE_CLOSE

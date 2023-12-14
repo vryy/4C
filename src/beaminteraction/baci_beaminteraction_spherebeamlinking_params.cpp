@@ -15,6 +15,8 @@
 #include "baci_mat_crosslinkermat.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -272,3 +274,5 @@ void BEAMINTERACTION::SphereBeamLinkingParams::ResetTimeStep(double structure_de
 
   if (not own_deltatime_) deltatime_ = structure_delta_time;
 }
+
+BACI_NAMESPACE_CLOSE

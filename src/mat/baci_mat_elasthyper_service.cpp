@@ -17,6 +17,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
     const CORE::LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp, int eleGID,
@@ -567,3 +569,5 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
           std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
         }
 }
+
+BACI_NAMESPACE_CLOSE

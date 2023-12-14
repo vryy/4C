@@ -25,9 +25,10 @@
 #include <tuple>
 
 
-
 namespace
 {
+  using namespace BACI;
+
   class CoupAnisoExpoAnisotropyExtensionElementFiberTest
       : public ::testing::TestWithParam<std::tuple<int, int>>
   {

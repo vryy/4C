@@ -16,6 +16,8 @@
 #include "baci_mat_anisotropy_utils.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::Anisotropy::Anisotropy()
     : element_fibers_initialized_(false),
       gp_fibers_initialized_(false),
@@ -296,3 +298,4 @@ bool MAT::Anisotropy::HasGPCylinderCoordinateSystem() const
 {
   return !gpCylinderCoordinateSystemManagers_.empty();
 }
+BACI_NAMESPACE_CLOSE

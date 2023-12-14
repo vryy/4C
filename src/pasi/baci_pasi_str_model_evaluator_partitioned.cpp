@@ -20,6 +20,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -66,3 +68,5 @@ bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
 }
 
 void STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState(const double& timefac_n) { return; }
+
+BACI_NAMESPACE_CLOSE

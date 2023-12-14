@@ -15,6 +15,7 @@
 
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -157,5 +158,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

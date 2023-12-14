@@ -20,6 +20,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_so3_nullspace.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;
 DRT::ELEMENTS::ElemagBoundaryType DRT::ELEMENTS::ElemagBoundaryType::instance_;
@@ -814,3 +816,5 @@ int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

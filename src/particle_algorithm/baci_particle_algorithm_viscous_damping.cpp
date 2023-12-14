@@ -15,6 +15,8 @@
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -57,3 +59,5 @@ void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
         1.0, PARTICLEENGINE::Acceleration, -viscdampfac_, PARTICLEENGINE::Velocity);
   }
 }
+
+BACI_NAMESPACE_CLOSE

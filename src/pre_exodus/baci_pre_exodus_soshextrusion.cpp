@@ -18,7 +18,6 @@ Here everything related with solid-shell body extrusion
 #include "baci_pre_exodus_validate.H"
 
 
-
 /* Method to extrude a surface to become a volumetric body */
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers,
     int seedid, int gmsh, int concat2loose, int diveblocks, const std::string cline,

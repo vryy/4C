@@ -22,6 +22,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------------*
  | Main control routine for poro fluid multiphase problems           vuong 08/16 |
  *-------------------------------------------------------------------------------*/
@@ -155,3 +157,5 @@ void porofluidmultiphase_dyn(int restart)
   return;
 
 }  // poromultiphase_dyn
+
+BACI_NAMESPACE_CLOSE

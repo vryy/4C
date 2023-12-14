@@ -16,6 +16,7 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -33,5 +34,7 @@ namespace IO
       const std::vector<std::vector<int>>& face_connectivity);
 }  // namespace IO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

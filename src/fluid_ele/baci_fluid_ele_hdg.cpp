@@ -18,6 +18,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret_faces.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // initialize static variable
 DRT::ELEMENTS::FluidHDGType DRT::ELEMENTS::FluidHDGType::instance_;
@@ -318,3 +320,5 @@ void DRT::ELEMENTS::FluidHDG::Print(std::ostream& os) const
   os << "FluidHDG ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

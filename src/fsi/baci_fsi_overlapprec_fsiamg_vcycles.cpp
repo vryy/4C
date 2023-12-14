@@ -18,6 +18,8 @@
 #include <MLAPI_Workspace.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
 A Richardson iteration wrapper of a single field V-cycle
  *----------------------------------------------------------------------*/
@@ -562,3 +564,5 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockVcycle(const int myrank, std::vecto
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

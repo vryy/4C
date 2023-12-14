@@ -14,6 +14,8 @@
 #include "baci_elemag_ele_calc.H"
 #include "baci_elemag_ele_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
@@ -110,3 +112,5 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

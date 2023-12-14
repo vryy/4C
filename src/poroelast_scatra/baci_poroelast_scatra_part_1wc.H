@@ -13,6 +13,8 @@
 
 #include "baci_poroelast_scatra_part.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROELASTSCATRA
 {
   class PoroScatraPart1WC : public PoroScatraPart
@@ -77,5 +79,7 @@ namespace POROELASTSCATRA
   };
 }  // namespace POROELASTSCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_SCATRA_PART_1WC_H

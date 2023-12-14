@@ -34,17 +34,19 @@
 
 #include <typeinfo>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicLinearSystem::MonolithicLinearSystem(Teuchos::ParameterList& printingParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const Teuchos::RCP<Epetra_Operator>& M, const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
-    : NOX::Epetra::LinearSystemAztecOO(
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<Epetra_Operator>& M, const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
+    : ::NOX::Epetra::LinearSystemAztecOO(
           printingParams, linearSolverParams, iJac, J, iPrec, M, cloneVector, scalingObject),
       lsparams_(linearSolverParams)
 {
@@ -55,7 +57,7 @@ FSI::MonolithicLinearSystem::MonolithicLinearSystem(Teuchos::ParameterList& prin
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   // AGS: Rare option, similar to Max Iters=1 but twice as fast.
   if (linearSolverParams.get("Use Preconditioner as Solver", false))
@@ -75,7 +77,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& l
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
   // scaling of the linear problem.
-  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
+  ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess) result.init(0.0);
@@ -103,7 +105,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& l
 
     scaling->scaleLinearSystem(Problem);
 
-    if (utils.isPrintType(NOX::Utils::Details))
+    if (utils.isPrintType(::NOX::Utils::Details))
     {
       utils.out() << *scaling << std::endl;
     }
@@ -287,3 +289,5 @@ void FSI::MonolithicLinearSystem::softreset(Teuchos::ParameterList& linearSolver
 #endif
 #endif
 }
+
+BACI_NAMESPACE_CLOSE

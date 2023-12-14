@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 void CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother::Richardson(Teuchos::RCP<GenericSmoother> Ainv,
@@ -2229,3 +2231,5 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
 
   return S;
 }
+
+BACI_NAMESPACE_CLOSE

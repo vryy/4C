@@ -13,6 +13,8 @@
 
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroRelPermeabilityLaw*
@@ -85,3 +87,5 @@ MAT::PAR::FluidPoroRelPermeabilityLawExponent::FluidPoroRelPermeabilityLawExpone
   //  dserror("minimal saturation has to be between 0 and 1");
   return;
 }
+
+BACI_NAMESPACE_CLOSE

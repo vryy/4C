@@ -19,6 +19,8 @@ the Baci guide in the Convention chapter.
 
 #define PY5TOL 1.0e-14
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   // use std::pow directly to allow resolving the overload with FAD types
@@ -3168,5 +3170,7 @@ namespace CORE::DRT::UTILS
       const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
       const CORE::LINALG::Matrix<probdim, 1>& normal);
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H

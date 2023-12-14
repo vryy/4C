@@ -20,6 +20,8 @@
 #include "baci_thermo_ele_impl_utils.H"
 #include "baci_thermo_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -239,4 +241,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELE_BOUNDARY_IMPL_H

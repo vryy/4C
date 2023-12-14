@@ -15,6 +15,8 @@
 #include "baci_adapter_fld_moving_boundary.H"
 #include "baci_fluid_meshtying.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 
 namespace CORE::LINALG
@@ -157,5 +159,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

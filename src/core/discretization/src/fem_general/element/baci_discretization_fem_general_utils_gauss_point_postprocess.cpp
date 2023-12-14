@@ -13,6 +13,8 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   template <CORE::FE::CellType distype>
@@ -31,8 +33,8 @@ namespace
   }
 }  // namespace
 
-void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
-    const CORE::LINALG::SerialDenseMatrix& data, const ::DRT::Discretization& dis,
+void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(BACI::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& data, const BACI::DRT::Discretization& dis,
     Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())
@@ -128,8 +130,10 @@ void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& e
   }
 }
 
-void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
+void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(BACI::DRT::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
 {
   AssembleAveragedElementValues(element_data, data, ele);
 }
+
+BACI_NAMESPACE_CLOSE

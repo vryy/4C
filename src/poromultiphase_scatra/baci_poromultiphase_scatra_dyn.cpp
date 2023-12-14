@@ -15,6 +15,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void poromultiphasescatra_dyn(int restart)
@@ -111,3 +113,5 @@ void poromultiphasescatra_dyn(int restart)
 
 
 }  // poromultiphase_dyn
+
+BACI_NAMESPACE_CLOSE

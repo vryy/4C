@@ -13,6 +13,8 @@
 
 #include "baci_comm_parobjectfactory.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -29,3 +31,5 @@ Teuchos::RCP<DRT::Element> CORE::COMM::Factory(
 {
   return ParObjectFactory::Instance().Create(eletype, eledistype, id, owner);
 }
+
+BACI_NAMESPACE_CLOSE

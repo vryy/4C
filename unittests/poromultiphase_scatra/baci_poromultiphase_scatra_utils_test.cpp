@@ -13,6 +13,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class TestCalculationOxyPartialPressure : public ::testing::Test
   {
    protected:

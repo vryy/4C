@@ -14,6 +14,8 @@
 #include "baci_binstrategy.H"
 #include "baci_comm_exporter.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -120,4 +122,6 @@ namespace BEAMINTERACTION
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

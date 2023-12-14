@@ -19,6 +19,8 @@
 
 #include "baci_fs3i.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace FPSI
@@ -137,5 +139,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
 
 #endif

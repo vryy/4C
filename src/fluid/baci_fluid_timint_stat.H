@@ -16,6 +16,8 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -168,5 +170,7 @@ namespace FLD
   };  // class TimIntStationary
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_STAT_H

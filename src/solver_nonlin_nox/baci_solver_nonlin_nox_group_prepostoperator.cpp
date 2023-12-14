@@ -14,6 +14,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOperator::PrePostOperator() : havePrePostOperator_(false)
@@ -76,3 +78,5 @@ NOX::NLN::GROUP::PrePostOperator::Map& NOX::NLN::GROUP::PrePostOp::GetMap(
 
   return *mapptr;
 }
+
+BACI_NAMESPACE_CLOSE

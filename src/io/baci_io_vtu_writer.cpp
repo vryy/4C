@@ -18,6 +18,8 @@
 #include <iostream>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -335,3 +337,5 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
   if (myrank_ == 0)
     IO::cout(IO::debug) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
 }
+
+BACI_NAMESPACE_CLOSE

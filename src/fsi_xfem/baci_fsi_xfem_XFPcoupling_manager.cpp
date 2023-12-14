@@ -17,6 +17,8 @@
 #include "baci_poroelast_base.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
     : Coupling_Comm_Manager(poro->StructureField()->Discretization(),
@@ -393,3 +395,5 @@ double XFEM::XFPCoupling_Manager::GetInterfaceTimefac()
   else
     return 1. / dt;
 }
+
+BACI_NAMESPACE_CLOSE

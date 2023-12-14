@@ -13,6 +13,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::NodeType DRT::NodeType::instance_;
 
@@ -183,3 +185,5 @@ bool DRT::Node::VisData(const std::string& name, std::vector<double>& data)
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

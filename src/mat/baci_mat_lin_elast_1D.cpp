@@ -15,6 +15,8 @@ quantity (e.g. concentration)
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_function_library.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -272,3 +274,5 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
 
   return first_deriv * conc;
 }
+
+BACI_NAMESPACE_CLOSE

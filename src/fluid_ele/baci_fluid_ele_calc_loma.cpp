@@ -17,6 +17,8 @@
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(
     CORE::UTILS::SingletonAction action)
@@ -618,3 +620,5 @@ template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

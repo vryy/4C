@@ -15,6 +15,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;  ///< number of nodes
 const int NODDOF_SOH27 = 3;   ///< number of dofs per node
@@ -463,5 +465,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX27_H

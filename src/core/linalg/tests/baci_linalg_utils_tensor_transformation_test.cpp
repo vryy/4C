@@ -13,6 +13,8 @@
 #include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 #include "baci_unittest_utils_assertions_test.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   class TensorTransformationTest : public testing::Test
@@ -109,3 +111,4 @@ namespace
     BACI_EXPECT_NEAR(tmp, tens2_, 1e-9);
   }
 }  // namespace
+BACI_NAMESPACE_CLOSE

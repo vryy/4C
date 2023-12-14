@@ -16,6 +16,8 @@ quantity (e.g. concentration)
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -181,5 +183,7 @@ namespace MAT
     MAT::PAR::LinElast1DGrowth* growth_params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_LIN_ELAST_1D_H

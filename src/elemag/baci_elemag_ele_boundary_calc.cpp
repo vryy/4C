@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -273,3 +275,5 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

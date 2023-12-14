@@ -19,6 +19,9 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class StructureBaseAlgorithmNew;
@@ -44,5 +47,7 @@ namespace ADAPTER
   }  // namespace STR
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_STR_FACTORY_H

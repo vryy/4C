@@ -16,6 +16,8 @@ levelset
 #include "baci_cut_pointgraph.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
@@ -300,3 +302,5 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
 
 template class CORE::GEO::CUT::LevelSetSide<2>;
 template class CORE::GEO::CUT::LevelSetSide<3>;
+
+BACI_NAMESPACE_CLOSE

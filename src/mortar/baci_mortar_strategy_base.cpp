@@ -19,6 +19,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -97,3 +99,5 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
     alphaf_ = Data().GetDynParameterN();
   }
 }
+
+BACI_NAMESPACE_CLOSE

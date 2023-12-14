@@ -22,6 +22,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
@@ -626,3 +627,5 @@ void FLD::TimIntHDG::InitForcing()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

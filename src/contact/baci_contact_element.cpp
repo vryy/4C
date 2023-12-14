@@ -11,6 +11,8 @@
 #include "baci_contact_node.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+BACI_NAMESPACE_OPEN
 CONTACT::CoElementType CONTACT::CoElementType::instance_;
 
 CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
@@ -461,3 +463,5 @@ void CONTACT::CoElement::AssembleMderivToNodes(MORTAR::MortarElement& mele)
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

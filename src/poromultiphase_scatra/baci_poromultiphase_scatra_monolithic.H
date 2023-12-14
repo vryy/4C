@@ -11,6 +11,8 @@
 
 #include "baci_poromultiphase_scatra_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASESCATRA
 {
   //! Base class of all solid-scatra algorithms
@@ -29,5 +31,7 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_MONOLITHIC_H

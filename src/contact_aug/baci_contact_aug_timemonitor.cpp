@@ -14,6 +14,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename enum_class>
@@ -128,3 +130,5 @@ void CONTACT::AUG::TimeMonitor<enum_class>::write(std::ostream& os)
 /*----------------------------------------------------------------------------*/
 template class CONTACT::AUG::TimeMonitor<CONTACT::AUG::TimeID>;
 template class CONTACT::AUG::TimeMonitor<CONTACT::AUG::GlobalTimeID>;
+
+BACI_NAMESPACE_CLOSE

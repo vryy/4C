@@ -17,6 +17,7 @@
 #include "baci_adapter_str_wrapper.H"
 #include "baci_struct_ale_str_model_evaluator.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace STR
@@ -55,10 +56,9 @@ namespace ADAPTER
     void UpdateMaterialDisplacements(Teuchos::RCP<Epetra_Vector> dispmat);
 
    protected:
-    Teuchos::RCP<::STR::MODELEVALUATOR::StructAle> GetStructAleModelEvaluatorPtr()
+    Teuchos::RCP<STR::MODELEVALUATOR::StructAle> GetStructAleModelEvaluatorPtr()
     {
-      return Teuchos::rcp_dynamic_cast<::STR::MODELEVALUATOR::StructAle>(
-          struct_ale_model_evaluator_);
+      return Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::StructAle>(struct_ale_model_evaluator_);
     };
 
    private:
@@ -66,10 +66,12 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::StructureNew> structure_;
 
     /// structural model evaluator object
-    Teuchos::RCP<::STR::MODELEVALUATOR::Generic> struct_ale_model_evaluator_;
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> struct_ale_model_evaluator_;
 
   };  // class StructAleWrapper
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_STR_STRUCTALEWRAPPER_H

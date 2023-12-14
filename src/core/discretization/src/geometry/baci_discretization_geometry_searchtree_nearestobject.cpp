@@ -9,6 +9,8 @@
 
 #include "baci_discretization_geometry_searchtree_nearestobject.H"
 
+BACI_NAMESPACE_OPEN
+
 
 CORE::GEO::NearestObject::NearestObject()
     : objectType_(NOTYPE_OBJECT), nodeId_(-1), lineId_(-1), surfId_(-1), label_(-1)
@@ -94,3 +96,5 @@ void CORE::GEO::NearestObject::setSurfaceObjectType(
   nodeId_ = -1;
   lineId_ = -1;
 }
+
+BACI_NAMESPACE_CLOSE

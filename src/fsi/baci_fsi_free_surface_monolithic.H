@@ -28,6 +28,8 @@
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -64,9 +66,9 @@ namespace FSI
       : public CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
   {
    public:
-    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps,
-        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0,
-        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
+    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
+        ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0, int iterations = 1,
+        double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Mathematical functions */
     //@{
@@ -134,8 +136,8 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
-        ::ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
+    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
+        ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
         int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Attribute access functions */
@@ -156,8 +158,8 @@ namespace FSI
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ::ADAPTER::Fluid& fluid_;
-    ::ADAPTER::AleFluidWrapper& ale_;
+    ADAPTER::Fluid& fluid_;
+    ADAPTER::AleFluidWrapper& ale_;
   };
 
 
@@ -170,7 +172,7 @@ namespace FSI
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ::ADAPTER::AlgorithmBase
+  class MonolithicBaseFS : public ADAPTER::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -217,10 +219,10 @@ namespace FSI
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
 
     /// underlying fluid of the FS problem
-    Teuchos::RCP<::ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<ADAPTER::Fluid> fluid_;
 
     /// underlying ale of the FS problem
-    Teuchos::RCP<::ADAPTER::AleFluidWrapper> ale_;
+    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
   };
 
 
@@ -233,16 +235,16 @@ namespace FSI
     \date --
    */
   class MonolithicMainFS : public MonolithicBaseFS,
-                           public NOX::Epetra::Interface::Required,
-                           public NOX::Epetra::Interface::Jacobian,
-                           public NOX::Epetra::Interface::Preconditioner,
-                           public NOX::Direction::UserDefinedFactory
+                           public ::NOX::Epetra::Interface::Required,
+                           public ::NOX::Epetra::Interface::Jacobian,
+                           public ::NOX::Epetra::Interface::Preconditioner,
+                           public ::NOX::Direction::UserDefinedFactory
   {
    public:
     explicit MonolithicMainFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! @name NOX methods
 
@@ -261,15 +263,15 @@ namespace FSI
     /// create my own direction object
     /*!
       MonolithicMainFS is a (inherits from)
-      NOX::Direction::UserDefinedFactory. This is an implementation
+      ::NOX::Direction::UserDefinedFactory. This is an implementation
       detail. This way we can construct a specialized direction object at a
       place where we know about the status tests. This is the whole point
       here. Our specialized direction is of the type NOX::FSI::Newton, the
       normal Newton direction enhanced with adaptive tolerance control for the
       internal linear (iterative) solver.
      */
-    Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-        const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
+    Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     //! @name Apply current field state to system
 
@@ -297,13 +299,13 @@ namespace FSI
 
    protected:
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
-        Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
-        Teuchos::RCP<NOX::Utils> utils) = 0;
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
+        Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /// extract the two field vectors from a given composed vector
     /*!
@@ -320,7 +322,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
@@ -355,7 +357,7 @@ namespace FSI
     CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     /// output utilities
-    Teuchos::RCP<NOX::Utils> utils_;
+    Teuchos::RCP<::NOX::Utils> utils_;
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
@@ -483,12 +485,12 @@ namespace FSI
 
    protected:
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
-        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils) override;
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the two field vectors from a given composed vector
     /*!
@@ -542,28 +544,30 @@ namespace NOX
   namespace FSI
   {
     /// Special NOX group that always sets Jacobian and RHS at the same time.
-    class GroupFS : public NOX::Epetra::Group
+    class GroupFS : public ::NOX::Epetra::Group
     {
      public:
-      GroupFS(::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+      GroupFS(BACI::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+          const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys);
 
       /// fetch the known Jacobian and RHS from the field solvers
       void CaptureSystemState();
 
-      NOX::Abstract::Group::ReturnType computeF() override;
+      ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      NOX::Abstract::Group::ReturnType computeJacobian() override;
+      ::NOX::Abstract::Group::ReturnType computeJacobian() override;
 
-      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
+      ::NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
 
      private:
-      ::FSI::MonolithicMainFS& mfsi_;
+      BACI::FSI::MonolithicMainFS& mfsi_;
     };
   }  // namespace FSI
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

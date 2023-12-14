@@ -12,6 +12,8 @@
 
 #include "baci_particle_engine_object.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -120,3 +122,5 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

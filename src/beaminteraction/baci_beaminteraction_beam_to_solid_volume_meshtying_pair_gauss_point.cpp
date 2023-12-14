@@ -22,6 +22,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -180,7 +182,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::EvaluateAndAssemble(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -444,3 +446,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairGaussPoint<t_hermite, t_tet10>;
   template class BeamToSolidVolumeMeshtyingPairGaussPoint<t_hermite, t_nurbs27>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
@@ -837,3 +839,5 @@ void CONTACT::CoTSIInterface::Initialize()
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

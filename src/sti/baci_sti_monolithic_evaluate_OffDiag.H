@@ -16,6 +16,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
@@ -245,4 +247,6 @@ namespace STI
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif  // STI_MONOLITHIC_EVALUATE_OFFDIAG_H

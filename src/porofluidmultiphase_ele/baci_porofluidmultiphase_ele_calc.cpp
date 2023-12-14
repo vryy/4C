@@ -21,6 +21,8 @@
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |
@@ -669,3 +671,5 @@ template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::tet
 template class DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::pyramid5>;
 // template class
 // DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

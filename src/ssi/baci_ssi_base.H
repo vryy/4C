@@ -16,6 +16,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -174,10 +176,7 @@ namespace SSI
     void ReadRestartfromTime(double restarttime) override;
 
     //! access to structural field
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper>& StructureField() const
-    {
-      return structure_;
-    }
+    const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& StructureField() const { return structure_; }
 
     /// pointer to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithm() const
@@ -404,7 +403,7 @@ namespace SSI
     const bool ssiinterfacemeshtying_;
 
     /// ptr to underlying structure
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
 
     /// ptr to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
@@ -422,4 +421,6 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> zeros_structure_;
   };  // SSI_Base
 }  // namespace SSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSI_BASE_H

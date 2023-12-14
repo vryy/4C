@@ -14,6 +14,8 @@
 
 #include "baci_adapter_str_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace STR::TIMINT
 {
@@ -63,7 +65,7 @@ namespace ADAPTER
      */
     static Teuchos::RCP<Structure> Create(
         const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-        Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
+        Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
 
     /// setup of the adaptive time integration
     void Setup() override;
@@ -280,5 +282,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

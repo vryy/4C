@@ -13,6 +13,8 @@
 #include "baci_contact_nitsche_integrator.H"  // for CONTACT::UTILS:: functions
 #include "baci_contact_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -323,3 +325,5 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(MORTAR::MortarElement& sele,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

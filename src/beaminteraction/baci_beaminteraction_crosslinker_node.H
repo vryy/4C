@@ -17,6 +17,8 @@
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace MAT
 {
@@ -161,7 +163,7 @@ namespace CROSSLINKING
     /*!
      \brief The Discretization is a friend of MortarNode
      */
-    friend class ::DRT::Discretization;
+    friend class BACI::DRT::Discretization;
 
     //@}
 
@@ -293,5 +295,7 @@ namespace CROSSLINKING
 
 // << operator
 std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_BEAMINTERACTION_CROSSLINKER_NODE_H

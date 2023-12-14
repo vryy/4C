@@ -19,6 +19,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------------------------------------------*
   Create integration points on the facets of the volumecell by triangulating the facets
@@ -653,3 +654,5 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     throw std::runtime_error("Volume is not a number.");
   }
 }
+
+BACI_NAMESPACE_CLOSE

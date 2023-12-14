@@ -13,6 +13,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_scatra_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
@@ -103,3 +105,5 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|
  *----------------------------------------------------------------------*/
@@ -542,3 +544,5 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
 
   redairways_->SetupForCoupling();
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -264,3 +266,5 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleBoundaryCo
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

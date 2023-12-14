@@ -18,6 +18,8 @@
 
 #include "baci_fluid_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FLD
 {
@@ -104,5 +106,7 @@ namespace FLD
   };  // class TimIntStationaryHDG
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_STAT_HDG_H

@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_utils_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -53,4 +55,6 @@ namespace DRT
     };  // class ScaTraEleUtilsElchElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

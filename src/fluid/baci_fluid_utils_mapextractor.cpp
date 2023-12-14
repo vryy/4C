@@ -17,6 +17,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::MapExtractor::Setup(
@@ -183,3 +185,5 @@ void FLD::UTILS::XFluidFluidMapExtractor::Setup(const Epetra_Map& fullmap,
   maps.push_back(xfluidmap);
   MultiMapExtractor::Setup(fullmap, maps);
 }
+
+BACI_NAMESPACE_CLOSE

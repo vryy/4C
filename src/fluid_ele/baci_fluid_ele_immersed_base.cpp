@@ -14,6 +14,8 @@
 #include "baci_fluid_ele_immersed.H"
 #include "baci_io_linedefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
@@ -38,3 +40,5 @@ DRT::ELEMENTS::FluidImmersedBase::FluidImmersedBase(const DRT::ELEMENTS::FluidIm
 {
   return;
 }
+
+BACI_NAMESPACE_CLOSE

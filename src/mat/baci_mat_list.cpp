@@ -16,6 +16,8 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::MatList::MatList(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -251,3 +253,5 @@ Teuchos::RCP<MAT::Material> MAT::MatList::MaterialById(const int id) const
   else  // material is global (stored in material parameters)
     return params_->MaterialById(id);
 }
+
+BACI_NAMESPACE_CLOSE

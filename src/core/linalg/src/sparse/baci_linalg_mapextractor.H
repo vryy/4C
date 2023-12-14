@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /// Split a row map into a set of partial maps and establish the communication pattern back and
@@ -468,5 +470,6 @@ namespace CORE::LINALG
 
 }  // namespace CORE::LINALG
 
+BACI_NAMESPACE_CLOSE
 
 #endif

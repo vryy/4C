@@ -22,6 +22,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -377,3 +379,5 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
           tempgrad_j, (mass_i[0] / dens_i[0]) * temp_ji * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }
+
+BACI_NAMESPACE_CLOSE

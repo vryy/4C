@@ -17,6 +17,8 @@
 #include "baci_cut_volumecell.H"
 #include "baci_discretization_geometry_element_volume.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::BoundaryCell::BoundaryCell(
@@ -604,3 +606,5 @@ template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellT
 template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellType::quad4>(
     Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
+
+BACI_NAMESPACE_CLOSE

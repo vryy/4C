@@ -11,6 +11,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
@@ -46,3 +48,5 @@ void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
   // just to be sure
   if (os.is_open()) os.close();
 }
+
+BACI_NAMESPACE_CLOSE

@@ -25,6 +25,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -179,3 +181,5 @@ void BEAMINTERACTION::BeamContactPair::CheckInitSetup() const
 {
   if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }
+
+BACI_NAMESPACE_CLOSE

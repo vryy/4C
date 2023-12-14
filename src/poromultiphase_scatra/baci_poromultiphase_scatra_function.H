@@ -20,6 +20,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   class FunctionManager;
@@ -469,5 +471,7 @@ namespace POROMULTIPHASESCATRA
   };
 
 }  // namespace POROMULTIPHASESCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

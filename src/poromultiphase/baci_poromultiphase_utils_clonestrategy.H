@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -55,5 +57,7 @@ namespace POROMULTIPHASE
 
   }  // namespace UTILS
 }  // namespace POROMULTIPHASE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_UTILS_CLONESTRATEGY_H

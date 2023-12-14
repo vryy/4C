@@ -12,6 +12,8 @@
 
 #include "baci_adapter_str_fsiwrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace STR
 {
@@ -88,5 +90,7 @@ namespace ADAPTER
 
   };  // class FSIStructureWrapper
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

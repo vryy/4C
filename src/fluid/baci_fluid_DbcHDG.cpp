@@ -17,6 +17,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::Discretization& discret,
@@ -362,3 +364,5 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
@@ -230,3 +232,5 @@ Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapFluid()
 {
   return FluidField()->DofRowMap();
 }
+
+BACI_NAMESPACE_CLOSE

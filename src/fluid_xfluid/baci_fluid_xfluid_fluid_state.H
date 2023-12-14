@@ -14,6 +14,8 @@ fluid meshes
 
 #include "baci_fluid_xfluid_state.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -125,5 +127,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

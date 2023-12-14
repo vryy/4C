@@ -21,6 +21,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1684,3 +1686,5 @@ const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
   if (dis_.is_null()) dserror("The discretization pointer has not been initialized!");
   return *dis_;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -11,6 +11,8 @@
 
 #include "baci_constraint_multipointconstraint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace UTILS
@@ -126,4 +128,6 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_H

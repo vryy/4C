@@ -15,6 +15,8 @@ interface
 #include "baci_coupling_adapter.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -317,5 +319,7 @@ namespace CONTACT
   };  // class POROLagrangeStrategy
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_PORO_LAGRANGE_STRATEGY_H

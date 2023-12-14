@@ -12,6 +12,8 @@
 #include "baci_inpar_geometry_pair.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -77,3 +79,5 @@ void BEAMINTERACTION::BeamToSolidParamsBase::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

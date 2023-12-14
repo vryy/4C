@@ -12,6 +12,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_poro_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
@@ -222,3 +224,5 @@ template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::
 template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
 template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
     CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

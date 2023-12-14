@@ -17,6 +17,8 @@
 #include "baci_mortar_node.H"
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -1119,5 +1121,7 @@ namespace MORTAR
 
 // << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarElement& ele);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_ELEMENT_H

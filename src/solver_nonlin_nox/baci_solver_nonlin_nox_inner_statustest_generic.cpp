@@ -12,6 +12,8 @@
 
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
+
 std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusType type)
 {
   os << std::setiosflags(std::ios::left) << std::setw(13) << std::setfill('.');
@@ -36,3 +38,5 @@ std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusTy
   os << std::resetiosflags(std::ios::adjustfield) << std::setfill(' ');
   return os;
 }
+
+BACI_NAMESPACE_CLOSE

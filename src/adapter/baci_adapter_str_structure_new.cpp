@@ -63,6 +63,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
@@ -127,14 +129,14 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
-    const std::string name, Teuchos::RCP<::STR::MODELEVALUATOR::Generic> me)
+    const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
   if (not IsInit()) dserror("Init(...) must be called before RegisterModelEvaluator(...) !");
   if (IsSetup()) dserror("RegisterModelEvaluator(...) must be called before Setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
-  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<::STR::MODELEVALUATOR::Generic>>(
+  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
       name, me);
 }
 
@@ -920,3 +922,5 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

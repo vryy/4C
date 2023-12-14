@@ -15,6 +15,8 @@
 
 #include "baci_structure_new_model_evaluator_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Structure;
@@ -103,7 +105,7 @@ namespace STR
       };
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
@@ -169,5 +171,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_STR_MODEL_EVALUATOR_PARTITIONED_H

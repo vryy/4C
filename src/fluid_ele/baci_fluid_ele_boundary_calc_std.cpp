@@ -14,6 +14,8 @@
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_lib_elementtype.H"
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(CORE::UTILS::SingletonAction action)
@@ -52,3 +54,5 @@ template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs2
 template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs3>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

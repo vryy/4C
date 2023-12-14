@@ -16,6 +16,8 @@
 #include "baci_mat_cnst_1d_art.H"
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -223,5 +225,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_ARTERY_H

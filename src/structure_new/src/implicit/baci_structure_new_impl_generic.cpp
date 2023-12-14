@@ -20,6 +20,8 @@
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -177,7 +179,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::NLN::Grou
 {
   // set the evaluation parameters
   const Epetra_Vector& xold =
-      dynamic_cast<const NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+      dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
   Epetra_Vector& dir_mutable = const_cast<Epetra_Vector&>(dir);
 
   const bool isdefaultstep = (step == default_step_);
@@ -191,9 +193,9 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
 {
   // set the evaluation parameters
   const Epetra_Vector& xold =
-      dynamic_cast<const NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+      dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
   const Epetra_Vector& xnew =
-      dynamic_cast<const NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
+      dynamic_cast<const ::NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
 
   bool isdefaultstep = (step == default_step_);
   impl_.ModelEval().RunPostComputeX(xold, dir, step, xnew, isdefaultstep);
@@ -201,7 +203,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const NOX::Solver::Generic& solver)
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver::Generic& solver)
 {
   double step = 0.0;
   const bool isdefaultstep = getStep(step, solver);
@@ -212,7 +214,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const NOX::Solver::G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const NOX::Solver::Generic& solver)
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const ::NOX::Solver::Generic& solver)
 {
   double step = 0.0;
   const bool isdefaultstep = getStep(step, solver);
@@ -223,8 +225,8 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const NOX::Solver::Gene
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreApplyJacobianInverse(
-    const NOX::Abstract::Vector& rhs, NOX::Abstract::Vector& result,
-    const NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+    const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
+    const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
   impl_.ModelEval().RunPreApplyJacobianInverse(
       convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
@@ -233,8 +235,8 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreApplyJacobianInverse(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
-    const NOX::Abstract::Vector& rhs, NOX::Abstract::Vector& result,
-    const NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+    const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
+    const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
   impl_.ModelEval().RunPostApplyJacobianInverse(
       convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
@@ -251,10 +253,10 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
-    NOX::Abstract::Vector& vec) const
+    ::NOX::Abstract::Vector& vec) const
 {
-  NOX::Epetra::Vector* epetra_vec = dynamic_cast<NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != nullptr, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+  ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<::NOX::Epetra::Vector*>(&vec);
+  dsassert(epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }
@@ -262,10 +264,10 @@ Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
-    const NOX::Abstract::Vector& vec) const
+    const ::NOX::Abstract::Vector& vec) const
 {
-  const NOX::Epetra::Vector* epetra_vec = dynamic_cast<const NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != nullptr, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+  const ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<const ::NOX::Epetra::Vector*>(&vec);
+  dsassert(epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }
@@ -273,7 +275,7 @@ const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVecto
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::PrePostOp::IMPLICIT::Generic::getStep(
-    double& step, const NOX::Solver::Generic& solver) const
+    double& step, const ::NOX::Solver::Generic& solver) const
 {
   // try to cast the given solver object
   const NOX::NLN::Solver::LineSearchBased* ls_solver =
@@ -298,7 +300,7 @@ bool NOX::NLN::PrePostOp::IMPLICIT::Generic::getStep(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int NOX::NLN::PrePostOp::IMPLICIT::Generic::getNumberOfModifiedNewtonCorrections(
-    const NOX::Solver::Generic& solver) const
+    const ::NOX::Solver::Generic& solver) const
 {
   int number_of_corr = 0;
   const Teuchos::ParameterList& pmod =
@@ -324,3 +326,5 @@ void STR::IMPLICIT::Generic::RemoveCondensedContributionsFromRhs(Epetra_Vector& 
 {
   ModelEval().RemoveCondensedContributionsFromRhs(rhs);
 }
+
+BACI_NAMESPACE_CLOSE

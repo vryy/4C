@@ -16,6 +16,8 @@
 #include "baci_cut_meshintersection.H"
 #include "baci_cut_parentintersection.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace LINALG
 {
@@ -56,4 +58,6 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+BACI_NAMESPACE_CLOSE
+
 #endif

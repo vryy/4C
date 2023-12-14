@@ -52,6 +52,12 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()
 
+# macro definition for namespace BACI
+set(BACI_NAMESPACE_OPEN "namespace BACI {")
+set(BACI_NAMESPACE_CLOSE "}")
+add_compile_definitions(BACI_NAMESPACE_OPEN=${BACI_NAMESPACE_OPEN})
+add_compile_definitions(BACI_NAMESPACE_CLOSE=${BACI_NAMESPACE_CLOSE})
+
 #
 ### Build in default values
 

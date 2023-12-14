@@ -28,6 +28,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1773,3 +1775,5 @@ void FPSI::Monolithic::SetConductivity(double conduct)
   if (FPSICoupl() != Teuchos::null) FPSICoupl()->SetConductivity(conduct);
   conductivity_ = conduct;  // remove me...
 }
+
+BACI_NAMESPACE_CLOSE

@@ -8,6 +8,8 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_ENUMS_H
 #define BACI_LIB_GLOBALPROBLEM_ENUMS_H
 
+BACI_NAMESPACE_OPEN
+
 /**
  * A global definition of available problem types.
  */
@@ -63,5 +65,7 @@ enum class ProblemType
   thermo_fsi,            // thermo-fluid-structure-interaction problem
   tsi,                   // thermal structure interaction
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -26,6 +26,8 @@
 #include "baci_tsi_defines.H"
 #include "baci_tsi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -1296,3 +1298,5 @@ void TSI::Partitioned::PrepareOutput()
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

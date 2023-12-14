@@ -19,6 +19,8 @@
 
 #include <NOX_Abstract_Group.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -110,7 +112,7 @@ void STR::TIMINT::Explicit::Evaluate()
 {
   CheckInitSetup();
   ThrowIfStateNotInSyncWithNOXGroup();
-  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
@@ -343,3 +345,5 @@ double STR::TIMINT::Explicit::MethodLinErrCoeffVel() const
 {
   return explint_ptr_->MethodLinErrCoeffVel();
 }
+
+BACI_NAMESPACE_CLOSE

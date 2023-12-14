@@ -25,6 +25,8 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/
@@ -125,5 +127,7 @@ namespace ADAPTER
     int mastertype_;  // 1 poro, 0 struct, -1 default
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_COUPLING_PORO_MORTAR_H

@@ -14,6 +14,8 @@
 #include <iostream>
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -81,3 +83,5 @@ int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom(
 
   return count;
 }
+
+BACI_NAMESPACE_CLOSE

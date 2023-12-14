@@ -46,6 +46,8 @@ its parameters and conditions.
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
+  using namespace BACI;
+
   // communication
   MPI_Init(&argc, &argv);
 
@@ -404,6 +406,8 @@ int main(int argc, char** argv)
 /*----------------------------------------------------------------------*/
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 {
+  using namespace BACI;
+
   std::string defaultbcfilename = "default.bc";
   std::cout << "found no BC specification file --> creating " << defaultbcfilename << std::endl;
 

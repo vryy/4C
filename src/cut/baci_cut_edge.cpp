@@ -18,6 +18,7 @@
 #include <stack>
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -33,7 +34,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
     unsigned shardskey, const std::vector<Node*>& nodes)
 {
-  return Edge::Create(::DRT::ShardsKeyToDisType(shardskey), nodes);
+  return Edge::Create(BACI::DRT::ShardsKeyToDisType(shardskey), nodes);
 }
 
 bool CORE::GEO::CUT::Edge::FindCutPointsLevelSet(
@@ -900,7 +901,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
     const CORE::FE::CellType& edgetype, const std::vector<Node*>& nodes) const
 {
   Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (edgetype)
   {
     case CORE::FE::CellType::line2:
@@ -920,3 +921,5 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
 
 template class CORE::GEO::CUT::ConcreteEdge<2, CORE::FE::CellType::line2>;
 template class CORE::GEO::CUT::ConcreteEdge<3, CORE::FE::CellType::line2>;
+
+BACI_NAMESPACE_CLOSE

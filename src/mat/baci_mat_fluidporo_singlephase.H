@@ -21,6 +21,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_poro_density_law.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
@@ -548,5 +550,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_FLUIDPORO_SINGLEPHASE_H

@@ -31,6 +31,8 @@
 #include "baci_so3_surface.H"
 #include "baci_xfem_condition_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
@@ -1507,3 +1509,5 @@ void XFEM::XFluid_Contact_Comm::Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double 
   plot_data_[section].push_back(std::pair<CORE::LINALG::Matrix<3, 1>, double>(x, val));
 #endif
 }
+
+BACI_NAMESPACE_CLOSE

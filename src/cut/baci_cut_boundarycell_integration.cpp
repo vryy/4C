@@ -14,6 +14,8 @@
 #include "baci_cut_least_squares.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------------------*
   Generate quadrature rule for boundarycells
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
@@ -419,3 +421,5 @@ void CORE::GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(
   }
   file.close();
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@ Former file of Ursula Mayer
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -100,3 +102,5 @@ void MAT::CarreauYasuda::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

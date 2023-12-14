@@ -16,6 +16,8 @@ species
 #include "baci_comm_parobjectfactory.H"
 #include "baci_mat_elchsinglemat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -162,5 +164,7 @@ namespace MAT
     MAT::PAR::Newman* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

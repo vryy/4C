@@ -17,6 +17,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -271,3 +273,5 @@ Teuchos::RCP<ADAPTER::ArtNet> ADAPTER::PoroFluidMultiphaseWrapper::ArtNetTimInt(
 {
   return porofluid_->ArtNetTimInt();
 }
+
+BACI_NAMESPACE_CLOSE

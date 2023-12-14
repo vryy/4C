@@ -27,6 +27,8 @@
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::NLN::SOLVER::Nox::Nox()
@@ -41,24 +43,24 @@ void STR::NLN::SOLVER::Nox::Setup()
 {
   CheckInit();
 
-  /* Set NOX::Epetra::Interface::Required
+  /* Set ::NOX::Epetra::Interface::Required
    * This interface is necessary for the evaluation of basic things
    * which are evaluated outside of the non-linear solver, but
    * are always necessary. A simple example is the right-hand-side
    * F. (see computeF) */
-  const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq = NoxInterfacePtr();
+  const Teuchos::RCP<::NOX::Epetra::Interface::Required> ireq = NoxInterfacePtr();
 
-  /* Set NOX::Epetra::Interface::Jacobian
+  /* Set ::NOX::Epetra::Interface::Jacobian
    * This interface is necessary for the evaluation of the jacobian
    * and everything, which is directly related to the jacobian.
    * This interface is optional. You can think of Finite-Differences
    * as one way to circumvent the evaluation of the jacobian.
    * Nevertheless, we always set this interface ptr in the structural
    * case. */
-  const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> ijac = NoxInterfacePtr();
+  const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> ijac = NoxInterfacePtr();
 
   // pre-conditioner interface
-  Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iprec = NoxInterfacePtr();
+  Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iprec = NoxInterfacePtr();
 
   // vector of currently present solution types
   std::vector<enum NOX::NLN::SolutionType> soltypes(0);
@@ -82,7 +84,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   STR::NLN::CreateConstraintPreconditioner(iconstr_prec, Integrator(), soltypes);
 
   // create object to scale linear system
-  Teuchos::RCP<NOX::Epetra::Scaling> iscale = Teuchos::null;
+  Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
   STR::NLN::CreateScaling(iscale, DataSDyn(), DataGlobalState());
 
   // build the global data container for the nox_nln_solver
@@ -93,7 +95,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
-  Teuchos::RCP<NOX::Epetra::Vector> soln = DataGlobalState().CreateGlobalVector();
+  Teuchos::RCP<::NOX::Epetra::Vector> soln = DataGlobalState().CreateGlobalVector();
   Teuchos::RCP<CORE::LINALG::SparseOperator>& jac = DataGlobalState().CreateJacobian();
   problem_ = Teuchos::rcp(new NOX::NLN::Problem(nlnglobaldata_, soln, jac));
 
@@ -186,7 +188,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
   CheckInitSetup();
 
   // solve the non-linear step
-  NOX::StatusTest::StatusType finalstatus = nlnsolver_->solve();
+  ::NOX::StatusTest::StatusType finalstatus = nlnsolver_->solve();
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
@@ -203,7 +205,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::ConvertFinalStatus(
-    const NOX::StatusTest::StatusType& finalstatus) const
+    const ::NOX::StatusTest::StatusType& finalstatus) const
 {
   CheckInitSetup();
 
@@ -211,19 +213,19 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::ConvertFinalStatus(
 
   switch (finalstatus)
   {
-    case NOX::StatusTest::Unevaluated:
+    case ::NOX::StatusTest::Unevaluated:
       convstatus = INPAR::STR::conv_ele_fail;
       break;
-    case NOX::StatusTest::Unconverged:
-    case NOX::StatusTest::Failed:
+    case ::NOX::StatusTest::Unconverged:
+    case ::NOX::StatusTest::Failed:
       convstatus = INPAR::STR::conv_nonlin_fail;
       break;
-    case NOX::StatusTest::Converged:
+    case ::NOX::StatusTest::Converged:
       convstatus = INPAR::STR::conv_success;
       break;
     default:
       dserror(
-          "Conversion of the NOX::StatusTest::StatusType to "
+          "Conversion of the ::NOX::StatusTest::StatusType to "
           "a INPAR::STR::ConvergenceStatus is not possible!");
       break;
   }
@@ -238,3 +240,5 @@ int STR::NLN::SOLVER::Nox::GetNumNlnIterations() const
   if (not nlnsolver_.is_null()) return nlnsolver_->getNumIterations();
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

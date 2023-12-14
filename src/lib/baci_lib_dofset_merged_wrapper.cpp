@@ -19,6 +19,8 @@
 
 #include <Epetra_Export.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -221,3 +223,5 @@ void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
   // clear my Teuchos::rcps.
   Reset();
 }
+
+BACI_NAMESPACE_CLOSE

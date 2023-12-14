@@ -14,6 +14,8 @@
 #include "baci_mat_service.H"
 #include "baci_mixture_growth_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata->GetDouble("KAPPA"))
@@ -77,3 +79,4 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
 
   cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }
+BACI_NAMESPACE_CLOSE

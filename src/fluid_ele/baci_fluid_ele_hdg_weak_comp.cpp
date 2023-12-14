@@ -15,6 +15,8 @@
 #include "baci_inpar_fluid.H"
 #include "baci_io_linedefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // initialize static variable
 DRT::ELEMENTS::FluidHDGWeakCompType DRT::ELEMENTS::FluidHDGWeakCompType::instance_;
@@ -263,3 +265,5 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Print(std::ostream& os) const
   os << "FluidHDGWeakComp ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

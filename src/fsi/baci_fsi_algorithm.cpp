@@ -22,6 +22,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
@@ -73,8 +75,8 @@ void FSI::Algorithm::Setup()
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->Setup();
-    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::FSIStructureWrapper>(
-        adapterbase_ptr_->StructureField());
+    structure_ =
+        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(adapterbase_ptr_->StructureField());
 
     // set pointer in FSIStructureWrapper
     structure_->SetModelEvaluatorPtr(
@@ -97,7 +99,7 @@ void FSI::Algorithm::Setup()
         new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
-        Teuchos::rcp_dynamic_cast<::ADAPTER::FSIStructureWrapper>(structure->StructureField());
+        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
     structure_->Setup();
 
     if (structure_ == Teuchos::null)
@@ -112,7 +114,7 @@ void FSI::Algorithm::Setup()
         "If you want to use yet unsupported elements or you want to do crack simulation,\n"
         "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
 
-  Teuchos::RCP<::ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
+  Teuchos::RCP<ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(
           DRT::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
   fluid_ = MBFluidbase->MBFluidField();
@@ -216,3 +218,5 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(
 {
   return coupsf_->SlaveToMaster(iv);
 }
+
+BACI_NAMESPACE_CLOSE

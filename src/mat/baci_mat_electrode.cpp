@@ -14,6 +14,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -693,3 +695,5 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
   }
   return ocpderiv;
 }
+
+BACI_NAMESPACE_CLOSE

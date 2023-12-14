@@ -13,6 +13,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_shell7p_ele.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   class Shell7pLineType : public DRT::ElementType
@@ -159,5 +161,7 @@ namespace DRT::ELEMENTS
   };  // class Shell7pLine
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

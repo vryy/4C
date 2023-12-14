@@ -14,6 +14,8 @@
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fluid_xfluid_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
@@ -288,3 +290,5 @@ void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
       mergedfluidinterface_->ConditionedElementMap(*fluidimpl_->Discretization()());
   xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_, condelements);
 }
+
+BACI_NAMESPACE_CLOSE

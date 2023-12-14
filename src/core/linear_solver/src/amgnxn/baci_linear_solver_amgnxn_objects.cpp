@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
@@ -475,3 +477,5 @@ CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::NewRangeBlockedVector(int NV
 
   return out;
 }
+
+BACI_NAMESPACE_CLOSE

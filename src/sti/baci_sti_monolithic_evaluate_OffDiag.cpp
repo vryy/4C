@@ -24,6 +24,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
@@ -906,3 +908,5 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoup
 
   return scatrathermooffdiagcoupling;
 }
+
+BACI_NAMESPACE_CLOSE

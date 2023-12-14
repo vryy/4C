@@ -14,6 +14,7 @@
 
 #include "baci_geometry_pair_line_to_surface.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -64,5 +65,7 @@ namespace GEOMETRYPAIR
             nullptr) const override;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

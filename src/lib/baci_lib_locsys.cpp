@@ -20,6 +20,8 @@ vectors and matrices.
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*-------------------------------------------------------------------*
@@ -683,3 +685,5 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
     locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
   }
 }
+
+BACI_NAMESPACE_CLOSE

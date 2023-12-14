@@ -17,6 +17,8 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -124,5 +126,7 @@ namespace DRT
     }
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H

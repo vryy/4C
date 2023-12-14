@@ -29,6 +29,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -546,7 +548,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (::UTILS::PRESTRESS::IsMulf(pstype_)) dserror("mulf is unsupported for the So_sh8 element!");
+  if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
+    dserror("mulf is unsupported for the So_sh8 element!");
 
   if (kintype_ != INPAR::STR::kinem_nonlinearTotLag)
     dserror("Unsupported kinematic type for the So_sh8 element!");
@@ -2206,3 +2209,5 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

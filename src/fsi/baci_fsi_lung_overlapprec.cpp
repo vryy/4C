@@ -18,6 +18,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
 
+BACI_NAMESPACE_OPEN
+
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
 FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
@@ -405,3 +407,5 @@ const char* FSI::LungOverlappingBlockMatrix::Label() const
 {
   return "FSI::LungOverlappingBlockMatrix";
 }
+
+BACI_NAMESPACE_CLOSE

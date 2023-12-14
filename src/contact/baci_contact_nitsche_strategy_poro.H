@@ -14,6 +14,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -96,4 +98,6 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kdp_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_PORO_H

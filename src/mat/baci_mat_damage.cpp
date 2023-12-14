@@ -39,6 +39,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
@@ -3082,3 +3083,5 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -69,5 +71,7 @@ namespace INPAR
   }  // namespace ELEMAG
 }  // namespace INPAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // INPAR_ELEMAG_H

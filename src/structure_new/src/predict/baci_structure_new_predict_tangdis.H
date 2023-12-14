@@ -18,6 +18,9 @@
 
 // forward declaration
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -37,7 +40,7 @@ namespace STR
       void Setup() override;
 
       //! do the class specific predictor step
-      void Compute(NOX::Abstract::Group& grp) override;
+      void Compute(::NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
       const Epetra_Vector& GetDbcIncr() const;
@@ -76,7 +79,7 @@ namespace NOX
         {
          public:
           //! constructor
-          TangDis(const Teuchos::RCP<const ::STR::PREDICT::TangDis>& tang_predict_ptr);
+          TangDis(const Teuchos::RCP<const STR::PREDICT::TangDis>& tang_predict_ptr);
 
 
           //! add the linear reaction forces
@@ -84,11 +87,13 @@ namespace NOX
 
          private:
           //! pointer to the tangdis object (read-only)
-          Teuchos::RCP<const ::STR::PREDICT::TangDis> tang_predict_ptr_;
+          Teuchos::RCP<const STR::PREDICT::TangDis> tang_predict_ptr_;
         };  // class TangDis
       }     // namespace PrePostOp
     }       // namespace GROUP
   }         // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_PREDICT_TANGDIS_H

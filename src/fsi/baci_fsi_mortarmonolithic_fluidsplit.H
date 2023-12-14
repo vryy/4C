@@ -18,6 +18,8 @@ with condensed fluid interface velocities
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -222,8 +224,8 @@ namespace FSI
     void OutputLambda() override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) override;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /* \brief Extract the three field vectors from a given composed vector
      *
@@ -302,10 +304,10 @@ namespace FSI
     /// Handle row and column map exchange for matrix blocks
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<::CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
 
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
@@ -406,5 +408,7 @@ namespace FSI
     double energysum_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

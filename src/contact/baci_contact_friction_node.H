@@ -9,6 +9,8 @@
 
 #include "baci_contact_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class FriNodeType : public CORE::COMM::ParObjectType
@@ -614,5 +616,7 @@ namespace CONTACT
 
 //// << operator
 // std::ostream& operator << (std::ostream& os, const CONTACT::FriNode& cnode);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_CONTACT_FRICTION_NODE_H

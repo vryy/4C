@@ -10,6 +10,8 @@
 
 #include "baci_mixture_growth_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MIXTURE
 {
   class IsotropicGrowthStrategy;
@@ -45,5 +47,7 @@ namespace MIXTURE
         CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const override;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_GROWTH_STRATEGY_ISOTROPIC_H

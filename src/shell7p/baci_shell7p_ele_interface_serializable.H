@@ -11,6 +11,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS::SHELL
 {
   /*!
@@ -38,5 +40,7 @@ namespace DRT::ELEMENTS::SHELL
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
   };
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SHELL7P_ELE_INTERFACE_SERIALIZABLE_H

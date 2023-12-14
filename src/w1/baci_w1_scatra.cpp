@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 
 DRT::ELEMENTS::Wall1ScatraType& DRT::ELEMENTS::Wall1ScatraType::Instance() { return instance_; }
@@ -172,3 +174,5 @@ bool DRT::ELEMENTS::Wall1_Scatra::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

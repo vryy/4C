@@ -12,6 +12,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
 
 CORE::COMM::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
@@ -333,3 +335,5 @@ void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* va
   else
     dserror("gp out of range in GetVarDegrad");
 }
+
+BACI_NAMESPACE_CLOSE

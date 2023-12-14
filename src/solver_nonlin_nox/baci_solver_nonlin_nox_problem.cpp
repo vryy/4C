@@ -38,6 +38,8 @@
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -55,7 +57,8 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
-    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
+    const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
     : isinit_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
       xVector_(nullptr),
@@ -67,8 +70,8 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::Initialize(
-    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
+void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient
@@ -83,7 +86,7 @@ void NOX::NLN::Problem::Initialize(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() const
+Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() const
 {
   CheckInit();
   if (not IsJac())
@@ -93,7 +96,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() 
 
   const NOX::NLN::LinSystem::LinearSystemType linsystype =
       NOX::NLN::AUX::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
-  Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->GetScalingObject();
+  Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->GetScalingObject();
 
   // build the linear system --> factory call
   return NOX::NLN::LinSystem::BuildLinearSystem(
@@ -102,14 +105,14 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys) const
+Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
+    const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const
 {
   CheckInit();
-  Teuchos::RCP<NOX::Abstract::Group> noxgrp = Teuchos::null;
+  Teuchos::RCP<::NOX::Abstract::Group> noxgrp = Teuchos::null;
 
   Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
-  const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq =
+  const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq =
       noxNlnGlobalData_->GetRequiredInterface();
   const std::string nlnSolver = params.get<std::string>("Nonlinear Solver", "");
   if (noxNlnGlobalData_->GetIsConstrained())
@@ -137,7 +140,7 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Problem::CreateOuterStatusTest(
-    Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) const
+    Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const
 {
   Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
 
@@ -150,7 +153,7 @@ void NOX::NLN::Problem::CreateOuterStatusTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
 {
   CreateOuterStatusTest(outerTests);
@@ -171,9 +174,9 @@ void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<NOX::StatusTest::Generic>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CheckFinalStatus(const NOX::StatusTest::StatusType& finalStatus) const
+void NOX::NLN::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const
 {
-  if (finalStatus != NOX::StatusTest::Converged)
+  if (finalStatus != ::NOX::StatusTest::Converged)
   {
     dserror("The nonlinear solver did not converge!");
   }
@@ -182,3 +185,5 @@ void NOX::NLN::Problem::CheckFinalStatus(const NOX::StatusTest::StatusType& fina
 }
 
 #endif  // SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
+
+BACI_NAMESPACE_CLOSE

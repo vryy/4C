@@ -22,6 +22,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
@@ -256,3 +258,5 @@ bool DRT::ELEMENTS::RedAcinus::isHigherOrderElement(const CORE::FE::CellType dis
   }
   return hoel;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Cardiovascular0DResultTest::Cardiovascular0DResultTest(
@@ -446,3 +448,5 @@ void Cardiovascular0DResultTest::TestSpecial(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

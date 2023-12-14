@@ -22,6 +22,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLaw::GrowthLaw() : params_(nullptr) {}
 
@@ -1461,3 +1463,5 @@ double MAT::GrowthLawConst::DensityScale(const double theta)
 }
 /*----------------------------------------------------------------------------*/
 double MAT::GrowthLawConst::DensityDerivScale(const double theta) { return 3.0 * theta * theta; }
+
+BACI_NAMESPACE_CLOSE

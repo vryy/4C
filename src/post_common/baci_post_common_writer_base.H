@@ -16,9 +16,8 @@
 #include <string>
 #include <vector>
 
-class PostField;
 class Epetra_MultiVector;
-
+class PostField;
 
 //! Special writer class that is used to invoke a particular method in the output writer
 //! e.g.

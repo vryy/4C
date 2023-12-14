@@ -25,6 +25,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
@@ -928,5 +930,7 @@ namespace DRT
 
   }  // namespace UTILS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_CREATEDIS_H

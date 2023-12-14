@@ -18,6 +18,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::EXPLICIT::AdamsBashforth2::AdamsBashforth2()
@@ -188,3 +190,5 @@ double STR::EXPLICIT::AdamsBashforth2::MethodLinErrCoeffDis() const
   const double dto = (*GlobalState().GetDeltaTime())[-1];
   return (2. * dt + 3. * dto) / (12. * dt);
 }
+
+BACI_NAMESPACE_CLOSE

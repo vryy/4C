@@ -20,6 +20,8 @@
 #include "baci_mat_particle_base.H"
 #include "baci_mat_particle_thermo.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -156,4 +158,6 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

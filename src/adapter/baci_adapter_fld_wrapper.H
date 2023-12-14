@@ -12,6 +12,8 @@
 
 #include "baci_adapter_fld_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// Just wrap, do nothing new, meant to be derived from
@@ -425,5 +427,7 @@ namespace ADAPTER
     Teuchos::RCP<Fluid> fluid_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

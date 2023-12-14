@@ -16,6 +16,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -72,5 +74,7 @@ namespace POROELASTSCATRA
     };
   }  // namespace UTILS
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

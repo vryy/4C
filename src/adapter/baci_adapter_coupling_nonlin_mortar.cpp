@@ -34,6 +34,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/14|
@@ -1083,3 +1085,5 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   // bye
   return;
 }
+
+BACI_NAMESPACE_CLOSE

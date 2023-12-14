@@ -17,6 +17,8 @@
 
 #include <Epetra_FECrsGraph.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
@@ -887,3 +889,5 @@ void DRT::Discretization::SetupGhosting(
   Redistribute(
       *noderowmap, *nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 
 #define USE_PHIN_FOR_VEL
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
@@ -1332,10 +1334,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   return;
 }
 
+BACI_NAMESPACE_CLOSE
 
 // template classes
 
 #include "baci_scatra_ele_calc_fwd.hpp"
+
+BACI_NAMESPACE_OPEN
+
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 1>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 2>;
@@ -1361,3 +1367,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet10, 3
 // template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::wedge6,3>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs27,3>;
+
+BACI_NAMESPACE_CLOSE

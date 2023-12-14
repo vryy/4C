@@ -18,6 +18,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FBIConstraintenforcer;
@@ -51,5 +54,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

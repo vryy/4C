@@ -20,6 +20,8 @@
 #include "baci_mixture_prestress_strategy_iterative.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 // Prestress stragegy factory generates the prestress strategy for a specific material id
 MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)
 {
@@ -64,3 +66,4 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
 
   return nullptr;
 }
+BACI_NAMESPACE_CLOSE

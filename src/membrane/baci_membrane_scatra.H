@@ -14,6 +14,7 @@
 #include "baci_membrane.H"
 #include "baci_membrane_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -236,5 +237,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

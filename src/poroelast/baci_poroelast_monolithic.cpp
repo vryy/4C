@@ -39,6 +39,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 
 
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
@@ -1932,3 +1934,5 @@ void POROELAST::Monolithic::ReadRestart(const int step)
   // apply current velocity of fluid to ContactMangager if contact problem
   if (no_penetration_) SetPoroContactStates();
 }
+
+BACI_NAMESPACE_CLOSE

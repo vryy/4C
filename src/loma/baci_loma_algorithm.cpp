@@ -24,6 +24,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_timint_loma.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
@@ -889,3 +891,5 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   ScaTraField()->SetTimeStep(FluidField()->Time(), FluidField()->Step());
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -350,3 +352,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType:
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

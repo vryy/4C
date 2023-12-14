@@ -19,6 +19,8 @@
 #include <sstream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   // forward declarations
@@ -803,5 +805,7 @@ namespace CORE::DRT::UTILS
 
 
 }  // namespace CORE::DRT::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FEM_GENERAL_UTILS_INTEGRATION_H

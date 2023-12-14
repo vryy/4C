@@ -23,6 +23,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*======================================================================*/
@@ -37,7 +39,7 @@ DRT::INPUT::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c)
+void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<BACI::INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -180,3 +182,5 @@ void DRT::INPUT::AppendMaterialDefinition(
   else
     dserror("Trouble in determining coincidences of material definitions");
 }
+
+BACI_NAMESPACE_CLOSE

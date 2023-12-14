@@ -25,6 +25,8 @@
 #include <set>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace NURBS
@@ -182,5 +184,7 @@ namespace DRT
 
   }  // namespace INPUT
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

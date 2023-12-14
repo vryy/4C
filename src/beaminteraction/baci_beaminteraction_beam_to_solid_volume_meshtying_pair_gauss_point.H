@@ -15,6 +15,8 @@ projection.
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declarations.
 namespace INPAR
@@ -87,7 +89,7 @@ namespace BEAMINTERACTION
      *
      * Rotational coupling contributions will be added in this method.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
@@ -113,5 +115,7 @@ namespace BEAMINTERACTION
         CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

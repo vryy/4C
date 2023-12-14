@@ -17,6 +17,8 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_MultiVector.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /*! \brief General layout of the MueLu preconditioner working with sparse matrices
@@ -277,5 +279,7 @@ namespace CORE::LINEAR_SOLVER
 
   }  // namespace MUELU::UTILS
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

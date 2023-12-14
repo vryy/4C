@@ -15,6 +15,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -62,3 +64,5 @@ void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   BoolParameter("KEEP_EXTENDEDGHOSTING", "Yes",
       "If chosen, extended ghosting is kept for simulation", &volmortar);
 }
+
+BACI_NAMESPACE_CLOSE

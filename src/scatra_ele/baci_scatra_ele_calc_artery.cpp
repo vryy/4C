@@ -15,6 +15,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -281,3 +283,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;s
+
+BACI_NAMESPACE_CLOSE

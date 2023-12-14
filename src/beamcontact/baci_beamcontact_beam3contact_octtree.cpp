@@ -37,6 +37,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // #define OCTREEDEBUG
 
 /*----------------------------------------------------------------------*
@@ -1991,3 +1993,5 @@ double Beam3ContactOctTree::GetBoundingBoxExtrusionValue()
   if (extrusionvalue < 0.0) dserror("Check bounding box extrusion value %d < 0.0!", extrusionvalue);
   return extrusionvalue;
 }
+
+BACI_NAMESPACE_CLOSE

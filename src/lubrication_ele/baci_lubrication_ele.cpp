@@ -16,6 +16,8 @@
 #include "baci_fluid_ele_nullspace.H"
 #include "baci_io_linedefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
 DRT::ELEMENTS::LubricationType& DRT::ELEMENTS::LubricationType::Instance() { return instance_; }
@@ -376,3 +378,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Surf
 {
   dserror("Surfaces of LubricationBoundary not implemented");
 }
+
+BACI_NAMESPACE_CLOSE

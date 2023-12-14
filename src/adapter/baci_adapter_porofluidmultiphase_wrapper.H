@@ -13,6 +13,13 @@
 
 #include <Teuchos_RCP.hpp>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -23,11 +30,6 @@ namespace DRT
 namespace POROFLUIDMULTIPHASE
 {
   class TimIntImpl;
-}
-
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 namespace ADAPTER
@@ -172,5 +174,7 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H

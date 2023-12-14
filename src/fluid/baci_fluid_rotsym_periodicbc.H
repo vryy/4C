@@ -19,6 +19,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /// numdofpernode = number of dofs per node for fluid problem
@@ -253,5 +255,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ROTSYM_PERIODICBC_H

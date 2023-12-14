@@ -217,6 +217,8 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
+  using namespace BACI;
+
   Teuchos::RCP<CORE::COMM::Communicators> communicators =
       CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));
   DRT::Problem::Instance()->SetCommunicators(communicators);
@@ -266,7 +268,7 @@ int main(int argc, char *argv[])
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {

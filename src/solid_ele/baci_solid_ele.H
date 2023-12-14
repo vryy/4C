@@ -21,6 +21,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class So3Material;
@@ -174,5 +176,7 @@ namespace DRT::ELEMENTS
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_H

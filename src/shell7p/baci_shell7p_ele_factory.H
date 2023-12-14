@@ -11,6 +11,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   // forward declaration
@@ -33,5 +35,7 @@ namespace DRT::ELEMENTS
         const std::set<INPAR::STR::EleTech>& eletech);
   };  // class Shell7pFactory
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

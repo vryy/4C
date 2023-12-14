@@ -15,10 +15,12 @@
 #include "baci_discretization_geometry_geo_utils.H"
 #include "baci_discretization_geometry_intersection_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
-  std::map<int, CORE::LINALG::Matrix<3, 2>> getCurrentXAABBs(const ::DRT::Discretization& dis,
+  std::map<int, CORE::LINALG::Matrix<3, 2>> getCurrentXAABBs(const BACI::DRT::Discretization& dis,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -58,10 +60,12 @@ namespace CORE::GEO
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const ::DRT::Element* element,
+  void checkGeoType(const BACI::DRT::Element* element,
       const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
 
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_H

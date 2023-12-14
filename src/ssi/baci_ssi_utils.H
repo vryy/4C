@@ -18,6 +18,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::ADAPTER
 {
   class Coupling;
@@ -518,5 +520,7 @@ namespace SSI
 
   }  // namespace UTILS
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_UTILS_H

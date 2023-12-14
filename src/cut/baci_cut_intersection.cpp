@@ -16,6 +16,8 @@
 #include "baci_cut_utils.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 // whether to perform triangulation during intersection
 #define TRIANGULATED_INTERSECTION true
 
@@ -1381,7 +1383,7 @@ Teuchos::RCP<CORE::GEO::CUT::IntersectionBase>
 CORE::GEO::CUT::IntersectionFactory::CreateIntersection(
     CORE::FE::CellType edge_type, CORE::FE::CellType side_type) const
 {
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   switch (edge_type)
   {
     case CORE::FE::CellType::line2:
@@ -1513,3 +1515,5 @@ template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
 // template class
 // CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::tri3>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2, CORE::FE::CellType::tri3>;
+
+BACI_NAMESPACE_CLOSE

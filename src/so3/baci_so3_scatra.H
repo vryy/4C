@@ -16,6 +16,8 @@
 #include "baci_inpar_scatra.H"
 #include "baci_so3_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -367,5 +369,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SCATRA_H

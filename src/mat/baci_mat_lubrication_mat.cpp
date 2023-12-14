@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -162,3 +164,5 @@ double MAT::LubricationMat::ComputeViscosityDeriv(const double press, const doub
 
   return visc_dp;
 }
+
+BACI_NAMESPACE_CLOSE

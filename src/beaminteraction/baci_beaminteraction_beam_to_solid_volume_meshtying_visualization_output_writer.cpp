@@ -29,6 +29,8 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -277,3 +279,5 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Check
 {
   if (!isinit_) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

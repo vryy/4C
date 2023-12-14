@@ -8,8 +8,12 @@
 #ifndef BACI_TSI_DYN_H
 #define BACI_TSI_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 /* entry point for the solution of thermo-structure-interaction problems */
 void tsi_dyn_drt();
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // TSI_DYN_H

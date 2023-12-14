@@ -34,6 +34,8 @@ overhead as possible from the time integration method.
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*----------------------------------------------------------------------
@@ -1606,3 +1608,5 @@ namespace FLD
 
 
 }  // end namespace FLD
+
+BACI_NAMESPACE_CLOSE

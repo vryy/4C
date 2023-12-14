@@ -11,6 +11,8 @@ Elasthyper-Toolbox.
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->GetDouble("C1")), c2_(matdata->GetDouble("C2"))
 {
@@ -56,3 +58,4 @@ void MAT::ELASTIC::IsoTestMaterial::AddDerivativesModified(CORE::LINALG::Matrix<
   ddPmodII(1) += c2;
   ddPmodII(5) += d;
 }
+BACI_NAMESPACE_CLOSE

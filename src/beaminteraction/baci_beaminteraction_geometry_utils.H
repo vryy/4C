@@ -14,6 +14,8 @@
 #include "baci_lib_element.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -183,5 +185,7 @@ namespace BEAMINTERACTION
 
   }  // namespace GEO
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

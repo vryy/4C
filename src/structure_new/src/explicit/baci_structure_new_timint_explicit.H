@@ -18,6 +18,8 @@
 #include "baci_structure_new_nln_solver_generic.H"
 #include "baci_structure_new_timint_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace TIMINT
@@ -122,5 +124,7 @@ namespace STR
     };
   }  // namespace TIMINT
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_EXPLICIT_H

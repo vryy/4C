@@ -26,6 +26,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -1056,5 +1058,7 @@ namespace CONTACT
 
   };  // class Beam3contact
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMCONTACT_BEAM3CONTACT_H

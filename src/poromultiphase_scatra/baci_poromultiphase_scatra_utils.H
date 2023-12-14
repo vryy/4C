@@ -17,6 +17,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -120,5 +122,7 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_UTILS_H

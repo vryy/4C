@@ -19,6 +19,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
@@ -116,3 +118,5 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
 
   timederivativefac_ = parameters.get<double>("time derivative factor", -1.0);
 }
+
+BACI_NAMESPACE_CLOSE

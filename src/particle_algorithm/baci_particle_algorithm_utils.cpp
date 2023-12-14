@@ -12,6 +12,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -75,3 +77,5 @@ template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
 template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<double>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, double>& typetovalmap);
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS::SHELL
 {
   /*!
@@ -930,7 +932,7 @@ namespace DRT::ELEMENTS::SHELL
     }
     // map gl strains from curvilinear system to global cartesian system
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> gl_strain_tensor_cartesian(true);
-    ::UTILS::TENSOR::InverseTensorRotation<DETAIL::num_dim>(
+    BACI::UTILS::TENSOR::InverseTensorRotation<DETAIL::num_dim>(
         g_reference.kontravariant_, gl_strain_tensor, gl_strain_tensor_cartesian);
     // GL strain vector glstrain for solid material E={E11,E22,E33,2*E12,2*E23,2*E31}
     CORE::LINALG::VOIGT::Strains::MatrixToVector(gl_strain_tensor_cartesian, strains.gl_strain_);
@@ -961,7 +963,7 @@ namespace DRT::ELEMENTS::SHELL
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> stress_tensor(true);
     CORE::LINALG::VOIGT::Stresses::VectorToMatrix(stress.pk2_, stress_tensor);
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
-    ::UTILS::TENSOR::TensorRotation(g_reference.kontravariant_, stress_tensor, tmp);
+    BACI::UTILS::TENSOR::TensorRotation(g_reference.kontravariant_, stress_tensor, tmp);
 
     // re-arrange indices for shell element formulation:
     // PK Stress=[S_{11},S_{12}, S_{13}, S_{22}, S_{23}, S_{33}]^T
@@ -977,7 +979,7 @@ namespace DRT::ELEMENTS::SHELL
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> Cmat(true);
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> g_metrics_trans(true);
     g_metrics_trans.UpdateT(g_reference.kontravariant_);
-    ::UTILS::TENSOR::InverseFourthTensorRotation(g_metrics_trans, stress.cmat_, Cmat);
+    BACI::UTILS::TENSOR::InverseFourthTensorRotation(g_metrics_trans, stress.cmat_, Cmat);
 
     // re-arrange indices for shell element formulation
     static const std::vector<int> voigt_inconsistent_ = {0, 3, 5, 1, 4, 2};
@@ -1627,5 +1629,7 @@ namespace DRT::ELEMENTS::SHELL
   }
 
 }  // namespace DRT::ELEMENTS::SHELL
+
+BACI_NAMESPACE_CLOSE
 
 #endif

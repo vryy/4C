@@ -36,6 +36,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 // #define SCATRABLOCKMATRIXMERGE
 
 
@@ -1000,3 +1002,5 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

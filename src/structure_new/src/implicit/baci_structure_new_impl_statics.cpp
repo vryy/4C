@@ -25,6 +25,8 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::Statics::Statics()
@@ -137,7 +139,7 @@ void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::Statics::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type) const
+    const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
 
@@ -148,13 +150,13 @@ double STR::IMPLICIT::Statics::CalcRefNormForce(
   const Teuchos::RCP<Epetra_Vector> freactnp =
       Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFreactNp());
 
-  // switch from Epetra_Vector to NOX::Epetra::Vector (view but read-only)
-  Teuchos::RCP<const NOX::Epetra::Vector> fintnp_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(fintnp, NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> fextnp_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(fextnp, NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> freactnp_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(freactnp, NOX::Epetra::Vector::CreateView));
+  // switch from Epetra_Vector to ::NOX::Epetra::Vector (view but read-only)
+  Teuchos::RCP<const ::NOX::Epetra::Vector> fintnp_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(fintnp, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> fextnp_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(fextnp, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> freactnp_nox_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(freactnp, ::NOX::Epetra::Vector::CreateView));
 
   // norm of the internal forces
   double fintnorm = fintnp_nox_ptr->norm(type);
@@ -337,3 +339,5 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
 
   return total;
 }
+
+BACI_NAMESPACE_CLOSE

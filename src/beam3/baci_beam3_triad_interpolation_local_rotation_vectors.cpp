@@ -19,6 +19,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
@@ -650,3 +652,5 @@ template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, Sacado:
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, Sacado::Fad::DFad<double>>;
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, Sacado::Fad::DFad<double>>;
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, Sacado::Fad::DFad<double>>;
+
+BACI_NAMESPACE_CLOSE

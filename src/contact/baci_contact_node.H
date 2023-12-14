@@ -15,6 +15,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   // forward declaration
@@ -1328,5 +1330,7 @@ namespace CONTACT
 
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_CONTACT_NODE_H

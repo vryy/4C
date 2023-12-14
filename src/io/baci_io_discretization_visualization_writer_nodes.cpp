@@ -18,6 +18,8 @@
 #include "baci_lib_node.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace IO
 {
@@ -133,3 +135,4 @@ namespace IO
     visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
 }  // namespace IO
+BACI_NAMESPACE_CLOSE

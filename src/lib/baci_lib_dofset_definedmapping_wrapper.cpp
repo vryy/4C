@@ -19,6 +19,8 @@
 #include "baci_lib_dofset_base.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -218,3 +220,5 @@ const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) 
   // get the node from the source discretization
   return sourcedis_->gNode(sourcegid);
 }
+
+BACI_NAMESPACE_CLOSE

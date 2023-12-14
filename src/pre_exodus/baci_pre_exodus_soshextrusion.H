@@ -22,7 +22,6 @@ Here everything related with solid-shell body extrusion
 #include <vector>
 
 
-
 namespace EXODUS
 {
   Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid,

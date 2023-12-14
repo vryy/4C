@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_w1_poro_p1.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                                      |
  *----------------------------------------------------------------------*/
@@ -252,3 +254,5 @@ int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

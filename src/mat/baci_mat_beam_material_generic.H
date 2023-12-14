@@ -18,6 +18,8 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 namespace DRT
@@ -78,5 +80,7 @@ namespace MAT
     virtual void Reset() = 0;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

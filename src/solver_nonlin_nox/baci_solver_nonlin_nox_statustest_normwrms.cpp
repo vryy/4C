@@ -20,6 +20,7 @@
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -39,8 +40,8 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
       computedStepSize_(1.0),
       beta_(beta),
       achievedTol_(0.0),
-      gStatus_(NOX::StatusTest::Unconverged),
-      status_(std::vector<NOX::StatusTest::StatusType>(nChecks_, gStatus_)),
+      gStatus_(::NOX::StatusTest::Unconverged),
+      status_(std::vector<::NOX::StatusTest::StatusType>(nChecks_, gStatus_)),
       printCriteria2Info_(false),
       printCriteria3Info_(false),
       disable_implicit_weighting_(disable_implicit_weighting)
@@ -50,21 +51,21 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
-    const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType)
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
+    const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
-  if (checkType == NOX::StatusTest::None)
+  if (checkType == ::NOX::StatusTest::None)
   {
-    gStatus_ = NOX::StatusTest::Unevaluated;
+    gStatus_ = ::NOX::StatusTest::Unevaluated;
     status_.assign(nChecks_, gStatus_);
     normWRMS_ = Teuchos::rcp(new std::vector<double>(nChecks_, 1.0e+12));
     return gStatus_;
   }
 
-  Teuchos::RCP<const Abstract::Group> soln = Teuchos::rcpFromRef(problem.getSolutionGroup());
+  Teuchos::RCP<const ::NOX::Abstract::Group> soln = Teuchos::rcpFromRef(problem.getSolutionGroup());
   // all entries of the status_ vector are initialized to a unconverged status
-  gStatus_ = NOX::StatusTest::Unconverged;
-  status_ = std::vector<NOX::StatusTest::StatusType>(nChecks_, gStatus_);
+  gStatus_ = ::NOX::StatusTest::Unconverged;
+  status_ = std::vector<::NOX::StatusTest::StatusType>(nChecks_, gStatus_);
 
   // On the first iteration, the old and current solution are the same so
   // we should return the test as unconverged until there is a valid
@@ -84,11 +85,11 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
       Teuchos::rcp_dynamic_cast<const NOX::NLN::Group>(soln);
 
   // all entries of the criteria vector are initialized to Converged status
-  std::vector<NOX::StatusTest::StatusType> criteria =
-      std::vector<NOX::StatusTest::StatusType>(3, NOX::StatusTest::Converged);
+  std::vector<::NOX::StatusTest::StatusType> criteria =
+      std::vector<::NOX::StatusTest::StatusType>(3, ::NOX::StatusTest::Converged);
 
   // get the solution vector of the last step
-  const NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
+  const ::NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
 
   // get the root mean square from the underlying interface classes
   normWRMS_ =
@@ -100,9 +101,9 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
     // do the weighting by the given factor
     normWRMS_->at(i) *= factor_.at(i);
     if (normWRMS_->at(i) <= tol_.at(i))
-      status_.at(i) = NOX::StatusTest::Converged;
+      status_.at(i) = ::NOX::StatusTest::Converged;
     else
-      criteria[0] = NOX::StatusTest::Unconverged;
+      criteria[0] = ::NOX::StatusTest::Unconverged;
   }
 
   // ---------------------------------------------------------
@@ -110,20 +111,20 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   // ---------------------------------------------------------
   // Determine if the Generic solver is a LineSearchBased solver
   // If it is not then return a "Converged" status
-  const NOX::Solver::Generic* test = nullptr;
-  test = dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem);
+  const ::NOX::Solver::Generic* test = nullptr;
+  test = dynamic_cast<const ::NOX::Solver::LineSearchBased*>(&problem);
   if (test == nullptr)
-    criteria[1] = NOX::StatusTest::Converged;
+    criteria[1] = ::NOX::StatusTest::Converged;
   else
   {
     printCriteria2Info_ = true;
     computedStepSize_ =
-        (dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem))->getStepSize();
+        (dynamic_cast<const ::NOX::Solver::LineSearchBased*>(&problem))->getStepSize();
 
     if (computedStepSize_ < alpha_)
     {
-      status_.assign(nChecks_, NOX::StatusTest::Unconverged);
-      criteria[1] = NOX::StatusTest::Unconverged;
+      status_.assign(nChecks_, ::NOX::StatusTest::Unconverged);
+      criteria[1] = ::NOX::StatusTest::Unconverged;
     }
   }
 
@@ -157,17 +158,17 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
                        .get("Achieved Tolerance", -1.0);
     if (achievedTol_ > beta_)
     {
-      criteria[2] = NOX::StatusTest::Unconverged;
-      status_.assign(nChecks_, NOX::StatusTest::Unconverged);
+      criteria[2] = ::NOX::StatusTest::Unconverged;
+      status_.assign(nChecks_, ::NOX::StatusTest::Unconverged);
     }
   }
 
   // Determine global status of test
-  gStatus_ = ((criteria[0] == NOX::StatusTest::Converged) and
-                 (criteria[1] == NOX::StatusTest::Converged) and
-                 (criteria[2] == NOX::StatusTest::Converged))
-                 ? NOX::StatusTest::Converged
-                 : NOX::StatusTest::Unconverged;
+  gStatus_ = ((criteria[0] == ::NOX::StatusTest::Converged) and
+                 (criteria[1] == ::NOX::StatusTest::Converged) and
+                 (criteria[2] == ::NOX::StatusTest::Converged))
+                 ? ::NOX::StatusTest::Converged
+                 : ::NOX::StatusTest::Unconverged;
 
   return gStatus_;
 }
@@ -207,7 +208,7 @@ double NOX::NLN::StatusTest::NormWRMS::GetRelativeTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const { return gStatus_; }
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const { return gStatus_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -221,25 +222,27 @@ std::ostream& NOX::NLN::StatusTest::NormWRMS::print(std::ostream& stream, int in
     stream << indent_string;
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
-    stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3) << " < "
-           << NOX::Utils::sciformat(tol_[i], 3);
+    stream << "WRMS-Norm = " << ::NOX::Utils::sciformat((*normWRMS_)[i], 3) << " < "
+           << ::NOX::Utils::sciformat(tol_[i], 3);
     stream << std::endl;
   }
   if (printCriteria2Info_)
   {
     stream << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3)
-           << " >= " << NOX::Utils::sciformat(alpha_, 3) << ")";
+    stream << "(Min Step Size:  " << ::NOX::Utils::sciformat(computedStepSize_, 3)
+           << " >= " << ::NOX::Utils::sciformat(alpha_, 3) << ")";
     stream << std::endl;
   }
   if (printCriteria3Info_)
   {
     stream << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3) << " < "
-           << NOX::Utils::sciformat(beta_, 3) << ")";
+    stream << "(Max Lin Solv Tol:  " << ::NOX::Utils::sciformat(achievedTol_, 3) << " < "
+           << ::NOX::Utils::sciformat(beta_, 3) << ")";
     stream << std::endl;
   }
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

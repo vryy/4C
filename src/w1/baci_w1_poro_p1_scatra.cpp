@@ -14,6 +14,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_w1_poro_p1_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
@@ -211,3 +213,5 @@ DRT::ElementType& DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::ElementType() cons
 template class DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_binstrategy_utils.H"
 #include "baci_io_visualization_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -120,7 +122,7 @@ namespace BEAMINTERACTION
       void PostReadRestart() override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override;
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
       void InitSubmodelDependencies(
@@ -290,5 +292,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -27,6 +27,8 @@
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
@@ -922,3 +924,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Surfac
 {
   dserror("Surfaces of TransportBoundary not implemented");
 }
+
+BACI_NAMESPACE_CLOSE

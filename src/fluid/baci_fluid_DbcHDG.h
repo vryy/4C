@@ -14,6 +14,8 @@
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::UTILS
 {
   class Dbc;
@@ -73,4 +75,7 @@ namespace FLD
   }     // namespace UTILS
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // BACI_FLUID_DBCHDG_H

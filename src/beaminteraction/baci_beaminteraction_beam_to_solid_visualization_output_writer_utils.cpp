@@ -18,13 +18,15 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
  */
 void BEAMINTERACTION::AddBeamInteractionNodalForces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-    const Teuchos::RCP<const ::DRT::Discretization>& discret_ptr,
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
     const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
 {
@@ -140,7 +142,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
 /**
  *
  */
-void BEAMINTERACTION::GetGlobalCouplingForceResultants(const ::DRT::Discretization& discret,
+void BEAMINTERACTION::GetGlobalCouplingForceResultants(const BACI::DRT::Discretization& discret,
     const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
     CORE::LINALG::Matrix<3, 2, double>& beam_resultant,
     CORE::LINALG::Matrix<3, 2, double>& solid_resultant)
@@ -200,3 +202,5 @@ void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& 
   node_moment.CrossProduct(node_pos, node_force);
   for (unsigned int dim = 0; dim < 3; ++dim) resultant(dim, 1) += node_moment(dim);
 }
+
+BACI_NAMESPACE_CLOSE

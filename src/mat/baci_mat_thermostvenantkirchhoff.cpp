@@ -19,6 +19,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_stvenantkirchhoff.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -530,3 +532,5 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(CORE::LINALG::Matrix<6, 
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

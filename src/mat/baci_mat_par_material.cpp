@@ -14,6 +14,8 @@
 /* headers */
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::PAR::ParMaterialType MAT::PAR::ParMaterialType::instance_;
 
@@ -121,3 +123,5 @@ void MAT::PAR::Material::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

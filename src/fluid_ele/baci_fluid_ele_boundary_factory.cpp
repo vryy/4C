@@ -16,6 +16,8 @@
 #include "baci_fluid_ele_boundary_interface.H"
 #include "baci_fluid_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
@@ -94,3 +96,5 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

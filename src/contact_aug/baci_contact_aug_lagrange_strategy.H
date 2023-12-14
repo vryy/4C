@@ -13,6 +13,8 @@
 
 #include "baci_contact_aug_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -24,7 +26,7 @@ namespace CONTACT
        *  strategy.
        *
        *  \author hiermeier \date 03/17 */
-      class Strategy : public ::CONTACT::AUG::Strategy
+      class Strategy : public CONTACT::AUG::Strategy
       {
        public:
         /// constructor
@@ -55,5 +57,7 @@ namespace CONTACT
   }       // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_LAGRANGE_STRATEGY_H

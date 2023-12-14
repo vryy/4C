@@ -10,6 +10,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::IsoYeoh::IsoYeoh(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -47,3 +49,4 @@ void MAT::ELASTIC::IsoYeoh::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& d
   dPmodI(0) += c1 + 2. * c2 * (modinv(0) - 3.) + 3. * c3 * (modinv(0) - 3.) * (modinv(0) - 3.);
   ddPmodII(0) += 2. * c2 + 6. * c3 * (modinv(0) - 3.);
 }
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@
 
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -1492,5 +1494,7 @@ might become invalid after a redistribution of the discretization.
 std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_ELEMENT_H

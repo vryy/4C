@@ -24,6 +24,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::OneStepTheta::OneStepTheta()
@@ -303,7 +305,7 @@ void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::OneStepTheta::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type) const
+    const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   dserror("Not yet implemented! (see the Statics integration for an example)");
   return -1.0;
@@ -445,3 +447,5 @@ void STR::IMPLICIT::OneStepTheta::ResetEvalParams()
   EvalData().SetTimIntFactorDisp(timeintfac_dis);
   EvalData().SetTimIntFactorVel(timeintfac_vel);
 }
+
+BACI_NAMESPACE_CLOSE

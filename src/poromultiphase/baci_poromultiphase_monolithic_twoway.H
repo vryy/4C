@@ -16,6 +16,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -334,5 +336,7 @@ namespace POROMULTIPHASE
 
 
 }  // namespace POROMULTIPHASE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_MONOLITHIC_TWOWAY_H

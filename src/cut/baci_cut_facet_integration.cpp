@@ -23,6 +23,7 @@ equations
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------*
       compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
@@ -1247,3 +1248,5 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

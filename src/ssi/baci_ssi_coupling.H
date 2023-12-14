@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ADAPTER
 {
@@ -294,7 +296,7 @@ namespace SSI
 
    private:
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<::CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
 
    private:
     //! flag indicating if class is setup
@@ -400,5 +402,7 @@ namespace SSI
   };
 }  // namespace SSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_COUPLING_H

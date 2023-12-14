@@ -20,6 +20,9 @@
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
 #include "baci_cut_clnwrapper.H"
 #endif
+
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::NewPoint(
@@ -595,7 +598,7 @@ Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::CreatePoint(
     unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   const PointFactory factory;
-  const int probdim = ::DRT::Problem::Instance()->NDim();
+  const int probdim = BACI::DRT::Problem::Instance()->NDim();
   return factory.CreatePoint(pid, x, cut_edge, cut_side, tolerance, probdim);
 }
 
@@ -1108,3 +1111,5 @@ void CORE::GEO::CUT::ConcretePoint<probDim>::MovePoint(const double* new_coord)
 #endif
   std::copy(new_coord, new_coord + probDim, this->x_);
 }
+
+BACI_NAMESPACE_CLOSE

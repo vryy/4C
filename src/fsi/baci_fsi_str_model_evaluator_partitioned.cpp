@@ -24,6 +24,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
@@ -119,7 +121,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
       const_cast<STR::NLN::SOLVER::Generic&>(*(ti_impl->GetNlnSolverPtr()));
 
   // get the solution group
-  NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
+  ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
 
@@ -127,7 +129,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetNoxParams();
 
   // create new state vector
-  Teuchos::RCP<NOX::Epetra::Vector> x_ptr =
+  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr =
       GState().CreateGlobalVector(TIMINT::BaseDataGlobalState::VecInitType::last_time_step,
           ti_impl->ImplIntPtr()->ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
@@ -142,8 +144,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // overwrite F with boundary force
   interface_force_np_ptr_->Scale(-(ti_impl->TimIntParam()));
   ti_impl->DBCPtr()->ApplyDirichletToRhs(interface_force_np_ptr_);
-  Teuchos::RCP<NOX::Epetra::Vector> nox_force =
-      Teuchos::rcp(new NOX::Epetra::Vector(interface_force_np_ptr_));
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(interface_force_np_ptr_));
   grp_ptr->setF(nox_force);
 
   // ---------------------------------------------------------------------------
@@ -171,8 +173,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   grp_ptr->computeNewton(p);
 
   // get the increment from the previous solution step
-  const NOX::Epetra::Vector& increment =
-      dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getNewton());
+  const ::NOX::Epetra::Vector& increment =
+      dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getNewton());
 
   // return the increment
   return Teuchos::rcpFromRef(increment.getEpetraVector());
@@ -184,3 +186,5 @@ const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput(
   CheckInit();
   return GInOutput();
 }
+
+BACI_NAMESPACE_CLOSE

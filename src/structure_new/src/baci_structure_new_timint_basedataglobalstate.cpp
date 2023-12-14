@@ -33,6 +33,8 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -130,9 +132,10 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
   // control parameters
   // --------------------------------------
   {
-    timen_ =
-        Teuchos::rcp(new ::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
-    dt_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+    timen_ = Teuchos::rcp(
+        new BACI::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
+    dt_ = Teuchos::rcp(
+        new BACI::TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
 
     // initialize target time to initial time plus step size
     timenp_ = (*timen_)[0] + (*dt_)[0];
@@ -164,11 +167,11 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new BACI::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
@@ -245,7 +248,7 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector() const
+Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector() const
 {
   return CreateGlobalVector(VecInitType::zero, Teuchos::null);
 }
@@ -579,7 +582,7 @@ const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockEx
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector(
+Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector(
     const enum VecInitType& vecinittype,
     const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
@@ -634,7 +637,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
   }  // end of the switch-case statement
 
   // wrap and return
-  return Teuchos::rcp(new NOX::Epetra::Vector(xvec_ptr, NOX::Epetra::Vector::CreateView));
+  return Teuchos::rcp(new ::NOX::Epetra::Vector(xvec_ptr, ::NOX::Epetra::Vector::CreateView));
 }
 
 /*----------------------------------------------------------------------------*
@@ -1180,7 +1183,7 @@ void STR::TIMINT::BaseDataGlobalState::SetNlnIterationNumber(const int nln_iter)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::RotVecUpdater(
-    const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
     : gstate_ptr_(gstate_ptr)
 {
   // empty
@@ -1193,7 +1196,7 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
     const NOX::NLN::Group& curr_grp)
 {
   const Epetra_Vector& xold =
-      dynamic_cast<const NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+      dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
 
   // cast the const away so that the new x vector can be set after the update
   NOX::NLN::Group& curr_grp_mutable = const_cast<NOX::NLN::Group&>(curr_grp);
@@ -1243,3 +1246,5 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
    * this preComputeX operator call */
   curr_grp_mutable.setSkipUpdateX(true);
 }
+
+BACI_NAMESPACE_CLOSE

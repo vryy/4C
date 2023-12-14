@@ -23,6 +23,12 @@ namespace NOX
   {
     class Group;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace LineSearch
@@ -44,12 +50,12 @@ namespace NOX
           /*!
             The test can (and should, if possible) be skipped if
             checkType is NOX::StatusType::None. If the test is skipped, then
-            the status should be set to NOX::StatusTest::Unevaluated.
+            the status should be set to ::NOX::StatusTest::Unevaluated.
           */
           NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
               const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType) override;
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
           NOX::NLN::INNER::StatusTest::StatusType GetStatus() const override;
@@ -59,7 +65,7 @@ namespace NOX
 
          protected:
           bool Setup(
-              const NOX::NLN::LineSearch::Generic& linesearch, const NOX::Abstract::Group& grp);
+              const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp);
 
          private:
           void throwError(const std::string& functionName, const std::string& errorMsg) const;
@@ -98,5 +104,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_ARMIJO_H

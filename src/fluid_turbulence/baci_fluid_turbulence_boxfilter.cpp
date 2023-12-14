@@ -19,6 +19,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
@@ -1543,3 +1545,5 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

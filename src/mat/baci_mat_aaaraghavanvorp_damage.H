@@ -25,6 +25,8 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -210,5 +212,7 @@ namespace MAT
     bool isinit_;  ///< indicates if material is initialized by calling the #Initialized routine
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_AAARAGHAVANVORP_DAMAGE_H

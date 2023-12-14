@@ -26,6 +26,8 @@ namespace
    public:
     Beam3r()
     {
+      using namespace BACI;
+
       testdis_ =
           Teuchos::rcp(new DRT::Discretization("Beam3r", Teuchos::rcp(new Epetra_SerialComm)));
 
@@ -61,9 +63,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<BACI::DRT::Discretization> testdis_;
     //! the beam3r element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::Beam3r> testele_;
+    Teuchos::RCP<BACI::DRT::ELEMENTS::Beam3r> testele_;
   };
 
   /**

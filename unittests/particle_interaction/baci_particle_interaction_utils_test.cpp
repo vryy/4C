@@ -13,6 +13,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(PowHelperTest, Pow)
   {
     EXPECT_NEAR(PARTICLEINTERACTION::UTILS::Pow<2>(1.34), 1.7956, 1.0e-14);

@@ -18,6 +18,8 @@
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                      h.Willmann    2015|
  *----------------------------------------------------------------------*/
@@ -186,3 +188,5 @@ void CONTACT::PoroMtLagrangeStrategy::RecoverCouplingMatrixPartofLMP(
   z_->Update(1.0, *zfluid, 1.0);  // Add FluidCoupling Contribution to LM!
   return;
 }
+
+BACI_NAMESPACE_CLOSE

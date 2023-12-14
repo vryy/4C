@@ -21,6 +21,12 @@
 namespace NOX
 {
   class Utils;
+}
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -31,19 +37,19 @@ namespace NOX
         {
          public:
           //! Constructor. Optional argument is the error stream for output.
-          Combo(NOX::StatusTest::Combo::ComboType t, const NOX::Utils* u = nullptr);
+          Combo(::NOX::StatusTest::Combo::ComboType t, const ::NOX::Utils* u = nullptr);
 
           //! Constructor with a single test.
-          Combo(NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
-              const NOX::Utils* u = nullptr);
+          Combo(::NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
+              const ::NOX::Utils* u = nullptr);
 
           //! Constructor with two tests.
-          Combo(NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
-              const Teuchos::RCP<Generic>& b, const NOX::Utils* u = nullptr);
+          Combo(::NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
+              const Teuchos::RCP<Generic>& b, const ::NOX::Utils* u = nullptr);
 
           StatusType CheckStatus(const Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType) override;
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent inner checkStatus call
           StatusType GetStatus() const override;
@@ -64,26 +70,26 @@ namespace NOX
           bool isSafe(Generic& a);
 
           /// OR-combination
-          void orOp(const Interface::Required& interface, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType);
+          void orOp(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+              const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType);
 
           /// AND-combination
-          void andOp(const Interface::Required& interface, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType);
+          void andOp(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+              const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType);
 
          protected:
           //! Vector of generic status tests
           std::vector<Teuchos::RCP<Generic>> tests_;
 
           //! Ostream used to print errors
-          NOX::Utils utils_;
+          ::NOX::Utils utils_;
 
           /// inner test status
           NOX::NLN::INNER::StatusTest::StatusType status_ =
               NOX::NLN::INNER::StatusTest::status_unevaluated;
 
           /// specified combo type
-          NOX::StatusTest::Combo::ComboType type_;
+          ::NOX::StatusTest::Combo::ComboType type_;
 
           /// set of inner status test results which indicate an unconverged test
           static const std::set<StatusType> unconverged_;
@@ -95,5 +101,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_COMBO_H

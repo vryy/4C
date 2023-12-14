@@ -20,6 +20,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
@@ -338,3 +340,5 @@ void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplierAfterTimeStep
     lambda_->Scale(1 / (1.0 - stiparam));  // entire Lagrange multiplier is divided by (1.-stiparam)
   }
 }
+
+BACI_NAMESPACE_CLOSE

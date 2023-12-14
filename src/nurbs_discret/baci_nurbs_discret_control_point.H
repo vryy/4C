@@ -19,6 +19,8 @@
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace NURBS
@@ -154,5 +156,7 @@ namespace DRT
   }  // namespace NURBS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_NURBS_DISCRET_CONTROL_POINT_H

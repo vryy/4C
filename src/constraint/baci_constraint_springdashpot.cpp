@@ -25,6 +25,8 @@
 #include <iostream>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
@@ -746,10 +748,10 @@ void UTILS::SpringDashpot::OutputPrestrOffsetOld(
 void UTILS::SpringDashpot::InitializeCurSurfNormal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(::DRT::Problem::Instance()->NDim(),
-      ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(BACI::DRT::Problem::Instance()->NDim(),
+      BACI::DRT::Problem::Instance()->MortarCouplingParams(),
+      BACI::DRT::Problem::Instance()->ContactDynamicParams(),
+      BACI::DRT::Problem::Instance()->SpatialApproximationType()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());
@@ -984,3 +986,5 @@ void UTILS::SpringDashpot::Update()
 }
 
 void UTILS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
+
+BACI_NAMESPACE_CLOSE

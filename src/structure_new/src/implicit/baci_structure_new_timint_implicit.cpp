@@ -29,6 +29,8 @@
 
 #include <NOX_Abstract_Group.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::Setup()
@@ -83,7 +85,7 @@ void STR::TIMINT::Implicit::Setup()
 void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
 {
   IntegratorPtr()->SetState(*x);
-  NOX::Epetra::Vector x_nox(x, NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
   NlnSolver().SolutionGroup().setX(x_nox);
   SetStateInSyncWithNOXGroup(true);
 }
@@ -109,7 +111,7 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
   double& time_np = DataGlobalState().GetTimeNp();
   time_np = DataGlobalState().GetTimeN() + (*DataGlobalState().GetDeltaTime())[0]; */
 
-  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
 }
 
@@ -130,7 +132,7 @@ int STR::TIMINT::Implicit::IntegrateStep()
 {
   CheckInitSetup();
   // do the predictor step
-  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
   return Solve();
 }
@@ -157,7 +159,7 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
 
   CheckInitSetup();
   ThrowIfStateNotInSyncWithNOXGroup();
-  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -167,14 +169,14 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
       Teuchos::rcp(const_cast<Epetra_Vector*>(disiterinc.get()), false);
 
   // wrap the displacement vector in a nox_epetra_Vector
-  Teuchos::RCP<const NOX::Epetra::Vector> nox_disiterinc_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(mutable_disiterinc, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr = Teuchos::rcp(
+      new ::NOX::Epetra::Vector(mutable_disiterinc, ::NOX::Epetra::Vector::CreateView));
 
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);
 
   // Reset the state variables
-  const auto& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
+  const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
   ImplInt().ResetModelStates(x_eptra.getEpetraVector());
 }
@@ -198,7 +200,7 @@ void STR::TIMINT::Implicit::Evaluate()
 {
   CheckInitSetup();
   ThrowIfStateNotInSyncWithNOXGroup();
-  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -215,7 +217,7 @@ void STR::TIMINT::Implicit::Evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
+const ::NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
 {
   CheckInitSetup();
   return NlnSolver().GetSolutionGroup();
@@ -223,7 +225,7 @@ const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
+Teuchos::RCP<::NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
 {
   CheckInitSetup();
   return Teuchos::rcpFromRef(NlnSolver().SolutionGroup());
@@ -493,7 +495,7 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
   if (GetDataGlobalState().GetMyRank() == 0)
     std::cout << "Writing structural jacobian to \"" << filename.str() << "\"\n";
 
-  Teuchos::RCP<const NOX::Epetra::LinearSystem> linear_system = curr_grp.getLinearSystem();
+  Teuchos::RCP<const ::NOX::Epetra::LinearSystem> linear_system = curr_grp.getLinearSystem();
 
   Teuchos::RCP<const NOX::NLN::LinearSystem> nln_lin_system =
       Teuchos::rcp_dynamic_cast<const NOX::NLN::LinearSystem>(linear_system, true);
@@ -654,3 +656,5 @@ double STR::TIMINT::Implicit::MethodLinErrCoeffVel() const
 {
   return implint_ptr_->MethodLinErrCoeffVel();
 }
+
+BACI_NAMESPACE_CLOSE

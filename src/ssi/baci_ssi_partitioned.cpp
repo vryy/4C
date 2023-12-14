@@ -13,6 +13,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSIPart::SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -67,3 +69,5 @@ void SSI::SSIPart::SetupModelEvaluator()
 
   if (IsS2IKineticsWithPseudoContact()) SetModelevaluatorBaseSSI(ssi_model_ptr);
 }
+
+BACI_NAMESPACE_CLOSE

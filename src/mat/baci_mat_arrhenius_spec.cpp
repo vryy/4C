@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -152,3 +154,5 @@ double MAT::ArrheniusSpec::ComputeReactionCoeff(const double temp) const
 
   return reacoeff;
 }
+
+BACI_NAMESPACE_CLOSE

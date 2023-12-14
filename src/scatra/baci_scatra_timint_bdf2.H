@@ -14,6 +14,8 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntBDF2 : public virtual ScaTraTimIntImpl
@@ -130,4 +132,6 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // BACI_SCATRA_TIMINT_BDF2_H

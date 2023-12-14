@@ -15,6 +15,8 @@
 
 #include "baci_lubrication_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace LUBRICATION
 {
   class TimIntStationary : public TimIntImpl
@@ -71,5 +73,7 @@ namespace LUBRICATION
   };  // class TimIntStationary
 
 }  // namespace LUBRICATION
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_TIMINT_STAT_H

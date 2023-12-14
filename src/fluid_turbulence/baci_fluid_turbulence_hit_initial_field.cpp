@@ -28,6 +28,8 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   /*--------------------------------------------------------------*
@@ -1305,3 +1307,5 @@ namespace FLD
   }
 
 };  // namespace FLD
+
+BACI_NAMESPACE_CLOSE

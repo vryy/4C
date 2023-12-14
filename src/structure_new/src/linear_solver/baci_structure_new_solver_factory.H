@@ -17,6 +17,13 @@
 
 #include <set>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations...
 namespace INPAR
 {
@@ -37,10 +44,6 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-}
-namespace Teuchos
-{
-  class ParameterList;
 }
 namespace STR
 {
@@ -98,5 +101,7 @@ namespace STR
         const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis);
   }  // namespace SOLVER
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_SOLVER_FACTORY_H

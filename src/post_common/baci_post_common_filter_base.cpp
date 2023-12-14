@@ -23,8 +23,6 @@ extern "C"
 #include "baci_io_legacy_table_iter.h"
 }
 
-
-
 PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
   if (field->problem()->filter() == "ensight")

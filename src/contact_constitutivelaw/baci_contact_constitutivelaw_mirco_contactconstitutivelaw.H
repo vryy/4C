@@ -13,6 +13,8 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace CONSTITUTIVELAW
@@ -132,5 +134,7 @@ namespace CONTACT
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_MIRCO_CONTACTCONSTITUTIVELAW_H

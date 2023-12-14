@@ -19,7 +19,7 @@ namespace
     int maxElement = 0;
     double meanOfAllElements = 0;
 
-    MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
+    BACI::MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
         quantityAcrossAllRanks, minElement, maxElement, meanOfAllElements);
 
     EXPECT_EQ(minElement, 1);

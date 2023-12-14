@@ -21,6 +21,7 @@
 
 namespace
 {
+  using namespace BACI;
   using FADdouble = Sacado::Fad::DFad<double>;
 
   class RemodelFiberTest : public ::testing::Test

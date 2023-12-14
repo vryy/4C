@@ -19,6 +19,8 @@ See the header file for a detailed description.
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|
  *----------------------------------------------------------------------*/
@@ -1847,3 +1849,5 @@ bool MAT::CrystalPlasticity::VisData(
   }
   return true;
 }  // VisData()
+
+BACI_NAMESPACE_CLOSE

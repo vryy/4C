@@ -16,6 +16,8 @@
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
@@ -89,3 +91,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>;
+
+BACI_NAMESPACE_CLOSE

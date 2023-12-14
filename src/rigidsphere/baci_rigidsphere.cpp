@@ -25,6 +25,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
 
@@ -244,3 +246,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Rigidsphere::ParamsI
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

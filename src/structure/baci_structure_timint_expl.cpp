@@ -25,6 +25,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time parameters
@@ -163,3 +165,5 @@ void STR::TimIntExpl::PrintStepText(FILE* ofile)
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

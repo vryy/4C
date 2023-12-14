@@ -33,6 +33,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 BINSTRATEGY::BinningStrategy::BinningStrategy()
@@ -2057,3 +2058,5 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
   BINSTRATEGY::UTILS::CommunicateDistributionOfTransferredElementsToBins(
       discret, toranktosendbinids, bintorowelemap);
 }
+
+BACI_NAMESPACE_CLOSE

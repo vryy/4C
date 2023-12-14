@@ -18,6 +18,9 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -150,5 +153,7 @@ namespace POROELASTSCATRA
   void PrintLogo();
 
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

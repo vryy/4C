@@ -14,16 +14,18 @@
 
 #include <Teuchos_RCP.hpp>
 
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace STR
 {
@@ -77,5 +79,7 @@ namespace STR
   Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn);
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_FACTORY_H

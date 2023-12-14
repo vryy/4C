@@ -15,6 +15,8 @@
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // Forward declaration.
 namespace GEOMETRYPAIR
 {
@@ -96,5 +98,7 @@ namespace BEAMINTERACTION
         const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

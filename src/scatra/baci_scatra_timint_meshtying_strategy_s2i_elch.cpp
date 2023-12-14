@@ -29,6 +29,8 @@
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -1267,3 +1269,5 @@ template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE:
 template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
 template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
 template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+
+BACI_NAMESPACE_CLOSE

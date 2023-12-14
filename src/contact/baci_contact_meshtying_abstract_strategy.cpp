@@ -28,6 +28,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
@@ -1393,3 +1395,5 @@ void CONTACT::MtAbstractStrategy::PostprocessQuantitiesPerInterface(
        it < interface_.end(); ++it)
     (*it)->PostprocessQuantities(*outputParams);
 }
+
+BACI_NAMESPACE_CLOSE

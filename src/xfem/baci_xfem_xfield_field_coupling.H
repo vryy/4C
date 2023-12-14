@@ -19,6 +19,8 @@
 // due to enum use ...
 #include "baci_xfem_multi_field_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   namespace XFieldField
@@ -237,5 +239,7 @@ namespace XFEM
 }  // namespace XFEM
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_FIELD_COUPLING_H

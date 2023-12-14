@@ -19,6 +19,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    schott 03/12|
@@ -1105,3 +1107,5 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

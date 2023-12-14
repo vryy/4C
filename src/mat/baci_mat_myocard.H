@@ -22,6 +22,8 @@
 #include "baci_mat_myocard_general.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
@@ -268,5 +270,7 @@ namespace MAT
 
   };  // Myocard
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -20,6 +20,8 @@
 #include "baci_nurbs_discret_knotvector.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*!
 \brief Sort vector in ascending order
 
@@ -1051,3 +1053,5 @@ void MORTAR::UTILS::MortarRecover(Teuchos::RCP<Epetra_Vector>& inc,
   for (unsigned i = 0; i < p.size(); MortarRecover(inc, p[i++]))
     ;
 }
+
+BACI_NAMESPACE_CLOSE

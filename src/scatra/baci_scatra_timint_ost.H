@@ -13,6 +13,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class TimIntOneStepTheta : public virtual ScaTraTimIntImpl
@@ -134,5 +136,7 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SCATRA_TIMINT_OST_H

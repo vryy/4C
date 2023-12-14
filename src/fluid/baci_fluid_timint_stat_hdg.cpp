@@ -25,6 +25,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
  fluid_timint_stat_hdg because it is not working
@@ -248,3 +250,5 @@ void FLD::TimIntStationaryHDG::SetElementTimeParameter()
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
+
+BACI_NAMESPACE_CLOSE

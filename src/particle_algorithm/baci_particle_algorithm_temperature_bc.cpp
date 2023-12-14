@@ -18,6 +18,8 @@
 #include "baci_particle_engine_interface.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -129,3 +131,5 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

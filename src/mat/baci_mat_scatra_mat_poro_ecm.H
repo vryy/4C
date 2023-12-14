@@ -12,6 +12,8 @@
 
 #include "baci_mat_scatra_reaction_mat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -128,5 +130,7 @@ namespace MAT
   };
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_SCATRA_MAT_PORO_ECM_H

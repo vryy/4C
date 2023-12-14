@@ -36,6 +36,8 @@
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(
@@ -5930,3 +5932,5 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
 
   return;
 }  // FluidBoundaryParent::GetDensityAndViscosity
+
+BACI_NAMESPACE_CLOSE

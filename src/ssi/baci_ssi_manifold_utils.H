@@ -22,6 +22,8 @@
 #include <optional>
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::ADAPTER
 {
   class Coupling;
@@ -459,5 +461,7 @@ namespace SSI
       bool is_manifold_meshtying, CORE::LINALG::MatrixType matrixtype_manifold);
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_MANIFOLD_UTILS_H

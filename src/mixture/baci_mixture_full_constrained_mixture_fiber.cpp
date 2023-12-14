@@ -24,6 +24,8 @@
 #include <numeric>
 #include <type_traits>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   bool IsNear(const double value1, const double value2, const double epsilon = 1e-15)
@@ -947,3 +949,4 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDCurrentFiberPK2Str
 
 template class MIXTURE::FullConstrainedMixtureFiber<double>;
 template class MIXTURE::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
+BACI_NAMESPACE_CLOSE

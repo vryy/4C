@@ -14,6 +14,8 @@
 #include "baci_levelset_algorithm.H"
 #include "baci_scatra_timint_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -74,5 +76,7 @@ namespace SCATRA
   };  // class LevelSetTimIntOneStepTheta
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LEVELSET_TIMINT_OST_H

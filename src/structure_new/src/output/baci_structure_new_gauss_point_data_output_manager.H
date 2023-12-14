@@ -21,6 +21,8 @@
 // forward declarations
 class Epetra_MultiVector;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Exporter;
@@ -151,5 +153,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H

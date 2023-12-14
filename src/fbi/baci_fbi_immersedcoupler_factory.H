@@ -19,6 +19,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace FBI
 {
   class FBIGeometryCoupler;
@@ -50,5 +52,7 @@ namespace FBI
         const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

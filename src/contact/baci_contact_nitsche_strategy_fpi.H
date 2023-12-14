@@ -16,6 +16,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoElement;
@@ -82,4 +84,6 @@ namespace CONTACT
     INPAR::CONTACT::NitscheWeighting weighting_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_FPI_H

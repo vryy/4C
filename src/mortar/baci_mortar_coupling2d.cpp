@@ -21,6 +21,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1216,3 +1218,5 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   // store ae matrix in slave element data container
   SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 }
+
+BACI_NAMESPACE_CLOSE

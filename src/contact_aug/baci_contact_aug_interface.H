@@ -14,6 +14,8 @@
 #include "baci_contact_interface.H"
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   // forward declaration
@@ -47,7 +49,7 @@ namespace CONTACT
      *  data between different interface objects w/o the need of copying them.
      *
      *  \author hiermeier \date 03/17 */
-    class InterfaceDataContainer : public ::CONTACT::InterfaceDataContainer
+    class InterfaceDataContainer : public CONTACT::InterfaceDataContainer
     {
      public:
       /// constructor
@@ -189,7 +191,7 @@ namespace CONTACT
     /** \brief Augmented contact interface class
      *
      *  \author hiermeier \date 03/17 */
-    class Interface : public ::CONTACT::CoInterface
+    class Interface : public CONTACT::CoInterface
     {
      public:
       /** \brief Alternative constructor
@@ -742,5 +744,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_INTERFACE_H

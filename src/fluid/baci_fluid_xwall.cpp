@@ -34,6 +34,8 @@
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
@@ -1727,3 +1729,5 @@ void FLD::XWallAleFSI::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresi
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ljag 01/14 |
@@ -288,3 +290,5 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

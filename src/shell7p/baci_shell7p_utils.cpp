@@ -13,6 +13,8 @@
 #include "baci_shell7p_ele.H"
 #include "baci_shell7p_ele_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   enum class ShellEasTypes
@@ -727,3 +729,4 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& d
       dserror("ANS is not supported with %s", distype);
   }
 }
+BACI_NAMESPACE_CLOSE

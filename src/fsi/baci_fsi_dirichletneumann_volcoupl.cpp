@@ -35,6 +35,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
@@ -680,3 +682,5 @@ std::vector<int> FSI::VolCorrector::Search(
 
   return gids;
 }
+
+BACI_NAMESPACE_CLOSE

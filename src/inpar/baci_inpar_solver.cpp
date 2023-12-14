@@ -14,6 +14,8 @@
 
 #include <BelosTypes.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR::SOLVER
 {
   void SetValidSolverParameters(Teuchos::ParameterList& list)
@@ -279,3 +281,5 @@ namespace INPAR::SOLVER
   }
 
 }  // namespace INPAR::SOLVER
+
+BACI_NAMESPACE_CLOSE

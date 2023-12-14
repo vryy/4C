@@ -10,6 +10,8 @@
 
 #include "baci_cut_base_vol.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------------------------------------*
  *   Returns the actual base function to be integrated over the volume to form the moment fitting
  *matrix    *
@@ -193,3 +195,5 @@ double CORE::GEO::CUT::base_function(std::vector<double> coordi, int base_num)
   //  std::dserror("the base function required is not defined");
   return 0.0;
 }
+
+BACI_NAMESPACE_CLOSE

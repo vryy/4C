@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // Forward declarations
 namespace CORE::LINALG
 {
@@ -83,5 +85,7 @@ namespace CORE::LINALG
       const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H

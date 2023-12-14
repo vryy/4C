@@ -17,6 +17,8 @@
 #include "baci_lib_dofset_interface.H"
 #include "baci_lib_dofset_proxy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   class XFEMDofSet;
@@ -272,5 +274,7 @@ namespace DRT
 
   };  // class DiscretizationXFEM
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DISCRET_XFEM_H

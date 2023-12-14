@@ -18,6 +18,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace CORE::LINALG
@@ -254,5 +256,7 @@ namespace MORTAR
         const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);
   }  // namespace UTILS
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_UTILS_H

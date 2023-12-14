@@ -24,6 +24,8 @@ of two MortarElements in 1D and 2D
 #include "baci_mortar_shape_utils.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  impl...                                                  farah 01/14|
  *----------------------------------------------------------------------*/
@@ -1995,3 +1997,5 @@ template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs2, CORE::FE
 // nurbs3 slave
 template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>;
 template class MORTAR::MortarIntegratorCalc<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>;
+
+BACI_NAMESPACE_CLOSE

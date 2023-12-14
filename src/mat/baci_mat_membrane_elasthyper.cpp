@@ -18,6 +18,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_mat_membrane_elasthyper_service.H"
 #include "baci_matelast_summand.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
@@ -261,3 +263,5 @@ void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(
     cmat_aniso.Update(1.0, cmat_aniso_red, 1.0);
   }
 }  // MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat
+
+BACI_NAMESPACE_CLOSE

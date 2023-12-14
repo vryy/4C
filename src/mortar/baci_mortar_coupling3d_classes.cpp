@@ -19,6 +19,8 @@
 #include "baci_mortar_integrator.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
@@ -936,3 +938,5 @@ MORTAR::Vertex::Vertex(const Vertex& old)
   // empty copy constructor body
   return;
 }
+
+BACI_NAMESPACE_CLOSE

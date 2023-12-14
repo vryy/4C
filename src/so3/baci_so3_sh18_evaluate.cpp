@@ -15,6 +15,8 @@
 #include "baci_so3_sh18.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
 {
@@ -1611,3 +1613,5 @@ void DRT::ELEMENTS::So_sh18::Recover(const std::vector<double>& residual)
   StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, num_eas,
       alpha_eas_inc_.A(), alpha_eas_.A(), step_length, Owner());
 }
+
+BACI_NAMESPACE_CLOSE

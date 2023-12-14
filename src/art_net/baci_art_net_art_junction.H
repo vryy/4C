@@ -19,6 +19,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 namespace ART
@@ -230,5 +232,7 @@ namespace ART
 
   }  // namespace UTILS
 }  // namespace ART
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ART_NET_ART_JUNCTION_H

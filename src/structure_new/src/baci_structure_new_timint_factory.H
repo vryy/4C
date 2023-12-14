@@ -20,6 +20,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   class TimAda;
@@ -86,5 +89,7 @@ namespace STR
   }  // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_FACTORY_H

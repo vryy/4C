@@ -17,40 +17,42 @@
 #include <NOX_Utils.H>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace FSI
   {
     //! Aikten line search - the simple relaxation.
     /*!
-      This line search can be called via NOX::LineSearch::Manager.
+      This line search can be called via ::NOX::LineSearch::Manager.
 
       The working horse in FSI.
 
      */
-    class AitkenRelaxation : public NOX::LineSearch::Generic
+    class AitkenRelaxation : public ::NOX::LineSearch::Generic
     {
      public:
       //! Constructor
-      AitkenRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
+      AitkenRelaxation(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
 
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
-      bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-          const NOX::Solver::Generic& s) override;
+      bool compute(::NOX::Abstract::Group& newgrp, double& step, const ::NOX::Abstract::Vector& dir,
+          const ::NOX::Solver::Generic& s) override;
 
       //! return relaxation parameter
       double GetOmega();
 
      private:
       //! difference of last two solutions
-      Teuchos::RCP<NOX::Abstract::Vector> del_;
+      Teuchos::RCP<::NOX::Abstract::Vector> del_;
 
       //! difference of difference of last two pair of solutions
-      Teuchos::RCP<NOX::Abstract::Vector> del2_;
+      Teuchos::RCP<::NOX::Abstract::Vector> del2_;
 
       //! aitken factor
       double nu_;
@@ -68,16 +70,16 @@ namespace NOX
       double restart_omega_;
 
       //! Printing utilities
-      Teuchos::RCP<NOX::Utils> utils_;
+      Teuchos::RCP<::NOX::Utils> utils_;
     };
 
 
     /// simple factory that creates aitken relaxation class
-    class AitkenFactory : public NOX::LineSearch::UserDefinedFactory
+    class AitkenFactory : public ::NOX::LineSearch::UserDefinedFactory
     {
      public:
-      Teuchos::RCP<NOX::LineSearch::Generic> buildLineSearch(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
+      Teuchos::RCP<::NOX::LineSearch::Generic> buildLineSearch(
+          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         if (aitken_ == Teuchos::null)
           aitken_ = Teuchos::rcp(new AitkenRelaxation(gd->getUtils(), params));
@@ -94,5 +96,7 @@ namespace NOX
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

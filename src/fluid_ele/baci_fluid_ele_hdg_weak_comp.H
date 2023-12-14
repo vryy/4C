@@ -16,13 +16,14 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace INPUT
   {
     class LineDefinition;
   }
-
 
   class Discretization;
 
@@ -243,5 +244,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

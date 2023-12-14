@@ -16,6 +16,8 @@
 #include "baci_structure_new_nln_solver_nox.H"
 #include "baci_structure_new_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::ContactData::ContactData()
@@ -46,3 +48,5 @@ void STR::MODELEVALUATOR::ContactData::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

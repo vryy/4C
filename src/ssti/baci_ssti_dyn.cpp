@@ -18,6 +18,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ssti_drt()
@@ -51,3 +53,5 @@ void ssti_drt()
 
   ssti->TestResults(comm);
 }
+
+BACI_NAMESPACE_CLOSE

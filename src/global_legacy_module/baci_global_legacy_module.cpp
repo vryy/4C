@@ -176,6 +176,8 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   void RegisterParObjectTypes()
@@ -389,10 +391,12 @@ namespace
 
 }  // namespace
 
-BACI::ModuleCallbacks BACI::GlobalLegacyModuleCallbacks()
+ModuleCallbacks GlobalLegacyModuleCallbacks()
 {
-  BACI::ModuleCallbacks callbacks;
+  ModuleCallbacks callbacks;
   callbacks.RegisterParObjectTypes = RegisterParObjectTypes;
   callbacks.AttachFunctionDefinitions = AttachFunctionDefinitions;
   return callbacks;
 }
+
+BACI_NAMESPACE_CLOSE

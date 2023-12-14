@@ -15,18 +15,20 @@
 
 #include "baci_structure_new_model_evaluator_generic.H"
 
-
 // forward declaration
 class Epetra_Vector;
 class Epetra_Map;
-namespace CORE::LINALG
-{
-  class SparseOperator;
-}  // namespace CORE::LINALG
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class SparseOperator;
+}  // namespace CORE::LINALG
 namespace IO
 {
   class DiscretizationWriter;
@@ -145,7 +147,7 @@ namespace STR
           const Epetra_Vector& xnew) override{};
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
@@ -226,5 +228,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_MULTIPHYSICS_H

@@ -12,6 +12,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -151,5 +153,7 @@ namespace FSI
     };
   }  // namespace UTILS
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

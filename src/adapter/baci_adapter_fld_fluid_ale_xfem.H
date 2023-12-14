@@ -14,6 +14,8 @@
 
 #include "baci_adapter_fld_fluid_ale.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   // forward declarations
@@ -73,5 +75,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

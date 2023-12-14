@@ -25,6 +25,8 @@
 #include "baci_ssti_resulttest.H"
 #include "baci_ssti_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSTI::SSTIAlgorithm::SSTIAlgorithm(
@@ -157,7 +159,7 @@ void SSTI::SSTIAlgorithm::Setup()
 
   // get wrapper and cast it to specific type
   if (structure_ == Teuchos::null)
-    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
         struct_adapterbase_ptr_->StructureField());
   if (structure_ == Teuchos::null) dserror("No valid pointer to ADAPTER::SSIStructureWrapper !");
 
@@ -470,3 +472,5 @@ Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::BuildSSTI(INPAR::SSTI::SolutionScheme co
   }
   return ssti;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_DefaultMpiComm.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   // forward declaration
@@ -172,5 +174,7 @@ namespace CORE::COMM
 
 
 }  // namespace CORE::COMM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

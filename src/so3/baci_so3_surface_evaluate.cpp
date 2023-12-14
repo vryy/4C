@@ -32,6 +32,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
@@ -160,7 +162,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
 
       // The true spatial configuration is the material configuration for mulf
-      if (::UTILS::PRESTRESS::IsMulfActive(time))
+      if (BACI::UTILS::PRESTRESS::IsMulfActive(time))
       {
         // no linearization needed for mulf
         loadlin = false;
@@ -2534,3 +2536,5 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
         nullptr, nullptr, nullptr, true);
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -68,4 +70,6 @@ namespace STI
     );
   };  // class ScatraThermoCloneStrategy
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

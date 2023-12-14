@@ -16,6 +16,8 @@ dimensional airway elements framework (transport in elements and between air and
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*/
@@ -107,3 +109,5 @@ void MAT::Hemoglobin_0d_O2_saturation::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -46,6 +46,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::Setup()
@@ -1259,7 +1261,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
+Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
     const bool selfcontact, const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
@@ -1273,7 +1275,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
+Teuchos::RCP<CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
     const Teuchos::RCP<const DRT::Discretization>& parent_dis,
@@ -2102,3 +2104,5 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

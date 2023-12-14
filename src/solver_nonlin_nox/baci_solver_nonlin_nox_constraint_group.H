@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
        to handle constrained problems.
 
 
@@ -18,6 +18,8 @@
 #include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_utils_exceptions.H"
+
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace STR
@@ -37,10 +39,10 @@ namespace NOX
         //! Standard constructor
         Group(Teuchos::ParameterList& printParams,  //!< printing parameters
             Teuchos::ParameterList& grpOptionParams,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>&
-                i,                         //!< basically the NOXified time integrator
-            const NOX::Epetra::Vector& x,  //!< current solution vector
-            const Teuchos::RCP<NOX::Epetra::LinearSystem>&
+            const Teuchos::RCP<::NOX::Epetra::Interface::Required>&
+                i,                           //!< basically the NOXified time integrator
+            const ::NOX::Epetra::Vector& x,  //!< current solution vector
+            const Teuchos::RCP<::NOX::Epetra::LinearSystem>&
                 linSys,  //!< linear system, matrix and RHS etc.
             const std::map<enum NOX::NLN::SolutionType,
                 Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>>&
@@ -49,12 +51,12 @@ namespace NOX
 
         /*! \brief Copy constructor. If type is DeepCopy, takes ownership of
           valid shared linear system. */
-        Group(const NOX::NLN::CONSTRAINT::Group& source, NOX::CopyType type = NOX::DeepCopy);
+        Group(const NOX::NLN::CONSTRAINT::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
 
         //! generate a clone of the given object concerning the given \c CopyType
-        Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const override;
+        Teuchos::RCP<::NOX::Abstract::Group> clone(::NOX::CopyType type) const override;
 
-        NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
+        ::NOX::Abstract::Group& operator=(const ::NOX::Epetra::Group& source) override;
 
         //! Returns the interface map
         const ReqInterfaceMap& GetConstrInterfaces() const;
@@ -75,27 +77,28 @@ namespace NOX
         double GetModelValue(
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-        double GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
+        double GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 
         //! Returns the right-hand-side norms of the primary and constraint quantities
         Teuchos::RCP<const std::vector<double>> GetRHSNorms(
-            const std::vector<NOX::Abstract::Vector::NormType>& type,
+            const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-            const Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType>> scale =
+            const Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
                 Teuchos::null) const override;
 
         //! Returns the root mean square norm of the primary and Lagrange multiplier updates
-        Teuchos::RCP<std::vector<double>> GetSolutionUpdateRMS(const NOX::Abstract::Vector& xOld,
+        Teuchos::RCP<std::vector<double>> GetSolutionUpdateRMS(const ::NOX::Abstract::Vector& xOld,
             const std::vector<double>& aTol, const std::vector<double>& rTol,
             const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
             const std::vector<bool>& disable_implicit_weighting) const override;
 
         //! Returns the desired norm of the primary solution updates and Lagrange multiplier updates
-        Teuchos::RCP<std::vector<double>> GetSolutionUpdateNorms(const NOX::Abstract::Vector& xOld,
-            const std::vector<NOX::Abstract::Vector::NormType>& type,
+        Teuchos::RCP<std::vector<double>> GetSolutionUpdateNorms(
+            const ::NOX::Abstract::Vector& xOld,
+            const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<StatusTest::QuantityType>& chQ,
             Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale)
             const override;
@@ -103,8 +106,8 @@ namespace NOX
         //! Returns the desired norm of the previous primary solution and Lagrange multiplier
         //! solution
         Teuchos::RCP<std::vector<double>> GetPreviousSolutionNorms(
-            const NOX::Abstract::Vector& xOld,
-            const std::vector<NOX::Abstract::Vector::NormType>& type,
+            const ::NOX::Abstract::Vector& xOld,
+            const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<StatusTest::QuantityType>& chQ,
             Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale)
             const override;
@@ -122,7 +125,7 @@ namespace NOX
             const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
         //! Returns basic information about the active set status (no Epetra_Maps needed!)
-        enum NOX::StatusTest::StatusType GetActiveSetInfo(
+        enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
             const enum NOX::NLN::StatusTest::QuantityType& qtype, int& activeset_size) const;
 
         //@}
@@ -139,5 +142,7 @@ namespace NOX
   }       // namespace NLN
 }  // end namespace  NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H

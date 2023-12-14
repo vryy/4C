@@ -22,11 +22,6 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Comm;
-namespace CORE::LINALG
-{
-  class Solver;
-  class SparseOperator;
-}  // namespace CORE::LINALG
 namespace NOX
 {
   class Observer;
@@ -35,6 +30,17 @@ namespace NOX
   {
     class Generic;
   }  // namespace StatusTest
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE::LINALG
+{
+  class Solver;
+  class SparseOperator;
+}  // namespace CORE::LINALG
+namespace NOX
+{
   namespace NLN
   {
     namespace AUX
@@ -75,7 +81,7 @@ namespace NOX
        * \param qType             : Quantity type of the NormWRMS test which we are looking for.
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
-      double GetNormWRMSClassVariable(const NOX::StatusTest::Generic& test,
+      double GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic& test,
           const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
       /*! \brief Do a recursive search for a NOX::NLN::StatusTest::NormF object in the StatusTest
@@ -85,7 +91,7 @@ namespace NOX
        * \param qType             : Quantity type of the NormF test which we are looking for.
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
-      double GetNormFClassVariable(const NOX::StatusTest::Generic& test,
+      double GetNormFClassVariable(const ::NOX::StatusTest::Generic& test,
           const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
       /*! Do a recursive search for a <T> status test and the given quantity
@@ -94,7 +100,7 @@ namespace NOX
        *  holds the given quantity. */
       template <class T>
       bool IsQuantity(
-          const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
+          const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return the NormType of the
        * given quantity.
@@ -103,17 +109,17 @@ namespace NOX
        * normtype of the first we can find, will be returned! */
       template <class T>
       int GetNormType(
-          const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
+          const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 
       /// \brief Do a recursive search for a <T> status test class.
       template <class T>
-      NOX::StatusTest::Generic* GetOuterStatusTest(NOX::StatusTest::Generic& full_otest);
+      ::NOX::StatusTest::Generic* GetOuterStatusTest(::NOX::StatusTest::Generic& full_otest);
 
       /** \brief Do a recursive search for a <T> status test class containing
        *  the given quantity. */
       template <class T>
-      NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
-          NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+      ::NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
+          ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return its status.
        *
@@ -125,7 +131,7 @@ namespace NOX
        * \param test (in) : StatusTest object which will be scanned.
        */
       template <class T>
-      int GetOuterStatus(const NOX::StatusTest::Generic& test);
+      int GetOuterStatus(const ::NOX::StatusTest::Generic& test);
 
       /*! \brief Convert the quantity type to a solution type
        *
@@ -138,11 +144,11 @@ namespace NOX
        *
        * \param name : Name of the vector norm type.
        */
-      enum NOX::Abstract::Vector::NormType String2NormType(const std::string& name);
+      enum ::NOX::Abstract::Vector::NormType String2NormType(const std::string& name);
 
       /// add pre/post operator to pre/post operator vector
       void AddToPrePostOpVector(
-          Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<NOX::Observer>& ppo_ptr);
+          Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<::NOX::Observer>& ppo_ptr);
 
       /// return the name of the parameter list corresponding to the set direction method
       std::string GetDirectionMethodListName(const Teuchos::ParameterList& p);
@@ -151,5 +157,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_AUX_H

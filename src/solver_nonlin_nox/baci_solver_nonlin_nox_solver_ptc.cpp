@@ -35,11 +35,13 @@
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_StatusTest_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<NOX::Abstract::Group>& grp,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+NOX::NLN::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<Teuchos::ParameterList>& params)
     : NOX::NLN::Solver::LineSearchBased(grp, outerTests, innerTests, params),
@@ -57,7 +59,7 @@ NOX::NLN::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<NOX::Abstr
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PseudoTransient::init()
 {
-  checkType = NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
+  checkType = ::NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
 
   /* We use our own factories at this point to generate the line search
    * and the direction object. */
@@ -106,8 +108,8 @@ void NOX::NLN::Solver::PseudoTransient::init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::reset(const NOX::Abstract::Vector& initialGuess,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests)
 {
   solnPtr->setX(initialGuess);
@@ -121,8 +123,8 @@ void NOX::NLN::Solver::PseudoTransient::reset(const NOX::Abstract::Vector& initi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::reset(const NOX::Abstract::Vector& initialGuess,
-    const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests)
+void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
+    const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests)
 {
   solnPtr->setX(initialGuess);
   if (not outerTests.is_null()) testPtr = outerTests;
@@ -143,9 +145,9 @@ void NOX::NLN::Solver::PseudoTransient::createScalingOperator()
     case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
     {
       // identity matrix
-      Teuchos::RCP<const NOX::Epetra::Vector> epetraXPtr =
-          Teuchos::rcp_dynamic_cast<const NOX::Epetra::Vector>(solnPtr->getXPtr());
-      if (epetraXPtr.is_null()) dserror("Cast to NOX::Epetra::Vector failed!");
+      Teuchos::RCP<const ::NOX::Epetra::Vector> epetraXPtr =
+          Teuchos::rcp_dynamic_cast<const ::NOX::Epetra::Vector>(solnPtr->getXPtr());
+      if (epetraXPtr.is_null()) dserror("Cast to ::NOX::Epetra::Vector failed!");
       scalingDiagOpPtr_ =
           Teuchos::rcp(new Epetra_Vector(epetraXPtr->getEpetraVector().Map(), false));
 
@@ -260,7 +262,7 @@ void NOX::NLN::Solver::PseudoTransient::createGroupPrePostOperator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
+::NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
 {
   observer->runPreIterate(*this);
 
@@ -268,19 +270,19 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   if (nIter == 0)
   {
     // Compute F of initital guess
-    NOX::Abstract::Group::ReturnType rtype = solnPtr->computeF();
-    if (rtype != NOX::Abstract::Group::Ok)
+    ::NOX::Abstract::Group::ReturnType rtype = solnPtr->computeF();
+    if (rtype != ::NOX::Abstract::Group::Ok)
     {
-      utilsPtr->out() << "NOX::Solver::PseudoTransient::init - "
+      utilsPtr->out() << "::NOX::Solver::PseudoTransient::init - "
                       << "Unable to compute F" << std::endl;
       throw "NOX Error";
     }
 
     // Test the initial guess
     status = testPtr->checkStatus(*this, checkType);
-    if ((status == NOX::StatusTest::Converged) and (utilsPtr->isPrintType(NOX::Utils::Warning)))
+    if ((status == ::NOX::StatusTest::Converged) and (utilsPtr->isPrintType(::NOX::Utils::Warning)))
     {
-      utilsPtr->out() << "Warning: NOX::Solver::PseudoTransient::init() - "
+      utilsPtr->out() << "Warning: ::NOX::Solver::PseudoTransient::init() - "
                       << "The solution passed into the solver (either "
                       << "through constructor or reset method) "
                       << "is already converged! The solver will not "
@@ -300,7 +302,7 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   }
 
   // First check status
-  if (status != NOX::StatusTest::Unconverged)
+  if (status != ::NOX::StatusTest::Unconverged)
   {
     observer->runPostIterate(*this);
 
@@ -309,8 +311,8 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   }
 
   // Copy pointers into temporary references
-  NOX::Abstract::Group& soln = *solnPtr;
-  NOX::StatusTest::Generic& otest = *testPtr;
+  ::NOX::Abstract::Group& soln = *solnPtr;
+  ::NOX::StatusTest::Generic& otest = *testPtr;
 
   // Update the pseudo time step size.
   updatePseudoTimeStep();
@@ -338,7 +340,7 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   {
     utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - unable to calculate direction"
                     << std::endl;
-    status = NOX::StatusTest::Failed;
+    status = ::NOX::StatusTest::Failed;
 
     observer->runPostIterate(*this);
     printUpdate();
@@ -373,24 +375,24 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
     {
       utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - line search failed"
                       << std::endl;
-      status = NOX::StatusTest::Failed;
+      status = ::NOX::StatusTest::Failed;
 
       observer->runPostIterate(*this);
       printUpdate();
       return status;
     }
-    else if (utilsPtr->isPrintType(NOX::Utils::Warning))
+    else if (utilsPtr->isPrintType(::NOX::Utils::Warning))
       utilsPtr->out()
           << "NOX::NLN::Solver::PseudoTransient::step - using recovery step for line search"
           << std::endl;
   }
 
   // Compute F for new current solution.
-  NOX::Abstract::Group::ReturnType rtype = soln.computeF();
-  if (rtype != NOX::Abstract::Group::Ok)
+  ::NOX::Abstract::Group::ReturnType rtype = soln.computeF();
+  if (rtype != ::NOX::Abstract::Group::Ok)
   {
-    utilsPtr->out() << "NOX::Solver::PseudoTransient::iterate - unable to compute F" << std::endl;
-    status = NOX::StatusTest::Failed;
+    utilsPtr->out() << "::NOX::Solver::PseudoTransient::iterate - unable to compute F" << std::endl;
+    status = ::NOX::StatusTest::Failed;
 
     observer->runPostIterate(*this);
     printUpdate();
@@ -413,12 +415,12 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
 
   double fref = globalDataPtr->getMeritFunction()->computef(*oldSolnPtr);
   double fnew = globalDataPtr->getMeritFunction()->computef(*solnPtr);
-  Teuchos::RCP<NOX::Abstract::Vector> sdirPtr = dirPtr->clone(DeepCopy);
+  Teuchos::RCP<::NOX::Abstract::Vector> sdirPtr = dirPtr->clone(::NOX::DeepCopy);
   sdirPtr->scale(stepSize);
   double modelnew = globalDataPtr->getMeritFunction()->computeQuadraticModel(*sdirPtr, *oldSolnPtr);
 
   modelReductionRatio_ = (fref - fnew) / (fref - modelnew);
-  if (utilsPtr->isPrintType(NOX::Utils::Details))
+  if (utilsPtr->isPrintType(::NOX::Utils::Details))
   {
     utilsPtr->out() << "(" << fref << " - " << fnew << ") / (" << fref << " - " << modelnew << ")"
                     << std::endl;
@@ -429,13 +431,13 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
+::NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
 {
   isPtcSolve_ = true;
   observer->runPreSolve(*this);
 
   // Iterate until converged or failed
-  while (status == NOX::StatusTest::Unconverged) step();
+  while (status == ::NOX::StatusTest::Unconverged) step();
 
   Teuchos::ParameterList& outputParams = paramsPtr->sublist("Output");
   outputParams.set("Nonlinear Iterations", nIter);
@@ -452,7 +454,7 @@ void NOX::NLN::Solver::PseudoTransient::computePseudoVelocity()
 {
   if (nIter >= maxPseudoTransientIterations_ or scaleOpType_ == scale_op_identity) return;
 
-  if (xDot_.is_null()) xDot_ = solnPtr->getX().clone(ShapeCopy);
+  if (xDot_.is_null()) xDot_ = solnPtr->getX().clone(::NOX::ShapeCopy);
 
   // computing xDot_ using finite differences
   if (nIter == 0)
@@ -472,7 +474,7 @@ void NOX::NLN::Solver::PseudoTransient::adjustPseudoTimeStep()
    * approximation. */
   if (stepSize == 1.0 or nIter >= maxPseudoTransientIterations_) return;
 
-  if (utilsPtr->isPrintType(NOX::Utils::Details))
+  if (utilsPtr->isPrintType(::NOX::Utils::Details))
   {
     utilsPtr->out() << "*--- Adjust Pseudo Time Step ---*" << std::endl
                     << "| Previous dt_ptc:    " << std::setw(9) << std::setprecision(3)
@@ -485,7 +487,7 @@ void NOX::NLN::Solver::PseudoTransient::adjustPseudoTimeStep()
     throwError("updatePseudoTimeStep", "Dynamic cast to NOX::NLN::Group failed!");
   oldNlnSolnPtr->adjustPseudoTimeStep(delta_, stepSize, *dirPtr, *this);
 
-  if (utilsPtr->isPrintType(NOX::Utils::Details))
+  if (utilsPtr->isPrintType(::NOX::Utils::Details))
   {
     utilsPtr->out() << "| Corrected dt_ptc:   " << std::setw(9) << std::setprecision(3)
                     << std::scientific << delta_ << " |" << std::endl
@@ -514,8 +516,8 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
         }
         else
         {
-          Teuchos::RCP<NOX::Abstract::Vector> scaledRHS = solnPtr->getF().clone(DeepCopy);
-          NOX::Epetra::Vector& epetraScaledRHS = dynamic_cast<NOX::Epetra::Vector&>(*scaledRHS);
+          Teuchos::RCP<::NOX::Abstract::Vector> scaledRHS = solnPtr->getF().clone(::NOX::DeepCopy);
+          ::NOX::Epetra::Vector& epetraScaledRHS = dynamic_cast<::NOX::Epetra::Vector&>(*scaledRHS);
           epetraScaledRHS.getEpetraVector().ReciprocalMultiply(
               1.0, *scalingDiagOpPtr_, epetraScaledRHS.getEpetraVector(), 0.0);
           normF = epetraScaledRHS.norm(normType_);
@@ -539,7 +541,7 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
         // ---------------------------------------------------------------
         case tsc_ser:
         {
-          if (normType_ == NOX::Abstract::Vector::TwoNorm)
+          if (normType_ == ::NOX::Abstract::Vector::TwoNorm)
             delta_ =
                 deltaOld_ * std::pow((oldSolnPtr->getNormF() / solnPtr->getNormF()), SER_alpha_);
           else
@@ -573,7 +575,7 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
            * the pseudo time step.
            * This is meant to speed up the convergence close to the solution. */
           if (stepSize == 1.0 and
-              GetStatus<NOX::NLN::StatusTest::NormF>() == NOX::StatusTest::Converged)
+              GetStatus<NOX::NLN::StatusTest::NormF>() == ::NOX::StatusTest::Converged)
             muinv *= 4.0;
           /* if the model performed badly: reduce the pseudo time step by a
            * factor tau_red, where 0.25 <= tau_red <= 0.8.
@@ -588,7 +590,7 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
 
           // update the pseudo time step
           delta_ = muinv / normF;
-          if (utilsPtr->isPrintType(NOX::Utils::Details))
+          if (utilsPtr->isPrintType(::NOX::Utils::Details))
           {
             utilsPtr->out() << "*--- Model Reduction Ratio -----------------------------*"
                             << std::endl
@@ -689,17 +691,17 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
   double normStep = 0;
 
   // Print the status test parameters at each iteration if requested
-  if ((status == NOX::StatusTest::Unconverged) &&
-      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)))
+  if ((status == ::NOX::StatusTest::Unconverged) &&
+      (utilsPtr->isPrintType(::NOX::Utils::OuterIterationStatusTest)))
   {
-    utilsPtr->out() << NOX::Utils::fill(82) << "\n";
+    utilsPtr->out() << ::NOX::Utils::fill(82) << "\n";
     utilsPtr->out() << "-- Status Test Results --\n";
     testPtr->print(utilsPtr->out());
-    utilsPtr->out() << NOX::Utils::fill(82) << "\n";
+    utilsPtr->out() << ::NOX::Utils::fill(82) << "\n";
   }
 
   // All processes participate in the computation of these norms...
-  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  if (utilsPtr->isPrintType(::NOX::Utils::OuterIteration))
   {
     normSoln = solnPtr->getNormF();
     normStep = (nIter > 0) ? dirPtr->norm() : 0;
@@ -707,11 +709,11 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
 
   // ...But only the print process actually prints the result.
   // ------ standard output ------------------------------------------
-  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration) and
-      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest) or
-          utilsPtr->isPrintType(NOX::Utils::InnerIteration)))
+  if (utilsPtr->isPrintType(::NOX::Utils::OuterIteration) and
+      (utilsPtr->isPrintType(::NOX::Utils::OuterIterationStatusTest) or
+          utilsPtr->isPrintType(::NOX::Utils::InnerIteration)))
   {
-    utilsPtr->out() << "\n" << NOX::Utils::fill(82) << "\n";
+    utilsPtr->out() << "\n" << ::NOX::Utils::fill(82) << "\n";
     utilsPtr->out() << "-- Nonlinear Solver Step " << nIter << " -- \n";
     utilsPtr->out() << "||F|| = " << utilsPtr->sciformat(normSoln);
     utilsPtr->out() << "  step = " << utilsPtr->sciformat(stepSize);
@@ -720,19 +722,19 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
       utilsPtr->out() << "  dt_ptc = auto";
     else
       utilsPtr->out() << "  dt_ptc = " << utilsPtr->sciformat(delta_);
-    if (status == NOX::StatusTest::Converged) utilsPtr->out() << " (Converged!)";
-    if (status == NOX::StatusTest::Failed) utilsPtr->out() << " (Failed!)";
-    utilsPtr->out() << "\n" << NOX::Utils::fill(82) << "\n" << std::endl;
+    if (status == ::NOX::StatusTest::Converged) utilsPtr->out() << " (Converged!)";
+    if (status == ::NOX::StatusTest::Failed) utilsPtr->out() << " (Failed!)";
+    utilsPtr->out() << "\n" << ::NOX::Utils::fill(82) << "\n" << std::endl;
   }
   // ------ short output ---------------------------------------------
-  else if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  else if (utilsPtr->isPrintType(::NOX::Utils::OuterIteration))
   {
     // print the head line
     if (nIter == 0)
     {
       utilsPtr->out() << std::setw(4) << "#It" << std::setw(13) << "||F||_2" << std::setw(13)
                       << "step" << std::setw(13) << "||dx||_2" << std::setw(13) << "dt_ptc\n";
-      utilsPtr->out() << NOX::Utils::fill(60, '^') << "\n";
+      utilsPtr->out() << ::NOX::Utils::fill(60, '^') << "\n";
     }
     utilsPtr->out() << std::setw(4) << nIter;
     utilsPtr->out() << "  " << utilsPtr->sciformat(normSoln);
@@ -742,19 +744,19 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
       utilsPtr->out() << std::setw(13) << "auto";
     else
       utilsPtr->out() << "  " << utilsPtr->sciformat(delta_);
-    if (status == NOX::StatusTest::Converged) utilsPtr->out() << " (Converged!)";
-    if (status == NOX::StatusTest::Failed) utilsPtr->out() << " (Failed!)";
+    if (status == ::NOX::StatusTest::Converged) utilsPtr->out() << " (Converged!)";
+    if (status == ::NOX::StatusTest::Failed) utilsPtr->out() << " (Failed!)";
     utilsPtr->out() << std::endl;
   }
 
   // Print the final parameter values of the status test
-  if ((status != NOX::StatusTest::Unconverged) &&
-      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)))
+  if ((status != ::NOX::StatusTest::Unconverged) &&
+      (utilsPtr->isPrintType(::NOX::Utils::OuterIterationStatusTest)))
   {
-    utilsPtr->out() << NOX::Utils::fill(82) << "\n";
+    utilsPtr->out() << ::NOX::Utils::fill(82) << "\n";
     utilsPtr->out() << "-- Final Status Test Results --\n";
     testPtr->print(utilsPtr->out());
-    utilsPtr->out() << NOX::Utils::fill(82) << "\n";
+    utilsPtr->out() << ::NOX::Utils::fill(82) << "\n";
   }
 }
 
@@ -763,7 +765,7 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
 void NOX::NLN::Solver::PseudoTransient::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utilsPtr->isPrintType(NOX::Utils::Error))
+  if (utilsPtr->isPrintType(::NOX::Utils::Error))
   {
     std::ostringstream msg;
     msg << "ERROR - NOX::NLN::Sovler::PseudoTransient::" << functionName << " - " << errorMsg
@@ -905,16 +907,16 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Vector>
+Teuchos::RCP<::NOX::Epetra::Vector>
 NOX::NLN::GROUP::PrePostOp::PseudoTransient::evalPseudoTransientFUpdate(const NOX::NLN::Group& grp)
 {
   // get the current trial point
-  Teuchos::RCP<NOX::Epetra::Vector> xUpdate =
-      Teuchos::rcp_dynamic_cast<NOX::Epetra::Vector>(grp.getX().clone(DeepCopy));
+  Teuchos::RCP<::NOX::Epetra::Vector> xUpdate =
+      Teuchos::rcp_dynamic_cast<::NOX::Epetra::Vector>(grp.getX().clone(::NOX::DeepCopy));
 
   // get the old x vector
-  const NOX::Abstract::Group& oldGrp = ptcsolver_.getPreviousSolutionGroup();
-  const NOX::Epetra::Vector xOld = dynamic_cast<const NOX::Epetra::Vector&>(oldGrp.getX());
+  const ::NOX::Abstract::Group& oldGrp = ptcsolver_.getPreviousSolutionGroup();
+  const ::NOX::Epetra::Vector xOld = dynamic_cast<const ::NOX::Epetra::Vector&>(oldGrp.getX());
 
   /* Calculate the difference between the old and the new solution vector.
    * This is equivalent to the search direction scaled with the
@@ -927,7 +929,7 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::evalPseudoTransientFUpdate(const NO
   {
     case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
     {
-      NOX::Epetra::Vector v = NOX::Epetra::Vector(scalingDiagOpPtr_);
+      ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(scalingDiagOpPtr_);
       v.scale(ptcsolver_.getInversePseudoTimeStep());
       xUpdate->scale(v);
 
@@ -962,7 +964,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
    * has already been added, we can skip this function. */
   if (not usePseudoTransientResidual or isPseudoTransientResidual_) return;
 
-  Teuchos::RCP<NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
+  Teuchos::RCP<::NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
 
   // add the transient part
   F.Update(1.0, fUpdate->getEpetraVector(), 1.0);
@@ -991,7 +993,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
    * has already been modified, though we need the static residual. */
   if (ptcsolver_.usePseudoTransientResidual() or !isPseudoTransientResidual_) return;
 
-  Teuchos::RCP<NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
+  Teuchos::RCP<::NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
 
   // subtract the transient part
   F.Update(-1.0, fUpdate->getEpetraVector(), 1.0);
@@ -1001,3 +1003,5 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -24,6 +24,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -518,3 +520,5 @@ template void CONTACT::CoIntegratorNitschePoro::SoEleCauchy<3>(MORTAR::MortarEle
     std::vector<CORE::GEN::pairedvector<int, double>>& direction_deriv, const double w,
     double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_d,
     CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p);
+
+BACI_NAMESPACE_CLOSE

@@ -33,6 +33,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration ...
@@ -1206,5 +1208,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

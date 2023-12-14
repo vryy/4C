@@ -28,6 +28,8 @@ interface
 
 #include <Epetra_SerialComm.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
@@ -1675,3 +1677,5 @@ void CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
   UpdatePoroContact();
   return;
 }  // CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
+
+BACI_NAMESPACE_CLOSE

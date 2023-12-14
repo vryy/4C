@@ -15,6 +15,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -87,3 +89,5 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(wear_time_equal, wear_time_equal, wear_time_different, wear_time_different),
       &wear);
 }
+
+BACI_NAMESPACE_CLOSE

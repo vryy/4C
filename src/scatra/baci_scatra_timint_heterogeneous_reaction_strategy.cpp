@@ -22,6 +22,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_utils_clonestrategy.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/
@@ -274,3 +276,5 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

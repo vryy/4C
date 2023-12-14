@@ -16,6 +16,8 @@
 #include "baci_io.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -371,3 +373,5 @@ double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
 
   return fac;
 }
+
+BACI_NAMESPACE_CLOSE

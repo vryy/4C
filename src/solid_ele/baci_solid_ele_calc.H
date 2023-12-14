@@ -16,6 +16,8 @@
 #include <string>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class So3Material;
@@ -92,5 +94,7 @@ namespace DRT
     };  // class SolidEleCalc
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_H

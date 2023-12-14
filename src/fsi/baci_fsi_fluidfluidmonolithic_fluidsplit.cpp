@@ -25,6 +25,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(
@@ -168,3 +170,5 @@ void FSI::FluidFluidMonolithicFluidSplit::ReadRestart(int step)
 
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
 }
+
+BACI_NAMESPACE_CLOSE

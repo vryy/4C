@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -216,3 +218,5 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
 
   return reacoeff;
 }
+
+BACI_NAMESPACE_CLOSE

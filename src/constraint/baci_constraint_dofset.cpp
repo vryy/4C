@@ -12,6 +12,8 @@
 #include <iostream>
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 
 int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
@@ -53,3 +55,5 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
 
   return count;
 }
+
+BACI_NAMESPACE_CLOSE

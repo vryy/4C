@@ -15,6 +15,8 @@
 #include "baci_inpar_structure.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ADAPTER::STR::Factory::Factory()
@@ -53,3 +55,5 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::BuildStructureAlg
   STR::Factory factory;
   return factory.BuildStructureAlgorithm(sdyn);
 }
+
+BACI_NAMESPACE_CLOSE

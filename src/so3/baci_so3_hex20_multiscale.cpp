@@ -13,6 +13,8 @@
 #include "baci_mat_micromaterial.H"
 #include "baci_so3_hex20.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -61,3 +63,5 @@ void DRT::ELEMENTS::So_hex20::soh20_read_restart_multi()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,7 @@
 #include <cstring>
 #endif
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -69,5 +70,7 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_READER_H

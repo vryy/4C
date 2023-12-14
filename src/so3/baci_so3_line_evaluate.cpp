@@ -19,6 +19,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
@@ -170,3 +172,5 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
   dL = sqrt(dL);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

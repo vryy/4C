@@ -13,6 +13,8 @@
 
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   /*!
@@ -106,4 +108,6 @@ namespace SCATRA
     MeshtyingStrategyStd(const MeshtyingStrategyStd& old);
   };  // class MeshtyingStrategyStd
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_STD_H

@@ -14,6 +14,8 @@
 #include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -238,3 +240,5 @@ void PARTICLEINTERACTION::DEMContactNormalTsuji::NormalContactForce(const double
   normalcontactforce =
       -k_normal_ * (-gap) * std::sqrt(-gap) - d_normal_ * v_rel_normal * std::sqrt(std::sqrt(-gap));
 }
+
+BACI_NAMESPACE_CLOSE

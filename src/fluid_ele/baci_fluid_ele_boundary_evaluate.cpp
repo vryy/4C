@@ -17,6 +17,8 @@
 #include "baci_fluid_ele_boundary_parent_calc.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -153,3 +155,5 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

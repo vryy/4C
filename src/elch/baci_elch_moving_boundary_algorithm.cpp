@@ -18,6 +18,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_scatra_timint_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
@@ -399,3 +401,4 @@ void ELCH::MovingBoundaryAlgorithm::TestResults()
   problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());
   problem->TestAll(ScaTraField()->Discretization()->Comm());
 }
+BACI_NAMESPACE_CLOSE

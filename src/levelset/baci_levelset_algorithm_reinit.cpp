@@ -22,6 +22,8 @@
 
 #include <list>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | algebraic reinitialization via solution of equation  rasthofer 09/13 |
@@ -1543,3 +1545,5 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

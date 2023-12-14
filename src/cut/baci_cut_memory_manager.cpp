@@ -18,6 +18,8 @@
 #include <stdexcept>  // for std_runtime_error
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 
 #define DEBUG_MEMORY false
 //// number of elements in the the "unexpected container"
@@ -649,3 +651,5 @@ void CORE::GEO::CUT::CustomMemoryManager::Delete()
       mem_->Delete();
   }
 }
+
+BACI_NAMESPACE_CLOSE

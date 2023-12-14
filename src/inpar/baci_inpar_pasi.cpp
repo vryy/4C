@@ -15,6 +15,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | set valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
@@ -69,3 +71,5 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &pasidyn);
   DoubleParameter("MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &pasidyn);
 }
+
+BACI_NAMESPACE_CLOSE

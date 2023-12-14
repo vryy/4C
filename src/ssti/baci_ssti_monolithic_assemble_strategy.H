@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
@@ -142,7 +144,7 @@ namespace SSTI
     //! SSTI mono maps
     Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
 
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const
     {
       return ssti_mono_->StructureField();
     }
@@ -378,4 +380,6 @@ namespace SSTI
       CORE::LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSTI
+BACI_NAMESPACE_CLOSE
+
 #endif  // SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H

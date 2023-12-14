@@ -19,6 +19,8 @@ growth laws.
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
@@ -1124,3 +1126,5 @@ void MAT::GrowthVolumetric::ReadFiber(DRT::INPUT::LineDefinition* linedef, std::
   // fill final fiber vector
   for (int i = 0; i < 3; ++i) fiber_vector(i) = fiber1[i] / f1norm;
 }
+
+BACI_NAMESPACE_CLOSE

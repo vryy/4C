@@ -18,14 +18,6 @@
 
 #include <fstream>
 
-// forward declarations
-namespace IO
-{
-  class DiscretizationWriter;
-  class EveryIterationWriterInterface;
-  class EveryIterationWriter;
-}  // namespace IO
-
 namespace NOX
 {
   namespace LineSearch
@@ -38,6 +30,16 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
+// forward declarations
+namespace IO
+{
+  class DiscretizationWriter;
+  class EveryIterationWriterInterface;
+  class EveryIterationWriter;
+}  // namespace IO
 
 namespace STR
 {
@@ -444,10 +446,10 @@ namespace NOX
         {
           /*! \brief Helper class to write the output each Newton step
            *
-           *  This class is an implementation of the NOX::Abstract::PrePostOperator
-           *  and is used to modify the step() routine of the given NOX::Solver::Generic
+           *  This class is an implementation of the ::NOX::Abstract::PrePostOperator
+           *  and is used to modify the step() routine of the given ::NOX::Solver::Generic
            *  class.
-           *  It's called by the wrapper classes NOX::Solver::PrePostOperator and
+           *  It's called by the wrapper classes ::NOX::Solver::PrePostOperator and
            *  NOX::PrePostOperatorVector.
            *
            *  \author Michael Hiermeier \date 03/17 */
@@ -459,14 +461,14 @@ namespace NOX
 
 
             /// called at the very beginning of a Newton loop
-            void runPreSolve(const NOX::Solver::Generic& solver) override;
+            void runPreSolve(const ::NOX::Solver::Generic& solver) override;
 
             /// called in the end of each Newton step
-            void runPostIterate(const NOX::Solver::Generic& solver) override;
+            void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
             /// called before the step is reduced in a line search routine
-            void runPreModifyStepLength(const NOX::Solver::Generic& solver,
-                const NOX::LineSearch::Generic& linesearch) override;
+            void runPreModifyStepLength(const ::NOX::Solver::Generic& solver,
+                const ::NOX::LineSearch::Generic& linesearch) override;
 
            private:
             IO::EveryIterationWriter& every_iter_writer_;
@@ -478,5 +480,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_BASEDATAIO_H

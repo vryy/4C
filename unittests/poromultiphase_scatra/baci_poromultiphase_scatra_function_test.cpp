@@ -17,6 +17,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class LungOxygenExchangeLawTest : public ::testing::Test
   {
    protected:

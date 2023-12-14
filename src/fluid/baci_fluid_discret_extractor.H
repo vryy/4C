@@ -15,6 +15,8 @@ generation
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class FluidDiscretExtractor
@@ -58,5 +60,7 @@ namespace FLD
   };
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

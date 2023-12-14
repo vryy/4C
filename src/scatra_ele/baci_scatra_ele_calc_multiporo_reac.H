@@ -26,6 +26,8 @@
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
 #include "baci_scatra_ele_calc_poro_reac.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -1576,5 +1578,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_ELE_CALC_MULTIPORO_REAC_H

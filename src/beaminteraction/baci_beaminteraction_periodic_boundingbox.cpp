@@ -25,6 +25,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -58,7 +59,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      ::DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
+      BACI::DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
@@ -78,7 +79,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
 
   // set up boundary conditions
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      ::DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
+      BACI::DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -154,7 +155,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
   disn_col_ = CORE::LINALG::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
-  if (::DRT::Problem::Instance()
+  if (BACI::DRT::Problem::Instance()
           ->IOParams()
           .sublist("RUNTIME VTK OUTPUT")
           .get<int>("INTERVAL_STEPS") != -1)
@@ -168,9 +169,9 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
 {
-  if (::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+  if (BACI::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
   {
-    boxdiscret_ = ::DRT::Problem::Instance()->GetDis("boundingbox");
+    boxdiscret_ = BACI::DRT::Problem::Instance()->GetDis("boundingbox");
 
     if (boxdiscret_->Filled() == false) boxdiscret_->FillComplete(true, false, false);
 
@@ -187,18 +188,18 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
     boxdiscret_->FillComplete(true, false, false);
   }
 
-  if (not ::DRT::Problem::Instance()->DoesExistDis("boundingbox") or
+  if (not BACI::DRT::Problem::Instance()->DoesExistDis("boundingbox") or
       boxdiscret_->NumMyColElements() == 0)
   {
-    if (not ::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+    if (not BACI::DRT::Problem::Instance()->DoesExistDis("boundingbox"))
     {
       Teuchos::RCP<Epetra_Comm> com =
-          Teuchos::rcp(::DRT::Problem::Instance()->GetDis("structure")->Comm().Clone());
-      boxdiscret_ = Teuchos::rcp(new ::DRT::Discretization("boundingbox", com));
+          Teuchos::rcp(BACI::DRT::Problem::Instance()->GetDis("structure")->Comm().Clone());
+      boxdiscret_ = Teuchos::rcp(new BACI::DRT::Discretization("boundingbox", com));
     }
     else
     {
-      boxdiscret_ = ::DRT::Problem::Instance()->GetDis("boundingbox");
+      boxdiscret_ = BACI::DRT::Problem::Instance()->GetDis("boundingbox");
     }
 
     // create nodes
@@ -209,19 +210,20 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
       UndeformedBoxCornerPointPosition(corner_i, cornerpos);
       node_ids[corner_i] = corner_i;
 
-      Teuchos::RCP<::DRT::Node> newnode = Teuchos::rcp(new ::DRT::Node(corner_i, cornerpos, 0));
+      Teuchos::RCP<BACI::DRT::Node> newnode =
+          Teuchos::rcp(new BACI::DRT::Node(corner_i, cornerpos, 0));
       boxdiscret_->AddNode(newnode);
     }
 
     // assign nodes to element
-    Teuchos::RCP<::DRT::Element> newele = ::CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
+    Teuchos::RCP<BACI::DRT::Element> newele = CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
     boxdiscret_->AddElement(newele);
   }
 
   // build independent dof set
-  Teuchos::RCP<::DRT::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new ::DRT::IndependentDofSet(true));
+  Teuchos::RCP<BACI::DRT::IndependentDofSet> independentdofset =
+      Teuchos::rcp(new BACI::DRT::IndependentDofSet(true));
   boxdiscret_->ReplaceDofSet(independentdofset);
   boxdiscret_->FillComplete();
 }
@@ -471,9 +473,9 @@ void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1
 {
   ThrowIfNotInit();
 
-  ::DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  BACI::DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
-  ::DRT::Problem::Instance()->Random()->Uni(randuni, 3);
+  BACI::DRT::Problem::Instance()->Random()->Uni(randuni, 3);
 
   CORE::LINALG::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
@@ -615,7 +617,7 @@ void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
   visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       boxdiscret_, IO::VisualizationParametersFactory(
-                       ::DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
+                       BACI::DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
 }
 
 /*----------------------------------------------------------------------------*
@@ -640,7 +642,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::ReferencePosOfCorne
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  ::DRT::Node* node_i = boxdiscret_->lColNode(i);
+  BACI::DRT::Node* node_i = boxdiscret_->lColNode(i);
 
   CORE::LINALG::Matrix<3, 1> x(true);
   for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->X()[dim];
@@ -658,7 +660,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::CurrentPositionOfCo
   CORE::LINALG::Matrix<3, 1> x(true);
   if (boxdiscret_ != Teuchos::null)
   {
-    ::DRT::Node* node_i = boxdiscret_->lColNode(i);
+    BACI::DRT::Node* node_i = boxdiscret_->lColNode(i);
     std::vector<int> dofnode = boxdiscret_->Dof(node_i);
 
     for (int dim = 0; dim < 3; ++dim)
@@ -747,7 +749,7 @@ void CORE::GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemT
 {
   ThrowIfNotInitOrSetup();
 
-  ::DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  BACI::DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable
@@ -977,3 +979,5 @@ void CORE::GEO::MESHFREE::BoundingBox::
   deriv1(1, 7) = Q * tp * rm;
   deriv1(2, 7) = Q * rm * sp;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -26,6 +26,9 @@ namespace NOX
     class Group;
   }  // namespace Abstract
 }  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   class Dbc;
@@ -67,16 +70,16 @@ namespace STR
       virtual std::string Name() const;
 
       //! Preprocess the predictor step
-      virtual void PrePredict(NOX::Abstract::Group& grp);
+      virtual void PrePredict(::NOX::Abstract::Group& grp);
 
       //! Pre-/Postprocess the specific predictor step
-      void Predict(NOX::Abstract::Group& grp);
+      void Predict(::NOX::Abstract::Group& grp);
 
       //! Calculate the specific predictor step
-      virtual void Compute(NOX::Abstract::Group& grp) = 0;
+      virtual void Compute(::NOX::Abstract::Group& grp) = 0;
 
       //! Postprocess the predictor step
-      virtual void PostPredict(NOX::Abstract::Group& grp);
+      virtual void PostPredict(::NOX::Abstract::Group& grp);
 
       //! return a constant reference to the global state object (read only)
       const STR::TIMINT::BaseDataGlobalState& GlobalState() const;
@@ -141,5 +144,7 @@ namespace STR
   }     // namespace PREDICT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_PREDICT_GENERIC_H

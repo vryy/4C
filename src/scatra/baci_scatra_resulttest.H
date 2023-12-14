@@ -17,6 +17,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -68,4 +70,6 @@ namespace SCATRA
    private:
   };
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

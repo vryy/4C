@@ -14,6 +14,8 @@
 #include "baci_membrane.H"
 #include "baci_so3_nullspace.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
@@ -291,3 +293,5 @@ void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
                       .AddOptionalNamedDoubleVector("FIBER3", 3)
                       .Build();
 }
+
+BACI_NAMESPACE_CLOSE

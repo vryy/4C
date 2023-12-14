@@ -14,6 +14,8 @@
 
 #include "baci_mat_anisotropy_extension.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   /*!
@@ -142,5 +144,7 @@ namespace MAT
     bool initialized_ = false;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_EXTENSION_DEFAULT_H

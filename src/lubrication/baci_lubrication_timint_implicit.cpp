@@ -28,6 +28,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // Constructors and destructors and related methods
 /*==========================================================================*/
@@ -1275,3 +1277,5 @@ void LUBRICATION::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> pre
   return;
 
 }  // UpdateNewton()
+
+BACI_NAMESPACE_CLOSE

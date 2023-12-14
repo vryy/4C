@@ -32,6 +32,8 @@
 #include "baci_cut_output.H"
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -4822,5 +4824,7 @@ size_t CORE::GEO::CUT::KERNEL::ComputeIntersectionAdaptivePrecision<Strategy, pr
     sideType, dimEdge, dimSide, numNodesEdge, numNodesSide>::cln_sizes_[];
 
 #endif
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 #include <iomanip>
 #ifdef CLN_CALC
 #include <cln/malloc.h>
+
+BACI_NAMESPACE_OPEN
 #endif
 
 // initial value of precision_
@@ -50,3 +52,5 @@ cln::cl_inhibit_floating_point_underflow = true;
 cln::float_format_t::float_format_t() { dserror("Should not be called"); }
 
 #endif
+
+BACI_NAMESPACE_CLOSE

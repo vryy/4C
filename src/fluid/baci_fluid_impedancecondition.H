@@ -17,6 +17,7 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -224,5 +225,7 @@ namespace FLD
 
   }  // namespace UTILS
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_IMPEDANCECONDITION_H

@@ -18,6 +18,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace STR::MODELEVALUATOR
 {
@@ -184,5 +185,7 @@ namespace DRT
   }     // namespace ELEMENTS
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

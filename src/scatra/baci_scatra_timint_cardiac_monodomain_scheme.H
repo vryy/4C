@@ -17,6 +17,8 @@
 #include "baci_scatra_timint_genalpha.H"
 #include "baci_scatra_timint_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -118,5 +120,7 @@ namespace SCATRA
 
   };  // class TimIntCardiacMonodomainGenAlpha
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_H

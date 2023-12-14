@@ -39,6 +39,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3I_Base::FS3I_Base()
@@ -810,3 +812,5 @@ void FS3I::FS3I_Base::CheckIsInit()
 {
   if (not IsInit()) dserror("Init(...) was not called.");
 };
+
+BACI_NAMESPACE_CLOSE

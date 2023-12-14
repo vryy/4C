@@ -15,6 +15,8 @@
 
 #include "baci_comm_parobjectfactory.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -197,3 +199,5 @@ DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(
   }
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

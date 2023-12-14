@@ -13,6 +13,8 @@
 #include "baci_mortar_node.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTree (public)                           schmidt 01/19|
  *----------------------------------------------------------------------*/
@@ -566,3 +568,5 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshTriangle(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

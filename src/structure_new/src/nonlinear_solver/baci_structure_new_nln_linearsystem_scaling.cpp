@@ -24,6 +24,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::NLN::LinSystem::StcScaling::StcScaling(
@@ -117,3 +119,5 @@ void STR::NLN::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& 
   stcmat_->Multiply(false, *disi, *disisdc);
   disi->Update(1.0, *disisdc, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

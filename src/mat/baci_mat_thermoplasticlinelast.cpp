@@ -43,6 +43,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_tsi_defines.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
  *----------------------------------------------------------------------*/
@@ -1557,3 +1559,5 @@ bool MAT::ThermoPlasticLinElast::VisData(
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

@@ -15,11 +15,13 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------------------------------*
  * Create nodal dofset sets within the parallel cut framework
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
-    bool include_inner, const ::DRT::Discretization& dis)
+    bool include_inner, const BACI::DRT::Discretization& dis)
 {
   dis.Comm().Barrier();
 
@@ -63,10 +65,10 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get all adjacent elements to this node if this is a real (- not a shadow -) node
     if (n_gid >= 0)
     {
-      ::DRT::Node* node = dis.gNode(n_gid);
+      BACI::DRT::Node* node = dis.gNode(n_gid);
 
       // get adjacent elements for this node
-      const ::DRT::Element* const* adjelements = node->Elements();
+      const BACI::DRT::Element* const* adjelements = node->Elements();
 
       for (int iele = 0; iele < node->NumElement(); iele++)
       {
@@ -164,7 +166,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
 
     // get the nodes of this element
     // get the element via discret
-    ::DRT::Element* e = dis.gElement(eid);
+    BACI::DRT::Element* e = dis.gElement(eid);
 
     if (e == nullptr) dserror(" element not found, this should not be! ");
 
@@ -214,8 +216,8 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const ::DRT::Discretization& dis,
-    bool include_inner)
+    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
+    const BACI::DRT::Discretization& dis, bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FillParallelDofSetData");
@@ -225,7 +227,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
   // node in this element
   for (int k = 0; k < dis.NumMyColElements(); ++k)
   {
-    ::DRT::Element* ele = dis.lColElement(k);
+    BACI::DRT::Element* ele = dis.lColElement(k);
     int eid = ele->Id();
     CORE::GEO::CUT::ElementHandle* e = GetElement(eid);
 
@@ -425,7 +427,7 @@ void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, s
  | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
-    bool include_inner, const ::DRT::Discretization& dis,
+    bool include_inner, const BACI::DRT::Discretization& dis,
     const std::vector<plain_volumecell_set>&
         connected_vc_sets,  // connections of volumecells within one element connected via
                             // subelements
@@ -464,7 +466,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
 
         if (nid >= 0)
         {
-          ::DRT::Node* drt_node = dis.gNode(nid);
+          BACI::DRT::Node* drt_node = dis.gNode(nid);
 
           // decide if the information for this cell has to be ordered from row-node or not
           // REMARK:
@@ -623,7 +625,7 @@ void CORE::GEO::CUT::ParentIntersection::PrintCellStats() { NormalMesh().PrintCe
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::DumpGmshNodalCellSet(
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-    const ::DRT::Discretization& dis)
+    const BACI::DRT::Discretization& dis)
 {
   std::string filename =
       "cut_test";  // ::DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -700,7 +702,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshNodalCellSet(
  * write gmsh debug output for CellSets
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
-    std::vector<plain_volumecell_set>& cell_sets, const ::DRT::Discretization& dis)
+    std::vector<plain_volumecell_set>& cell_sets, const BACI::DRT::Discretization& dis)
 {
   std::string filename =
       "cut_test";  // ::DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -750,7 +752,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
  * write gmsh cut output for number of dofsets and the connected vc sets
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
-    std::string filename, bool include_inner, const ::DRT::Discretization& dis)
+    std::string filename, bool include_inner, const BACI::DRT::Discretization& dis)
 {
   std::stringstream str;
   str << filename << ".CUT_NumDOFSets." << dis.Comm().MyPID() << ".pos";
@@ -777,7 +779,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
   for (int lid = 0; lid < num_row_ele;
        lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
-    ::DRT::Element* e = dis.lRowElement(lid);
+    BACI::DRT::Element* e = dis.lRowElement(lid);
     int eid = e->Id();
 
     ElementHandle* eh = GetElement(eid);
@@ -1030,3 +1032,5 @@ void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
   //------------------------------------------------------
   // ###########################################################
 }
+
+BACI_NAMESPACE_CLOSE

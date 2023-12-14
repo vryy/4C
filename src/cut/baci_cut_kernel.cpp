@@ -23,6 +23,8 @@
 #include <iostream>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& points,
@@ -906,3 +908,5 @@ std::map<size_t, int>
     CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_distance_;
 
 #endif
+
+BACI_NAMESPACE_CLOSE

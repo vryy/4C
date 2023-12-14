@@ -35,6 +35,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 #define SCALING_INFNORM true
 
 /*----------------------------------------------------------------------------*/
@@ -935,3 +937,5 @@ void ALE::AleLinear::EvaluateElements()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

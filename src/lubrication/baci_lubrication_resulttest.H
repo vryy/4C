@@ -19,6 +19,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -74,5 +76,7 @@ namespace LUBRICATION
   };
 }  // namespace LUBRICATION
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_RESULTTEST_H

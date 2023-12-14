@@ -19,7 +19,7 @@
 
 namespace
 {
-
+  using namespace BACI;
 
   void SetupSingleStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber1,
       const CORE::LINALG::Matrix<3, 1>& fiber2, CORE::LINALG::Matrix<3, 3>& structuralTensor)

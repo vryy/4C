@@ -23,6 +23,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseOperator;
@@ -197,5 +199,7 @@ namespace DRT
   };
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

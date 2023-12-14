@@ -30,6 +30,8 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1775,3 +1777,5 @@ bool MAT::GrowthRemodel_ElastHyper::VisData(
 
   return (bool)return_val;
 }
+
+BACI_NAMESPACE_CLOSE

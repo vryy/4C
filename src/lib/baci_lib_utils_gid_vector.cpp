@@ -13,6 +13,8 @@
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::AddOwnedNodeGID(
@@ -35,3 +37,5 @@ bool DRT::UTILS::IsNodeGIDOnThisProc(const DRT::Discretization& dis, const int n
 {
   return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
 }
+
+BACI_NAMESPACE_CLOSE

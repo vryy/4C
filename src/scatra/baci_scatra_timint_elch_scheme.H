@@ -19,6 +19,8 @@
 #include "baci_scatra_timint_ost.H"
 #include "baci_scatra_timint_stat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SCATRA
 {
   class ScaTraTimIntElchOST : public ScaTraTimIntElch, public TimIntOneStepTheta
@@ -189,5 +191,7 @@ namespace SCATRA
     void ComputeTimeDerivPot0(const bool init) override;
   };
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SCATRA_TIMINT_ELCH_SCHEME_H

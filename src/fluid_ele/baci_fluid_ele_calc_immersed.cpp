@@ -16,6 +16,8 @@
 #include "baci_fluid_ele_tds.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAction action)
@@ -506,3 +508,5 @@ template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

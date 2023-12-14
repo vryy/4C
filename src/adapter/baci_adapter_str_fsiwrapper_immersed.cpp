@@ -22,6 +22,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure)
@@ -285,3 +287,5 @@ void ADAPTER::FSIStructureWrapperImmersed::SetState(const Teuchos::RCP<Epetra_Ve
 {
   return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->SetState(x);
 }
+
+BACI_NAMESPACE_CLOSE

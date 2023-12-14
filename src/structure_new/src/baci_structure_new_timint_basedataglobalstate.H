@@ -24,6 +24,21 @@
 
 #include <Teuchos_RCP.hpp>
 
+class Epetra_Comm;
+namespace Teuchos
+{
+  class Time;
+}
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Vector;
+  }  // namespace Epetra
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace DRT
 {
@@ -34,25 +49,11 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-class Epetra_Comm;
-namespace Teuchos
-{
-  class Time;
-}
-
 namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
 }  // namespace CORE::LINALG
-
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace Epetra
-}  // namespace NOX
 
 namespace STR
 {
@@ -242,8 +243,8 @@ namespace STR
       Teuchos::RCP<CORE::LINALG::SparseMatrix> JacobianDisplBlock();
 
       /// Create the global solution vector
-      Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector() const;
-      Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(const enum VecInitType& vecinittype,
+      Teuchos::RCP<::NOX::Epetra::Vector> CreateGlobalVector() const;
+      Teuchos::RCP<::NOX::Epetra::Vector> CreateGlobalVector(const enum VecInitType& vecinittype,
           const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
       /// Create the structural stiffness matrix block
@@ -345,7 +346,7 @@ namespace STR
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<const ::TIMINT::TimIntMStep<double>> GetMultiTime() const
+      Teuchos::RCP<const BACI::TIMINT::TimIntMStep<double>> GetMultiTime() const
       {
         CheckInit();
         return timen_;
@@ -393,7 +394,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const ::TIMINT::TimIntMStep<double>> GetDeltaTime() const
+      Teuchos::RCP<const BACI::TIMINT::TimIntMStep<double>> GetDeltaTime() const
       {
         CheckInit();
         return dt_;
@@ -657,7 +658,7 @@ namespace STR
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetMultiTime()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>>& GetMultiTime()
       {
         CheckInit();
         return timen_;
@@ -695,7 +696,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetDeltaTime()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>>& GetDeltaTime()
       {
         CheckInit();
         return dt_;
@@ -734,7 +735,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiDis()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
@@ -755,14 +756,14 @@ namespace STR
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel()
       {
         CheckInitSetup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
+      const Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
       {
         CheckInitSetup();
         return vel_;
@@ -783,14 +784,14 @@ namespace STR
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
       {
         CheckInitSetup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
+      const Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
       {
         CheckInitSetup();
         return acc_;
@@ -949,10 +950,10 @@ namespace STR
       double timenp_;
 
       /// time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>> timen_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>> timen_;
 
       /// time step size \f$\Delta t\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>> dt_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<double>> dt_;
 
       /// time step index \f$n\f$
       int stepn_;
@@ -975,13 +976,13 @@ namespace STR
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
+      Teuchos::RCP<BACI::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;
@@ -1121,7 +1122,8 @@ namespace NOX
           {
            public:
             //! constructor
-            RotVecUpdater(const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
+            RotVecUpdater(
+                const Teuchos::RCP<const BACI::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
             /*! \brief Derived function, which is called before a call to
              * NOX::NLN::Group::computeX()
@@ -1131,8 +1133,8 @@ namespace NOX
                 const double& step, const NOX::NLN::Group& curr_grp) override;
 
            private:
-            //! pointer to the STR::TIMINT::BaseDataGlobalState object (read-only)
-            Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+            //! pointer to the BACI::STR::TIMINT::BaseDataGlobalState object (read-only)
+            Teuchos::RCP<const BACI::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
         }     // namespace TIMINT
@@ -1140,5 +1142,7 @@ namespace NOX
     }         // namespace GROUP
   }           // namespace NLN
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H

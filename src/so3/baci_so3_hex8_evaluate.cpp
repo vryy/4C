@@ -52,6 +52,8 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
@@ -788,7 +790,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (::UTILS::PRESTRESS::IsMulf(pstype_))
+        if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           CORE::LINALG::Matrix<3, 3> invJdef;
@@ -1630,14 +1632,14 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
     }
   }
 
-  if (::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (BACI::UTILS::PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
 }
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping with respect to the    farah 06/13|
@@ -1839,7 +1841,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   /* ============================================================================*/
 
   // check for prestressing
-  if (::UTILS::PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
+  if (BACI::UTILS::PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
@@ -2016,7 +2018,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     double detJ = detJ_[gp];
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-    if (::UTILS::PRESTRESS::IsMulf(pstype_))
+    if (BACI::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       CORE::LINALG::Matrix<3, 3> invJdef;
@@ -2765,7 +2767,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
   /* ============================================================================*/
 
   // check for prestressing or EAS
-  if (::UTILS::PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
+  if (BACI::UTILS::PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
     dserror("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
 
   // GEMM coefficients
@@ -3954,3 +3956,5 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }
+
+BACI_NAMESPACE_CLOSE

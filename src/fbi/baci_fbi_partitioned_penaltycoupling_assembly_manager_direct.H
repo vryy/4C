@@ -18,6 +18,8 @@ be directly assembled into the global matrices.
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace FBI
 {
   namespace UTILS
@@ -76,5 +78,7 @@ namespace BEAMINTERACTION
     };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

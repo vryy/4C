@@ -19,6 +19,8 @@ namespace
    public:
     BrokenrationalConstitutiveLawTest()
     {
+      using namespace BACI;
+
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
           Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(1,
@@ -36,7 +38,7 @@ namespace
       coconstlaw_ = brokenrationalcoconstlaw;
     }
 
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    Teuchos::RCP<BACI::CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
   };
 
   //! test member function Evaluate

@@ -19,6 +19,9 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -61,7 +64,7 @@ namespace NOX
          * \param solver     : Access to the underlying solver object.
          * \param linesearch : Access to the line search object. */
         virtual void runPreModifyStepLength(
-            const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch);
+            const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch);
 
        protected:
         //! Flag that determines if a pre/post operator has been supplied by user.
@@ -72,7 +75,7 @@ namespace NOX
       };
 
       inline void PrePostOperator::runPreModifyStepLength(
-          const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch)
+          const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
       {
         if (havePrePostOperator_)
         {
@@ -85,5 +88,7 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_LINESEARCH_PREPOSTOPERATOR_H

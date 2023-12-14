@@ -23,6 +23,8 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -486,7 +488,7 @@ void STR::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr)
+NOX::NLN::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const STR::Dbc>& dbc_ptr)
     : dbc_ptr_(dbc_ptr)
 {
   // empty
@@ -494,12 +496,14 @@ NOX::NLN::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const ::STR::Dbc>& d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::Dbc::runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+void NOX::NLN::LinSystem::PrePostOp::Dbc::runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
     CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
 {
-  NOX::Epetra::Vector& rhs_epetra = dynamic_cast<NOX::Epetra::Vector&>(rhs);
+  ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs_epetra.getEpetraVector(), false);
   Teuchos::RCP<CORE::LINALG::SparseOperator> jac_ptr = Teuchos::rcp(&jac, false);
   // apply the dirichlet condition and rotate the system if desired
   dbc_ptr_->ApplyDirichletToLocalSystem(jac_ptr, rhs_ptr);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 09/13 |
@@ -468,3 +470,5 @@ void SCATRA::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

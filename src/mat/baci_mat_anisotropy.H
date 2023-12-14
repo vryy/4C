@@ -20,6 +20,8 @@
 
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -260,5 +262,7 @@ namespace MAT
     std::vector<Teuchos::RCP<BaseAnisotropyExtension>> extensions_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_H

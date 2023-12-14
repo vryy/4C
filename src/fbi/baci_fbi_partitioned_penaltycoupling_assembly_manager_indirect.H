@@ -18,6 +18,8 @@ global coupling matrices M and D first.
 
 #include "baci_fbi_partitioned_penaltycoupling_assembly_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace BEAMINTERACTION
@@ -84,5 +86,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -12,6 +12,8 @@ electrochemistry
 
 #include "baci_contact_nitsche_integrator_ssi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -294,4 +296,6 @@ namespace CONTACT
     static const int numdofpernode_ = 2;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H

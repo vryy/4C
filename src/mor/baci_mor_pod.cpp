@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                            pfaller Oct17 |
  *----------------------------------------------------------------------*/
@@ -390,3 +392,5 @@ bool UTILS::MOR::IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M)
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

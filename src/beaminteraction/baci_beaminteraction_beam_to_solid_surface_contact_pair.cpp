@@ -24,6 +24,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -41,7 +43,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    surface>::EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -184,7 +186,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
+    surface>::EvaluateAndAssemble(const Teuchos::RCP<const BACI::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -340,3 +342,5 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

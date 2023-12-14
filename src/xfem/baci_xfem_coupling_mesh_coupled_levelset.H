@@ -17,6 +17,8 @@
 #include "baci_xfem_coupling_mesh.H"
 #include "baci_xfem_interface_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   /*!
@@ -225,5 +227,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_COUPLING_MESH_COUPLED_LEVELSET_H

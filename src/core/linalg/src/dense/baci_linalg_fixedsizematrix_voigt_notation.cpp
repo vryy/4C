@@ -7,6 +7,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using NotationType = CORE::LINALG::VOIGT::NotationType;
 
 /*----------------------------------------------------------------------*/
@@ -228,3 +230,5 @@ template void CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<NotationType::stres
     NotationType::stress>(CORE::LINALG::Matrix<6, 6>& id);
 template void CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<NotationType::stress,
     NotationType::strain>(CORE::LINALG::Matrix<6, 6>& id);
+
+BACI_NAMESPACE_CLOSE

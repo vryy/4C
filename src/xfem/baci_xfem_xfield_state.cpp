@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_xfem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::XFieldState::XFieldState()
@@ -69,3 +71,5 @@ void XFEM::XFieldState::SetNewState(const XFEM::XFieldState& xstate)
   this->field_discret_ptr_ = xstate.field_discret_ptr_;
   this->xfield_discret_ptr_ = xstate.xfield_discret_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

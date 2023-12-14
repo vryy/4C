@@ -42,6 +42,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
@@ -2190,9 +2192,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         // initialize mortar coupling adapter
         icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-            ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
-            ::DRT::Problem::Instance()->ContactDynamicParams(),
-            ::DRT::Problem::Instance()->SpatialApproximationType()));
+            DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+            DRT::Problem::Instance()->ContactDynamicParams(),
+            DRT::Problem::Instance()->SpatialApproximationType()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
         icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),
@@ -4839,3 +4841,5 @@ template class SCATRA::MortarCellCalc<CORE::FE::CellType::tri3, CORE::FE::CellTy
 template class SCATRA::MortarCellCalc<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
 template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
 template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+
+BACI_NAMESPACE_CLOSE

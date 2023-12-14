@@ -52,6 +52,8 @@
 
 #include <chrono>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<DRT::Problem*> DRT::Problem::instances_;
@@ -2608,3 +2610,5 @@ void DRT::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function_ma
 {
   functionmanager_ = std::move(function_manager_in);
 }
+
+BACI_NAMESPACE_CLOSE

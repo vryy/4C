@@ -19,6 +19,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -147,5 +149,7 @@ namespace POROFLUIDMULTIPHASE
   void PrintLogo();
 }  // namespace POROFLUIDMULTIPHASE
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_UTILS_H

@@ -21,6 +21,8 @@
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> dis,
@@ -585,3 +587,5 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
 //
 //  return target_cond;
 //}
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -221,5 +223,7 @@ namespace CONTACT
   }  // namespace UTILS
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_TSI_LAGRANGE_STRATEGY_H

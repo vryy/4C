@@ -31,6 +31,8 @@
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*==========================================================================*
  |                                                                          |
@@ -3123,3 +3125,5 @@ void SCATRA::ScalarHandler::CheckIsSetup() const
 {
   if (not issetup_) dserror("ScalarHanlder is not set up. Call Setup() first.");
 }
+
+BACI_NAMESPACE_CLOSE

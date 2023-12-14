@@ -19,13 +19,15 @@
 #include <Epetra_Map.h>
 #include <NOX_Solver_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::StatusTest::ActiveSet::ActiveSet(
     const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& max_cycle_size)
     : qtype_(qtype),
-      status_(NOX::StatusTest::Unevaluated),
+      status_(::NOX::StatusTest::Unevaluated),
       max_cycle_size_(max_cycle_size),
       cycle_size_(0),
       activesetsize_(0)
@@ -35,26 +37,26 @@ NOX::NLN::StatusTest::ActiveSet::ActiveSet(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
-    const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType)
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
+    const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   // clear the cycling maps at the beginning of a new time step
   if (problem.getNumIterations() == 0) cycling_maps_.clear();
 
-  if (checkType == NOX::StatusTest::None)
+  if (checkType == ::NOX::StatusTest::None)
   {
-    status_ = NOX::StatusTest::Unevaluated;
+    status_ = ::NOX::StatusTest::Unevaluated;
     activesetsize_ = 0;
     cycle_size_ = 0;
   }
   else
   {
     // get the abstract solution group from the non-linear solver
-    const NOX::Abstract::Group& grp = problem.getSolutionGroup();
+    const ::NOX::Abstract::Group& grp = problem.getSolutionGroup();
 
     // check if the right hand side was already updated
     if (!grp.isF())
-      status_ = NOX::StatusTest::Unevaluated;
+      status_ = ::NOX::StatusTest::Unevaluated;
     else
     {
       // try to cast the nox group
@@ -79,7 +81,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
 
         // check for cycling, if the set is not converged
         cycle_size_ = 0;
-        if (status_ != NOX::StatusTest::Converged)
+        if (status_ != ::NOX::StatusTest::Converged)
         {
           std::deque<Teuchos::RCP<const Epetra_Map>>::const_iterator citer;
           int count = 1;
@@ -100,7 +102,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::getStatus() const { return status_; }
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::getStatus() const { return status_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -123,3 +125,5 @@ std::ostream& NOX::NLN::StatusTest::ActiveSet::print(std::ostream& stream, int i
 
   return stream;
 }
+
+BACI_NAMESPACE_CLOSE

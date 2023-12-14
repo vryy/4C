@@ -15,6 +15,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -354,5 +356,7 @@ namespace MORTAR
     bool useauxpos_;
   };  // class BinaryTree
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_BINARYTREE_H

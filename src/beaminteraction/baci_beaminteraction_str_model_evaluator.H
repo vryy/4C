@@ -18,6 +18,7 @@
 #include "baci_structure_new_enum_lists.H"
 #include "baci_structure_new_model_evaluator_generic.H"  // base class
 
+BACI_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace ADAPTER
@@ -129,7 +130,7 @@ namespace STR
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override;
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -237,7 +238,7 @@ namespace STR
 
      private:
       //! pointer to the problem discretization (cast of base class member)
-      Teuchos::RCP<::DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<BACI::DRT::Discretization> discret_ptr_;
 
       //! data container holding all beaminteraction related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
@@ -269,7 +270,7 @@ namespace STR
       //! @{
       //! interaction discretization handling all interactions (e.g. crosslinker to beam,
       //! beam to beam, potential ...)
-      Teuchos::RCP<::DRT::Discretization> ia_discret_;
+      Teuchos::RCP<BACI::DRT::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
       Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
@@ -293,7 +294,7 @@ namespace STR
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
-      Teuchos::RCP<::DRT::Discretization> bindis_;
+      Teuchos::RCP<BACI::DRT::Discretization> bindis_;
 
       //! elerowmap of bindis
       Teuchos::RCP<Epetra_Map> rowbins_;
@@ -310,5 +311,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -22,13 +22,15 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<Epetra_Operator>& jacobian, const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> s)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<Epetra_Operator>& jacobian, const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils(printParams),
       jacInterfacePtr(iJac),
       jacType(EpetraOperator),
@@ -39,7 +41,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse(0.0)
 {
   // Allocate solver
-  tmpVectorPtr = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
+  tmpVectorPtr = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
   // Jacobian operator is supplied
   jacType = getOperatorType(*jacPtr);
@@ -65,7 +67,7 @@ void NOX::FSI::LinearSystemGCR::reset(Teuchos::ParameterList& linearSolverParams
 
 
 bool NOX::FSI::LinearSystemGCR::applyJacobian(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr->SetUseTranspose(false);
   int status = jacPtr->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -74,7 +76,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobian(
 
 
 bool NOX::FSI::LinearSystemGCR::applyJacobianTranspose(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr->SetUseTranspose(true);
   int status = jacPtr->Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -85,14 +87,14 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianTranspose(
 
 
 bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
-    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+    Teuchos::ParameterList& p, const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   double startTime = timer.wallTime();
 
   // Need non-const version of the input vector
   // Epetra_LinearProblem requires non-const versions so we can perform
   // scaling of the linear problem.
-  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
+  ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess) result.init(0.0);
@@ -108,7 +110,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
 
     scaling->scaleLinearSystem(Problem);
 
-    if (utils.isPrintType(NOX::Utils::Details))
+    if (utils.isPrintType(::NOX::Utils::Details))
     {
       utils.out() << *scaling << std::endl;
     }
@@ -160,10 +162,10 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
 
 
 int NOX::FSI::LinearSystemGCR::SolveGCR(
-    const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& maxit, double& tol)
+    const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& maxit, double& tol)
 {
-  NOX::Epetra::Vector r(x, NOX::ShapeCopy);
-  NOX::Epetra::Vector tmp(x, NOX::ShapeCopy);
+  ::NOX::Epetra::Vector r(x, ::NOX::ShapeCopy);
+  ::NOX::Epetra::Vector tmp(x, ::NOX::ShapeCopy);
   if (not zeroInitialGuess)
   {
     // calculate initial residual
@@ -178,8 +180,8 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
   double normb = b.norm();
   double error0 = r.norm() / normb;
 
-  std::vector<Teuchos::RCP<NOX::Epetra::Vector>>& u = u_;
-  std::vector<Teuchos::RCP<NOX::Epetra::Vector>>& c = c_;
+  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>>& u = u_;
+  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>>& c = c_;
 
   // reset krylov space
   u.clear();
@@ -200,9 +202,9 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
   while (error / normb >= tol)
   {
     // this is GCR, not GMRESR
-    u.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r)));
+    u.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(r)));
     if (not applyJacobian(r, tmp)) throwError("SolveGCR", "applyJacobian failed");
-    c.push_back(Teuchos::rcp(new NOX::Epetra::Vector(tmp)));
+    c.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(tmp)));
 
     for (int i = 0; i < k; ++i)
     {
@@ -235,7 +237,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
 
 
 int NOX::FSI::LinearSystemGCR::SolveGMRES(
-    const NOX::Epetra::Vector& b, NOX::Epetra::Vector& x, int& max_iter, double& tol, int m)
+    const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter, double& tol, int m)
 {
   double resid = 0;
   CORE::LINALG::SerialDenseVector s(m + 1, true);
@@ -243,8 +245,8 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
   CORE::LINALG::SerialDenseVector sn(m + 1, true);
   CORE::LINALG::SerialDenseMatrix H(m + 1, m, true);
 
-  NOX::Epetra::Vector r(x, NOX::ShapeCopy);
-  NOX::Epetra::Vector w(x, NOX::ShapeCopy);
+  ::NOX::Epetra::Vector r(x, ::NOX::ShapeCopy);
+  ::NOX::Epetra::Vector w(x, ::NOX::ShapeCopy);
   if (not zeroInitialGuess)
   {
     // calculate initial residual
@@ -268,14 +270,14 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
     return 0;
   }
 
-  std::vector<Teuchos::RCP<NOX::Epetra::Vector>> v;
+  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> v;
   v.reserve(m + 1);
 
   int j = 1;
   while (j <= max_iter)
   {
     v.clear();
-    v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r, NOX::ShapeCopy)));
+    v.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(r, ::NOX::ShapeCopy)));
     v[0]->update(1. / beta, r, 0.);
     s.putScalar(0.0);
     s(0) = beta;
@@ -291,7 +293,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
         w.update(H(k, i), *v[k], -1.);
       }
       H(i + 1, i) = w.norm();
-      v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(w)));
+      v.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(w)));
       v.back()->scale(1.0 / H(i + 1, i));
 
       for (int k = 0; k < i; k++) ApplyPlaneRotation(H(k, i), H(k + 1, i), cs(k), sn(k));
@@ -385,25 +387,25 @@ void NOX::FSI::LinearSystemGCR::ApplyPlaneRotation(double& dx, double& dy, doubl
 
 
 bool NOX::FSI::LinearSystemGCR::applyRightPreconditioning(bool useTranspose,
-    Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
-    NOX::Epetra::Vector& result) const
+    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+    ::NOX::Epetra::Vector& result) const
 {
   if (&result != &input) result = input;
   return true;
 }
 
 
-Teuchos::RCP<NOX::Epetra::Scaling> NOX::FSI::LinearSystemGCR::getScaling() { return scaling; }
+Teuchos::RCP<::NOX::Epetra::Scaling> NOX::FSI::LinearSystemGCR::getScaling() { return scaling; }
 
 
 void NOX::FSI::LinearSystemGCR::resetScaling(
-    const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
+    const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   scaling = scalingObject;
 }
 
 
-bool NOX::FSI::LinearSystemGCR::computeJacobian(const NOX::Epetra::Vector& x)
+bool NOX::FSI::LinearSystemGCR::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
   bool success = jacInterfacePtr->computeJacobian(x.getEpetraVector(), *jacPtr);
   return success;
@@ -411,7 +413,7 @@ bool NOX::FSI::LinearSystemGCR::computeJacobian(const NOX::Epetra::Vector& x)
 
 
 bool NOX::FSI::LinearSystemGCR::createPreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
 {
   return false;
 }
@@ -421,7 +423,7 @@ bool NOX::FSI::LinearSystemGCR::destroyPreconditioner() const { return false; }
 
 
 bool NOX::FSI::LinearSystemGCR::recomputePreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
 }
@@ -479,7 +481,7 @@ void NOX::FSI::LinearSystemGCR::setPrecOperatorForSolve(
 void NOX::FSI::LinearSystemGCR::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils.isPrintType(NOX::Utils::Error))
+  if (utils.isPrintType(::NOX::Utils::Error))
   {
     utils.out() << "NOX::FSI::LinearSystemGCR::" << functionName << " - " << errorMsg << std::endl;
   }
@@ -511,3 +513,5 @@ NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::getOperatorTy
   // Otherwise it must be an Epetra_Operator!
   return EpetraOperator;
 }
+
+BACI_NAMESPACE_CLOSE

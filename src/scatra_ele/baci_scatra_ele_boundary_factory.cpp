@@ -25,6 +25,8 @@
 #include "baci_scatra_ele_boundary_interface.H"
 #include "baci_scatra_ele_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
@@ -208,3 +210,5 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
 
   return nullptr;
 }
+
+BACI_NAMESPACE_CLOSE

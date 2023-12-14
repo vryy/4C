@@ -12,6 +12,8 @@
 
 #include "baci_ssi_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace SSI
 {
   class SSIPart : public SSIBase
@@ -73,5 +75,7 @@ namespace SSI
   };
 
 }  // namespace SSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSI_PARTITIONED_H

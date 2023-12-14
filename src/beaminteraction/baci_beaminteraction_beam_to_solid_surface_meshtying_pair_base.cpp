@@ -21,6 +21,8 @@
 #include "baci_geometry_pair_line_to_surface.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -282,7 +284,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::GetPairGID(
-    const ::DRT::Discretization& discret) const
+    const BACI::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -342,3 +344,5 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

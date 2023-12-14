@@ -18,6 +18,8 @@
 #include "baci_mortar_interface.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Visualize mortar stuff with gmsh                          popp 08/08|
  *----------------------------------------------------------------------*/
@@ -916,3 +918,5 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

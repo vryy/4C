@@ -12,6 +12,8 @@
 
 #include "baci_xfem_coupling_mesh.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 //! constructor
@@ -38,3 +40,5 @@ void XFEM::MeshCouplingNavierSlipTwoPhase::SetConditionSpecificParameters()
   std::vector<DRT::Condition*> conditions_NS;
   cutter_dis_->GetCondition(cond_name_, conditions_NS);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@ namespace
 {
   TEST(InparStructureTest, String2ModelType)
   {
+    using namespace BACI;
+
     EXPECT_EQ(INPAR::STR::String2ModelType("Structure"), INPAR::STR::model_structure);
     EXPECT_EQ(INPAR::STR::String2ModelType("Contact"), INPAR::STR::model_contact);
     EXPECT_EQ(INPAR::STR::String2ModelType("Meshtying"), INPAR::STR::model_meshtying);
@@ -32,6 +34,8 @@ namespace
 
   TEST(InparStructureTest, ModelTypeString)
   {
+    using namespace BACI;
+
     EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_structure), "Structure");
     EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_contact), "Contact");
     EXPECT_EQ(INPAR::STR::ModelTypeString(INPAR::STR::model_meshtying), "Meshtying");

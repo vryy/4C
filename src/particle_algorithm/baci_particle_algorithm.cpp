@@ -36,6 +36,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -985,3 +987,5 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
   // set scaled gravity in particle interaction handler
   if (particleinteraction_) particleinteraction_->SetGravity(scaled_gravity);
 }
+
+BACI_NAMESPACE_CLOSE

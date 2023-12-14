@@ -18,6 +18,8 @@
 #include <string>
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   enum class EasType
@@ -164,5 +166,7 @@ namespace DRT
     };  // class SolidEleCalcEas
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_CALC_EAS_H

@@ -16,6 +16,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_scalar.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   class CubicSplineInterpolation;
@@ -104,5 +106,7 @@ namespace CORE::UTILS
     std::unique_ptr<CORE::UTILS::CubicSplineInterpolation> cubic_spline_;
   };
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

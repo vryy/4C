@@ -11,6 +11,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
@@ -120,3 +122,5 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

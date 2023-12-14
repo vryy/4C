@@ -23,6 +23,8 @@
 #include "baci_mat_myocard_tools.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
 ///
@@ -129,5 +131,7 @@ class Myocard_Fitzhugh_Nagumo : public Myocard_General
 
 };  // Myocard_Fitzhugh_Nagumo
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

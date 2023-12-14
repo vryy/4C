@@ -13,6 +13,8 @@
 
 #include "baci_adapter_fld_fluid_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   namespace UTILS
@@ -57,5 +59,7 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_FLD_FLUID_FSI_MSHT_H

@@ -15,6 +15,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -71,3 +73,4 @@ template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>;
 template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
 template class MIXTURE::RemodelFiberMaterialExponentialActive<double>;
 template class MIXTURE::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
+BACI_NAMESPACE_CLOSE

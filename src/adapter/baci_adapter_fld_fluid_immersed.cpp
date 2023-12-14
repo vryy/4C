@@ -14,6 +14,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
@@ -141,3 +143,5 @@ void ADAPTER::FluidImmersed::RemoveDirichCond(const Teuchos::RCP<const Epetra_Ma
 {
   FluidField()->RemoveDirichCond(maptoremove);
 }
+
+BACI_NAMESPACE_CLOSE

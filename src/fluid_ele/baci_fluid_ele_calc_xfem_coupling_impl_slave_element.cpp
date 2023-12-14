@@ -16,6 +16,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -876,3 +878,5 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellT
     CORE::FE::CellType::hex20, 4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
     CORE::FE::CellType::hex27, 4>;
+
+BACI_NAMESPACE_CLOSE

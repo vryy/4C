@@ -22,6 +22,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 
 namespace DRT
@@ -324,4 +326,6 @@ namespace STRUMULTI
 
 
 }  // namespace STRUMULTI
+BACI_NAMESPACE_CLOSE
+
 #endif

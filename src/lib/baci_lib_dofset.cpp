@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
@@ -636,3 +638,5 @@ int DRT::DofSet::GetMinimalNodeGIDIfRelevant(const Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }
+
+BACI_NAMESPACE_CLOSE

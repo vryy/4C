@@ -19,6 +19,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(ElementServiceTest, TestProjectNodalQuantityToXiHex8)
   {
     CORE::LINALG::Matrix<3, 1> xi(true);

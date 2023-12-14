@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class CoAbstractStrategy;
@@ -38,7 +40,7 @@ namespace CONTACT
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
     double GetConstraintRHSNorms(const Epetra_Vector& F,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
@@ -48,16 +50,16 @@ namespace CONTACT
 
     /// Returns the increment norm of the largange multiplier DoFs
     double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
     double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the active set info [derived]
-    enum NOX::StatusTest::StatusType GetActiveSetInfo(
+    enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
         enum NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
 
     /// Returns the current active set map
@@ -121,5 +123,7 @@ namespace CONTACT
   };
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_NOXINTERFACE_H

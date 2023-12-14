@@ -17,6 +17,8 @@
 #include "baci_w1_poro_p1.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
@@ -976,3 +978,5 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
 template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>;
+
+BACI_NAMESPACE_CLOSE

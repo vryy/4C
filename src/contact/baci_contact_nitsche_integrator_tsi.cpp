@@ -22,6 +22,7 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1211,3 +1212,5 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarEleme
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

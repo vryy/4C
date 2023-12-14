@@ -13,6 +13,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(QuaternionTest, Clear)
   {
     const double q_ref[4] = {0.0, 0.0, 0.0, 1.0};

@@ -18,8 +18,13 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -32,11 +37,6 @@ namespace CORE::LINALG
 {
   class SparseOperator;
 }
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 
 namespace XFEM
 {
@@ -57,5 +57,7 @@ namespace XFEM
 
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_NEUMANN_H

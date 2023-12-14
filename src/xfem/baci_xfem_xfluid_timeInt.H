@@ -21,9 +21,14 @@
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"
 
-
 class Epetra_Map;
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::COMM
 {
@@ -50,11 +55,6 @@ namespace CORE::GEO
 namespace CORE::LINALG
 {
   class MapExtractor;
-}
-
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 namespace XFEM
@@ -308,5 +308,7 @@ namespace XFEM
   };
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_TIMEINT_H

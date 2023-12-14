@@ -12,6 +12,8 @@
 #include "baci_linalg_fortran_definitions.h"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -102,3 +104,5 @@ CORE::LINALG::SerialDenseMatrix CORE::LINALG::InvertAndMultiplyByCholesky(
 
   return meinv;
 }
+
+BACI_NAMESPACE_CLOSE

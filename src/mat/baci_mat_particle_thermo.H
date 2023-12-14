@@ -21,6 +21,8 @@
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -63,4 +65,6 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

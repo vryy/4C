@@ -13,6 +13,8 @@
 
 #include "baci_contact_interface.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MORTAR
 {
@@ -95,5 +97,7 @@ namespace CONTACT
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
   };  // class CoInterface
 }  // namespace CONTACT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_CONSTITUTIVELAW_INTERFACE_H

@@ -31,6 +31,8 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -395,3 +397,5 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInit() c
 {
   if (!isinit_) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

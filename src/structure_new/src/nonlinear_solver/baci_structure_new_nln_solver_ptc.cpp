@@ -14,6 +14,8 @@
 #include "baci_structure_new_nln_solver_utils.H"
 #include "baci_structure_new_timint_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -104,3 +106,5 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
     SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 }
+
+BACI_NAMESPACE_CLOSE

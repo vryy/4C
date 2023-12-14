@@ -17,6 +17,7 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 // Forward declarations.
 namespace CORE::LINALG
@@ -149,5 +150,7 @@ namespace GEOMETRYPAIR
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

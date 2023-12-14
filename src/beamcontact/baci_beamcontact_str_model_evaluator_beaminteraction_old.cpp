@@ -23,6 +23,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
@@ -281,3 +283,5 @@ void STR::MODELEVALUATOR::BeamInteractionOld::PostOutput()
 
   return;
 }  // PostOutput()
+
+BACI_NAMESPACE_CLOSE

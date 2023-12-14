@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -43,5 +45,7 @@ namespace DRT
 /// print empty material sections
 void PrintMaterialDatHeader();
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

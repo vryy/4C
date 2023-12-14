@@ -15,6 +15,8 @@
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -431,5 +433,7 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f);
+
+BACI_NAMESPACE_CLOSE
 
 #endif

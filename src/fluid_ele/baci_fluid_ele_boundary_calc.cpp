@@ -37,6 +37,8 @@
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
@@ -2306,3 +2308,5 @@ template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs2>;
 template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs3>;
 template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs9>;
+
+BACI_NAMESPACE_CLOSE

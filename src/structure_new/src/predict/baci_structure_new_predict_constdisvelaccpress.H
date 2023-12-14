@@ -14,6 +14,8 @@
 
 #include "baci_structure_new_predict_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace PREDICT
@@ -29,7 +31,7 @@ namespace STR
       void Setup() override;
 
       //! do the class specific predictor step
-      void Compute(NOX::Abstract::Group& grp) override;
+      void Compute(::NOX::Abstract::Group& grp) override;
 
      private:
       Teuchos::RCP<STR::PREDICT::Generic> tangdis_ptr_;
@@ -37,5 +39,7 @@ namespace STR
   }     // namespace PREDICT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_H

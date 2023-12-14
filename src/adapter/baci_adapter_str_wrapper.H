@@ -14,6 +14,8 @@
 
 #include "baci_adapter_str_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /// This class is a wrapper of ADAPTER::Structure. It follows the "decorator" design pattern. This
@@ -503,7 +505,7 @@ namespace ADAPTER
     bool HaveModel(INPAR::STR::ModelType model) override { return structure_->HaveModel(model); }
 
     /// return model evaluator
-    ::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
+    BACI::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
     {
       return structure_->ModelEvaluator(mtype);
     }
@@ -544,5 +546,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> disstepinc_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

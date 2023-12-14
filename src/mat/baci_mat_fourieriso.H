@@ -17,6 +17,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_thermo.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -181,4 +183,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // MAT_FOURIERISO_H

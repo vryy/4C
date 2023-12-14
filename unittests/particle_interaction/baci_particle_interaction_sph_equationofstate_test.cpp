@@ -12,6 +12,7 @@ interactions
 
 namespace
 {
+  using namespace BACI;
 
   class SPHEquationOfStateGenTaitTest : public ::testing::Test
   {

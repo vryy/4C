@@ -27,6 +27,8 @@
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 #define STAB
 
 template <CORE::FE::CellType distype>
@@ -6869,3 +6871,5 @@ template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

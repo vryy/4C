@@ -14,6 +14,8 @@
 #include "baci_inpar_tsi.H"
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::PLASTICITY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -67,3 +69,5 @@ void INPAR::PLASTICITY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
       tuple<int>(INPAR::TSI::pl_multiplier, INPAR::TSI::pl_flow, INPAR::TSI::Taylor_Quinney),
       &iplast);
 }
+
+BACI_NAMESPACE_CLOSE

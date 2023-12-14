@@ -12,6 +12,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(MuscleUtilsTest, TestEvaluateLambert)
   {
     const double xi = 1.39234;

@@ -14,6 +14,8 @@
 
 #include "baci_adapter_str_structure_new.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -39,3 +41,5 @@ void ADAPTER::StructAleWrapper::UpdateMaterialDisplacements(Teuchos::RCP<Epetra_
 {
   GetStructAleModelEvaluatorPtr()->GetMaterialDisplacementNpPtr()->Update(1.0, *dispmat, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

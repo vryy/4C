@@ -16,6 +16,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /// krylov subspace linear solvers (belos) with right-side preconditioning
@@ -50,5 +52,7 @@ namespace CORE::LINEAR_SOLVER
     int numiters_;
   };
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

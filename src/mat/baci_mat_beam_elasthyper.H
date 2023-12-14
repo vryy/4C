@@ -20,6 +20,8 @@ function)
 
 #include <typeinfo>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 namespace DRT
@@ -241,5 +243,7 @@ namespace MAT
     MAT::PAR::BeamElastHyperMaterialParameterGeneric* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

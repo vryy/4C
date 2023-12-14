@@ -13,6 +13,8 @@
 
 #include "baci_poroelast_monolithicsplit.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MatrixRowTransform;
@@ -104,5 +106,7 @@ namespace POROELAST
   };
 
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_MONOLITHICFLUIDSPLIT_H

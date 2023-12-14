@@ -14,6 +14,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_scatra_reaction_mat.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -672,5 +674,7 @@ namespace MAT
   }  // namespace PAR
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_SCATRA_REACTION_COUPLING_H

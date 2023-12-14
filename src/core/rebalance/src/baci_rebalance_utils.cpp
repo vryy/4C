@@ -13,6 +13,8 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 void CORE::REBALANCE::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
 {
   const int numproc = dis.Comm().NumProc();
@@ -66,3 +68,4 @@ void CORE::REBALANCE::UTILS::PrintParallelDistribution(const DRT::Discretization
     }
   }
 }
+BACI_NAMESPACE_CLOSE

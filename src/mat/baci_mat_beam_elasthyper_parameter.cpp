@@ -15,6 +15,8 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -347,3 +349,5 @@ MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode::
         "if specified (only required if any kind of beam interactions are considered), the "
         "given interaction radius must be a positive value");
 }
+
+BACI_NAMESPACE_CLOSE

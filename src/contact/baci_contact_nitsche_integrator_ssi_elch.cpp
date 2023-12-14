@@ -20,6 +20,8 @@ electrochemistry
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_so3_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 template <int dim>
 struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 {
@@ -697,3 +699,4 @@ void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantitie
     electrode_quantitites.d_xi_dd = &d_master_xi_dd;
   }
 }
+BACI_NAMESPACE_CLOSE

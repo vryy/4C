@@ -13,6 +13,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR::REBALANCE
 {
   enum class RebalanceType
@@ -28,5 +30,7 @@ namespace INPAR::REBALANCE
   //! set the parameters for the geometric search strategy
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 }  // namespace INPAR::REBALANCE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

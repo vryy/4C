@@ -14,6 +14,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -84,3 +86,5 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.",
       &cut_general);
 }
+
+BACI_NAMESPACE_CLOSE

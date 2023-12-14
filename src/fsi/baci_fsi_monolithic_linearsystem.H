@@ -19,12 +19,14 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace FSI
 {
   /// monolithic linear system
   /*!
-    Implements NOX::Epetra::LinearSystemAztecOO.
+    Implements ::NOX::Epetra::LinearSystemAztecOO.
     Currently, the only purpose is to introduce a combo status test
     to the aztec solver that allows for
     L2-norm, Linf-norm and MaxIters
@@ -32,22 +34,22 @@ namespace FSI
     \author m.gee
     \date 03/08
    */
-  class MonolithicLinearSystem : public NOX::Epetra::LinearSystemAztecOO
+  class MonolithicLinearSystem : public ::NOX::Epetra::LinearSystemAztecOO
   {
    public:
     /// create
     explicit MonolithicLinearSystem(Teuchos::ParameterList& printingParams,
         Teuchos::ParameterList& linearSolverParams,
-        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+        const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
         const Teuchos::RCP<Epetra_Operator>& J,
-        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-        const Teuchos::RCP<Epetra_Operator>& M, const NOX::Epetra::Vector& cloneVector,
-        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+        const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
+        const Teuchos::RCP<Epetra_Operator>& M, const ::NOX::Epetra::Vector& cloneVector,
+        const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
 
     /// overload the solve to incorporate our own convergence test
     bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-        const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) override;
+        const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) override;
 
    protected:
     void softreset(Teuchos::ParameterList& linearSolverParams);
@@ -69,5 +71,7 @@ namespace FSI
 
 }  // namespace FSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -31,6 +31,8 @@
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizeblockmatrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -514,5 +516,7 @@ namespace DRT
     }  // end namespace XFLUID
   }    // end namespace ELEMENTS
 }  // end namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_CALC_XFEM_COUPLING_H

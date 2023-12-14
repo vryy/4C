@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
        to handle constrained problems.
 
 
@@ -18,15 +18,17 @@
 
 #include <NOX_Epetra_LinearSystem.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& grpOptionParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+    const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
-    : NOX::Epetra::Group(printParams, i, x, linSys),
+    : ::NOX::Epetra::Group(printParams, i, x, linSys),
       NOX::NLN::Group(printParams, grpOptionParams, i, x, linSys),
       userConstraintInterfaces_(iConstr)
 {
@@ -35,8 +37,8 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source, CopyType type)
-    : NOX::Epetra::Group(source, type),
+NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source, ::NOX::CopyType type)
+    : ::NOX::Epetra::Group(source, type),
       NOX::NLN::Group(source, type),
       userConstraintInterfaces_(source.userConstraintInterfaces_)
 {
@@ -45,16 +47,16 @@ NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source, Co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(CopyType type) const
+Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(::NOX::CopyType type) const
 {
-  Teuchos::RCP<NOX::Abstract::Group> newgrp =
+  Teuchos::RCP<::NOX::Abstract::Group> newgrp =
       Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(*this, type));
   return newgrp;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group& NOX::NLN::CONSTRAINT::Group::operator=(const NOX::Epetra::Group& source)
+::NOX::Abstract::Group& NOX::NLN::CONSTRAINT::Group::operator=(const ::NOX::Epetra::Group& source)
 {
   NOX::NLN::Group::operator=(source);
 
@@ -119,7 +121,7 @@ double NOX::NLN::CONSTRAINT::Group::GetModelValue(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
+double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
     const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
@@ -127,7 +129,7 @@ double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const NOX::Abstract:
   // contributions of the primary field
   double linVal = NOX::NLN::Group::GetLinearizedModelTerms(dir, merit_func_type, linorder, lintype);
 
-  const NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const NOX::Epetra::Vector&>(dir);
+  const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   // constraint contributions
@@ -141,13 +143,13 @@ double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const NOX::Abstract:
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms(
-    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-    Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType>> scale) const
+    Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<NOX::StatusTest::NormF::ScaleType>(
-        chQ.size(), NOX::StatusTest::NormF::Unscaled));
+    scale = Teuchos::rcp(new std::vector<::NOX::StatusTest::NormF::ScaleType>(
+        chQ.size(), ::NOX::StatusTest::NormF::Unscaled));
 
   Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
 
@@ -155,7 +157,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms
   for (std::size_t i = 0; i < chQ.size(); ++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(RHSVector.getEpetraVector(), chQ[i], type[i],
-        (*scale)[i] == NOX::StatusTest::NormF::Scaled);
+        (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
     if (rval >= 0.0)
     {
       norms->push_back(rval);
@@ -169,7 +171,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms
       Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
           GetConstraintInterfacePtr(soltype);
       rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(), chQ[i], type[i],
-          (*scale)[i] == NOX::StatusTest::NormF::Scaled);
+          (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
     }
 
     if (rval >= 0.0)
@@ -196,11 +198,11 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetSolutionUpdateNorms(
-    const NOX::Abstract::Vector& xOld, const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
         chQ.size(), StatusTest::NormUpdate::Unscaled));
@@ -244,11 +246,11 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetSolutionUpdate
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetPreviousSolutionNorms(
-    const NOX::Abstract::Vector& xOld, const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
         chQ.size(), StatusTest::NormUpdate::Unscaled));
@@ -290,11 +292,11 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetPreviousSoluti
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetSolutionUpdateRMS(
-    const NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
+    const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
     const std::vector<double>& rTol, const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     const std::vector<bool>& disable_implicit_weighting) const
 {
-  const NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   Teuchos::RCP<std::vector<double>> rms = Teuchos::rcp(new std::vector<double>(0));
 
   double rval = -1.0;
@@ -352,7 +354,7 @@ Teuchos::RCP<const Epetra_Map> NOX::NLN::CONSTRAINT::Group::GetOldActiveSetMap(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-enum NOX::StatusTest::StatusType NOX::NLN::CONSTRAINT::Group::GetActiveSetInfo(
+enum ::NOX::StatusTest::StatusType NOX::NLN::CONSTRAINT::Group::GetActiveSetInfo(
     const enum NOX::NLN::StatusTest::QuantityType& qt, int& activeset_size) const
 {
   enum NOX::NLN::SolutionType soltype = NOX::NLN::AUX::ConvertQuantityType2SolutionType(qt);
@@ -365,10 +367,12 @@ enum NOX::StatusTest::StatusType NOX::NLN::CONSTRAINT::Group::GetActiveSetInfo(
 void NOX::NLN::CONSTRAINT::Group::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils.isPrintType(NOX::Utils::Error))
+  if (utils.isPrintType(::NOX::Utils::Error))
   {
     utils.out() << "ERROR - NOX::NLN::CONSTRAINT::Group::" << functionName << " - " << errorMsg
                 << std::endl;
   }
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net) : DRT::ResultTest("ARTNET")
@@ -147,3 +149,5 @@ void ART::ArteryResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& ne
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

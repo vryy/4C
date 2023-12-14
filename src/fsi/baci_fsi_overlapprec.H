@@ -19,6 +19,8 @@
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -48,8 +50,8 @@ namespace FSI
   {
    public:
     BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-        const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
-        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, int symmetric, double omega = 1.0,
+        const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
+        ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, int symmetric, double omega = 1.0,
         int iterations = 1, double somega = 1.0, int siterations = 0, double fomega = 1.0,
         int fiterations = 0, double aomega = 1.0, int aiterations = 0, FILE* err = nullptr);
 
@@ -128,8 +130,8 @@ namespace FSI
    public:
     /// construction
     OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-        const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
-        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
+        const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
+        ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
         double omega = 1.0, int iterations = 1, double somega = 1.0, int siterations = 0,
         double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0);
 
@@ -151,10 +153,12 @@ namespace FSI
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ::ADAPTER::FSIStructureWrapper& structure_;
-    ::ADAPTER::Fluid& fluid_;
-    ::ADAPTER::AleFsiWrapper& ale_;
+    ADAPTER::FSIStructureWrapper& structure_;
+    ADAPTER::Fluid& fluid_;
+    ADAPTER::AleFsiWrapper& ale_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

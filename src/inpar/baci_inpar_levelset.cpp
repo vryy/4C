@@ -16,6 +16,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -241,3 +243,5 @@ void INPAR::LEVELSET::SetValidConditions(
   condlist.push_back(linelscontact);
   condlist.push_back(pointlscontact);
 }
+
+BACI_NAMESPACE_CLOSE

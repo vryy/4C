@@ -28,6 +28,8 @@
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |
  *----------------------------------------------------------------------*/
@@ -363,5 +365,7 @@ namespace ELEMAG
   };
 
 }  // namespace ELEMAG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_TIMEINT_H

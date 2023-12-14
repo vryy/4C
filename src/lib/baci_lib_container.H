@@ -26,6 +26,8 @@
 class Epetra_MultiVector;
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class ContainerType : public CORE::COMM::ParObjectType
@@ -554,5 +556,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Container& cont);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_CONTAINER_H

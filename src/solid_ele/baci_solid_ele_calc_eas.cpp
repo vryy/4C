@@ -22,6 +22,7 @@
 #include <memory>
 #include <optional>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -967,3 +968,4 @@ static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::F
                   STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
+BACI_NAMESPACE_CLOSE

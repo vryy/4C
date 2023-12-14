@@ -14,6 +14,8 @@ growth laws.
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 /*------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -508,5 +510,7 @@ namespace MAT
   };  // class GrowthVolumetric
 
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_GROWTH_H

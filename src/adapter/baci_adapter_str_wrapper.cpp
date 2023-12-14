@@ -11,6 +11,7 @@
 
 #include "baci_adapter_str_wrapper.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -60,3 +61,5 @@ void ADAPTER::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_
     StructureWrapper::Evaluate(Teuchos::null);
   }
 }
+
+BACI_NAMESPACE_CLOSE

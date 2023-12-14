@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -123,3 +125,5 @@ double MAT::WeaklyCompressibleFluid::ComputePressure(const double dens) const
 
   return pressure;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -13,6 +13,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT::FLUIDPORO
 {
   /*! @brief Compute structure tensor from a given direction vector
@@ -815,3 +817,5 @@ double MAT::FluidPoro::EffectiveViscosity() const
 
   return viscosity;
 }
+
+BACI_NAMESPACE_CLOSE

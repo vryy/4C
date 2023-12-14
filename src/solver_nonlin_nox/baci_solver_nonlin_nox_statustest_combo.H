@@ -13,6 +13,8 @@
 
 #include <NOX_StatusTest_Combo.H>  // base class
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace NLN
@@ -27,29 +29,29 @@ namespace NOX
        * \author Michael Hiermeier
        */
 
-      class Combo : public NOX::StatusTest::Combo
+      class Combo : public ::NOX::StatusTest::Combo
       {
        public:
         //! Constructor. Optional argument is the error stream for output.
-        Combo(ComboType t, const NOX::Utils* u = nullptr);
+        Combo(ComboType t, const ::NOX::Utils* u = nullptr);
 
         //! Constructor with a single test.
-        Combo(ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u = nullptr);
+        Combo(ComboType t, const Teuchos::RCP<Generic>& a, const ::NOX::Utils* u = nullptr);
 
         //! Constructor with two tests.
         Combo(ComboType t, const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b,
-            const NOX::Utils* u = nullptr);
+            const ::NOX::Utils* u = nullptr);
 
         //! Add another test to this combination.
         /*!
           Calls isSafe() to determine if it is safe to add \c a to the combination.
         */
-        Combo& addStatusTest(const Teuchos::RCP<NOX::StatusTest::Generic>& a) override;
+        Combo& addStatusTest(const Teuchos::RCP<::NOX::StatusTest::Generic>& a) override;
 
         virtual Combo& addStatusTest(
-            const Teuchos::RCP<NOX::StatusTest::Generic>& a, const bool& init);
+            const Teuchos::RCP<::NOX::StatusTest::Generic>& a, const bool& init);
 
-        virtual const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& GetTestVector() const;
+        virtual const std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>& GetTestVector() const;
 
        protected:
         //! Check whether or not it is safe to add a to this list of tests.
@@ -61,10 +63,10 @@ namespace NOX
          * This a copy of the base class vector. It generates almost no overhead,
          * because it is a vector of pointers and we need it, because we have no
          * direct access to the base class vector (private). */
-        std::vector<Teuchos::RCP<NOX::StatusTest::Generic>> tests_;
+        std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>> tests_;
 
         //! Ostream used to print errors
-        NOX::Utils utils_;
+        ::NOX::Utils utils_;
 
       };  // class Combo
 
@@ -73,5 +75,7 @@ namespace NOX
 }  // namespace NOX
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_STATUSTEST_COMBO_H

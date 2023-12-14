@@ -16,6 +16,8 @@
 #include "baci_inpar_constraint_framework.H"
 #include "baci_structure_new_model_evaluator_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -82,7 +84,7 @@ namespace STR
       {
       }
 
-      void RunPostIterate(const NOX::Solver::Generic& solver) override {}
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override {}
 
       void Predict(const INPAR::STR::PredEnum& pred_type) override;
 
@@ -135,5 +137,7 @@ namespace STR
     };
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

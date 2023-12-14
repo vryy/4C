@@ -17,6 +17,8 @@
 #include "baci_mat_anisotropy_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
 
 void MAT::CylinderCoordinateSystemManager::Pack(CORE::COMM::PackBuffer& data) const
@@ -70,3 +72,4 @@ const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetGPCylinderCoordi
 {
   return gpCylinderCoordinateSystemManagers_[gp];
 }
+BACI_NAMESPACE_CLOSE

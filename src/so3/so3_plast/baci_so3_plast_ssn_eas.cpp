@@ -16,6 +16,8 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_so3_plast_ssn.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                           seitz 04/14 |
@@ -411,3 +413,5 @@ template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>;
 template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>;
 template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>;
 template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

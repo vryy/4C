@@ -40,6 +40,7 @@
 
 #include <unordered_set>
 
+BACI_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
@@ -4242,3 +4243,5 @@ template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>> const&,
     std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>&) const;
+
+BACI_NAMESPACE_CLOSE

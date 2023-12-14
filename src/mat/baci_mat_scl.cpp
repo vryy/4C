@@ -16,6 +16,8 @@ species
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -299,3 +301,5 @@ double MAT::Scl::ComputeConcentrationDerivativeOfOnsagerCoefficient(
           conductivityderconc / (1.0 - (concentration - cbulk) * delta_nu));
   return onsagercoeffderconc;
 }
+
+BACI_NAMESPACE_CLOSE

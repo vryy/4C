@@ -20,6 +20,8 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -61,9 +63,9 @@ namespace STR
    * \date 06/08
    */
   class TimIntImpl : public TimInt,
-                     public NOX::Epetra::Interface::Required,
-                     public NOX::Epetra::Interface::Jacobian,
-                     public NOX::Epetra::Interface::Preconditioner
+                     public ::NOX::Epetra::Interface::Required,
+                     public ::NOX::Epetra::Interface::Jacobian,
+                     public ::NOX::Epetra::Interface::Preconditioner
   {
    public:
     //! @name Construction
@@ -537,20 +539,21 @@ namespace STR
                                            //!< i.e. total displacements
         Epetra_Vector& RHS,                //!< to be filled with the \f$F\f$ values that correspond
                                            //!< to the input solution vector \f$x\f$.
-        const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated
-                                                               //!< type (see NOX::Epetra::FillType)
-                                                               //!< that tells a users interface why
-                                                               //!< computeF() was called. NOX has
-                                                               //!< the ability to generate
-                                                               //!< Jacobians based on numerical
-                                                               //!< differencing using calls to
-                                                               //!< computeF(). In this case,
-                                                               //!< the user may want to compute
-                                                               //!< an inexact
-                                                               //!< (and hopefully cheaper) \f$F\f$
-                                                               //!< since it
-                                                               //!< is only used in the Jacobian (or
-                                                               //!< preconditioner).
+        const ::NOX::Epetra::Interface::Required::FillType
+            flag  //!< enumerated
+                  //!< type (see ::NOX::Epetra::FillType)
+                  //!< that tells a users interface why
+                  //!< computeF() was called. NOX has
+                  //!< the ability to generate
+                  //!< Jacobians based on numerical
+                  //!< differencing using calls to
+                  //!< computeF(). In this case,
+                  //!< the user may want to compute
+                  //!< an inexact
+                  //!< (and hopefully cheaper) \f$F\f$
+                  //!< since it
+                  //!< is only used in the Jacobian (or
+                  //!< preconditioner).
         ) override;
 
     //! Compute effective dynamic stiffness matrix
@@ -559,7 +562,7 @@ namespace STR
         Epetra_Operator& Jac                      //!< a reference to the Jacobian operator
                                                   //!< \f$\frac{\partial F}{\partial x}\f$
                                                   //!< that the user supplied in the
-                                                  //!< NOX::Epetra::Group constructor.
+                                                  //!< ::NOX::Epetra::Group constructor.
         ) override;
 
     /*! \brief Compute preconditioner
@@ -589,8 +592,8 @@ namespace STR
     );
 
     //! Create status test for non-linear solution with NOX
-    Teuchos::RCP<NOX::StatusTest::Combo> NoxCreateStatusTest(
-        Teuchos::RCP<NOX::Abstract::Group> grp  //!< NOX group
+    Teuchos::RCP<::NOX::StatusTest::Combo> NoxCreateStatusTest(
+        Teuchos::RCP<::NOX::Abstract::Group> grp  //!< NOX group
     );
 
     //! Create solver parameters for  non-linear solution with NOX
@@ -602,10 +605,10 @@ namespace STR
     ) const;
 
     //! Create the linear system that is passed into NOX
-    Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
         Teuchos::ParameterList& nlParams,  ///< parameter list
-        NOX::Epetra::Vector& noxSoln,      ///< solution vector to operate on
-        Teuchos::RCP<NOX::Utils> utils     ///< printing utilities
+        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
+        Teuchos::RCP<::NOX::Utils> utils   ///< printing utilities
     );
 
     //! Do non-linear solve with NOX
@@ -613,7 +616,7 @@ namespace STR
 
     //! check for success of nonlinear solve otherwise return error code
     int NoxErrorCheck(
-        NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
+        ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver);
     //@}
 
     //! @name Updates
@@ -717,16 +720,16 @@ namespace STR
     bool HaveSpringDashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override { return conman_; }
+    Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override { return conman_; }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
-    Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       return cardvasc0dman_;
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       return springman_;
     }
@@ -1022,10 +1025,11 @@ namespace STR
 
     //! @name NOX variables
     //@{
-    Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;  //!< NOX status test for convergence check
+    Teuchos::RCP<::NOX::StatusTest::Combo>
+        noxstatustest_;  //!< NOX status test for convergence check
     Teuchos::RCP<Teuchos::ParameterList>
-        noxparams_;                      //!< NOX parameter list to configure the NOX solver
-    Teuchos::RCP<NOX::Utils> noxutils_;  //!< NOX utils for printing
+        noxparams_;                        //!< NOX parameter list to configure the NOX solver
+    Teuchos::RCP<::NOX::Utils> noxutils_;  //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables
@@ -1053,4 +1057,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // STRUCTURE_TIMINT_IMPL_H

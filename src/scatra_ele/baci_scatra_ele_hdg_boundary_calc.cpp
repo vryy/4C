@@ -16,6 +16,8 @@
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -155,3 +157,5 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

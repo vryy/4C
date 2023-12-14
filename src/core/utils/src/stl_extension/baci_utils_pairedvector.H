@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEN
 {
   /// copy types
@@ -472,5 +474,7 @@ namespace CORE::GEN
   using quick_pairedvector = pairedvector<Key, T, quick_insert_policy<Key, T>>;
 
 }  // namespace CORE::GEN
+
+BACI_NAMESPACE_CLOSE
 
 #endif

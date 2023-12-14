@@ -14,6 +14,8 @@
 #include "baci_so3_hex8.H"
 #include "baci_so3_surface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -132,3 +134,5 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

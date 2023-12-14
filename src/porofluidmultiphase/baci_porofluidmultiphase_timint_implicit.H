@@ -22,6 +22,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*==========================================================================*/
 // forward declarations
@@ -683,5 +685,7 @@ namespace POROFLUIDMULTIPHASE
   };  // class TimIntImpl
 }  // namespace POROFLUIDMULTIPHASE
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H

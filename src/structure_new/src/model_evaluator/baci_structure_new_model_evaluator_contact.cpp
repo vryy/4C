@@ -29,6 +29,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::Setup()
@@ -874,12 +876,12 @@ void STR::MODELEVALUATOR::Contact::RunPreComputeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::RunPostIterate(const NOX::Solver::Generic& solver)
+void STR::MODELEVALUATOR::Contact::RunPostIterate(const ::NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
 
-  const NOX::Epetra::Vector& nox_x =
-      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+  const ::NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
   Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
@@ -904,11 +906,11 @@ void STR::MODELEVALUATOR::Contact::RunPreApplyJacobianInverse(const Epetra_Vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::RunPreSolve(const NOX::Solver::Generic& solver)
+void STR::MODELEVALUATOR::Contact::RunPreSolve(const ::NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
-  const NOX::Epetra::Vector& nox_x =
-      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+  const ::NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
   Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
@@ -955,7 +957,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Contact::Get
 Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Contact::AssembleForceOfModels(
     const std::vector<INPAR::STR::ModelType>* without_these_models, const bool apply_dbc) const
 {
-  Teuchos::RCP<NOX::Epetra::Vector> force_nox = GState().CreateGlobalVector();
+  Teuchos::RCP<::NOX::Epetra::Vector> force_nox = GState().CreateGlobalVector();
   Int().AssembleForce(force_nox->getEpetraVector(), without_these_models);
 
   // copy the vector, otherwise the storage will be freed at the end of this
@@ -1041,3 +1043,5 @@ void STR::MODELEVALUATOR::Contact::RemoveCondensedContributionsFromRhs(Epetra_Ve
   std::vector<Teuchos::RCP<Epetra_Vector>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
   Strategy().Evaluate(EvalContact(), nullptr, &mutable_vec);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include "baci_so3_poro.H"
 #include "baci_xfem_xfluid_contact_communicator.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(
@@ -311,3 +313,5 @@ void inline CONTACT::UTILS::SoEleGP(MORTAR::MortarElement& sele, const double wg
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
 }
+
+BACI_NAMESPACE_CLOSE

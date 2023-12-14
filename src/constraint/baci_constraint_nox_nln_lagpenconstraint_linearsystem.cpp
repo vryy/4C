@@ -21,19 +21,21 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
       iConstr_(iConstr),
@@ -46,13 +48,13 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
  *----------------------------------------------------------------------*/
 NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector)
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
     : NOX::NLN::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
       iConstr_(iConstr),
@@ -140,10 +142,12 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
 void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_.isPrintType(NOX::Utils::Error))
+  if (utils_.isPrintType(::NOX::Utils::Error))
   {
     utils_.out() << "NOX::LAGPENCONSTRAINT::LinearSystem::" << functionName << " - " << errorMsg
                  << std::endl;
   }
   throw "NOX Error";
 }
+
+BACI_NAMESPACE_CLOSE

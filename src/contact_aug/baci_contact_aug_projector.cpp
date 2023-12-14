@@ -15,6 +15,8 @@
 #include "baci_mortar_element.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned probdim,
@@ -400,3 +402,5 @@ template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::
     CORE::FE::CellType::nurbs4>;
 template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
     CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>;
+
+BACI_NAMESPACE_CLOSE

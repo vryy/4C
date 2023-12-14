@@ -15,6 +15,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
+BACI_NAMESPACE_OPEN
+
 /// Several parameters which are fixed for Solid Hex20
 const int NUMNOD_SOH20 = 20;  ///< number of nodes
 const int NODDOF_SOH20 = 3;   ///< number of dofs per node
@@ -483,5 +485,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_HEX20_H

@@ -28,6 +28,8 @@
 #include <list>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -872,4 +874,6 @@ namespace BINSTRATEGY
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

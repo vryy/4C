@@ -12,6 +12,8 @@
 
 #include "baci_xfem_xfield_field_coupling_dofset.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::XFieldField::CouplingDofSet::CouplingDofSet(const int& my_num_reserve_dof_per_node,
@@ -61,3 +63,5 @@ int XFEM::XFieldField::CouplingDofSet::NumStandardDofPerNode() const
 {
   return g_num_std_dof_per_node_;
 }
+
+BACI_NAMESPACE_CLOSE

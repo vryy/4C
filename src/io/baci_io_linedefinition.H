@@ -20,6 +20,8 @@
 #include <utility>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::INPUT
 {
   namespace INTERNAL
@@ -340,5 +342,7 @@ namespace DRT::INPUT
   };
 
 }  // namespace DRT::INPUT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

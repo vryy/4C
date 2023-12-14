@@ -12,6 +12,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -33,3 +35,5 @@ void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "If visualization output for the geometric search should be written",
       &boundingvolumestrategy);
 }
+
+BACI_NAMESPACE_CLOSE

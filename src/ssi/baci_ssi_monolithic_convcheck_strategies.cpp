@@ -23,6 +23,8 @@ derived from an abstract, purely virtual interface class.
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
@@ -771,3 +773,4 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
 
   return exit;
 }
+BACI_NAMESPACE_CLOSE

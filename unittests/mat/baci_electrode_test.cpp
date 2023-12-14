@@ -14,6 +14,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class ElectrodeTest : public ::testing::Test
   {
    protected:

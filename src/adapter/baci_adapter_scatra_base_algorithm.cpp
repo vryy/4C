@@ -35,6 +35,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
@@ -595,3 +597,5 @@ void ADAPTER::ScaTraBaseAlgorithm::CheckIsInit() const
 {
   if (not IsInit()) dserror("Init(...) was not called.");
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 // forward declarations
 class Epetra_Vector;
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
@@ -126,4 +128,6 @@ namespace STI
     void Update() override;
   };  // class Algorithm : public ADAPTER::AlgorithmBase
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

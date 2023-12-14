@@ -14,6 +14,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -115,3 +117,5 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::Adhesio
   // adjust surface energy to allowed bounds
   AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,7 @@
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -764,3 +765,5 @@ CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
 
   return block_matrix;
 }
+
+BACI_NAMESPACE_CLOSE

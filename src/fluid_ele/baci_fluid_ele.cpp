@@ -18,6 +18,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
 DRT::ELEMENTS::FluidType& DRT::ELEMENTS::FluidType::Instance() { return instance_; }
@@ -358,3 +360,5 @@ void DRT::ELEMENTS::Fluid::ActivateTDS(
 
   tds_->ActivateTDS(nquad, nsd, saccn, sveln, svelnp);
 }
+
+BACI_NAMESPACE_CLOSE

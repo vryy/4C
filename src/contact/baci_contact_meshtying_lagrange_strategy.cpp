@@ -27,6 +27,8 @@
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -1202,3 +1204,5 @@ void CONTACT::MtLagrangeStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vec
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

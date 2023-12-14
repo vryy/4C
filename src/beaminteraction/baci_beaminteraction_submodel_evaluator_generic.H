@@ -16,6 +16,16 @@
 #include "baci_beaminteraction_str_model_evaluator.H"
 #include "baci_inpar_beaminteraction.H"
 
+namespace NOX
+{
+  namespace Solver
+  {
+    class Generic;
+  }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace BINSTRATEGY
 {
@@ -37,13 +47,6 @@ namespace CORE::GEO
     class BoundingBox;
   }
 }  // namespace CORE::GEO
-namespace NOX
-{
-  namespace Solver
-  {
-    class Generic;
-  }
-}  // namespace NOX
 namespace STR
 {
   namespace TIMINT
@@ -85,8 +88,8 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<::DRT::Discretization> const& ia_discret,
-          Teuchos::RCP<::DRT::Discretization> const& bindis,
+      virtual void Init(Teuchos::RCP<BACI::DRT::Discretization> const& ia_discret,
+          Teuchos::RCP<BACI::DRT::Discretization> const& bindis,
           Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
@@ -167,12 +170,12 @@ namespace BEAMINTERACTION
       //! \brief do stuff post reading of model specific restart information
       virtual void PostReadRestart() = 0;
 
-      /*! \brief Executed at the end of the NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
+      /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
        *
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author grill, hiermeier \date 10/17 */
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) = 0;
+      virtual void RunPostIterate(const ::NOX::Solver::Generic& solver) = 0;
 
       //! reset routine for model evlaluator
       virtual void InitSubmodelDependencies(
@@ -197,13 +200,13 @@ namespace BEAMINTERACTION
       //! @{
       //! Returns the (structural) discretization
       DRT::Discretization& Discret();
-      Teuchos::RCP<::DRT::Discretization>& DiscretPtr();
-      Teuchos::RCP<const ::DRT::Discretization> DiscretPtr() const;
+      Teuchos::RCP<BACI::DRT::Discretization>& DiscretPtr();
+      Teuchos::RCP<const BACI::DRT::Discretization> DiscretPtr() const;
       DRT::Discretization const& Discret() const;
 
       DRT::Discretization& BinDiscret();
-      Teuchos::RCP<::DRT::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const ::DRT::Discretization> BinDiscretPtr() const;
+      Teuchos::RCP<BACI::DRT::Discretization>& BinDiscretPtr();
+      Teuchos::RCP<const BACI::DRT::Discretization> BinDiscretPtr() const;
       DRT::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
@@ -246,10 +249,10 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<::DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<BACI::DRT::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<::DRT::Discretization> bindis_ptr_;
+      Teuchos::RCP<BACI::DRT::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
@@ -276,5 +279,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -19,6 +19,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace BEAMINTERACTION
 {
   //! \brief Small class that stores neighbor element information necessary for nodal tangent
@@ -191,5 +193,7 @@ namespace BEAMINTERACTION
 
   }  // namespace B3TANGENTSMOOTHING
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H

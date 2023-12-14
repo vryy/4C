@@ -15,6 +15,8 @@
 #include "baci_mortar_integrator.H"
 #include "baci_utils_pairedvector.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -902,5 +904,7 @@ namespace CONTACT
   };  // class CoIntegrator
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_INTEGRATOR_H

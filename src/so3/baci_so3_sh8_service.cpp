@@ -16,6 +16,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  find shell-thickness direction via Jacobian                maf 07/07|
@@ -363,3 +365,5 @@ DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
   }
   return derivs;
 }
+
+BACI_NAMESPACE_CLOSE

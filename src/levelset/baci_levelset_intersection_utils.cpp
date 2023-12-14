@@ -24,6 +24,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_scatra_ele_parameter_std.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 SCATRA::LEVELSET::Intersection::Intersection()
@@ -610,3 +612,5 @@ template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet<CORE::GEO::Boundar
 template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet<CORE::GEO::BoundaryIntCellPtrs>(
     const Epetra_Vector& phi, const DRT::Discretization& scatradis,
     std::map<int, CORE::GEO::BoundaryIntCellPtrs>& elementBoundaryIntCells, bool cut_screenoutput);
+
+BACI_NAMESPACE_CLOSE

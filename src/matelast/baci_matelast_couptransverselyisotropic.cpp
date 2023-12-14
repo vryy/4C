@@ -17,6 +17,8 @@ computations
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -339,3 +341,4 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
 
   dserror("Uncaught error detected:\n%s", msg.str().c_str());
 }
+BACI_NAMESPACE_CLOSE

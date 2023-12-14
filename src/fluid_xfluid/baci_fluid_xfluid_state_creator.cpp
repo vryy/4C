@@ -28,6 +28,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container               schott 01/15 |
@@ -212,3 +213,5 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   // REMARK: this has to be done after replacing the discret' dofset (via discret_->ReplaceDofSet)
   xdiscret->ComputeNullSpaceIfNecessary(solver_params, true);
 }
+
+BACI_NAMESPACE_CLOSE

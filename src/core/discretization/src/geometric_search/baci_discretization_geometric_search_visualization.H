@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   /**
@@ -49,5 +51,7 @@ namespace CORE::GEOMETRICSEARCH
     int my_rank_;
   };
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

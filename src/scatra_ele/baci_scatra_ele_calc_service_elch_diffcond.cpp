@@ -17,6 +17,8 @@
 #include "baci_scatra_ele_utils_elch_diffcond.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
@@ -854,3 +856,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::hex2
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet4, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::pyramid5, 3>;
+
+BACI_NAMESPACE_CLOSE

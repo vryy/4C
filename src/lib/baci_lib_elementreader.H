@@ -16,6 +16,8 @@
 
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -189,5 +191,7 @@ namespace DRT
     };
   }  // namespace INPUT
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

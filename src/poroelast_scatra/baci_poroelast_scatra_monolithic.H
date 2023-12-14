@@ -21,6 +21,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  forward declarations                                              |
  *----------------------------------------------------------------------*/
@@ -297,5 +299,7 @@ namespace POROELASTSCATRA
   };  // class PoroScatraMono
 
 }  // namespace POROELASTSCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_SCATRA_MONOLITHIC_H

@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
 {
@@ -718,3 +720,5 @@ void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationW
   output->WriteVector("finert", finert_);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -28,6 +28,7 @@ loop for the evaluation.
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
 
 // forward declaration
 namespace MAT
@@ -271,5 +272,7 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -18,6 +18,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
@@ -254,3 +256,5 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::ReadRestart(int restart)
         PoroField()->FluidField()->Discretization(), ScaTraField()->Discretization());
   }
 }
+
+BACI_NAMESPACE_CLOSE

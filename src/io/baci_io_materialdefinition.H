@@ -23,6 +23,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Problem;
@@ -65,7 +67,7 @@ namespace DRT
       /// add a concrete component to the material line definition
       ///
       /// Add new components to the input line. One at a time.
-      void AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c);
+      void AddComponent(const Teuchos::RCP<BACI::INPUT::LineComponent>& c);
 
       /// read all materials from my input file section
       void Read(const Problem& problem,  ///< global problem instance that manages the input
@@ -87,7 +89,7 @@ namespace DRT
       std::string Description() const { return description_; }
 
       /// my material inputline
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> Inputline() const { return inputline_; }
 
      private:
       /// name of material
@@ -98,7 +100,7 @@ namespace DRT
       INPAR::MAT::MaterialType mattype_;
 
       /// the list of valid components
-      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<BACI::INPUT::LineComponent>> inputline_;
     };
 
 
@@ -113,5 +115,7 @@ namespace DRT
   }  // namespace INPUT
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

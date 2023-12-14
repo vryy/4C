@@ -13,6 +13,8 @@
 
 #include <Teuchos_oblackholestream.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace IO
 {
   /// this is the IO::cout that everyone can refer to
@@ -244,3 +246,5 @@ IO::Pstream& IO::operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&)) 
  * Handle special manipulators                                wic 09/16 *
  *----------------------------------------------------------------------*/
 IO::Level& IO::operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&)) { return pf(out); }
+
+BACI_NAMESPACE_CLOSE

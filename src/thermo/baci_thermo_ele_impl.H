@@ -22,6 +22,8 @@
 #include "baci_thermo_ele_impl_utils.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                            gjb 01/08 |
  *----------------------------------------------------------------------*/
@@ -509,4 +511,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_ELE_IMPL_H

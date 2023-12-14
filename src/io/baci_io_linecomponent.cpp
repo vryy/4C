@@ -10,6 +10,7 @@
 #include <iterator>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -125,7 +126,7 @@ namespace INPUT
    *----------------------------------------------------------------------*/
   SeparatorComponent::SeparatorComponent(
       std::string separator, std::string description, bool optional)
-      : ::INPUT::LineComponent("*SEPARATOR*", optional),
+      : INPUT::LineComponent("*SEPARATOR*", optional),
         separator_(std::move(separator)),
         description_(std::move(description))
   {
@@ -212,7 +213,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   StringComponent::StringComponent(std::string name, std::string defaultvalue, bool optional)
-      : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
+      : INPUT::LineComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
   {
   }
 
@@ -278,7 +279,7 @@ namespace INPUT
   SelectionComponent::SelectionComponent(std::string name, std::string defaultvalue,
       const Teuchos::Array<std::string>& datfilevalues,
       const Teuchos::Array<std::string>& stringcondvalues, bool optional)
-      : ::INPUT::LineComponent(std::move(name)),
+      : INPUT::LineComponent(std::move(name)),
         defaultvalue_(std::move(defaultvalue)),
         datfilevalues_(datfilevalues),
         stringcondvalues_(stringcondvalues),
@@ -302,7 +303,7 @@ namespace INPUT
   SelectionComponent::SelectionComponent(std::string name, std::string defaultvalue,
       const Teuchos::Array<std::string>& datfilevalues, const Teuchos::Array<int>& intcondvalues,
       bool optional)
-      : ::INPUT::LineComponent(std::move(name)),
+      : INPUT::LineComponent(std::move(name)),
         defaultvalue_(std::move(defaultvalue)),
         datfilevalues_(datfilevalues),
         stringcondvalues_(Teuchos::tuple<std::string>("notdefined")),
@@ -386,7 +387,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   IntComponent::IntComponent(std::string name, IntComponentData data)
-      : ::INPUT::LineComponent(std::move(name), data.optional), data_(data)
+      : INPUT::LineComponent(std::move(name), data.optional), data_(data)
   {
   }
 
@@ -485,7 +486,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   IntVectorComponent::IntVectorComponent(std::string name, int length, IntComponentData data)
-      : ::INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
+      : INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
   {
   }
 
@@ -493,7 +494,7 @@ namespace INPUT
 
   IntVectorComponent::IntVectorComponent(
       std::string name, LengthDefinition length_from_component, IntComponentData data)
-      : ::INPUT::LineComponent(std::move(name)),
+      : INPUT::LineComponent(std::move(name)),
         length_(std::move(length_from_component)),
         data_(data)
   {
@@ -640,7 +641,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   RealComponent::RealComponent(std::string name, RealComponentData data)
-      : ::INPUT::LineComponent(std::move(name), data.optional), data_(data)
+      : INPUT::LineComponent(std::move(name), data.optional), data_(data)
   {
   }
 
@@ -708,14 +709,14 @@ namespace INPUT
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   RealVectorComponent::RealVectorComponent(std::string name, int length, RealComponentData data)
-      : ::INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
+      : INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
   {
   }
 
 
   RealVectorComponent::RealVectorComponent(
       std::string name, LengthDefinition length, RealComponentData data)
-      : ::INPUT::LineComponent(std::move(name), data.optional),
+      : INPUT::LineComponent(std::move(name), data.optional),
         length_(std::move(length)),
         data_(data)
   {
@@ -810,7 +811,7 @@ namespace INPUT
   const std::string BoolComponent::lineTrue_ = "Yes";
   const std::string BoolComponent::lineFalse_ = "No";
   BoolComponent::BoolComponent(std::string name, const bool defaultvalue, bool optional)
-      : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(defaultvalue)
+      : INPUT::LineComponent(std::move(name), optional), defaultvalue_(defaultvalue)
   {
   }
 
@@ -893,9 +894,9 @@ namespace INPUT
 
 
   SwitchComponent::SwitchComponent(std::string name, const KeyType& default_key,
-      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
+      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
           choices)
-      : ::INPUT::LineComponent(std::move(name)),
+      : INPUT::LineComponent(std::move(name)),
         default_key_(default_key),
         choices_(std::move(choices))
   {
@@ -910,7 +911,7 @@ namespace INPUT
       names_for_keys.push_back(choice.first);
     }
 
-    component_for_key_ = std::make_unique<::INPUT::SelectionComponent>(
+    component_for_key_ = std::make_unique<INPUT::SelectionComponent>(
         Name(), choices_[default_key_].first, names_for_keys, keys);
   }
 
@@ -995,3 +996,5 @@ namespace INPUT
     return condline;
   }
 }  // namespace INPUT
+
+BACI_NAMESPACE_CLOSE

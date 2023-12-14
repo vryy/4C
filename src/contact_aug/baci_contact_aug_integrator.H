@@ -16,6 +16,8 @@
 #include "baci_contact_integrator.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MORTAR
 {
   enum ActionType : int;
@@ -524,5 +526,7 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_INTEGRATOR_H

@@ -14,6 +14,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -113,3 +115,5 @@ void DRT::DofSetProxy::CheckIsAssigned() const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

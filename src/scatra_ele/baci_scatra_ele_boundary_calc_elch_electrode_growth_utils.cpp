@@ -14,6 +14,8 @@
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, const double alpha_a,
@@ -406,3 +408,5 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
 
   return regfacderiv;
 }
+
+BACI_NAMESPACE_CLOSE

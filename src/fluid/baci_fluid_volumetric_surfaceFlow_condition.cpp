@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2160,3 +2162,5 @@ void FLD::UTILS::TotalTractionCorrector::ExportAndSetBoundaryValues(
   // Set state
   discret_->SetState(name, target);
 }
+
+BACI_NAMESPACE_CLOSE

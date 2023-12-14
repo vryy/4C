@@ -23,6 +23,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_integrator.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives        farah 09/13|
@@ -3802,3 +3804,5 @@ void WEAR::WearInterface::FDCheckWearDeriv()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

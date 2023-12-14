@@ -14,6 +14,7 @@
 
 namespace
 {
+  using namespace BACI;
 
   class ElementVolumeTest : public ::testing::Test
   {

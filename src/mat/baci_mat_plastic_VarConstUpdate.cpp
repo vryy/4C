@@ -26,6 +26,8 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 using vmap = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*/
@@ -1195,3 +1197,5 @@ void MAT::PlasticElastHyperVCU::Ce2ndDeriv(const CORE::LINALG::Matrix<3, 3>* def
                           Dexp_dLp_mat(vmap::SymToVoigt6(c, d), C));
           }
 }
+
+BACI_NAMESPACE_CLOSE

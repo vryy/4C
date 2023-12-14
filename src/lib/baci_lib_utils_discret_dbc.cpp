@@ -16,6 +16,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::EvaluateDirichlet(const DRT::Discretization& discret,
@@ -575,3 +577,5 @@ void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::Discretization& discret,
   // build the map extractor of Dirichlet-conditioned and free DOFs
   dbcmapextractor->Setup(*(discret.DofRowMap()), dbcmap);
 }
+
+BACI_NAMESPACE_CLOSE

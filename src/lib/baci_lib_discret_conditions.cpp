@@ -17,6 +17,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  Build boundary condition geometries (public)             mwgee 01/07|
@@ -679,3 +681,5 @@ void DRT::Discretization::FindAssociatedEleIDs(
     }
   }
 }  // DRT::Discretization::FindAssociatedEleIDs
+
+BACI_NAMESPACE_CLOSE

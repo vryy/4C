@@ -17,6 +17,8 @@
 /* headers */
 #include "baci_adapter_str_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations:
 namespace STR
 {
@@ -71,4 +73,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

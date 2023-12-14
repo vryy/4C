@@ -17,6 +17,8 @@
 #ifndef BACI_FLUID_FUNCTIONS_H
 #define BACI_FLUID_FUNCTIONS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -470,5 +472,7 @@ namespace FLD
     double amplitude_;
   };
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif

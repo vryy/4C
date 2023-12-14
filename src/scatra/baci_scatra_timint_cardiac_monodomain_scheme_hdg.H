@@ -14,6 +14,8 @@
 #include "baci_scatra_timint_cardiac_monodomain.H"
 #include "baci_scatra_timint_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -69,5 +71,7 @@ namespace SCATRA
   };  // class TimIntCardiacMonodomainHDG
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_H

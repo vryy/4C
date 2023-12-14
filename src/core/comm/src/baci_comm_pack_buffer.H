@@ -15,6 +15,8 @@
 #include <cstring>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::COMM
 {
   class PackBuffer
@@ -109,5 +111,7 @@ namespace CORE::COMM
     bool grow_;
   };
 }  // namespace CORE::COMM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

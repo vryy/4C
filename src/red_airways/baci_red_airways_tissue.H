@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 
@@ -67,7 +69,7 @@ namespace AIRWAY
     void UpdateAndOutput();
 
     /// access to structural field
-    Teuchos::RCP<::ADAPTER::StructureRedAirway>& StructureField() { return structure_; }
+    Teuchos::RCP<ADAPTER::StructureRedAirway>& StructureField() { return structure_; }
 
     /// access to airway field
     Teuchos::RCP<RedAirwayImplicitTimeInt>& RedAirwayField() { return redairways_; }
@@ -75,7 +77,7 @@ namespace AIRWAY
 
    private:
     /// underlying structure
-    Teuchos::RCP<::ADAPTER::StructureRedAirway> structure_;
+    Teuchos::RCP<ADAPTER::StructureRedAirway> structure_;
 
     Teuchos::RCP<RedAirwayImplicitTimeInt> redairways_;
 
@@ -134,5 +136,7 @@ namespace AIRWAY
     INPAR::ARTNET::RELAXTYPE_3D_0D relaxtype_;
   };
 }  // namespace AIRWAY
+
+BACI_NAMESPACE_CLOSE
 
 #endif

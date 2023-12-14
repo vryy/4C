@@ -18,6 +18,8 @@ The input line should read
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -490,3 +492,5 @@ void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::SerialDenseVector* glst
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

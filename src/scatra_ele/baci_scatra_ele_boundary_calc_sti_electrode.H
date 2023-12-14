@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_boundary_calc.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace MAT
 {
@@ -174,4 +176,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcSTIElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

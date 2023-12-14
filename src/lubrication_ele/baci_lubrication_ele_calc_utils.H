@@ -13,6 +13,8 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace LUBRICATION
 {
   //! Template Meta Programming version of switch over discretization type
@@ -100,5 +102,7 @@ namespace LUBRICATION
 
 }  // namespace LUBRICATION
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_ELE_CALC_UTILS_H

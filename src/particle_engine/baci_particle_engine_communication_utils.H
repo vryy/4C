@@ -21,6 +21,8 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace PARTICLEENGINE
 {
   namespace COMMUNICATION
@@ -50,4 +52,6 @@ namespace PARTICLEENGINE
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

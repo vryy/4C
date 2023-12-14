@@ -18,6 +18,8 @@ namespace
   class BeamToFluidMeshtyingPairGPTSTest;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace FBI
 {
   class PairFactory;
@@ -68,5 +70,7 @@ namespace BEAMINTERACTION
     using scalar_type = typename base_class::scalar_type;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -24,6 +24,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -116,7 +118,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::GetPairGID(
-    const ::DRT::Discretization& discret) const
+    const BACI::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -199,3 +201,5 @@ namespace BEAMINTERACTION
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE

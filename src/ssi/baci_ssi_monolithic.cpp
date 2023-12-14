@@ -40,6 +40,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
@@ -1702,3 +1704,4 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
   }
   ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
 }
+BACI_NAMESPACE_CLOSE

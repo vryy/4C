@@ -18,6 +18,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -294,3 +296,5 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
 
   return;
 }  // DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction
+
+BACI_NAMESPACE_CLOSE

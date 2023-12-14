@@ -12,6 +12,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace FPSI
 {
   class FPSI_Base : public ADAPTER::AlgorithmBase
@@ -39,5 +41,7 @@ namespace FPSI
     void RedistributeInterface();
   };
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

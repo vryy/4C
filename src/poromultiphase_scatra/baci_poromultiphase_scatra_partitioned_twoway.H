@@ -12,6 +12,8 @@
 
 #include "baci_poromultiphase_scatra_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASESCATRA
 {
   //! Base class of all partitioned solid-scatra algorithms --> virtual
@@ -144,5 +146,7 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_SCATRA_PARTITIONED_TWOWAY_H

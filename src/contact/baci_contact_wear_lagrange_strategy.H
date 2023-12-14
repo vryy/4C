@@ -20,6 +20,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace WEAR
 {
   // forward declarations
@@ -436,5 +438,7 @@ namespace WEAR
   };  // class
 
 }  // namespace WEAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_WEAR_LAGRANGE_STRATEGY_H

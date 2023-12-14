@@ -14,6 +14,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 
 /*------------------------------------------------------------------------------*
@@ -873,3 +874,5 @@ void CORE::GEO::CUT::FindCommonElements(
 
   FindCommonElements(pelement, elements);
 }
+
+BACI_NAMESPACE_CLOSE

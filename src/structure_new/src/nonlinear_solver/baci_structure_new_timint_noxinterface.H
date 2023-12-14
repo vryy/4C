@@ -19,6 +19,8 @@
 #include "baci_solver_nonlin_nox_interface_required.H"  // (1) base class: rhs, status tests and more
 
 #include <NOX_Epetra_Interface_Preconditioner.H>  // (3) base class: preconditioner stuff
+
+BACI_NAMESPACE_OPEN
 // forward declaration ...
 namespace NOX
 {
@@ -49,7 +51,7 @@ namespace STR
     class BaseDataGlobalState;
     class NoxInterface : virtual public NOX::NLN::Interface::Required,
                          virtual public NOX::NLN::Interface::Jacobian,
-                         virtual public NOX::Epetra::Interface::Preconditioner
+                         virtual public ::NOX::Epetra::Interface::Preconditioner
     {
      public:
       //! constructor
@@ -65,11 +67,11 @@ namespace STR
 
       //!@{
       /*! compute the right hand side entries
-       *  (derived from NOX::Epetra::Interface::Required) */
+       *  (derived from ::NOX::Epetra::Interface::Required) */
       bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
       /*! compute jacobian
-       *  ( derived from NOX::Epetra::Inteface::Jacobian) */
+       *  ( derived from ::NOX::Epetra::Inteface::Jacobian) */
       bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
       /*! compute right hand side and jacobian
@@ -78,11 +80,11 @@ namespace STR
           const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) override;
 
       bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
-          const NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
+          const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
           Epetra_Operator& jac) override;
 
       /*! compute preconditioner
-       *  (derived from NOX::Epetra::Interface::Preconditioner) */
+       *  (derived from ::NOX::Epetra::Interface::Preconditioner) */
       bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
           Teuchos::ParameterList* precParams = nullptr) override;
 
@@ -90,7 +92,7 @@ namespace STR
        *  primary DoFs (derived from NOX::NLN::Interface::Required) */
       double GetPrimaryRHSNorms(const Epetra_Vector& F,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
-          const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+          const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
 
       /*! Get the root mean square of the solution update (vector) entries
@@ -104,14 +106,14 @@ namespace STR
        *  (derived from NOX::NLN::Interface::Required) */
       double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew, const Epetra_Vector& xold,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
-          const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+          const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
 
       /*! Returns the previous solution norm of primary DoF fields
        *  (derived from NOX::NLN::Interface::Required) */
       double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
-          const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+          const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
 
       /*! Compute and return some energy representative or any other scalar value
@@ -120,7 +122,7 @@ namespace STR
       double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
           const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-      double GetLinearizedModelTerms(const NOX::Abstract::Group* group, const Epetra_Vector& dir,
+      double GetLinearizedModelTerms(const ::NOX::Abstract::Group* group, const Epetra_Vector& dir,
           const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const override;
@@ -167,16 +169,16 @@ namespace STR
       //! check if init and setup have been called
       void CheckInitSetup() const;
 
-      double GetLinearizedEnergyModelTerms(const NOX::Abstract::Group* group,
+      double GetLinearizedEnergyModelTerms(const ::NOX::Abstract::Group* group,
           const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const;
 
-      void FindConstraintModels(const NOX::Abstract::Group* grp,
+      void FindConstraintModels(const ::NOX::Abstract::Group* grp,
           std::vector<INPAR::STR::ModelType>& constraint_models) const;
 
       //! calculate norm in Get*Norms functions
       double CalculateNorm(Teuchos::RCP<Epetra_Vector> quantity,
-          const NOX::Abstract::Vector::NormType type, const bool isscaled) const;
+          const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const;
 
      protected:
       //! init flag
@@ -198,5 +200,7 @@ namespace STR
   }     // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_NOXINTERFACE_H

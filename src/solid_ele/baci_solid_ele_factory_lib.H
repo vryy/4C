@@ -13,6 +13,8 @@
 #include <memory>
 #include <variant>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::ELEMENTS
 {
   enum class EasType;
@@ -78,5 +80,7 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SOLID_ELE_FACTORY_LIB_H

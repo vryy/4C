@@ -26,6 +26,8 @@
 #include <MLAPI_Workspace.h>
 #include <stdio.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
@@ -1145,3 +1147,5 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
   return projected_velgrad;
 }
+
+BACI_NAMESPACE_CLOSE

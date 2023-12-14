@@ -15,6 +15,8 @@
 #include "baci_mat_sutherland.H"
 #include "baci_scatra_ele_action.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 12/13 |
@@ -330,3 +332,5 @@ void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectors(
   AddThermPressToParameterList(params);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

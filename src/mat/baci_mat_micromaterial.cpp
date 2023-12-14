@@ -14,6 +14,8 @@
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Be careful when adding new member functions of MicroMaterial that
 // relate to MicroMaterialGP (which is NOT in the filter). See also
@@ -102,3 +104,5 @@ void MAT::MicroMaterial::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -18,6 +18,8 @@
 #include "baci_pasi_partitioned_twowaycoup.H"
 #include "baci_pasi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -96,3 +98,5 @@ void pasi_dyn()
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = CORE::COMM::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
+
+BACI_NAMESPACE_CLOSE

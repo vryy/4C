@@ -15,6 +15,8 @@
 #include "baci_particle_interaction_material_handler.H"
 #include "baci_particle_interaction_runtime_writer.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -169,3 +171,5 @@ double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
 
   return maxrad;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -34,7 +36,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
  *
  */
 void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
-    const Teuchos::RCP<const ::DRT::Discretization>& discretization)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamInteractionConditionBase::BuildIdSets(discretization);
@@ -154,3 +156,5 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
 
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

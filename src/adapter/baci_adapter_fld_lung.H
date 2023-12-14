@@ -21,6 +21,8 @@ parenchyma balloon
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace DRT
@@ -88,5 +90,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::MapExtractor> outflowfsiinterface_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

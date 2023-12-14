@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -193,3 +195,5 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }  // if (params_ != nullptr)
 }
+
+BACI_NAMESPACE_CLOSE

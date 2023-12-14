@@ -22,6 +22,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // define and initialize static member
 CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::AUG::IntegrationWrapper::projInfo_(0);
 
@@ -1135,5 +1137,7 @@ CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::
 template CONTACT::AUG::IntegratorGeneric*
 CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
+
+BACI_NAMESPACE_CLOSE
 
 #include "baci_contact_aug_integrator.inst.H"

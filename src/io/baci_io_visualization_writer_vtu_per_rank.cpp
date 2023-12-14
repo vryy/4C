@@ -15,6 +15,8 @@
 #include "baci_io_visualization_data.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -102,3 +104,4 @@ void IO::VisualizationWriterVtuPerRank::FinalizeTimeStep()
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
       visualization_data_name_);
 }
+BACI_NAMESPACE_CLOSE

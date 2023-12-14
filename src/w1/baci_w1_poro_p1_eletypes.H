@@ -13,6 +13,8 @@
 
 #include "baci_w1_poro_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -121,5 +123,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_P1_ELETYPES_H

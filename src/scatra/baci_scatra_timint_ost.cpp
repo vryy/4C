@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
@@ -438,3 +440,4 @@ void SCATRA::TimIntOneStepTheta::ClearState()
   step_ = -1;
   time_ = 0.0;
 }
+BACI_NAMESPACE_CLOSE

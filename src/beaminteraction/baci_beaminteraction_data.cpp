@@ -16,6 +16,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -294,3 +296,5 @@ bool BEAMINTERACTION::DATA::BspotLinkerData::SameAs(BspotLinkerData bspotlinker)
 
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

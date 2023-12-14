@@ -15,6 +15,8 @@
 
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -151,5 +153,7 @@ namespace ADAPTER
     Teuchos::RCP<FluidMovingBoundary> fluid_;
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

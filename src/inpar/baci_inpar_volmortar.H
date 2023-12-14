@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace VOLMORTAR
@@ -62,5 +64,7 @@ namespace INPAR
 
   }  // namespace VOLMORTAR
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // INPAR_VOLMORTAR_H

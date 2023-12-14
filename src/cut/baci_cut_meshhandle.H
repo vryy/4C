@@ -14,6 +14,8 @@
 #include "baci_cut_mesh.H"
 #include "baci_cut_sidehandle.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -120,5 +122,7 @@ namespace CORE::GEO
 
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

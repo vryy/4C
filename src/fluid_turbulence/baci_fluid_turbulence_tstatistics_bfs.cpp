@@ -14,6 +14,8 @@ turbulent flow over a backward-facing step
 
 #include <fstream>
 
+BACI_NAMESPACE_OPEN
+
 // #define COMBINE_SAMPLES
 
 /*----------------------------------------------------------------------*/
@@ -1963,3 +1965,5 @@ void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(const std::string& geo
     dserror("(%s) geometry for backward facing step", geotype.c_str());
   return;
 }
+
+BACI_NAMESPACE_CLOSE

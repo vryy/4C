@@ -18,7 +18,6 @@
 #include <string>
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructureFilter::WriteAllResults(PostField* field)
@@ -367,6 +366,8 @@ void LubricationFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
 {
+  using namespace BACI;
+
   // compute maximum number of dofs per node on poro fluid discretization
   const DRT::Discretization& discret = *field->discretization();
   int mynumdofpernode(-1);
@@ -414,6 +415,8 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ScaTraFilter::WriteAllResults(PostField* field)
 {
+  using namespace BACI;
+
   // compute maximum number of dofs per node on scatra discretization
   const DRT::Discretization& discret = *field->discretization();
   int mynumdofpernode(-1);
@@ -500,7 +503,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 void ElchFilter::WriteAllResults(PostField* field)
 {
   // extract numbers of dofs per node on scatra discretization
-  const DRT::Discretization& discret = *field->discretization();
+  const BACI::DRT::Discretization& discret = *field->discretization();
   std::set<int> mynumdofpernodeset;
   for (int inode = 0; inode < discret.NumMyRowNodes(); ++inode)
     mynumdofpernodeset.insert(discret.NumDof(discret.lRowNode(inode)));

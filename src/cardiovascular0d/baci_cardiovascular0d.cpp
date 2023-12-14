@@ -23,6 +23,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -490,3 +492,5 @@ void UTILS::Cardiovascular0D::SetState(const std::string& state,  ///< name of s
 {
   actdisc_->SetState(state, V);
 }
+
+BACI_NAMESPACE_CLOSE

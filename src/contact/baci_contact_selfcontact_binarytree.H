@@ -15,6 +15,8 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -844,5 +846,7 @@ namespace CONTACT
   };  // class SelfBinaryTree
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_SELFCONTACT_BINARYTREE_H

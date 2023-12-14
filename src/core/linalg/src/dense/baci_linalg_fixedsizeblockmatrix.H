@@ -10,6 +10,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   template <class value_type, unsigned int brows, unsigned int bcols>
@@ -193,5 +195,7 @@ namespace CORE::LINALG
   };
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

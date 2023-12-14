@@ -28,11 +28,12 @@ extern "C"
 #include "baci_io_legacy_types.h"  // typedef struct MAP etc.
 }
 
-
 class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
+
+BACI_NAMESPACE_OPEN
 
 namespace LINALG
 {
@@ -468,5 +469,7 @@ namespace IO
 
 
 }  // namespace IO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

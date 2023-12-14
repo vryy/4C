@@ -16,6 +16,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_thermo_timint_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 05/13 |
@@ -254,5 +256,7 @@ namespace THR
 
 }  // namespace THR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // THERMO_TIMINT_GENALPHA_H

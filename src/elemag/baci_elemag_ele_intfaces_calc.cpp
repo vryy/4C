@@ -15,6 +15,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagIntFaceImplInterface* DRT::ELEMENTS::ElemagIntFaceImplInterface::Impl(
@@ -119,3 +121,5 @@ int DRT::ELEMENTS::ElemagIntFaceImpl<distype>::EvaluateInternalFaces(
 {
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

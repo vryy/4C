@@ -27,6 +27,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
@@ -311,3 +313,5 @@ void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -26,12 +26,14 @@
 class Epetra_Comm;
 class Epetra_Map;
 
+BACI_NAMESPACE_OPEN
+
 namespace NOX
 {
   namespace FSI
   {
     /// Matrix Free Newton Krylov based on an approximation of the residuum derivatives
-    class FSIMatrixFree : public Epetra_Operator, public virtual NOX::Epetra::Interface::Jacobian
+    class FSIMatrixFree : public Epetra_Operator, public virtual ::NOX::Epetra::Interface::Jacobian
     {
      public:
       /*! \brief Constructor
@@ -39,7 +41,8 @@ namespace NOX
         The vector \c x is used to clone the solution vector.
       */
       FSIMatrixFree(Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x);
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i,
+          const ::NOX::Epetra::Vector& x);
 
 
       //! If set true, transpose of this operator will be applied.
@@ -103,29 +106,29 @@ namespace NOX
       //! successful.
       bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac) override;
 
-      //! Clone a NOX::Abstract::Group derived object and use the computeF() method of that group
-      //! for the perturbation instead of the NOX::Epetra::Interface::Required::computeF() method.
+      //! Clone a ::NOX::Abstract::Group derived object and use the computeF() method of that group
+      //! for the perturbation instead of the ::NOX::Epetra::Interface::Required::computeF() method.
       //! This is required for LOCA to get the operators correct during homotopy.
-      void setGroupForComputeF(const NOX::Abstract::Group& group);
+      void setGroupForComputeF(const ::NOX::Abstract::Group& group);
 
      protected:
       //! Label for matrix
       std::string label;
 
       //! User provided interface function
-      Teuchos::RCP<NOX::Epetra::Interface::Required> interface;
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> interface;
 
       //! The current solution vector
-      NOX::Epetra::Vector currentX;
+      ::NOX::Epetra::Vector currentX;
 
       //! Perturbed solution vector
-      mutable NOX::Epetra::Vector perturbX;
+      mutable ::NOX::Epetra::Vector perturbX;
 
       //! Perturbed solution vector
-      mutable NOX::Epetra::Vector perturbY;
+      mutable ::NOX::Epetra::Vector perturbY;
 
       //! Epetra_Map object used in the returns of the Epetra_Operator derived methods.
-      /*! If the user is using Epetra_BlockMaps, then NOX::Epetra::MatrixFree must create an
+      /*! If the user is using Epetra_BlockMaps, then ::NOX::Epetra::MatrixFree must create an
        * equivalent Epetra_Map from the Epetra_BlockMap that can be used as the return object of the
        * OperatorDomainMap() and OperatorRangeMap() methods.
        */
@@ -136,13 +139,15 @@ namespace NOX
       bool useGroupForComputeF;
 
       //! Pointer to the group for possible use in computeF() calls.
-      Teuchos::RCP<NOX::Abstract::Group> groupPtr;
+      Teuchos::RCP<::NOX::Abstract::Group> groupPtr;
 
       //! Printing utilities.
-      NOX::Utils utils;
+      ::NOX::Utils utils;
     };
 
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

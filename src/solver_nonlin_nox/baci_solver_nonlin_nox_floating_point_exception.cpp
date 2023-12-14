@@ -15,6 +15,8 @@
 #include <NOX_Utils.H>
 #ifdef TRAP_FE
 #include <fenv.h>
+
+BACI_NAMESPACE_OPEN
 #endif
 
 /*----------------------------------------------------------------------------*
@@ -82,7 +84,7 @@ int NOX::NLN::FloatingPointException::postcompute(std::ostream& os) const
 {
   const int err = checkAndPrint(os);
   if (err)
-    os << NOX::Utils::fill(40, '-') << "\n"
+    os << ::NOX::Utils::fill(40, '-') << "\n"
        << "Caught floating point exceptions = " << err << std::endl;
 
   clear();
@@ -90,3 +92,5 @@ int NOX::NLN::FloatingPointException::postcompute(std::ostream& os) const
 
   return err;
 }
+
+BACI_NAMESPACE_CLOSE

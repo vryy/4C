@@ -12,6 +12,8 @@
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -140,3 +142,4 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
+BACI_NAMESPACE_CLOSE

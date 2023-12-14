@@ -15,6 +15,8 @@
 
 #include "baci_lib_dofset_fixed_size.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFEM
 {
@@ -91,5 +93,7 @@ namespace XFEM
 }  // namespace XFEM
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_FIELD_COUPLING_DOFSET_H

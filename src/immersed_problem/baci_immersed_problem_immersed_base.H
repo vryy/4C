@@ -26,6 +26,7 @@
 #include "baci_mortar_calc_utils.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -162,7 +163,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    virtual void ApplyDirichlet(const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper,
+    virtual void ApplyDirichlet(const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -174,7 +175,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void ApplyDirichletToFluid(const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper,
+    void ApplyDirichletToFluid(const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -187,7 +188,7 @@ namespace IMMERSED
     \date 02/17
     */
     void RemoveDirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper);
+        const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper);
 
 
     /*!
@@ -197,7 +198,7 @@ namespace IMMERSED
     \date 02/17
     */
     void RemoveDirichletFromFluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper);
+        const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper);
 
 
     /*!
@@ -1853,5 +1854,7 @@ namespace IMMERSED
   };
 
 }  // namespace IMMERSED
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,6 +13,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
@@ -84,3 +86,5 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfN
 {
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }
+
+BACI_NAMESPACE_CLOSE

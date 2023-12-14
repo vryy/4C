@@ -24,6 +24,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_rebalance.H"
 
+BACI_NAMESPACE_OPEN
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -587,3 +589,5 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

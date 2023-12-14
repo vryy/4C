@@ -27,6 +27,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -2121,3 +2123,5 @@ void PARTICLEENGINE::ParticleEngine::InvalidateParticleSafetyFlags()
   validglobalidtolocalindex_ = false;
   validdirectghosting_ = false;
 }
+
+BACI_NAMESPACE_CLOSE

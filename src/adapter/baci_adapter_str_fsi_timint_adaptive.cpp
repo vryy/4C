@@ -22,6 +22,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*======================================================================*/
 /* constructor */
@@ -129,3 +131,5 @@ void ADAPTER::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
 /*----------------------------------------------------------------------------*/
 /*  Reset certain quantities to prepare repetition of current time step */
 void ADAPTER::StructureFSITimIntAda::ResetStep() { StrAda()->ResetStep(); }
+
+BACI_NAMESPACE_CLOSE

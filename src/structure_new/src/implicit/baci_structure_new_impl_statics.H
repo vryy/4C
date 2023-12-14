@@ -16,6 +16,8 @@
 
 #include <NOX_Abstract_Vector.H>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace IMPLICIT
@@ -58,7 +60,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
+      double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! return time integration factor (derived)
       [[nodiscard]] double GetIntParam() const override;
@@ -151,5 +153,7 @@ namespace STR
   }  // namespace IMPLICIT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_IMPL_STATICS_H

@@ -20,6 +20,8 @@ attached parenchyma balloon
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructureWrapper(stru)
@@ -491,3 +493,5 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
 }
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

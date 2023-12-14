@@ -10,6 +10,8 @@
 
 #include "baci_linalg_gauss_templates.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   template double gaussElimination<true, 1, double>(
@@ -70,3 +72,5 @@ namespace CORE::LINALG
   );
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE

@@ -14,20 +14,22 @@
 
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::STR::Group::Group(::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
-    : NOX::Epetra::Group(printParams, i, x, linSys)
+NOX::STR::Group::Group(BACI::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
+    const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
+    : ::NOX::Epetra::Group(printParams, i, x, linSys)
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
+::NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 {
-  NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
+  ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeF();
 
   // Not sure why we call this (historical reasons???)
   sharedLinearSystem.getObject(this);
@@ -40,10 +42,10 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
+::NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
 {
-  NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
-  if (ret == NOX::Abstract::Group::Ok)
+  ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeJacobian();
+  if (ret == ::NOX::Abstract::Group::Ok)
   {
     isValidJacobian = true;
 
@@ -52,3 +54,5 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
 
   return ret;
 }
+
+BACI_NAMESPACE_CLOSE

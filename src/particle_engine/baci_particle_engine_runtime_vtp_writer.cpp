@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -197,3 +199,5 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteToDisk(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

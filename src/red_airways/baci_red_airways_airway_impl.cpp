@@ -32,6 +32,7 @@
 #include <fstream>
 #include <iomanip>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -2461,3 +2462,5 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele
     nodal_avg_scatra[1] = avg_scatra;
   }
 }
+
+BACI_NAMESPACE_CLOSE

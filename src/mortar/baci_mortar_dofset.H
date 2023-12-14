@@ -11,6 +11,7 @@
 
 #include "baci_lib_dofset.H"
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -66,5 +67,7 @@ namespace MORTAR
    protected:
   };  // class MortarDofSet
 }  // namespace MORTAR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_DOFSET_H

@@ -21,6 +21,8 @@ mixture fibers
 
 namespace
 {
+  using namespace BACI;
+
   TEST(TimestepAdaptivityTest, EmplaceBack)
   {
     MIXTURE::TimestepAdaptivityInfo level{};

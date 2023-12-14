@@ -33,6 +33,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 void electromagnetics_drt()
 {
   // declare abbreviation
@@ -377,3 +379,5 @@ void electromagnetics_drt()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

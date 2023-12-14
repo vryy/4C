@@ -20,6 +20,8 @@
 
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegratorNitsche::IntegrateGP_3D(MORTAR::MortarElement& sele,
@@ -984,3 +986,5 @@ template void CONTACT::UTILS::MapGPtoParent<2>(MORTAR::MortarElement&, double*, 
 
 template void CONTACT::UTILS::MapGPtoParent<3>(MORTAR::MortarElement&, double*, const double,
     CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&);
+
+BACI_NAMESPACE_CLOSE

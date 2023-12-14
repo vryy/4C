@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -9179,3 +9181,5 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   }
   return;
 }  // end of Initialize Cardiovascular0D
+
+BACI_NAMESPACE_CLOSE

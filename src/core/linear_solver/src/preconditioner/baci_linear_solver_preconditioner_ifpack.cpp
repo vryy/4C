@@ -12,6 +12,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
@@ -60,3 +62,5 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
     return;
   }
 }
+
+BACI_NAMESPACE_CLOSE

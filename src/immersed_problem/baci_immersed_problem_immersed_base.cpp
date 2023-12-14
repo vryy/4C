@@ -15,6 +15,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
 
 
 IMMERSED::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
@@ -180,7 +181,7 @@ void IMMERSED::ImmersedBase::DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::ApplyDirichlet(
-    const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper,
+    const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper,
     const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
     const Teuchos::RCP<const Epetra_Vector>& dirichvals)
@@ -205,7 +206,7 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
-    const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper,
+    const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
     const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
     const Teuchos::RCP<const Epetra_Vector>& dirichvals)
@@ -230,7 +231,7 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::RemoveDirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-    const Teuchos::RCP<::ADAPTER::StructureWrapper>& field_wrapper)
+    const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper)
 {
   field_wrapper->RemoveDirichDofs(cond_dofmap);
   return;
@@ -241,7 +242,7 @@ void IMMERSED::ImmersedBase::RemoveDirichlet(const Teuchos::RCP<const Epetra_Map
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::RemoveDirichletFromFluid(
     const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-    const Teuchos::RCP<::ADAPTER::FluidWrapper>& field_wrapper)
+    const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper)
 {
   field_wrapper->RemoveDirichCond(cond_dofmap);
   return;
@@ -663,3 +664,5 @@ std::vector<double> IMMERSED::ImmersedBase::CalcGlobalResultantfromEpetraVector(
 
   return result;
 }
+
+BACI_NAMESPACE_CLOSE

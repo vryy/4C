@@ -24,6 +24,8 @@ CABLUM 1.98e-3
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -447,5 +449,7 @@ namespace MAT
     MAT::PAR::AAAgasser* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_AAAGASSER_H

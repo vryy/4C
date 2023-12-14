@@ -23,6 +23,8 @@ be directly assembled into the global matrices.
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_sparseoperator.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -106,3 +108,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
   err = ff->GlobalAssemble();
   if (err) printf("Global assembly failed with error %i", err);
 }
+
+BACI_NAMESPACE_CLOSE

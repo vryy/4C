@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -85,7 +87,7 @@ namespace STR
       }
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override{};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -139,5 +141,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H

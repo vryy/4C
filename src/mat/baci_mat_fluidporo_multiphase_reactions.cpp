@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | rstandard constructor                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -202,3 +204,5 @@ int MAT::FluidPoroMultiPhaseReactions::ReacID(const unsigned index) const
     return -1;
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -26,6 +26,8 @@ the input line should read
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -172,5 +174,7 @@ namespace MAT
     MAT::PAR::AAAneohooke* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_AAANEOHOOKE_H

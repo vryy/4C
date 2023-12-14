@@ -15,6 +15,8 @@ coordinate system
 #include "baci_cut_side.H"
 #include "baci_cut_volumecell.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15
  *-----------------------------------------------------------------------------------*/
@@ -402,3 +404,5 @@ const unsigned CORE::GEO::CUT::DirectDivergenceGlobalRefplane::tri_diags_[24][3]
 
 const unsigned CORE::GEO::CUT::DirectDivergenceGlobalRefplane::side_split_[4][3] = {
     {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}};
+
+BACI_NAMESPACE_CLOSE

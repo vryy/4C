@@ -26,6 +26,8 @@
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 // entry point for LOMA in DRT
@@ -207,3 +209,5 @@ void loma_dyn(int restart)
   return;
 
 }  // loma_dyn()
+
+BACI_NAMESPACE_CLOSE

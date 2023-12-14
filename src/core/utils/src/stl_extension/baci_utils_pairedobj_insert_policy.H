@@ -32,6 +32,8 @@
 #include "baci_utils_exceptions.H"
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEN
 {
   /// binary function
@@ -1036,5 +1038,7 @@ template <typename Key, typename T>
 size_t CORE::GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

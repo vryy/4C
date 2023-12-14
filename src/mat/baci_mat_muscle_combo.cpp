@@ -19,6 +19,8 @@ activations
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
@@ -404,3 +406,4 @@ void MAT::Muscle_Combo::EvaluateActivationLevel(const double lambdaM, const doub
                      std::pow(dPhi, 2) / (phi * phi * alpha * std::pow(lambdaM, 2)) +
                      ddPhi / (phi * alpha * std::pow(lambdaM, 2));
 }
+BACI_NAMESPACE_CLOSE

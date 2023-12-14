@@ -28,6 +28,8 @@
 
 #include <iterator>
 
+BACI_NAMESPACE_OPEN
+
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
@@ -2843,5 +2845,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAnisotropicPermeabilityCoeffsA
 
   return anisotropic_permeability_coeffs;
 }
+
+BACI_NAMESPACE_CLOSE
 
 #include "baci_so3_poro_fwd.hpp"

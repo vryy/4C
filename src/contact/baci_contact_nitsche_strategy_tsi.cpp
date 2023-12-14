@@ -22,6 +22,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
+BACI_NAMESPACE_OPEN
+
 void CONTACT::CoNitscheStrategyTsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
@@ -226,3 +228,5 @@ void CONTACT::CoNitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cp
   ktd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_displ);
   kdt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_temp);
 }
+
+BACI_NAMESPACE_CLOSE

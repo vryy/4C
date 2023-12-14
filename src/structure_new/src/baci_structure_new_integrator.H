@@ -20,6 +20,12 @@
 
 // forward declarations
 class Epetra_Vector;
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -32,11 +38,6 @@ namespace CORE::LINALG
   class SparseOperator;
   class SparseMatrix;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace IO
 {
@@ -162,7 +163,7 @@ namespace STR
      *  purpose we only need the right order of magnitude, so we don't
      *  mind evaluating the corresponding norms at possibly different
      *  points within the time-step (end point, generalized midpoint). */
-    virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const = 0;
+    virtual double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const = 0;
 
     //! compute the scaling operator for element based scaling using PTC
     virtual void ComputeJacobianContributionsFromElementLevelForPTC(
@@ -383,7 +384,7 @@ namespace STR
     virtual void ResetEvalParams(){};
 
     double GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
-        const enum NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
+        const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
    protected:
     //! indicates if the Init() function has been called
@@ -476,5 +477,7 @@ namespace STR
   };  // namespace STR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_INTEGRATOR_H

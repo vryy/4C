@@ -22,6 +22,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |
  *---------------------------------------------------------------------*/
@@ -257,5 +259,7 @@ namespace NTS
   };
 
 }  // namespace NTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_INTERPOLATOR_H

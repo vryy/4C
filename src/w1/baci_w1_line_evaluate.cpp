@@ -24,6 +24,8 @@
 #include "baci_utils_function.H"
 #include "baci_w1.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
@@ -857,3 +859,5 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
   elematrix.scale(-1.0);
   return;
 }
+
+BACI_NAMESPACE_CLOSE

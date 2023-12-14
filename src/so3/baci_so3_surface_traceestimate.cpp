@@ -21,6 +21,8 @@
 #include "baci_nurbs_discret.H"
 #include "baci_so3_surface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
@@ -609,3 +611,5 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
   for (int i = 0; i < num_node; ++i)
     for (int j = 1; j < num_node; ++j) proj(i, j - 1) = basis[j](i);
 }
+
+BACI_NAMESPACE_CLOSE

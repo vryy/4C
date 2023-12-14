@@ -13,6 +13,8 @@
 #include "baci_mat_anisotropy_extension_provider.H"
 #include "baci_matelast_coupanisoexpobase.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace MAT
 {
@@ -187,5 +189,7 @@ namespace MAT
 
   }  // namespace ELASTIC
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MATELAST_COUPANISOEXPOSHEAR_H

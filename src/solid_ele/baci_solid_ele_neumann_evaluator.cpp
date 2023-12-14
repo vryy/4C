@@ -15,6 +15,8 @@
 #include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
@@ -146,3 +148,4 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
         }
       });
 }
+BACI_NAMESPACE_CLOSE

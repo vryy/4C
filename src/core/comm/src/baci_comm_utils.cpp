@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::COMM
 {
@@ -686,3 +687,5 @@ namespace CORE::COMM
     return true;
   }
 }  // namespace CORE::COMM
+
+BACI_NAMESPACE_CLOSE

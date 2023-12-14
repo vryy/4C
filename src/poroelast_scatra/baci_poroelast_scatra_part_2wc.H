@@ -15,6 +15,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace POROELASTSCATRA
 {
   class PoroScatraPart2WC : public PoroScatraPart
@@ -69,5 +71,7 @@ namespace POROELASTSCATRA
 
 }  // namespace POROELASTSCATRA
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_SCATRA_PART_2WC_H

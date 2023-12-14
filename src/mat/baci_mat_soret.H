@@ -11,6 +11,8 @@
 
 #include "baci_mat_fourieriso.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -117,4 +119,6 @@ namespace MAT
     MAT::PAR::Soret* params_;
   };
 }  // namespace MAT
+BACI_NAMESPACE_CLOSE
+
 #endif

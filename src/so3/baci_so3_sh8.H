@@ -12,6 +12,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_hex8.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 struct _SOH8_DATA;
 
@@ -335,5 +337,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SH8_H

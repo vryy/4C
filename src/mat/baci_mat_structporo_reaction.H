@@ -12,6 +12,8 @@
 
 #include "baci_mat_structporo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -200,5 +202,7 @@ namespace MAT
 
 }  // namespace MAT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_STRUCTPORO_REACTION_H

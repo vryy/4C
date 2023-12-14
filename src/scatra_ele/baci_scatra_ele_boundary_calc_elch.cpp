@@ -16,6 +16,8 @@
 #include "baci_scatra_ele_utils_elch.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |
  *----------------------------------------------------------------------*/
@@ -526,3 +528,5 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::line
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::line3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::nurbs9, 3>;
+
+BACI_NAMESPACE_CLOSE

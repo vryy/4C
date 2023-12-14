@@ -171,4 +171,8 @@
 
 #endif
 
+BACI_NAMESPACE_OPEN
+
+BACI_NAMESPACE_CLOSE
+
 #endif

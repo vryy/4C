@@ -12,6 +12,8 @@
 #include "baci_so3_nurbs27.H"
 #include "baci_so3_tet4.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -175,4 +177,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // SO3_SSN_PLAST_ELETYPES_H_

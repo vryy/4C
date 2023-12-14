@@ -18,6 +18,8 @@
 
 #include "baci_fsi_dirichletneumann.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   namespace UTILS
@@ -114,5 +116,7 @@ namespace FSI
   };
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

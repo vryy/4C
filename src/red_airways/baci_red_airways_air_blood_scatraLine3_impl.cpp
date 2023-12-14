@@ -26,6 +26,8 @@
 #include "baci_red_airways_evaluation_data.h"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface*
@@ -83,7 +85,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const MAT::Material> material)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  REDAIRWAYS::EvaluationData& evaluation_data = REDAIRWAYS::EvaluationData::get();
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -107,3 +109,5 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
     DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 #include <Epetra_FECrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType parent_distype>
@@ -163,3 +165,5 @@ template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex8>;
 template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::tet4>;
 template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::hex27>;
 template class MORTAR::MortarElementNitscheData<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

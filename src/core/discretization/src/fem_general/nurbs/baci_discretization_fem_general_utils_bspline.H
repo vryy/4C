@@ -18,6 +18,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::DRT::NURBS::UTILS
 {
@@ -1447,5 +1449,7 @@ namespace CORE::DRT::NURBS::UTILS
   };
 
 }  // namespace CORE::DRT::NURBS::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

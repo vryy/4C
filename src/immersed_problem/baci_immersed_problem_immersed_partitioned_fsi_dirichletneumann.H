@@ -14,6 +14,12 @@
 #include "baci_immersed_problem_fsi_partitioned_immersed.H"
 #include "baci_immersed_problem_immersed_base.H"
 
+namespace Teuchos
+{
+  class Time;
+}
+
+BACI_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -23,11 +29,6 @@ namespace FLD
 namespace CORE::GEO
 {
   class SearchTree;
-}
-
-namespace Teuchos
-{
-  class Time;
 }
 
 namespace ADAPTER
@@ -235,5 +236,7 @@ namespace IMMERSED
 
   };  // class ImmersedFSI
 }  // namespace IMMERSED
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -13,6 +13,8 @@
 #include "baci_fsi_xfem_coupling_comm_manager.H"
 #include "baci_fsi_xfem_coupling_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class XFluid;
@@ -98,4 +100,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> lambda_pf_;
   };
 }  // namespace XFEM
+BACI_NAMESPACE_CLOSE
+
 #endif

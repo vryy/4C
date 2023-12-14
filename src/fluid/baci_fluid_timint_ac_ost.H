@@ -17,6 +17,8 @@
 #include "baci_fluid_timint_ac.H"
 #include "baci_fluid_timint_ost.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   class TimIntACOst : public TimIntOneStepTheta, public TimIntAC
@@ -38,5 +40,7 @@ namespace FLD
 
 }  // namespace FLD
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_AC_OST_H

@@ -13,6 +13,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_so3_poro_p1_scatra_eletypes.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
@@ -199,3 +201,5 @@ bool DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ReadElement(
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+
+BACI_NAMESPACE_CLOSE

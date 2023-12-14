@@ -11,6 +11,8 @@ thesis)
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), eps_(matdata->GetDouble("EPSILON")), gam_(matdata->GetDouble("GAMMA"))
@@ -55,3 +57,4 @@ void MAT::ELASTIC::VolPenalty::Add3rdVolDeriv(
   d3PsiVolDJ3 += eps * (gam * (gam - 1.) * (gam - 2.) * pow(J, gam - 3.) +
                            (-gam) * (-gam - 1.) * (-gam - 2.) * pow(J, -gam - 3.));
 }
+BACI_NAMESPACE_CLOSE

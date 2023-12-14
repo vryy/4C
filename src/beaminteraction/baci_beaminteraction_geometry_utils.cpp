@@ -16,6 +16,8 @@
 
 #include <Sacado.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
@@ -831,3 +833,5 @@ template void BEAMINTERACTION::GEO::CalcEnclosedAngle<Sacado::Fad::DFad<double>>
     Sacado::Fad::DFad<double>&, Sacado::Fad::DFad<double>&,
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+
+BACI_NAMESPACE_CLOSE

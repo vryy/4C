@@ -18,6 +18,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
@@ -876,3 +878,5 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::CalcOmega(double& omega, const int
   // update history vector old increment r^i_{n+1}
   scaincnpold_->Update(1.0, *scaincnp_, 0.0);
 }
+
+BACI_NAMESPACE_CLOSE

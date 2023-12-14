@@ -13,6 +13,8 @@
 
 #include "baci_lib_condition.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   /*!
@@ -135,5 +137,7 @@ namespace DRT::ELEMENTS
   bool IsReducedButlerVolmer(int kineticmodel);
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

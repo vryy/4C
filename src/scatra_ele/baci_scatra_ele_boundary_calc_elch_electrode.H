@@ -12,6 +12,8 @@
 
 #include "baci_scatra_ele_boundary_calc_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace MAT
 {
@@ -270,4 +272,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcElchElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

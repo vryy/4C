@@ -13,6 +13,8 @@
 
 #include <cmath>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CORE::UTILS::Bisection(const std::function<double(double)> &funct, const double a_init,
@@ -90,3 +92,5 @@ double CORE::UTILS::SecondDerivativeCentralDifferences(
   double ddfddx = (f_i_plus_1 - 2 * f_i + f_i_minus_1) / (delta_x * delta_x);
   return ddfddx;
 }
+
+BACI_NAMESPACE_CLOSE

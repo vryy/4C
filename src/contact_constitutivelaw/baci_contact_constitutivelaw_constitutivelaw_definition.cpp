@@ -21,6 +21,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /*======================================================================*/
 CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
@@ -31,7 +33,7 @@ CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<::INPUT::LineComponent> c)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<INPUT::LineComponent> c)
 {
   inputline_.push_back(c);
 }
@@ -113,7 +115,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const DRT::Problem& problem,
  *----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::RealContactConstitutiveLawComponent(
     std::string name, const double defaultvalue, bool optional)
-    : ::INPUT::LineComponent(name, optional), defaultvalue_(defaultvalue)
+    : INPUT::LineComponent(name, optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -254,3 +256,5 @@ void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
   else
     dserror("Trouble in determining coincidences of contact constitutive definitions");
 }
+
+BACI_NAMESPACE_CLOSE

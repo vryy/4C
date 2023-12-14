@@ -14,6 +14,8 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_par_parameter.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace PAR
@@ -192,5 +194,7 @@ namespace MAT
     };
   }  // namespace PAR
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_FLUIDPORO_SINGLEPHASEDOF_H

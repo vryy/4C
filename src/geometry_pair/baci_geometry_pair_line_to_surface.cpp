@@ -18,6 +18,7 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -651,3 +652,5 @@ namespace GEOMETRYPAIR
   template class GeometryPairLineToSurfaceFADWrapper<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE

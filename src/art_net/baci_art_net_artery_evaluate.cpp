@@ -18,6 +18,8 @@
 #include "baci_mat_cnst_1d_art.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*---------------------------------------------------------------------*
  //evaluate the element (public)                            ismail 06/09
@@ -133,3 +135,5 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(const CORE::FE::CellType distyp
   }
   return hoel;
 }
+
+BACI_NAMESPACE_CLOSE

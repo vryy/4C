@@ -11,6 +11,8 @@
 #include <map>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::FE
 {
   /// Type of shape functions used in spatial discretization
@@ -31,5 +33,7 @@ namespace CORE::FE
   const std::map<std::string, ShapeFunctionType>& StringToShapeFunctionTypeMap();
 
 }  // namespace CORE::FE
+
+BACI_NAMESPACE_CLOSE
 
 #endif

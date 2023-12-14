@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_genalpha.H"
 #include "baci_scatra_timint_loma.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace SCATRA
 {
@@ -93,5 +95,7 @@ namespace SCATRA
   };  // class TimIntLomaGenAlpha
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SCATRA_TIMINT_LOMA_GENALPHA_H

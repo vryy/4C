@@ -49,6 +49,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -2977,3 +2979,5 @@ bool TSI::Monolithic::LSadmissible()
       return false;
   }
 }
+
+BACI_NAMESPACE_CLOSE

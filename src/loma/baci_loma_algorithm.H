@@ -17,6 +17,8 @@
 
 #include <Epetra_Comm.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace LOMA
 {
   /// LOMA algorithm base
@@ -189,5 +191,7 @@ namespace LOMA
   };
 
 }  // namespace LOMA
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LOMA_ALGORITHM_H

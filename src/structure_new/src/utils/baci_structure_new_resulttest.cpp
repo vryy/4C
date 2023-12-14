@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -547,3 +548,5 @@ double STR::ResultTest::GetNodalStressComponent(const std::string& label, int no
 
   return (*nodalStressData)[stress_voigt_index][local_id];
 }
+
+BACI_NAMESPACE_CLOSE

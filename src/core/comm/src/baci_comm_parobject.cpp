@@ -11,6 +11,8 @@
 
 #include "baci_comm_parobject.H"
 
+BACI_NAMESPACE_OPEN
+
 
 void CORE::COMM::ParObject::AddtoPack(PackBuffer& data, const ParObject& obj) { obj.Pack(data); }
 
@@ -88,3 +90,4 @@ int CORE::COMM::ExtractAndAssertId(std::vector<char>::size_type& position,
 
   return type_id;
 }
+BACI_NAMESPACE_CLOSE

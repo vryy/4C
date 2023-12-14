@@ -23,6 +23,13 @@
 #include <memory>
 #include <utility>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Material;
@@ -38,11 +45,6 @@ namespace MAT
     class Material;
   }
 }  // namespace MAT
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 
 // forward declarations
 namespace MAT
@@ -173,5 +175,7 @@ namespace MIXTURE
         CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MIXTURE_PRESTRESS_STRATEGY_H

@@ -18,6 +18,8 @@
 #include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 11/14 |
@@ -612,3 +614,5 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

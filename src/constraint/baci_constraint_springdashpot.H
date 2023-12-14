@@ -19,6 +19,12 @@
 // forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -26,11 +32,6 @@ namespace DRT
   class Discretization;
   class Element;
 }  // namespace DRT
-
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace CORE::LINALG
 {
@@ -227,4 +228,7 @@ namespace UTILS
 
   };  // class
 }  // namespace UTILS
+
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONSTRAINT_SPRINGDASHPOT_H

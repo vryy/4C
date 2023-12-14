@@ -20,6 +20,8 @@
 #include <iostream>
 #include <numeric>
 
+BACI_NAMESPACE_OPEN
+
 
 // list of all dof sets
 std::list<DRT::DofSetInterface*> DRT::DofSetBase::static_dofsets_;
@@ -210,3 +212,5 @@ void DRT::DofSetBase::Print(std::ostream& os) const
 {
   dserror("Print() is not implemented in base class. Override Print() in subclass");
 }
+
+BACI_NAMESPACE_CLOSE

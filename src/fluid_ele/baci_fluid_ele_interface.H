@@ -24,6 +24,8 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class Material;
@@ -196,5 +198,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -26,6 +26,8 @@
 #include "baci_structure_new_timint_base.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::Factory::Factory()
@@ -189,3 +191,5 @@ Teuchos::RCP<STR::Dbc> STR::BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn)
 
   return factory.BuildDbc(datasdyn);
 }
+
+BACI_NAMESPACE_CLOSE

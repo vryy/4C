@@ -18,6 +18,8 @@
 
 #include <NOX_Solver_Generic.H>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -77,8 +79,8 @@ void STR::NLN::SOLVER::SingleStep::SetSingleStepParams(Teuchos::ParameterList& p
   printParams.set("Output Precision", 3);
   printParams.set("Output Processor", 0);
   printParams.set("Output Information",
-      NOX::Utils::OuterIteration + NOX::Utils::OuterIterationStatusTest +
-          NOX::Utils::InnerIteration + NOX::Utils::Details + NOX::Utils::Warning);
+      ::NOX::Utils::OuterIteration + ::NOX::Utils::OuterIterationStatusTest +
+          ::NOX::Utils::InnerIteration + ::NOX::Utils::Details + ::NOX::Utils::Warning);
 
   // Set NOX solving parameters: "Update Jacobian" is essential to compute the Newton direction,
   // i.e. x=A^-1 b. For details behind how it's handled, see NOX_Solver_SingleStep.C
@@ -110,14 +112,14 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
 
   auto& nln_group = dynamic_cast<NOX::NLN::Group&>(Group());
 
-  const auto& x_epetra = dynamic_cast<const NOX::Epetra::Vector&>(Group().getX());
+  const auto& x_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(Group().getX());
 
-  nln_group.setIsValidNewton(true);  // to circumvent the check in NOX::Solver::SingleStep
+  nln_group.setIsValidNewton(true);  // to circumvent the check in ::NOX::Solver::SingleStep
   nln_group.setIsValidRHS(false);    // force to compute the RHS
   nln_group.resetX();                // to initialize the solution vector to zero
 
   //// do one non-linear step using solve
-  NOX::StatusTest::StatusType stepstatus = nlnsolver_->solve();
+  ::NOX::StatusTest::StatusType stepstatus = nlnsolver_->solve();
 
   // copy the solution group into the class variable
   Group() = nlnsolver_->getSolutionGroup();
@@ -126,3 +128,5 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
 
   return ConvertFinalStatus(stepstatus);
 }
+
+BACI_NAMESPACE_CLOSE

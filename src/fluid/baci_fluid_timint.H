@@ -20,6 +20,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -27,7 +29,6 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
   class KrylovProjector;
-
 }  // namespace CORE::LINALG
 
 namespace DRT
@@ -761,5 +762,7 @@ namespace FLD
   };  // class TimInt
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_TIMINT_H

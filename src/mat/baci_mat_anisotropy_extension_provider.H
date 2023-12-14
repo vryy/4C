@@ -12,6 +12,8 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_PROVIDER_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_PROVIDER_H
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -40,5 +42,7 @@ namespace MAT
     virtual FiberAnisotropyExtension<numfib>& GetFiberAnisotropyExtension() = 0;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_EXTENSION_PROVIDER_H

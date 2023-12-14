@@ -63,15 +63,15 @@ namespace EXODUS
   {
     switch (def.gtype)
     {
-      case DRT::Condition::Volume:
+      case BACI::DRT::Condition::Volume:
         return "DVOL  ";
-      case DRT::Condition::Surface:
+      case BACI::DRT::Condition::Surface:
         return "DSURF ";
-      case DRT::Condition::Line:
+      case BACI::DRT::Condition::Line:
         return "DLINE ";
-      case DRT::Condition::Point:
+      case BACI::DRT::Condition::Point:
         return "DPOINT";
-      case DRT::Condition::NoGeom:
+      case BACI::DRT::Condition::NoGeom:
         return "";
       default:
         dserror("Unknown Condition GeometryType");

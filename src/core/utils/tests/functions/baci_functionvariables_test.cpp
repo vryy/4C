@@ -11,6 +11,8 @@
 
 #include "baci_utils_functionvariables.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   class FunctionVariableStub : public CORE::UTILS::FunctionVariable
@@ -113,3 +115,5 @@ namespace
     EXPECT_EQ(piecewiseVariable.TimeDerivativeValue(2.1, 0), 3.0);
   }
 }  // namespace
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@ based with MULF prestressing
 #include <memory>
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   template <CORE::FE::CellType celltype>
@@ -467,3 +469,4 @@ static_assert(
     DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcMulf<CORE::FE::CellType::hex8>*>,
     "MULF calculation interface needs to be unpackable. Please carefully check the "
     "signature of Unpack(...)");
+BACI_NAMESPACE_CLOSE

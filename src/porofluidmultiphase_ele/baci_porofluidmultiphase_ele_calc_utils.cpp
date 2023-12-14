@@ -14,6 +14,8 @@
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
 #include "baci_mat_fluidporo_singlephase.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------*
  * get the single phase material from the element multiphase reaction material   vuong 08/16 |
  *-------------------------------------------------------------------------------------------*/
@@ -142,3 +144,5 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
 
   return GetVolFracPressureMatFromMultiMaterial(multiphasemat, volfracnum);
 }
+
+BACI_NAMESPACE_CLOSE

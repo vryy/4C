@@ -12,6 +12,8 @@ SLS-model
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       tau_(matdata->GetDouble("TAU")),
@@ -29,3 +31,5 @@ void MAT::ELASTIC::GenMax::ReadMaterialParametersVisco(
   beta = params_->beta_;
   solve = params_->solve_;
 }
+
+BACI_NAMESPACE_CLOSE

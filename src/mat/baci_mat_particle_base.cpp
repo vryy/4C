@@ -15,6 +15,8 @@
 
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
@@ -25,3 +27,5 @@ MAT::PAR::ParticleMaterialBase::ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Mate
 {
   // empty constructor
 }
+
+BACI_NAMESPACE_CLOSE

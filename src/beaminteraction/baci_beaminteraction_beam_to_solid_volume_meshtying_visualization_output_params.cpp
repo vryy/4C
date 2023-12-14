@@ -13,6 +13,8 @@
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -97,3 +99,5 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Setup
   // Set the setup flag.
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

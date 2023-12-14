@@ -12,6 +12,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::LineSearch::PrePostOperator::PrePostOperator(Teuchos::ParameterList& linesearchSublist)
@@ -46,3 +48,5 @@ NOX::NLN::LineSearch::PrePostOperator::map& NOX::NLN::LineSearch::PrePostOperato
 
   return *mapptr;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -11,6 +11,8 @@
 
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROFLUIDMULTIPHASE
 {
   class MeshtyingStrategyStd : public MeshtyingStrategyBase
@@ -78,5 +80,7 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_STD_H

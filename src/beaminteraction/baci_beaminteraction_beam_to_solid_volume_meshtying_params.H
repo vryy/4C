@@ -14,6 +14,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_params_base.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // Forward declaration.
 namespace BEAMINTERACTION
@@ -111,5 +113,7 @@ namespace BEAMINTERACTION
   };
 
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

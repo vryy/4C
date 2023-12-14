@@ -11,6 +11,8 @@
 #include "baci_contact_node.H"
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
+
 // #define DD_NON_UNIT_NORMAL
 // #define DD_JACOBIAN
 // #define DD_SMOOTH_UNIT_NORMAL
@@ -1186,3 +1188,5 @@ template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs
     CORE::FE::CellType::tri3>;
 template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
     CORE::FE::CellType::nurbs4>;
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 BEAMINTERACTION::BeamLinkPinJointedType BEAMINTERACTION::BeamLinkPinJointedType::instance_;
 
@@ -135,3 +137,5 @@ void BEAMINTERACTION::BeamLinkPinJointed::Print(std::ostream& out) const
 
   out << "\n";
 }
+
+BACI_NAMESPACE_CLOSE

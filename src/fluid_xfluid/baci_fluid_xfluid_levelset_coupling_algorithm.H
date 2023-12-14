@@ -15,6 +15,8 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFLUIDLEVELSET
 {
@@ -184,5 +186,7 @@ namespace XFLUIDLEVELSET
   };
 
 }  // namespace XFLUIDLEVELSET
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_XFLUID_LEVELSET_COUPLING_ALGORITHM_H

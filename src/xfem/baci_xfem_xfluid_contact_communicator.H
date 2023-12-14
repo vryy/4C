@@ -22,6 +22,8 @@
 #include <set>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // #define WRITE_GMSH
 
 namespace MORTAR
@@ -374,5 +376,7 @@ namespace XFEM
     std::pair<int, double> last_ele_h_;
   };  // class XFluid_Contact_Comm
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_CONTACT_COMMUNICATOR_H

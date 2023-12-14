@@ -18,12 +18,14 @@
 
 #include <vector>
 
-
-// Forward declarations.
 namespace
 {
   class GeometryPairLineToSurfaceTest;
 }
+
+BACI_NAMESPACE_OPEN
+
+// Forward declarations.
 namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;
@@ -43,7 +45,6 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class LineSegment;
 }
-
 
 
 namespace GEOMETRYPAIR
@@ -315,5 +316,7 @@ namespace GEOMETRYPAIR
   };
 
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -10,6 +10,8 @@
 
 #include "baci_mat_par_material.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -199,3 +201,5 @@ template void MAT::ELASTIC::CoupAnisoExpoBase::EvaluateFunc<double>(
     double&, CORE::LINALG::Matrix<3, 3, double> const&, int, int) const;
 template void MAT::ELASTIC::CoupAnisoExpoBase::EvaluateFunc<FAD>(
     FAD&, CORE::LINALG::Matrix<3, 3, FAD> const&, int, int) const;
+
+BACI_NAMESPACE_CLOSE

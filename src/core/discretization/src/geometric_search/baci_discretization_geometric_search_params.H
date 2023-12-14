@@ -15,6 +15,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   //! Data container for geometric search parameters
@@ -52,5 +54,7 @@ namespace CORE::GEOMETRICSEARCH
     bool write_visualization_;
   };
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

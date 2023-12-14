@@ -15,6 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class Solver;
@@ -61,5 +63,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

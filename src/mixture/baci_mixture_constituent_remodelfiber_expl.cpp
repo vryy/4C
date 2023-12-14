@@ -23,6 +23,8 @@ equations
 #include <cstdlib>
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 // anonymous namespace for helper classes and functions
 namespace
 {
@@ -355,3 +357,4 @@ double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateLambdaExt(
   return 1.0 /
          std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
+BACI_NAMESPACE_CLOSE

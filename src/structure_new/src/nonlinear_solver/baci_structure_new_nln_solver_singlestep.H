@@ -19,6 +19,8 @@ namespace Teuchos
   class ParameterList;
 }
 
+BACI_NAMESPACE_OPEN
+
 namespace STR::NLN::SOLVER
 {
   /*! \brief Full step with single iteration via NOX for explicit structural dynamics
@@ -46,5 +48,7 @@ namespace STR::NLN::SOLVER
   };  // class SingleStep
 }  // namespace STR::NLN::SOLVER
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif /* BACI_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_H */

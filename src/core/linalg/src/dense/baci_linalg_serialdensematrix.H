@@ -12,6 +12,7 @@
 
 #include <Teuchos_SerialDenseMatrix.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -72,5 +73,7 @@ namespace CORE::LINALG
     return out;
   }
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LINALG_SERIALDENSEMATRIX_H

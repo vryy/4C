@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoroReactionECM::StructPoroReactionECM(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -242,3 +244,5 @@ void MAT::StructPoroReactionECM::ChemPotential(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

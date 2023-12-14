@@ -17,6 +17,8 @@
 
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   /*!
@@ -259,4 +261,6 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_STRATEGY_H

@@ -26,6 +26,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
@@ -405,5 +407,7 @@ namespace FPSI
   // class Monolithic
 
 }  // namespace FPSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FPSI_MONOLITHIC_H

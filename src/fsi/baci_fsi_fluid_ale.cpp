@@ -14,6 +14,8 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
@@ -84,3 +86,5 @@ void FSI::FluidAleAlgorithm::Update() { MBFluidField()->Update(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Output() { MBFluidField()->Output(); }
+
+BACI_NAMESPACE_CLOSE

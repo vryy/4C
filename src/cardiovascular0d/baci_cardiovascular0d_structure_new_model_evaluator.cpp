@@ -27,6 +27,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
@@ -350,3 +352,5 @@ void STR::MODELEVALUATOR::Cardiovascular0D::PostOutput()
 
   return;
 }  // PostOutput()
+
+BACI_NAMESPACE_CLOSE

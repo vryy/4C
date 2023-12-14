@@ -26,6 +26,8 @@
 #include <string>
 #include <utility>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   const std::array<std::string, 7> valid_operators = {"+", "-", "*", "/", "^", ".", ","};
@@ -44,8 +46,6 @@ namespace
   }
 
 }  // namespace
-
-
 
 namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
 {
@@ -1040,3 +1040,5 @@ CORE::UTILS::SymbolicExpression<Number>::~SymbolicExpression() = default;
 
 // explicit instantiations
 template class CORE::UTILS::SymbolicExpression<double>;
+
+BACI_NAMESPACE_CLOSE

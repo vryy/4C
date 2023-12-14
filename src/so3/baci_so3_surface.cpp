@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_line.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 
 DRT::ELEMENTS::StructuralSurfaceType& DRT::ELEMENTS::StructuralSurfaceType::Instance()
@@ -260,3 +262,5 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
       dserror("shape type unknown!\n");
   }
 }
+
+BACI_NAMESPACE_CLOSE

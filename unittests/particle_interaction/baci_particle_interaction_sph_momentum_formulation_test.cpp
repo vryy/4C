@@ -15,6 +15,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class SPHMomentumFormulationMonaghanTest : public ::testing::Test
   {
    protected:

@@ -7,6 +7,8 @@
 #include "baci_lib_node.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FLD
 {
   CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
@@ -42,3 +44,4 @@ namespace FLD
     return nullspace;
   }
 }  // namespace FLD
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 
 #include "baci_contact_abstract_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CONTACT
 {
@@ -594,5 +596,7 @@ namespace CONTACT
   };  // class CoLagrangeStrategy
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_LAGRANGE_STRATEGY_H

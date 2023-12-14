@@ -22,6 +22,8 @@
 #include <NOX_Epetra_Vector.H>
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::ImplicitBase::ImplicitBase()
@@ -33,8 +35,8 @@ STR::TIMINT::ImplicitBase::ImplicitBase()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 {
-  const NOX::Abstract::Group& solgrp = GetSolutionGroup();
-  const NOX::Epetra::Vector& F = dynamic_cast<const NOX::Epetra::Vector&>(solgrp.getF());
+  const ::NOX::Abstract::Group& solgrp = GetSolutionGroup();
+  const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
   return GetDataGlobalState().ExtractDisplEntries(F.getEpetraVector());
 }
 
@@ -151,3 +153,5 @@ void STR::TIMINT::ImplicitBase::PrintStep()
   // print it, now
   fflush(stdout);
 }
+
+BACI_NAMESPACE_CLOSE

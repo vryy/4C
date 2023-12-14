@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 namespace LIBB64
 {
@@ -376,5 +376,6 @@ inline std::string ScalarTypeToVtkType<double>()
   return "Float64";
 }
 
+BACI_NAMESPACE_CLOSE
 
 #endif

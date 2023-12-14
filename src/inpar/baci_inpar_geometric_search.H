@@ -13,11 +13,15 @@
 
 #include "baci_inpar_parameterlist_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR::GEOMETRICSEARCH
 {
   //! set the parameters for the geometric search strategy
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
 }  // namespace INPAR::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif

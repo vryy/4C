@@ -17,6 +17,8 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_ssi_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBase::AssembleStrategyBase(
@@ -522,3 +524,4 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
 
   return assemblestrategy;
 }
+BACI_NAMESPACE_CLOSE

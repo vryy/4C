@@ -36,6 +36,8 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::DataContainer::DataContainer()
@@ -143,8 +145,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
     const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
     const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
-    : ::CONTACT::CoAbstractStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
+    : CONTACT::CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
       augDataPtr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
       augData_(*augDataPtr_)
 {
@@ -2189,3 +2190,5 @@ void CONTACT::AUG::Strategy::EvaluateReferenceState()
 {
   // do nothing for the augmented strategy
 }
+
+BACI_NAMESPACE_CLOSE

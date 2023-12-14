@@ -20,6 +20,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
@@ -242,3 +244,5 @@ CORE::DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule()
 
   return CORE::DRT::UTILS::GaussRule1D::undefined;
 }
+
+BACI_NAMESPACE_CLOSE

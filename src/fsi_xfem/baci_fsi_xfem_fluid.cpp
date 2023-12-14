@@ -13,6 +13,8 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
@@ -88,3 +90,5 @@ void FSI::FluidXFEMAlgorithm::Update() { MBFluidField()->Update(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Output() { MBFluidField()->Output(); }
+
+BACI_NAMESPACE_CLOSE

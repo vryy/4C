@@ -17,6 +17,8 @@
 
 #include "baci_poroelast_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class CouplingPoroMortar;
@@ -84,5 +86,7 @@ namespace POROELAST
     double tolfres_ncoup_;  //!< residuum tolerance for porofluid normal coupling condition
   };
 }  // namespace POROELAST
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROELAST_MONOLITHICMESHTYING_H

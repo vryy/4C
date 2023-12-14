@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
 
+BACI_NAMESPACE_OPEN
+
 /**
  *
  */
@@ -37,7 +39,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
  *
  */
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalReferencePosition(
-    const Teuchos::RCP<const ::DRT::Discretization>& discret)
+    const Teuchos::RCP<const BACI::DRT::Discretization>& discret)
 {
   auto& visualization_data = GetVisualizationData();
 
@@ -122,3 +124,5 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::Write(
   node_gid_map_ = Teuchos::null;
   ClearData();
 }
+
+BACI_NAMESPACE_CLOSE

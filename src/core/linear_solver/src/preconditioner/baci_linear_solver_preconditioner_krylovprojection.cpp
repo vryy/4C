@@ -12,6 +12,8 @@
 
 #include "baci_linalg_projected_precond.H"
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
@@ -54,3 +56,5 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Finish(
 {
   preconditioner_->Finish(matrix, x, b);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -323,3 +325,5 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
     start = dofsets_[i]->AssignDegreesOfFreedom(*this, i, start);
   return start;
 }
+
+BACI_NAMESPACE_CLOSE

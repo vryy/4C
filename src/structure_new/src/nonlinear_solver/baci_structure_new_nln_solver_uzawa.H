@@ -14,6 +14,8 @@
 
 #include "baci_structure_new_nln_solver_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace NLN
@@ -29,5 +31,7 @@ namespace STR
     }  // namespace SOLVER
   }    // namespace NLN
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_NLN_SOLVER_UZAWA_H

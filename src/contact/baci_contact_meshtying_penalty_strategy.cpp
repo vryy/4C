@@ -23,6 +23,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
@@ -487,3 +489,5 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBl
   }
   return mat_ptr;
 }
+
+BACI_NAMESPACE_CLOSE

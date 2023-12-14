@@ -20,6 +20,8 @@ of errors, turbulence statistics etc.)
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -278,5 +280,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FLUID_ELE_XWALL_H

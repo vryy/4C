@@ -20,6 +20,8 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
@@ -87,3 +89,5 @@ void FBI::UTILS::FBIAssemblyStrategy::AssembleFluidMatrix(
   Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true)->FEAssemble(
       elemat, lmrow, lmcol);
 }
+
+BACI_NAMESPACE_CLOSE

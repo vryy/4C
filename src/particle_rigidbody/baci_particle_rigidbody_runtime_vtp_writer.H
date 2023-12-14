@@ -20,6 +20,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
@@ -108,4 +110,6 @@ namespace PARTICLERIGIDBODY
 }  // namespace PARTICLERIGIDBODY
 
 /*---------------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif

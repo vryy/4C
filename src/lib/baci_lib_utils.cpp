@@ -32,6 +32,8 @@
 #include <string>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -1273,3 +1275,5 @@ void DRT::UTILS::Checkscanf(int output)
     dserror("Error while reading input.\n");
   }
 }
+
+BACI_NAMESPACE_CLOSE

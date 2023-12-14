@@ -22,6 +22,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /*!
@@ -305,5 +307,7 @@ namespace CORE::LINALG
       const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H

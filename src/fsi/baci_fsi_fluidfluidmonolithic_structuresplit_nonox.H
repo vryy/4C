@@ -13,6 +13,8 @@ using XFEM
 
 #include "baci_fsi_monolithic_nonox.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace ADAPTER
 {
@@ -202,5 +204,7 @@ namespace FSI
     //@}
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

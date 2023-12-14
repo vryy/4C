@@ -16,6 +16,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 
 namespace CORE::UTILS
@@ -143,5 +145,7 @@ namespace CORE::UTILS
     std::vector<double> x_;
   };
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

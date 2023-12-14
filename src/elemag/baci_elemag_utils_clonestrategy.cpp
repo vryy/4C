@@ -19,6 +19,8 @@
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_hdg.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
@@ -87,3 +89,4 @@ bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::DetermineEleType(
 // template classes
 template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>;
 template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>;
+BACI_NAMESPACE_CLOSE

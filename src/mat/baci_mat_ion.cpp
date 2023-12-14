@@ -16,6 +16,8 @@ Bauer
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Ion::Ion(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -118,3 +120,5 @@ void MAT::Ion::Unpack(const std::vector<char>& data)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

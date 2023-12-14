@@ -15,31 +15,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_fsi.H"
 
-// forward declarations
-namespace CORE::ADAPTER
-{
-  class Coupling;
-  class CouplingMortar;
-}  // namespace CORE::ADAPTER
-
 class Epetra_Comm;
-
-namespace CORE::LINALG
-{
-  class BlockSparseMatrixBase;
-  class MatrixColTransform;
-}  // namespace CORE::LINALG
-
-namespace FSI
-{
-  class OverlappingBlockMatrix;
-
-  namespace UTILS
-  {
-    class SlideAleUtils;
-  }  // namespace UTILS
-}  // namespace FSI
-
 namespace NOX
 {
   namespace Epetra
@@ -57,6 +33,31 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
+// forward declarations
+namespace CORE::ADAPTER
+{
+  class Coupling;
+  class CouplingMortar;
+}  // namespace CORE::ADAPTER
+
+namespace CORE::LINALG
+{
+  class BlockSparseMatrixBase;
+  class MatrixColTransform;
+}  // namespace CORE::LINALG
+
+namespace FSI
+{
+  class OverlappingBlockMatrix;
+
+  namespace UTILS
+  {
+    class SlideAleUtils;
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace FSI
 {
@@ -124,8 +125,8 @@ namespace FSI
    protected:
     void CreateSystemMatrix();
 
-    Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) final;
+    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) final;
 
     void Update() final;
 
@@ -247,5 +248,7 @@ namespace FSI
 
   };  // class MortarMonolithicFluidSplitSaddlePoint
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_H

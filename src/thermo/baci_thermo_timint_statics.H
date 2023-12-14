@@ -17,6 +17,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_thermo_timint_impl.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
@@ -196,4 +198,6 @@ namespace THR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_TIMINT_STATICS_H

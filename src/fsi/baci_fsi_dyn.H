@@ -11,6 +11,8 @@
 #ifndef BACI_FSI_DYN_H
 #define BACI_FSI_DYN_H
 
+BACI_NAMESPACE_OPEN
+
 void fluid_ale_drt();
 void fluid_xfem_drt();
 void fluid_fluid_fsi_drt();
@@ -30,5 +32,7 @@ void xfsi_drt();
 void xfpsi_drt();
 
 void fsi_immersed_drt();
+
+BACI_NAMESPACE_CLOSE
 
 #endif

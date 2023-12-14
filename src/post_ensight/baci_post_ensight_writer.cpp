@@ -35,6 +35,8 @@ const int Hex20_BaciToEnsightGold[20] = {
 EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
     : PostWriterBase(field, filename), nodeidgiven_(true), writecp_(false)
 {
+  using namespace BACI;
+
   // initialize proc0map_ correctly
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
@@ -96,7 +98,8 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs) iter++;
+  if (field_->problem()->SpatialApproximationType() == BACI::CORE::FE::ShapeFunctionType::nurbs)
+    iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
   for (int i = 0; i < iter; ++i)
@@ -419,6 +422,8 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string name)
 {
+  using namespace BACI;
+
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
@@ -498,8 +503,10 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
-    std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
+    std::ofstream& geofile, const Teuchos::RCP<BACI::DRT::Discretization> dis)
 {
+  using namespace BACI;
+
   CORE::FE::ShapeFunctionType distype = field_->problem()->SpatialApproximationType();
   if (myrank_ == 0)
   {
@@ -542,9 +549,12 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 /*----------------------------------------------------------------------*
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
-void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
+void EnsightWriter::WriteCells(std::ofstream& geofile,
+    const Teuchos::RCP<BACI::DRT::Discretization> dis,
     const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   std::vector<int> nodevector;
@@ -751,10 +761,12 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
  \date 12/07
 */
 void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, const std::vector<int>& nodevector,
     const Teuchos::RCP<Epetra_Map> proc0map) const
 {
-  // no we have communicate the connectivity infos from proc 1...proc n to proc 0
+  using namespace BACI;
+
+  // now we have communicated the connectivity infos from proc 1...proc n to proc 0
 
   std::vector<char> sblock;  // sending block
   std::vector<char> rblock;  // recieving block
@@ -839,8 +851,10 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
  * \date 01/08
  */
 EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
-    const Teuchos::RCP<DRT::Discretization> dis) const
+    const Teuchos::RCP<BACI::DRT::Discretization> dis) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   NumElePerDisType numElePerDisType;
@@ -888,7 +902,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const
+int EnsightWriter::GetNumEleOutput(const BACI::CORE::FE::CellType distype, const int numele) const
 {
   return GetNumSubEle(distype) * numele;
 }
@@ -896,8 +910,10 @@ int EnsightWriter::GetNumEleOutput(const CORE::FE::CellType distype, const int n
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumSubEle(const CORE::FE::CellType distype) const
+int EnsightWriter::GetNumSubEle(const BACI::CORE::FE::CellType distype) const
 {
+  using namespace BACI;
+
   switch (distype)
   {
     case CORE::FE::CellType::hex18:
@@ -927,8 +943,10 @@ int EnsightWriter::GetNumSubEle(const CORE::FE::CellType distype) const
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
-    const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
 {
+  using namespace BACI;
+
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
   EleGidPerDisType eleGidPerDisType;
@@ -1033,8 +1051,10 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetEnsightString(const CORE::FE::CellType distype) const
+std::string EnsightWriter::GetEnsightString(const BACI::CORE::FE::CellType distype) const
 {
+  using namespace BACI;
+
   std::map<CORE::FE::CellType, std::string>::const_iterator entry;
   switch (distype)
   {
@@ -1637,6 +1657,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
     const std::string& groupname, const std::string& name, const int numdf, const int frompid,
     const bool fillzeros) const
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -1851,6 +1873,8 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -1942,6 +1966,8 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdof, const int from) const
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -2113,6 +2139,8 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
+  using namespace BACI;
+
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -2472,8 +2500,10 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<BACI::DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
+  using namespace BACI;
+
   // refcountpointer to vector of all coordinates
   // distributed among all procs
   Teuchos::RCP<Epetra_MultiVector> nodecoords;

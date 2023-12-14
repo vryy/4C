@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -60,3 +62,5 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::EvaluateDeriv(double gap
   }
   return params_->GetA();
 }
+
+BACI_NAMESPACE_CLOSE

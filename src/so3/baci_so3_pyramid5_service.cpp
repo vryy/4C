@@ -10,6 +10,8 @@
 #include "baci_lib_node.H"
 #include "baci_so3_pyramid5.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
@@ -39,3 +41,5 @@ std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoords()
   centercoords[2] = midpoint(0, 2);
   return centercoords;
 }
+
+BACI_NAMESPACE_CLOSE

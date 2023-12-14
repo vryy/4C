@@ -15,6 +15,7 @@ line.
 
 #include "baci_geometry_pair_line_to_volume.H"
 
+BACI_NAMESPACE_OPEN
 
 // Forward declaration.
 namespace GEOMETRYPAIR
@@ -84,5 +85,7 @@ namespace GEOMETRYPAIR
     std::vector<bool>& GetLineProjectionVector() const;
   };
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

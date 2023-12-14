@@ -14,6 +14,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -116,3 +118,5 @@ double MAT::MurnaghanTaitFluid::ComputeDensity(const double press) const
 
   return density;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -30,6 +30,8 @@
 #include <vector>
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -460,5 +462,7 @@ namespace CORE::GEO
     }
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

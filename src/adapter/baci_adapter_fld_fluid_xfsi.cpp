@@ -26,6 +26,9 @@
 
 #include <set>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
@@ -240,3 +243,5 @@ void ADAPTER::XFluidFSI::GmshOutput(const std::string& name,  ///< name for outp
   // xfluid_->GmshOutput(name, step, count, vel, acc);
   dserror("Gmsh output for XFSI during Newton currently not available.");
 }
+
+BACI_NAMESPACE_CLOSE

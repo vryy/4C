@@ -21,6 +21,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /// returns Weakly Compressible Fluid quick access parameters from given material id
@@ -7649,3 +7651,5 @@ double FLD::KimMoinStress::Evaluate(
 
   return 1.0;
 }
+
+BACI_NAMESPACE_CLOSE

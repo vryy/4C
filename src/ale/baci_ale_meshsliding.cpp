@@ -21,6 +21,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : Meshtying(dis, solver, msht, nsd, surfacesplitter)
@@ -35,9 +37,9 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINAL
 void ALE::Meshsliding::AdapterMortar(std::vector<int> coupleddof)
 {
   adaptermeshsliding_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
-      ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
-      ::DRT::Problem::Instance()->ContactDynamicParams(),
-      ::DRT::Problem::Instance()->SpatialApproximationType()));
+      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+      DRT::Problem::Instance()->ContactDynamicParams(),
+      DRT::Problem::Instance()->SpatialApproximationType()));
 
   // Setup and Output of Nonlinear meshtying adapter
   adaptermeshsliding_->Setup(discret_, discret_, coupleddof, "Mortar");
@@ -413,3 +415,5 @@ int ALE::Meshsliding::SolveMeshtying(CORE::LINALG::Solver& solver,
   }
   return errorcode;
 }
+
+BACI_NAMESPACE_CLOSE

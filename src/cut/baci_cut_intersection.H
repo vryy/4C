@@ -21,6 +21,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -1387,5 +1388,7 @@ template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType side
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 CORE::LINALG::Matrix<probdim, 1> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug,
     dimedge, dimside, numNodesEdge, numNodesSide>::x_;
+
+BACI_NAMESPACE_CLOSE
 
 #endif

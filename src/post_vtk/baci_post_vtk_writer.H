@@ -24,17 +24,21 @@
 #include <string>
 #include <vector>
 
-
-
 // forward declarations
 class Epetra_Vector;
+class Epetra_MultiVector;
 class PostField;
 class PostResult;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
   class Node;
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTK output generation

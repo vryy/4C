@@ -24,6 +24,8 @@
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | initialize or update velocity field                  rasthofer 03/14 |
@@ -1128,3 +1130,5 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
 
   return;
 }  // SCATRA::ScaTraTimIntImpl::Redistribute
+
+BACI_NAMESPACE_CLOSE

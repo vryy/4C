@@ -35,6 +35,8 @@
 
 #include <Teuchos_Time.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
@@ -5089,3 +5091,5 @@ void CONTACT::Beam3cmanager::WriteRestart(IO::DiscretizationWriter& output)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
@@ -106,3 +108,5 @@ void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
 
   return;
 }  // SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy
+
+BACI_NAMESPACE_CLOSE

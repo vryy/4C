@@ -15,6 +15,8 @@
 #include "baci_fsi_lungmonolithic.H"
 #include "baci_linalg_matrixtransform.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   /// monolithic FSI algorithm with overlapping interface equations
@@ -113,5 +115,7 @@ namespace FSI
     CORE::LINALG::MatrixColTransform caiGtransform_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

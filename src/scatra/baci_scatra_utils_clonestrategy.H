@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -84,5 +86,7 @@ namespace SCATRA
   };  // class ScatraFluidCloneStrategy
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -16,6 +16,8 @@
 #include "baci_lib_discret.H"
 #include "baci_red_airways_implicitintegration.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
@@ -165,3 +167,5 @@ void AIRWAY::RedAirwayResultTest::TestElement(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

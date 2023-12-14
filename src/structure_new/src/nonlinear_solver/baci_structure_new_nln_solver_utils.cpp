@@ -18,6 +18,8 @@
 
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::NLN::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus)
@@ -677,3 +679,5 @@ void STR::NLN::SOLVER::SetActiveSetParams(
   qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
   qlist.set<int>("Max Cycle Size", 3);
 }
+
+BACI_NAMESPACE_CLOSE

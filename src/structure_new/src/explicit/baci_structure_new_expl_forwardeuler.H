@@ -14,6 +14,8 @@
 
 #include "baci_structure_new_expl_generic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace EXPLICIT
@@ -116,5 +118,7 @@ namespace STR
     };
   }  // namespace EXPLICIT
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_STRUCTURE_NEW_EXPL_FORWARDEULER_H

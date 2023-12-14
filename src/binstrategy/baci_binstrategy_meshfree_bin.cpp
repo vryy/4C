@@ -11,6 +11,8 @@
 
 #include "baci_mortar_element.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
@@ -56,3 +58,5 @@ void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 template class DRT::MESHFREE::MeshfreeBin<DRT::Element>;
 template class DRT::MESHFREE::MeshfreeBin<DRT::FaceElement>;
 template class DRT::MESHFREE::MeshfreeBin<MORTAR::MortarElement>;
+
+BACI_NAMESPACE_CLOSE

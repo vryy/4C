@@ -13,7 +13,6 @@
 
 #include <NOX_StatusTest_Generic.H>
 
-// forward declaration ...
 namespace NOX
 {
   namespace Solver
@@ -24,6 +23,13 @@ namespace NOX
   {
     class Group;
   }  // namespace Abstract
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+// forward declaration ...
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -85,10 +91,10 @@ namespace NOX
            *
            *  The test can (and should, if possible) be skipped if
            *  checkType is NOX::StatusType::None.  If the test is skipped, then
-           *  the status should be set to NOX::StatusTest::Unevaluated. */
+           *  the status should be set to ::NOX::StatusTest::Unevaluated. */
           virtual StatusType CheckStatus(const Interface::Required& interface,
-              const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType) = 0;
+              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+              ::NOX::StatusTest::CheckType checkType) = 0;
 
           //! Return the result of the most recent inner checkStatus call
           virtual StatusType GetStatus() const = 0;
@@ -104,5 +110,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_GENERIC_H

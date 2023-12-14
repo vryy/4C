@@ -13,6 +13,8 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 
+BACI_NAMESPACE_OPEN
+
 
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -213,3 +215,5 @@ double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledScalarProduct
   // Can not land here because of the dserror(). Just here to ensure no compiler warning.
   std::abort();
 }
+
+BACI_NAMESPACE_CLOSE

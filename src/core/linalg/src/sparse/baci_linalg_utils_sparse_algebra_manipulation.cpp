@@ -14,6 +14,8 @@
 
 #include <Epetra_IntVector.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -568,8 +570,8 @@ bool CORE::LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
-    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const ::DRT::Discretization& discret,
-    std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
+    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
+    const BACI::DRT::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
 {
   dof_maps.reserve(dof_maps.size() + node_maps.size());
   for (const Teuchos::RCP<Epetra_Map>& node_map : node_maps)
@@ -579,7 +581,7 @@ void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
-    const int dofset_id, const Epetra_Map& node_map, const ::DRT::Discretization& discret)
+    const int dofset_id, const Epetra_Map& node_map, const BACI::DRT::Discretization& discret)
 {
   std::set<int> dof_set;
   std::vector<int> dof_vec;
@@ -589,7 +591,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
 
   for (int nlid = 0; nlid < my_num_nodes; ++nlid)
   {
-    const ::DRT::Node* node = discret.gNode(my_ngids[nlid]);
+    const BACI::DRT::Node* node = discret.gNode(my_ngids[nlid]);
 
     const int numdofs = discret.NumDof(dofset_id, node);
     for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.Dof(dofset_id, node, d));
@@ -644,3 +646,5 @@ void CORE::LINALG::EpetraMultiVectorToStdVector(
       stdVector[dim * myLength + dofLID] = dataVector[dofLID];
   }
 }
+
+BACI_NAMESPACE_CLOSE

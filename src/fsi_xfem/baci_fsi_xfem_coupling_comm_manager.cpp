@@ -22,6 +22,8 @@ transform matrixes, vectors, ...
 #include <iostream>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 
 /*-----------------------------------------------------------------------------------------*
 | constructor - simplified for 1 discretization to couple (public)             ager 03/2016|
@@ -462,3 +464,5 @@ void XFEM::Coupling_Comm_Manager::DebugOut(
 #endif
   return;
 }
+
+BACI_NAMESPACE_CLOSE

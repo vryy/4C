@@ -25,6 +25,8 @@ parameter cn
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
@@ -541,3 +543,5 @@ double CONTACT::AUG::PenaltyUpdate_SufficientAngle::BetaAngle() const
 {
   return Data().SaData().GetPenaltyCorrectionParameter();
 }
+
+BACI_NAMESPACE_CLOSE

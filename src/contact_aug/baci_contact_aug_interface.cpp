@@ -24,6 +24,8 @@
 #include <Epetra_IntVector.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::InterfaceDataContainer::InterfaceDataContainer()
@@ -44,7 +46,7 @@ CONTACT::AUG::InterfaceDataContainer::InterfaceDataContainer()
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Interface::Interface(
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
-    : ::CONTACT::CoInterface(interfaceData_ptr),
+    : CONTACT::CoInterface(interfaceData_ptr),
       interfaceData_ptr_(interfaceData_ptr),
       interfaceData_(*interfaceData_ptr_)
 {
@@ -2188,3 +2190,5 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
     const CoNode& cnode) const;
+
+BACI_NAMESPACE_CLOSE

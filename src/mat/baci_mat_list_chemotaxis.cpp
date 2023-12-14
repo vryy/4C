@@ -19,6 +19,8 @@ is just a "control instance".
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | standard constructor                                      thon 06/15 |
@@ -198,3 +200,5 @@ int MAT::MatListChemotaxis::PairID(const unsigned index) const
     return -1;
   }
 }
+
+BACI_NAMESPACE_CLOSE

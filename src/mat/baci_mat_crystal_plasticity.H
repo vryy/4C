@@ -164,6 +164,8 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | class definitions                                           			|
  *----------------------------------------------------------------------*/
@@ -637,5 +639,7 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_CRYSTAL_PLASTICITY_H

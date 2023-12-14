@@ -19,6 +19,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_elemag_ele.H"
 #include "baci_linalg_serialdensematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -487,5 +489,7 @@ namespace DRT
 }  // namespace DRT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELEMAG_DIFF_ELE_H

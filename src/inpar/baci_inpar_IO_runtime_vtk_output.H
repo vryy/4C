@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 namespace INPAR::IO_RUNTIME_VTK
 {
@@ -39,5 +41,7 @@ namespace INPAR::IO_RUNTIME_VTK
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
 }  // namespace INPAR::IO_RUNTIME_VTK
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -11,6 +11,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -304,3 +305,5 @@ bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
 
   return (gisdbc == 1);
 }
+
+BACI_NAMESPACE_CLOSE

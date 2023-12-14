@@ -18,6 +18,8 @@
 #include "baci_mat_micromaterialgp_static.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 // This function has to be separated from the remainder of the
@@ -290,3 +292,5 @@ void MAT::MicroMaterial::ReadRestart(
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
   actmicromatgp->ReadRestart();
 }
+
+BACI_NAMESPACE_CLOSE

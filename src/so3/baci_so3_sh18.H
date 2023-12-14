@@ -14,6 +14,8 @@
 #include "baci_mat_material.H"
 #include "baci_so3_hex18.H"
 
+BACI_NAMESPACE_OPEN
+
 const int num_eas = 9;
 
 namespace DRT
@@ -271,5 +273,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SO3_SH18_H

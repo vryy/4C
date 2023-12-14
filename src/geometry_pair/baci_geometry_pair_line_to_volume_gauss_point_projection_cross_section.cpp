@@ -19,6 +19,7 @@ line.
 
 #include <math.h>
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -215,3 +216,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSe
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
+
+BACI_NAMESPACE_CLOSE

@@ -20,6 +20,7 @@
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
+BACI_NAMESPACE_OPEN
 
 
 // #define DEBUG_SEMILAGRANGE
@@ -2042,3 +2043,5 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
     discret_->Comm().Barrier();
   }  // end if procfinished == false
 }  // end exportIterData
+
+BACI_NAMESPACE_CLOSE

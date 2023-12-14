@@ -19,6 +19,9 @@ namespace Teuchos
 {
   class ParameterList;
 }
+
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   class CoordinateSystemProvider;
@@ -85,4 +88,6 @@ namespace MIXTURE
         CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
+BACI_NAMESPACE_CLOSE
+
 #endif  // MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H

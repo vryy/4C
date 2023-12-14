@@ -16,6 +16,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_io_pstream.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -120,8 +122,8 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("VERBOSITY", "verbose", "",
       tuple<std::string>(
           "minimal", "Minimal", "standard", "Standard", "verbose", "Verbose", "debug", "Debug"),
-      tuple<int>(::IO::minimal, ::IO::minimal, ::IO::standard, ::IO::standard, ::IO::verbose,
-          ::IO::verbose, ::IO::debug, ::IO::debug),
+      tuple<int>(BACI::IO::minimal, BACI::IO::minimal, BACI::IO::standard, BACI::IO::standard,
+          BACI::IO::verbose, BACI::IO::verbose, BACI::IO::debug, BACI::IO::debug),
       &io);
 
   DoubleParameter("RESTARTWALLTIMEINTERVAL", -1.0,
@@ -152,3 +154,5 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "per time/load step.",
       &io_every_iter);
 }
+
+BACI_NAMESPACE_CLOSE

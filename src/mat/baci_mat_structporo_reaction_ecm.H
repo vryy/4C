@@ -11,6 +11,8 @@
 
 #include "baci_mat_structporo_reaction.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   // forward declaration
@@ -167,5 +169,7 @@ namespace MAT
     MAT::PAR::StructPoroReactionECM* params_;
   };
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_STRUCTPORO_REACTION_ECM_H

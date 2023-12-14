@@ -12,6 +12,8 @@
 
 #include "baci_io.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
@@ -369,3 +371,5 @@ void SCATRA::CCCVHalfCycleCondition::ReadRestart(IO::DiscretizationReader& reade
   // current phase in half cycle
   phase_cccv_ = static_cast<INPAR::ELCH::CCCVHalfCyclePhase>(reader.ReadInt("phase_cccv"));
 }
+
+BACI_NAMESPACE_CLOSE

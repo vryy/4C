@@ -11,6 +11,8 @@
 
 #include <functional>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   /*!
@@ -79,5 +81,7 @@ namespace CORE::UTILS
       const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x);
 
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

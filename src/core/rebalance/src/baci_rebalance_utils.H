@@ -11,6 +11,8 @@
 #ifndef BACI_REBALANCE_UTILS_H
 #define BACI_REBALANCE_UTILS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -20,8 +22,10 @@ namespace CORE::REBALANCE::UTILS
 {
   /*! \brief Prints details on the distribution/partitioning of the distribution
    */
-  void PrintParallelDistribution(const ::DRT::Discretization& dis);
+  void PrintParallelDistribution(const BACI::DRT::Discretization& dis);
 
 }  // namespace CORE::REBALANCE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

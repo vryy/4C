@@ -11,6 +11,8 @@
 
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace POROMULTIPHASESCATRA
 {
@@ -121,5 +123,7 @@ namespace POROFLUIDMULTIPHASE
 }  // namespace POROFLUIDMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_H

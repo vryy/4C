@@ -17,6 +17,8 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_coupling_adapter.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace ADAPTER
 {
@@ -99,5 +101,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H

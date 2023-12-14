@@ -15,13 +15,6 @@
 /* headers */
 #include <map>
 
-/*----------------------------------------------------------------------------*/
-/* forward declarations */
-namespace CORE::ADAPTER
-{
-  class Coupling;
-}
-
 class Epetra_Map;
 class Epetra_Vector;
 
@@ -29,6 +22,15 @@ namespace Teuchos
 {
   template <typename T>
   class RCP;
+}
+
+BACI_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace CORE::ADAPTER
+{
+  class Coupling;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -110,5 +112,7 @@ namespace CORE::ADAPTER
   };
 
 }  // namespace CORE::ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // COUPLING_ADAPTER_CONVERTER_H

@@ -25,6 +25,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 const int NUMDIM_ALE3 = 3;  ///< number of dimensions
 const int NODDOF_ALE3 = 3;  ///< number of dofs per node
 
@@ -878,5 +880,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

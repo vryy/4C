@@ -19,6 +19,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   inline std::vector<char>& GetMutableStressData(
@@ -208,3 +210,5 @@ int DRT::ELEMENTS::Shell7pScatra::EvaluateNeumann(Teuchos::ParameterList& params
       *this, discretization, condition, la, elevec1, elemat1, time);
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE

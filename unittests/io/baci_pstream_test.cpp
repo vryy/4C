@@ -16,7 +16,7 @@ namespace
 {
   TEST(PstreamTest, UninitializedUseThrows)
   {
-    IO::Pstream ps;
+    BACI::IO::Pstream ps;
     EXPECT_THROW(ps.flush(), std::runtime_error);
     EXPECT_THROW((ps << "blub"), std::runtime_error);
     EXPECT_NO_THROW(ps.close());
@@ -24,6 +24,7 @@ namespace
 
   TEST(PstreamTest, DoubleInitializeThrows)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
     EXPECT_THROW(
@@ -33,6 +34,7 @@ namespace
 
   TEST(PstreamTest, NonexistantProc)
   {
+    using namespace BACI;
     IO::Pstream ps;
     EXPECT_THROW(
         ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 4, 2, ""),
@@ -41,6 +43,7 @@ namespace
 
   TEST(PstreamTest, InitializedUse)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, false, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     EXPECT_NO_THROW(ps.flush());
@@ -50,6 +53,7 @@ namespace
 
   TEST(PstreamTest, OutputLevel)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     EXPECT_EQ(ps.RequestedOutputLevel(), IO::minimal);
@@ -59,6 +63,7 @@ namespace
 
   TEST(PstreamTest, InputTypes)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     EXPECT_NO_THROW(ps << 4UL << -5LL << 1337.0 << 42.0f << "blub" << std::string("blah") << "\n");
@@ -68,6 +73,7 @@ namespace
 
   TEST(PstreamTest, ExternalOperators)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     EXPECT_NO_THROW(ps << "blub" << IO::flush);
@@ -76,6 +82,7 @@ namespace
 
   TEST(PstreamTest, Level)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     IO::Level &lvl = ps(IO::debug);
@@ -86,6 +93,7 @@ namespace
 
   TEST(PstreamTest, LevelExternalOperators)
   {
+    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, true, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     IO::Level &lvl = ps(IO::debug);

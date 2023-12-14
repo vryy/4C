@@ -15,6 +15,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -121,3 +123,5 @@ double MAT::Yoghurt::ComputeDiffusivity() const
 
   return diffus;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_geometry_pair_utility_classes.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace BEAMINTERACTION
 {
@@ -184,5 +186,7 @@ namespace BEAMINTERACTION
     CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

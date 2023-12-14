@@ -15,7 +15,10 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 
 #include <Sacado.hpp>
+
 typedef Sacado::Fad::DFad<double> FAD;
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -109,5 +112,7 @@ inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
   out(2, 1) = r_fad.dx(7);
   out(2, 0) = r_fad.dx(8);
 };
+
+BACI_NAMESPACE_CLOSE
 
 #endif

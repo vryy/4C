@@ -14,6 +14,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -48,3 +50,5 @@ void INPAR::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "Write none, row or column bins for visualization",
       tuple<std::string>("none", "rows", "cols"), tuple<int>(none, rows, cols), &binningstrategy);
 }
+
+BACI_NAMESPACE_CLOSE

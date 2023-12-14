@@ -11,6 +11,8 @@
 
 #include "baci_inpar_structure.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT::ELEMENTS
 {
@@ -27,4 +29,6 @@ namespace DRT::ELEMENTS
   };
 
 }  // namespace DRT::ELEMENTS
+BACI_NAMESPACE_CLOSE
+
 #endif  // SOLID_ELE_CALC_INTERFACE_H

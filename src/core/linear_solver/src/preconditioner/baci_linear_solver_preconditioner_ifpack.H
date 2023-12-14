@@ -14,6 +14,8 @@
 
 #include <Ifpack.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINEAR_SOLVER
 {
   /*! \brief  IFPACK preconditioners
@@ -51,5 +53,7 @@ namespace CORE::LINEAR_SOLVER
 
   };  // class IFPACKPreconditioner
 }  // namespace CORE::LINEAR_SOLVER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -15,6 +15,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR
 {
   namespace IO_MONITOR_STRUCTURE_DBC
@@ -59,3 +61,5 @@ namespace INPAR
     }
   }  // namespace IO_MONITOR_STRUCTURE_DBC
 }  // namespace INPAR
+
+BACI_NAMESPACE_CLOSE

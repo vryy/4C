@@ -30,6 +30,8 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 #include "baci_utils_function_of_time.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis,
@@ -1267,3 +1269,5 @@ void SCATRA::ScaTraTimIntElchSCL::TestResults()
   DRT::Problem::Instance()->AddFieldTest(CreateMicroFieldTest());
   DRT::Problem::Instance()->TestAll(discret_->Comm());
 }
+
+BACI_NAMESPACE_CLOSE

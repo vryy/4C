@@ -16,6 +16,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_monolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
@@ -91,3 +93,5 @@ void SSI::SSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
     ++test_count;
   }
 }
+
+BACI_NAMESPACE_CLOSE

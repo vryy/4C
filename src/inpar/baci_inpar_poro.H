@@ -9,6 +9,8 @@
 #ifndef BACI_INPAR_PORO_H
 #define BACI_INPAR_PORO_H
 
+BACI_NAMESPACE_OPEN
+
 namespace INPAR::PORO
 {
   //! poro element implementation type
@@ -20,5 +22,7 @@ namespace INPAR::PORO
   };
 
 }  // namespace INPAR::PORO
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -25,6 +25,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::MeshReader::MeshReader(const Teuchos::RCP<Epetra_Comm> comm) : comm_(comm) {}
@@ -227,3 +229,5 @@ void DRT::INPUT::MeshReader::CreateInlineMesh(int& max_node_id)
     max_node_id = domain_reader.MyDis()->NodeRowMap()->MaxAllGID() + 1;
   }
 }
+
+BACI_NAMESPACE_CLOSE

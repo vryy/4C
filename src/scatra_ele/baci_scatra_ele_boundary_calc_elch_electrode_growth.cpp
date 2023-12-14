@@ -20,6 +20,8 @@ growth, e.g., lithium plating
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
@@ -857,3 +859,5 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE:
     2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<CORE::FE::CellType::nurbs9,
     3>;
+
+BACI_NAMESPACE_CLOSE

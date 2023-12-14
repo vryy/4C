@@ -12,6 +12,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1745,3 +1747,5 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle(
 
   elematrix.scale(-1.0);
 }
+
+BACI_NAMESPACE_CLOSE

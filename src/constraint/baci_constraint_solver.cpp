@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
@@ -389,3 +391,5 @@ void UTILS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatri
   counter_++;
   return;
 }
+
+BACI_NAMESPACE_CLOSE

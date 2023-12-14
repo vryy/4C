@@ -12,6 +12,8 @@
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance(
@@ -348,3 +350,5 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetOnOff(Teuchos::ParameterList&
   if (onoff_ == nullptr) dserror("Cannot get vector 'onoff' from parameter list");
   if (onoff_->size() != 2) dserror("Only two dofs are supported");
 }
+
+BACI_NAMESPACE_CLOSE

@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace GRIDGENERATOR
@@ -483,3 +485,5 @@ namespace DRT
 
   }  // namespace GRIDGENERATOR
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE

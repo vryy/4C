@@ -24,6 +24,9 @@ namespace NOX
     class Group;
   }  // namespace Abstract
 }  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace TIMINT
@@ -90,13 +93,15 @@ namespace STR
 
      protected:
       /// Returns the current solution group (pure virtual)
-      virtual const NOX::Abstract::Group& GetSolutionGroup() const = 0;
+      virtual const ::NOX::Abstract::Group& GetSolutionGroup() const = 0;
 
       //! Returns the current solution group ptr
-      virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() = 0;
+      virtual Teuchos::RCP<::NOX::Abstract::Group> SolutionGroupPtr() = 0;
     };
   }  // namespace TIMINT
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_TIMINT_IMPLICITBASE_H

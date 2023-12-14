@@ -14,13 +14,19 @@
 #include <NOX_Abstract_Group.H>
 #include <NOX_StatusTest_Generic.H>
 
-// forward declaration
 namespace NOX
 {
   namespace MeritFunction
   {
     class Generic;
   }  // namespace MeritFunction
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+// forward declaration
+namespace NOX
+{
   namespace NLN
   {
     namespace INNER
@@ -43,12 +49,12 @@ namespace NOX
             virtual int GetNumIterations() const = 0;
 
             //! Get the objective or meritfunction
-            virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
+            virtual const ::NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
 
             //! Execute the inner status test
             virtual NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(
-                const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-                NOX::StatusTest::CheckType checkType) const = 0;
+                const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+                ::NOX::StatusTest::CheckType checkType) const = 0;
           };  // class Required
         }     // namespace Interface
       }       // namespace StatusTest
@@ -56,5 +62,7 @@ namespace NOX
   }           // namespace NLN
 }  // namespace NOX
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H

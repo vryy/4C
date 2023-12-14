@@ -13,6 +13,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -243,3 +245,5 @@ bool MAT::StructPoroReaction::VisData(
   }
   return false;
 }
+
+BACI_NAMESPACE_CLOSE

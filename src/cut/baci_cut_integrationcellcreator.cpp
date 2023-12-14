@@ -18,6 +18,8 @@
 #include "baci_cut_position.H"
 #include "baci_cut_side.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
@@ -1323,3 +1325,5 @@ template bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell<CORE::FE::Cel
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 template bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell<CORE::FE::CellType::quad4>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+
+BACI_NAMESPACE_CLOSE

@@ -19,6 +19,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CORE::COMM
 {
@@ -111,5 +113,7 @@ namespace MAT
   void UnpackFiberArray(std::vector<char>::size_type& position, const std::vector<char>& data,
       std::vector<std::array<T, numfib>>& vct);
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MAT_ANISOTROPY_UTILS_H

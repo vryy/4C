@@ -18,6 +18,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
 
@@ -280,3 +282,5 @@ bool DRT::ELEMENTS::Bele3::ReadElement(
   }
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

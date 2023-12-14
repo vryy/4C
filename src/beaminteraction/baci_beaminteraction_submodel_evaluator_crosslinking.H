@@ -19,6 +19,8 @@
 
 #include <Epetra_MpiComm.h>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 namespace CORE::COMM
@@ -131,7 +133,7 @@ namespace BEAMINTERACTION
       void PostReadRestart() override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override{/*empty*/};
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
 
       //! derived
       void InitSubmodelDependencies(
@@ -533,5 +535,7 @@ namespace BEAMINTERACTION
 
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -24,6 +24,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(
@@ -561,3 +563,5 @@ void FSI::LungMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 
   ax = a;
 }
+
+BACI_NAMESPACE_CLOSE

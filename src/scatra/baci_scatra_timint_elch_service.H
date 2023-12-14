@@ -15,6 +15,8 @@
 #include "baci_lib_condition.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
@@ -220,4 +222,6 @@ namespace SCATRA
   };  // class CCCVCondition
 
 }  // namespace SCATRA
+BACI_NAMESPACE_CLOSE
+
 #endif

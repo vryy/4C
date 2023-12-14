@@ -25,6 +25,8 @@
 #include <cmath>
 #include <iosfwd>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -234,3 +236,4 @@ bool MIXTURE::GrowthRemodelMixtureRule::EvaluateOutputData(
   }
   return false;
 }
+BACI_NAMESPACE_CLOSE

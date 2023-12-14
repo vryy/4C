@@ -17,6 +17,8 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_xfem_condition_manager.H"
+
+BACI_NAMESPACE_OPEN
 //
 
 /*----------------------------------------------------------------------*
@@ -1161,3 +1163,5 @@ template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(D
     const INPAR::XFEM::ViscStab_hk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge15>>,
     DRT::Element *);
+
+BACI_NAMESPACE_CLOSE

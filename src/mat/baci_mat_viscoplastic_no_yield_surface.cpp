@@ -17,6 +17,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 // struct definition
 struct MAT::PreCalculatedTerms
 {
@@ -712,3 +714,4 @@ void MAT::ViscoPlasticNoYieldSurface::SetupCmat(
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nue);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nue);
 }
+BACI_NAMESPACE_CLOSE

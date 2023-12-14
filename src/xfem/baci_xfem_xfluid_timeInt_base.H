@@ -21,6 +21,8 @@
 
 #include <Epetra_Map.h>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   class CutWizard;
@@ -944,5 +946,7 @@ namespace XFEM
   };  // class XFLUID_TIMEINT_STD
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFLUID_TIMEINT_BASE_H

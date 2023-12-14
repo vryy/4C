@@ -21,6 +21,8 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
 /*==========================================================================*/
@@ -497,5 +499,7 @@ namespace LUBRICATION
   };  // class TimIntImpl
 }  // namespace LUBRICATION
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LUBRICATION_TIMINT_IMPLICIT_H

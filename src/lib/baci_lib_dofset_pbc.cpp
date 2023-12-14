@@ -17,6 +17,7 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
@@ -144,3 +145,5 @@ void DRT::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

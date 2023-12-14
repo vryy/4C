@@ -19,6 +19,8 @@
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -58,5 +60,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H

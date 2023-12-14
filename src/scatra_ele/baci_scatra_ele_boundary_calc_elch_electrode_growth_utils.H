@@ -14,6 +14,8 @@
 #include "baci_lib_condition.H"
 #include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declaration
 
@@ -136,5 +138,7 @@ namespace DRT::ELEMENTS
       const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

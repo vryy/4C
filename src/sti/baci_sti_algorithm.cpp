@@ -18,6 +18,8 @@
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 
+BACI_NAMESPACE_OPEN
+
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
@@ -400,3 +402,5 @@ void STI::Algorithm::Update()
   // compare thermo field to analytical solution if applicable
   thermo_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 }  // STI::Algorithm::Update()
+
+BACI_NAMESPACE_CLOSE

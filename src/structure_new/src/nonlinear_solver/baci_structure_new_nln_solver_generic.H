@@ -25,6 +25,9 @@ namespace NOX
     class Group;
   }  // namespace Abstract
 }  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   class Integrator;
@@ -78,8 +81,8 @@ namespace STR
          *
          *  The nox group has to be initialized in one of the derived Setup() routines beforehand.
          */
-        NOX::Abstract::Group& SolutionGroup();
-        const NOX::Abstract::Group& GetSolutionGroup() const;
+        ::NOX::Abstract::Group& SolutionGroup();
+        const ::NOX::Abstract::Group& GetSolutionGroup() const;
 
         //! Get the number of nonlinear iterations
         virtual int GetNumNlnIterations() const = 0;
@@ -185,8 +188,8 @@ namespace STR
         /*! returns the nox group (pointer) (only for internal use)
          *
          *  The nox group has to be initialized in one of the derived Setup() routines. */
-        NOX::Abstract::Group& Group();
-        Teuchos::RCP<NOX::Abstract::Group>& GroupPtr();
+        ::NOX::Abstract::Group& Group();
+        Teuchos::RCP<::NOX::Abstract::Group>& GroupPtr();
 
        protected:
         //! init flag
@@ -212,12 +215,14 @@ namespace STR
         Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
         //! nox group
-        Teuchos::RCP<NOX::Abstract::Group> group_ptr_;
+        Teuchos::RCP<::NOX::Abstract::Group> group_ptr_;
 
       };  // namespace SOLVER
     }     // namespace SOLVER
   }       // namespace NLN
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_NLN_SOLVER_GENERIC_H

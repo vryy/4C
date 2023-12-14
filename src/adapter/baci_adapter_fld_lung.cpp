@@ -23,6 +23,8 @@ parenchyma balloon
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*======================================================================*/
 /* constructor */
@@ -358,3 +360,5 @@ void ADAPTER::FluidLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
   const Teuchos::RCP<IO::DiscretizationWriter>& output = DiscWriter();
   output->WriteVector("Add_Forces", Forces);
 }
+
+BACI_NAMESPACE_CLOSE

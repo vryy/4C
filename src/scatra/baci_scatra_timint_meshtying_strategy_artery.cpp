@@ -19,6 +19,8 @@
 #include "baci_poromultiphase_scatra_utils.H"
 #include "baci_scatra_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 04/18 |
  *----------------------------------------------------------------------*/
@@ -377,3 +379,5 @@ void SCATRA::MeshtyingStrategyArtery::CheckInitialFields() const
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

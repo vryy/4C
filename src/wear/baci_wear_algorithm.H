@@ -24,6 +24,7 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
@@ -88,8 +89,8 @@ namespace WEAR
     void CreateMaterialInterface();
 
     //! @name Underlying fields
-    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
-    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;               //! underlying ALE
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
+    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;             //! underlying ALE
 
    protected:
     int dim_;  //! problem dimension
@@ -104,4 +105,6 @@ namespace WEAR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // WEAR_ALGORITHM_H

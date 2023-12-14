@@ -19,6 +19,8 @@
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -361,5 +363,7 @@ namespace DRT
     };  // end class fluid3boundaryImpl
   }     // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

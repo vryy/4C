@@ -10,6 +10,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(ReadKeyValue, WithWhitespace)
   {
     const auto& [key, value] = DRT::INPUT::ReadKeyValue("key 1.0");

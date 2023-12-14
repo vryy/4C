@@ -24,6 +24,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Assemble g~ contribution (2D / 3D)                        popp 01/08|
@@ -93,3 +94,5 @@ bool CONTACT::CoIntegrator::AssembleG(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

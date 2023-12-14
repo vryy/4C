@@ -14,6 +14,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /*!
@@ -244,3 +246,5 @@ POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLawParameters::
   // Check parameters
   CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
+
+BACI_NAMESPACE_CLOSE

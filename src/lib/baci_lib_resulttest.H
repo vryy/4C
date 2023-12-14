@@ -18,6 +18,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace DRT
 {
@@ -130,5 +132,7 @@ namespace DRT
 }  // namespace DRT
 
 void PrintResultDescrDatHeader();
+
+BACI_NAMESPACE_CLOSE
 
 #endif

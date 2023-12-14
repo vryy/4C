@@ -55,6 +55,8 @@
 #include "baci_structure_timint_impl.H"
 #include "baci_structure_timint_noxgroup.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
@@ -796,8 +798,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   std::vector<int> modeids = projector_->Modes();
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
-  Teuchos::RCP<Epetra_MultiVector> nullspace =
-      ::DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+  Teuchos::RCP<Epetra_MultiVector> nullspace = DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -4648,3 +4649,5 @@ void STR::TimIntImpl::CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status
     return;
   }
 }
+
+BACI_NAMESPACE_CLOSE

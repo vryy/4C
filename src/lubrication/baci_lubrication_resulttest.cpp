@@ -15,6 +15,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lubrication_timint_implicit.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | ctor                                                     wirtz 11/15 |
@@ -144,3 +146,5 @@ double LUBRICATION::ResultTest::ResultSpecial(
 
   return result;
 }  // LUBRICATION::ResultTest::ResultSpecial
+
+BACI_NAMESPACE_CLOSE

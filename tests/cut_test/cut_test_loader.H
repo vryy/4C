@@ -14,6 +14,8 @@
 #include <map>
 #include <vector>
 
+using namespace BACI;
+
 class MeshLoader
 {
  public:

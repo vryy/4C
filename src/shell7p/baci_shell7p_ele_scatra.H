@@ -21,6 +21,8 @@
 
 #include <memory>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   class Shell7pEleCalcInterface;
@@ -218,5 +220,7 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_SHELL7P_ELE_SCATRA_H

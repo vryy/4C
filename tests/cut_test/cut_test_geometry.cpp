@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+using namespace BACI;
+
 void test_geometry_schleifend1()
 {
   CORE::LINALG::Matrix<3, 3> tri3;

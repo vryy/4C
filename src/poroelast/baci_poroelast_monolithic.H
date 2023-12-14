@@ -15,6 +15,13 @@
 #include "baci_poroelast_base.H"
 #include "baci_poroelast_utils.H"
 
+namespace Teuchos
+{
+  class Time;
+}
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -26,11 +33,6 @@ namespace CORE::LINALG
   class Equilibration;
   enum class EquilibrationMethod;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class Time;
-}
 
 namespace POROELAST
 {
@@ -438,4 +440,6 @@ namespace POROELAST
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // POROELAST_MONOLITHIC_H

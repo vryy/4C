@@ -12,6 +12,8 @@
 
 #include "baci_contact_aug_strategy.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   namespace AUG
@@ -188,5 +190,7 @@ namespace CONTACT
   }    // namespace AUG
 }  // namespace CONTACT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_STEEPEST_ASCENT_SP_STRATEGY_H

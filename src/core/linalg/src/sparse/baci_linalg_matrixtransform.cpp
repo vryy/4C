@@ -19,6 +19,7 @@
 #include <iterator>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -329,3 +330,5 @@ bool CORE::LINALG::MatrixRowColTransform::operator()(const CORE::LINALG::SparseM
   return transformer(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter, &colconverter, dst,
       exactmatch, addmatrix);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 #include <ArborX.hpp>
 #endif
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEOMETRICSEARCH
 {
   std::vector<std::tuple<int, int, int, int, int>> GlobalCollisionSearch(
@@ -95,3 +97,5 @@ namespace CORE::GEOMETRICSEARCH
 #endif
   }
 }  // namespace CORE::GEOMETRICSEARCH
+
+BACI_NAMESPACE_CLOSE

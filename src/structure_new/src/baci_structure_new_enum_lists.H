@@ -17,6 +17,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace STR
 {
   //! Supported types of energy contributions
@@ -118,5 +120,7 @@ namespace STR
   }
 
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

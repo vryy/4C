@@ -17,12 +17,13 @@
 
 #include <Teuchos_RCP.hpp>
 
-
 // Forward declarations.
 class Epetra_Map;
 class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_FEVector;
+
+BACI_NAMESPACE_OPEN
 
 namespace FBI
 {
@@ -296,5 +297,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
   };
 }  // namespace BEAMINTERACTION
+
+BACI_NAMESPACE_CLOSE
 
 #endif

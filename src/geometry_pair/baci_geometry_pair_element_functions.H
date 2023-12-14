@@ -16,6 +16,7 @@
 #include "baci_geometry_pair_utility_functions.H"
 #include "baci_utils_fad.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -512,5 +513,7 @@ namespace GEOMETRYPAIR
 
 }  // namespace GEOMETRYPAIR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

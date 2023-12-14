@@ -12,6 +12,8 @@
 
 #include "baci_lib_resulttest.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace STI
 {
   // forward declaration
@@ -57,4 +59,6 @@ namespace STI
     const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
   };
 }  // namespace STI
+BACI_NAMESPACE_CLOSE
+
 #endif

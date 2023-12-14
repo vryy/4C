@@ -14,6 +14,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -82,21 +84,21 @@ void INPAR::ALE::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Ale update boundary condition
 
-  std::vector<Teuchos::RCP<::INPUT::LineComponent>> aleupdatecomponents;
+  std::vector<Teuchos::RCP<INPUT::LineComponent>> aleupdatecomponents;
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLING")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling", "lagrange",
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("coupling", "lagrange",
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       true)));
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 1)));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NODENORMALFUNCT")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("nodenormalfunct")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
 
   Teuchos::RCP<ConditionDefinition> linealeupdate =
       Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS", "ALEUPDATECoupling",
@@ -114,3 +116,5 @@ void INPAR::ALE::SetValidConditions(
   condlist.push_back(linealeupdate);
   condlist.push_back(surfaleupdate);
 }
+
+BACI_NAMESPACE_CLOSE

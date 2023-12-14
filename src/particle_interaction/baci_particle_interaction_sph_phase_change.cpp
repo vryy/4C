@@ -18,6 +18,8 @@
 #include "baci_particle_interaction_sph_equationofstate_bundle.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
@@ -379,3 +381,5 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
   // hand over particles to be inserted
   particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
 }
+
+BACI_NAMESPACE_CLOSE

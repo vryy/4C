@@ -18,6 +18,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -234,3 +235,5 @@ template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR:
 // Hermite beam element, tet10 solid element.
 template class BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+
+BACI_NAMESPACE_CLOSE

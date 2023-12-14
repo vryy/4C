@@ -15,6 +15,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ContainerType DRT::ContainerType::instance_;
 
@@ -714,3 +716,5 @@ int DRT::Container::UniqueParObjectId() const
 {
   return ContainerType::Instance().UniqueParObjectId();
 }
+
+BACI_NAMESPACE_CLOSE

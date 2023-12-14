@@ -16,6 +16,8 @@
 #include <fstream>
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -338,3 +340,5 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
   }
   (*fout_) << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

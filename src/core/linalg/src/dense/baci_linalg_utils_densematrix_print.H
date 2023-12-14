@@ -14,6 +14,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   /*!
@@ -27,5 +29,7 @@ namespace CORE::LINALG
       std::string filename, const CORE::LINALG::SerialDenseMatrix& A, const bool newfile = true);
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LINALG_UTILS_DENSEMATRIX_PRINT_H

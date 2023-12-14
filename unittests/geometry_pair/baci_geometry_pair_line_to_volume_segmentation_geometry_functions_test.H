@@ -20,6 +20,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.

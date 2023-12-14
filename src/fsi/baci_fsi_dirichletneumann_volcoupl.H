@@ -18,6 +18,8 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fsi_dirichletneumann_disp.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   class SearchTree;
@@ -167,5 +169,7 @@ namespace FSI
 
 
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -18,6 +18,8 @@
 
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
@@ -212,3 +214,5 @@ double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
 
   return result;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -11,6 +11,8 @@
 
 #include "baci_contact_nitsche_integrator.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -294,4 +296,6 @@ namespace CONTACT
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
   };
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_H

@@ -22,6 +22,15 @@
 
 // forward declaration
 class Epetra_Vector;
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Scaling;
+  }
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -30,11 +39,6 @@ namespace CORE::LINALG
 
 namespace NOX
 {
-  namespace Epetra
-  {
-    class Scaling;
-  }
-
   namespace NLN
   {
     namespace CONSTRAINT
@@ -61,7 +65,7 @@ namespace STR
   namespace NLN
   {
     //! Convert the structural vector types to a corresponding nox norm type
-    enum NOX::Abstract::Vector::NormType Convert2NoxNormType(
+    enum ::NOX::Abstract::Vector::NormType Convert2NoxNormType(
         const enum INPAR::STR::VectorNorm& normtype);
 
     /*! Convert the structural model type enums to nox nln solution
@@ -159,10 +163,12 @@ namespace STR
         STR::Integrator& integrator, const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 
     //! Create object to scale linear system
-    void CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
+    void CreateScaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
         const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState);
   }  // namespace NLN
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_UTILS_H

@@ -20,6 +20,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_inpar_elch.H"
 #include "baci_scatra_ele_parameter_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -89,4 +91,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
+BACI_NAMESPACE_CLOSE
+
 #endif

@@ -19,6 +19,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/12|
@@ -836,3 +838,5 @@ int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
   dserror("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
   return -1;
 }  // DRT::ELEMENTS::NStet5::EvaluateNeumann
+
+BACI_NAMESPACE_CLOSE

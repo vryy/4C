@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 
+BACI_NAMESPACE_OPEN
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -229,3 +231,5 @@ void ART::TimInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 }
+
+BACI_NAMESPACE_CLOSE

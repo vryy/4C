@@ -35,5 +35,9 @@ default: 1.0e-9  --> segments (in parameter space) cannot be smaller than this *
 //default: 1.0e-9                             recomputation of eta and xi in current configuration \
                      */
 #define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
+
+BACI_NAMESPACE_OPEN
 // default: 10
+BACI_NAMESPACE_CLOSE
+
 #endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H

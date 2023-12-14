@@ -28,6 +28,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_aux.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 // constructor (public)
 /*----------------------------------------------------------------------*/
@@ -416,7 +418,7 @@ void FSI::MonolithicNoNOX::SetDefaultParameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  //   Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
+  //   Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
   //   dirParams.set("User Defined Direction Factory",newtonfactory);
 
 
@@ -634,3 +636,5 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           Extractor(), Extractor(), 81, false, true));
 }
+
+BACI_NAMESPACE_CLOSE

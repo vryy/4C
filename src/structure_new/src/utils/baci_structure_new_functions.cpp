@@ -16,6 +16,8 @@
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_utils_function_manager.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace
 {
   /// returns St. Venant Kirchhof quick access parameters from given material id
@@ -280,3 +282,5 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Eva
 
   return res;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -23,6 +23,8 @@
 #include "baci_lib_resulttest.H"
 #include "baci_thermo_timint.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 08/09 |
@@ -65,4 +67,6 @@ namespace THR
 
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_RESULTTEST_H

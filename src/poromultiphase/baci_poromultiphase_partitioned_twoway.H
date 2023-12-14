@@ -13,6 +13,8 @@
 #include "baci_inpar_poromultiphase.H"
 #include "baci_poromultiphase_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace POROMULTIPHASE
 {
   //! Base class of all solid-scatra algorithms
@@ -117,5 +119,7 @@ namespace POROMULTIPHASE
 }  // namespace POROMULTIPHASE
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // POROMULTIPHASE_PARTITIONED_TWOWAY_H

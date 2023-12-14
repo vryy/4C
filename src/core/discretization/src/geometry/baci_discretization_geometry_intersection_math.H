@@ -20,6 +20,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
@@ -41,5 +43,7 @@ namespace CORE::GEO
   const double LARGENUMBER = 1e30;
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H

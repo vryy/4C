@@ -16,6 +16,8 @@
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_surface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -33,7 +35,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
+    mortar>::EvaluateAndAssembleMortarContributions(const BACI::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -304,3 +306,5 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
 
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

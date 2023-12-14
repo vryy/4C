@@ -19,6 +19,9 @@ distributions
 
 class Epetra_Map;
 class Epetra_Export;
+
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class SparseMatrix;
@@ -99,5 +102,7 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_MATRIX_TRANSFORM_H

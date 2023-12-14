@@ -20,6 +20,8 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -249,3 +251,4 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateOutputData(
   }
   return false;
 }
+BACI_NAMESPACE_CLOSE

@@ -15,6 +15,8 @@
 #ifndef BACI_STRUCTURE_NEW_FUNCTIONS_H
 #define BACI_STRUCTURE_NEW_FUNCTIONS_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -67,5 +69,7 @@ namespace STR
   };
 
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif

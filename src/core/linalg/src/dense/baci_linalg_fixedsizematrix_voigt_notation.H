@@ -8,7 +8,7 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
-
+BACI_NAMESPACE_OPEN
 
 namespace CORE::LINALG::VOIGT
 {
@@ -337,5 +337,7 @@ namespace CORE::LINALG::VOIGT
 
 }  // namespace CORE::LINALG::VOIGT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LINALG_FIXEDSIZE_VOIGT_NOTATION_H

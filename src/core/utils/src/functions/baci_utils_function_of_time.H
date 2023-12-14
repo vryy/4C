@@ -7,6 +7,7 @@
 #define BACI_UTILS_FUNCTION_OF_TIME_H
 
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function_manager.H"
@@ -19,6 +20,8 @@
 #include <complex>
 #include <iostream>
 #include <vector>
+
+BACI_NAMESPACE_OPEN
 
 namespace CORE::UTILS
 {
@@ -84,8 +87,10 @@ namespace CORE::UTILS
 
   //! create a vector function of time from multiple expressions
   Teuchos::RCP<FunctionOfTime> TryCreateFunctionOfTime(
-      const std::vector<::DRT::INPUT::LineDefinition>& function_line_defs);
+      const std::vector<BACI::DRT::INPUT::LineDefinition>& function_line_defs);
 
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

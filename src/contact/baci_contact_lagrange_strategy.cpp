@@ -31,6 +31,8 @@
 #include <Epetra_FEVector.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -6993,3 +6995,5 @@ void CONTACT::CoLagrangeStrategy::RunPostApplyJacobianInverse(
   }
   disi->Scale(-1.);
 }
+
+BACI_NAMESPACE_CLOSE

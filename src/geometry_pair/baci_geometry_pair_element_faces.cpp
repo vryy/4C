@@ -14,6 +14,7 @@
 #include "baci_geometry_pair_scalar_types.H"
 #include "baci_inpar_geometry_pair.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -773,3 +774,5 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   dserror("Could not create a face element.");
   return Teuchos::null;
 }
+
+BACI_NAMESPACE_CLOSE

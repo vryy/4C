@@ -14,6 +14,8 @@
 
 #include "baci_adapter_str_wrapper.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   /*! \brief Time loop for stuctural simulations
@@ -52,5 +54,7 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

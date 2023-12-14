@@ -448,71 +448,71 @@ namespace EXODUS
     return "xxx";
   }
 
-  inline CORE::FE::CellType PreShapeToDrt(const ElementBlock::Shape shape)
+  inline BACI::CORE::FE::CellType PreShapeToDrt(const ElementBlock::Shape shape)
   {
     switch (shape)
     {
       case ElementBlock::point1:
-        return CORE::FE::CellType::point1;
+        return BACI::CORE::FE::CellType::point1;
         break;
       case ElementBlock::quad4:
-        return CORE::FE::CellType::quad4;
+        return BACI::CORE::FE::CellType::quad4;
         break;
       case ElementBlock::quad8:
-        return CORE::FE::CellType::quad8;
+        return BACI::CORE::FE::CellType::quad8;
         break;
       case ElementBlock::quad9:
-        return CORE::FE::CellType::quad9;
+        return BACI::CORE::FE::CellType::quad9;
         break;
       case ElementBlock::shell4:
-        return CORE::FE::CellType::quad4;
+        return BACI::CORE::FE::CellType::quad4;
         break;
       case ElementBlock::shell8:
-        return CORE::FE::CellType::quad8;
+        return BACI::CORE::FE::CellType::quad8;
         break;
       case ElementBlock::shell9:
-        return CORE::FE::CellType::quad9;
+        return BACI::CORE::FE::CellType::quad9;
         break;
       case ElementBlock::tri3:
-        return CORE::FE::CellType::tri3;
+        return BACI::CORE::FE::CellType::tri3;
         break;
       case ElementBlock::tri6:
-        return CORE::FE::CellType::tri6;
+        return BACI::CORE::FE::CellType::tri6;
         break;
       case ElementBlock::hex8:
-        return CORE::FE::CellType::hex8;
+        return BACI::CORE::FE::CellType::hex8;
         break;
       case ElementBlock::hex20:
-        return CORE::FE::CellType::hex20;
+        return BACI::CORE::FE::CellType::hex20;
         break;
       case ElementBlock::hex27:
-        return CORE::FE::CellType::hex27;
+        return BACI::CORE::FE::CellType::hex27;
         break;
       case ElementBlock::tet4:
-        return CORE::FE::CellType::tet4;
+        return BACI::CORE::FE::CellType::tet4;
         break;
       case ElementBlock::tet10:
-        return CORE::FE::CellType::tet10;
+        return BACI::CORE::FE::CellType::tet10;
         break;
       case ElementBlock::wedge6:
-        return CORE::FE::CellType::wedge6;
+        return BACI::CORE::FE::CellType::wedge6;
         break;
       case ElementBlock::wedge15:
-        return CORE::FE::CellType::wedge15;
+        return BACI::CORE::FE::CellType::wedge15;
         break;
       case ElementBlock::pyramid5:
-        return CORE::FE::CellType::pyramid5;
+        return BACI::CORE::FE::CellType::pyramid5;
         break;
       case ElementBlock::bar2:
-        return CORE::FE::CellType::line2;
+        return BACI::CORE::FE::CellType::line2;
         break;
       case ElementBlock::bar3:
-        return CORE::FE::CellType::line3;
+        return BACI::CORE::FE::CellType::line3;
         break;
       default:
         dserror("Unknown ElementBlock::Shape");
     }
-    return CORE::FE::CellType::max_distype;
+    return BACI::CORE::FE::CellType::max_distype;
   }
 
   void PrintMap(std::ostream& os, const std::map<int, std::vector<int>> mymap);
@@ -530,8 +530,6 @@ namespace EXODUS
 
   int HexSideNumberExoToBaci(const int exoface);
   int PyrSideNumberExoToBaci(const int exoface);
-
-
 
 }  // namespace EXODUS
 

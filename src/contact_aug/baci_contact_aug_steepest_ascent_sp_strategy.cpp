@@ -19,6 +19,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_epetra_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::DataContainer::DataContainer()
@@ -211,3 +213,5 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT_SP::Strategy::GetKzzDia
 
   return active_mod_vec;
 }
+
+BACI_NAMESPACE_CLOSE

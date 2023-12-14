@@ -17,6 +17,8 @@
 #include "baci_lib_discret.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
@@ -171,3 +173,5 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
   else
     return false;  // aka evaluate contact
 }
+
+BACI_NAMESPACE_CLOSE

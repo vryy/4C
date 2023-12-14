@@ -16,6 +16,9 @@
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
+
+BACI_NAMESPACE_OPEN
+
 namespace CONTACT
 {
   class ParamsInterface;
@@ -91,5 +94,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_AUG_PARALLEL_DISTRIBUTION_CONTROLLER_H

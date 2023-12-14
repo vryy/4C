@@ -27,6 +27,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_timestepping_mstep.H"
 
+BACI_NAMESPACE_OPEN
+
 // forward declaration
 namespace CONTACT
 {
@@ -67,7 +69,7 @@ namespace THR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public ::ADAPTER::Thermo
+  class TimInt : public ADAPTER::Thermo
   {
    public:
     //! @name Life
@@ -610,4 +612,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+BACI_NAMESPACE_CLOSE
+
 #endif  // THERMO_TIMINT_H

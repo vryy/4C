@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
+\brief %NOX::NLN extension of the %::NOX::Epetra::LinearSystem.
 
 
 
@@ -33,18 +33,20 @@
 
 #include <unordered_map>
 
+BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
-    const NOX::Epetra::Vector& cloneVector, const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -74,12 +76,12 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
-    const NOX::Epetra::Vector& cloneVector)
+    const ::NOX::Epetra::Vector& cloneVector)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -109,10 +111,11 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
-    const NOX::Epetra::Vector& cloneVector, const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    const ::NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -142,10 +145,10 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
-    const NOX::Epetra::Vector& cloneVector)
+    const ::NOX::Epetra::Vector& cloneVector)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -198,8 +201,8 @@ void NOX::NLN::LinearSystem::resetPrePostOperator(Teuchos::ParameterList& p)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::applyJacobianBlock(const NOX::Epetra::Vector& input,
-    Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const
+bool NOX::NLN::LinearSystem::applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+    Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const
 {
   const CORE::LINALG::SparseMatrix& blockc = getJacobianBlock(rbid, cbid);
   CORE::LINALG::SparseMatrix& block = const_cast<CORE::LINALG::SparseMatrix&>(blockc);
@@ -223,7 +226,7 @@ bool NOX::NLN::LinearSystem::applyJacobianBlock(const NOX::Epetra::Vector& input
   block.SetUseTranspose(false);
   int status = block.Apply(*input_apply, *result_apply);
 
-  result = Teuchos::rcp(new NOX::Epetra::Vector(result_apply, NOX::Epetra::Vector::CreateView));
+  result = Teuchos::rcp(new ::NOX::Epetra::Vector(result_apply, ::NOX::Epetra::Vector::CreateView));
 
   return (status == 0);
 }
@@ -231,7 +234,7 @@ bool NOX::NLN::LinearSystem::applyJacobianBlock(const NOX::Epetra::Vector& input
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyJacobian(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   Jacobian().SetUseTranspose(false);
   int status = Jacobian().Apply(input.getEpetraVector(), result.getEpetraVector());
@@ -241,7 +244,7 @@ bool NOX::NLN::LinearSystem::applyJacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyJacobianTranspose(
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   // Apply the Jacobian
   Jacobian().SetUseTranspose(true);
@@ -272,21 +275,21 @@ void NOX::NLN::LinearSystem::CompleteSolutionAfterSolve(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-    const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
+    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   /* Need non-const version of the input vector
    * Epetra_LinearProblem requires non-const versions so we can perform
    * scaling of the linear problem.
    * Same is valid for the prePostOperator. We want to have the
    * possibility to change the linear system. */
-  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
+  ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
   prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput, Jacobian(), *this);
 
   double startTime = timer_.wallTime();
 
   // calculate the residual norm
-  resNorm2_ = nonConstInput.norm(NOX::Abstract::Vector::TwoNorm);
+  resNorm2_ = nonConstInput.norm(::NOX::Abstract::Vector::TwoNorm);
 
   // Zero out the delta X of the linear problem if requested by user.
   if (zeroInitialGuess_) result.init(0.0);
@@ -306,7 +309,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 
     scaling_->scaleLinearSystem(linProblem);
 
-    if (utils_.isPrintType(NOX::Utils::Details)) utils_.out() << *scaling_ << std::endl;
+    if (utils_.isPrintType(::NOX::Utils::Details)) utils_.out() << *scaling_ << std::endl;
   }
   // ************* End linear system scaling *******************
 
@@ -325,7 +328,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   const int linsol_status = currSolver->NoxSolve(linProblem, true, iter == 0);
   if (linsol_status)
   {
-    if (utils_.isPrintType(NOX::Utils::Warning))
+    if (utils_.isPrintType(::NOX::Utils::Warning))
       utils_.out() << "NOX::NLN::LinearSystem::applyJacobianInverse -- "
                       "linear solve failed (err = "
                    << linsol_status << ")\n";
@@ -348,8 +351,8 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
-    Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
-    NOX::Epetra::Vector& result) const
+    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+    ::NOX::Epetra::Vector& result) const
 {
   if (&result != &input) result = input;
   return true;
@@ -357,7 +360,7 @@ bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
+bool NOX::NLN::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
   prePostOperatorPtr_->runPreComputeJacobian(Jacobian(), x.getEpetraVector(), *this);
 
@@ -370,7 +373,7 @@ bool NOX::NLN::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeFandJacobian(
-    const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs)
+    const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->runPreComputeFandJacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
@@ -387,7 +390,7 @@ bool NOX::NLN::LinearSystem::computeFandJacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeCorrectionSystem(const enum CorrectionType type,
-    const NOX::Abstract::Group& grp, const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs)
+    const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->runPreComputeFandJacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
@@ -405,11 +408,11 @@ bool NOX::NLN::LinearSystem::computeCorrectionSystem(const enum CorrectionType t
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::Scaling> NOX::NLN::LinearSystem::getScaling() { return scaling_; }
+Teuchos::RCP<::NOX::Epetra::Scaling> NOX::NLN::LinearSystem::getScaling() { return scaling_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
+void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   scaling_ = scalingObject;
   return;
@@ -418,7 +421,7 @@ void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scalin
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::NLN::LinearSystem::adjustPseudoTimeStep(double& delta, const double& stepSize,
-    const NOX::Epetra::Vector& dir, const NOX::Epetra::Vector& rhs,
+    const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
 {
   const Epetra_Vector& scalingDiagOp = ptcsolver.getScalingDiagOperator();
@@ -474,7 +477,7 @@ void NOX::NLN::LinearSystem::adjustPseudoTimeStep(double& delta, const double& s
   vec_err->Update(delta, *vec_1, 1.0, *vec_2, 0.0);
   double error_end = 0.0;
   vec_err->Norm2(&error_end);
-  if (utils_.isPrintType(NOX::Utils::Details))
+  if (utils_.isPrintType(::NOX::Utils::Details))
   {
     utils_.out() << "| Error: " << std::setw(5) << std::setprecision(3) << std::scientific
                  << error_start << " -> " << std::setw(5) << std::setprecision(3) << std::scientific
@@ -487,7 +490,7 @@ void NOX::NLN::LinearSystem::adjustPseudoTimeStep(double& delta, const double& s
 void NOX::NLN::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
-  if (utils_.isPrintType(NOX::Utils::Error))
+  if (utils_.isPrintType(::NOX::Utils::Error))
   {
     utils_.out() << "NOX::NLN::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
   }
@@ -496,23 +499,23 @@ void NOX::NLN::LinearSystem::throwError(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Required> NOX::NLN::LinearSystem::getRequiredInterface()
-    const
+Teuchos::RCP<const ::NOX::Epetra::Interface::Required>
+NOX::NLN::LinearSystem::getRequiredInterface() const
 {
   return reqInterfacePtr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Jacobian> NOX::NLN::LinearSystem::getJacobianInterface()
-    const
+Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian>
+NOX::NLN::LinearSystem::getJacobianInterface() const
 {
   return jacInterfacePtr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner>
+Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner>
 NOX::NLN::LinearSystem::getPrecInterface() const
 {
   return precInterfacePtr_;
@@ -568,7 +571,7 @@ void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::createPreconditioner(const NOX::Epetra::Vector& x,
+bool NOX::NLN::LinearSystem::createPreconditioner(const ::NOX::Epetra::Vector& x,
     Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const
 {
   return false;
@@ -581,14 +584,14 @@ bool NOX::NLN::LinearSystem::destroyPreconditioner() const { return false; }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::recomputePreconditioner(
-    const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Epetra::LinearSystem::PreconditionerReusePolicyType
+::NOX::Epetra::LinearSystem::PreconditionerReusePolicyType
 NOX::NLN::LinearSystem::getPreconditionerPolicy(bool advanceReuseCounter)
 {
   return PRPT_REBUILD;
@@ -987,3 +990,5 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
 
   if (info) dserror("GEEV failed!");
 }
+
+BACI_NAMESPACE_CLOSE

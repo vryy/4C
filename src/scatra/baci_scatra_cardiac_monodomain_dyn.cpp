@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  * Main control routine for scalar transport problems, incl. various solvers
@@ -397,3 +399,5 @@ void printheartlogo()
   std::cout << "                       aorta                             " << std::endl;
   std::cout << "                                                         " << std::endl;
 }
+
+BACI_NAMESPACE_CLOSE

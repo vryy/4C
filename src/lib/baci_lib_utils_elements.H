@@ -14,6 +14,8 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   namespace UTILS
@@ -56,5 +58,7 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_UTILS_ELEMENTS_H

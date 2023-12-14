@@ -14,6 +14,8 @@
 
 #include "baci_fsi_constrmonolithic.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   class MatrixRowTransform;
@@ -115,5 +117,7 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> csigtransform_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

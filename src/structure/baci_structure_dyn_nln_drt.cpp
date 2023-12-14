@@ -31,6 +31,8 @@
 #include <iostream>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void caldyn_drt()
@@ -164,3 +166,5 @@ void dyn_nlnstructural_drt()
   return;
 
 }  // end of dyn_nlnstructural_drt()
+
+BACI_NAMESPACE_CLOSE

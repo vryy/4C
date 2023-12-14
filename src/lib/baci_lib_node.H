@@ -19,6 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -333,5 +334,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::Node& node);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LIB_NODE_H

@@ -13,6 +13,8 @@
 
 #include "baci_w1_poro.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   // forward declarations
@@ -147,5 +149,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // W1_PORO_SCATRA_ELETYPES_H

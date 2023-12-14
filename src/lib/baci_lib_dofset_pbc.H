@@ -28,7 +28,7 @@
 #include <map>
 #include <vector>
 
-
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -123,5 +123,7 @@ namespace DRT
   };  // class PBCDofSet
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_PBC_H

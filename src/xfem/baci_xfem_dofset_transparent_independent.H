@@ -13,6 +13,8 @@
 
 #include "baci_lib_dofset_transparent_independent.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -55,5 +57,7 @@ namespace XFEM
     Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
   };
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif

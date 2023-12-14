@@ -24,6 +24,8 @@ attached parenchyma balloon
 
 #include <set>
 
+BACI_NAMESPACE_OPEN
+
 
 // forward declarations
 namespace CORE::LINALG
@@ -95,4 +97,6 @@ namespace ADAPTER
   };
 
 }  // namespace ADAPTER
+BACI_NAMESPACE_CLOSE
+
 #endif

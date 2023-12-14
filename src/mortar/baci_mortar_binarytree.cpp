@@ -14,6 +14,8 @@
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode (public)                              popp 10/08|
@@ -799,3 +801,5 @@ void MORTAR::BinaryTree::EvaluateSearch(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

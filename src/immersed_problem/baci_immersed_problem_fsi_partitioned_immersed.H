@@ -12,6 +12,8 @@
 
 #include "baci_fsi_partitioned.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace FSI
 {
   class PartitionedImmersed : public Partitioned
@@ -27,7 +29,7 @@ namespace FSI
     void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
 
     //! call the time loop of the base class
-    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface) override
+    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override
     {
       FSI::Partitioned::Timeloop(interface);
     };
@@ -63,5 +65,7 @@ namespace FSI
   };  // class PartitionedImmersed
 }  // namespace FSI
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

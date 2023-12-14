@@ -14,6 +14,8 @@
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_no_physics.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | evaluate action                                        gebauer 06/19 |
  *----------------------------------------------------------------------*/
@@ -46,6 +48,8 @@ int DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::EvaluateAction(DRT:
 
   return 0;
 }
+
+BACI_NAMESPACE_CLOSE
 
 // include forward declaration of template classes
 #include "baci_scatra_ele_calc_no_physics_fwd.hpp"

@@ -24,6 +24,8 @@
 #include "baci_fluid_xwall.H"
 #include "baci_inpar_fluid.H"
 
+BACI_NAMESPACE_OPEN
+
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
 
@@ -2136,3 +2138,5 @@ namespace FLD
   }
 
 }  // namespace FLD
+
+BACI_NAMESPACE_CLOSE

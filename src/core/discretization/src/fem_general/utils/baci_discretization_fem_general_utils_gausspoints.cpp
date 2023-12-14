@@ -19,6 +19,8 @@
 
 #include <stdexcept>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::DRT::UTILS
 {
   namespace
@@ -311,3 +313,5 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::DRT::UTILS::GaussPointCache::C
   gp_cache_[std::make_pair(distype, degree)] = gp;
   return gp;
 }
+
+BACI_NAMESPACE_CLOSE

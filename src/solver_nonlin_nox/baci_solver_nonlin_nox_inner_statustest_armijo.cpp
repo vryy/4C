@@ -19,6 +19,8 @@
 #include <NOX_MeritFunction_Generic.H>
 #include <NOX_Utils.H>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::Armijo::Armijo(
@@ -39,9 +41,9 @@ NOX::NLN::INNER::StatusTest::Armijo::Armijo(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::INNER::StatusTest::Armijo::Setup(
-    const NOX::NLN::LineSearch::Generic& linesearch, const NOX::Abstract::Group& grp)
+    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
 {
-  const NOX::MeritFunction::Generic& mrtFct = linesearch.GetMeritFunction();
+  const ::NOX::MeritFunction::Generic& mrtFct = linesearch.GetMeritFunction();
 
   // get the reference merit function value
   fref_ = mrtFct.computef(grp);
@@ -80,8 +82,8 @@ bool NOX::NLN::INNER::StatusTest::Armijo::Setup(
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::CheckStatus(
     const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
-    const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-    NOX::StatusTest::CheckType checkType)
+    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
   // check if it is a line search object
   // Amrijo rule plays only a role as inner status test for line search solvers
@@ -106,7 +108,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
     else
       status_ = status_no_descent_direction;
   }
-  else if (checkType == NOX::StatusTest::None)
+  else if (checkType == ::NOX::StatusTest::None)
   {
     fcurr_ = 0.0;
     status_ = status_unevaluated;
@@ -116,7 +118,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
   // fail anyway.
   else if (status_ != status_no_descent_direction)
   {
-    const NOX::MeritFunction::Generic& mrtFct = linesearch->GetMeritFunction();
+    const ::NOX::MeritFunction::Generic& mrtFct = linesearch->GetMeritFunction();
 
     fcurr_ = mrtFct.computef(grp);
 
@@ -151,13 +153,13 @@ std::ostream& NOX::NLN::INNER::StatusTest::Armijo::Print(std::ostream& stream, i
     stream << "Non-monotone";
   stream << " ";
   stream << "Armijo-Rule: ";
-  stream << NOX::Utils::sciformat(fcurr_, 3) << " < "
-         << NOX::Utils::sciformat(fref_ + c_1_ * step_ * slope_, 3) << "\n";
+  stream << ::NOX::Utils::sciformat(fcurr_, 3) << " < "
+         << ::NOX::Utils::sciformat(fref_ + c_1_ * step_ * slope_, 3) << "\n";
 
   stream << indent_string;
   stream << std::setw(13) << " ";
-  stream << "(step = " << NOX::Utils::sciformat(step_, 3);
-  stream << ", slope = " << NOX::Utils::sciformat(slope_, 3);
+  stream << "(step = " << ::NOX::Utils::sciformat(step_, 3);
+  stream << ", slope = " << ::NOX::Utils::sciformat(slope_, 3);
   if (not isMonotone_) stream << ", history = " << maxHistSize_;
   stream << ")\n";
 
@@ -174,3 +176,5 @@ void NOX::NLN::INNER::StatusTest::Armijo::throwError(
       << std::endl;
   dserror(msg.str());
 }
+
+BACI_NAMESPACE_CLOSE

@@ -26,6 +26,8 @@ MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -651,3 +653,5 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const CORE::LINALG::Matrix<3, 3>* def
    */
   return;
 }
+
+BACI_NAMESPACE_CLOSE

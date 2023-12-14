@@ -24,17 +24,19 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
-    const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
+    const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& params)
     : lsIters_(0),
       stepPtr_(nullptr),
       defaultStep_(0.0),
       reductionFactor_(0.0),
-      checkType_(NOX::StatusTest::Complete),
+      checkType_(::NOX::StatusTest::Complete),
       status_(NOX::NLN::INNER::StatusTest::status_unevaluated),
       outerTestsPtr_(outerTests),
       innerTestsPtr_(innerTests)
@@ -45,7 +47,7 @@ NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<NOX::GlobalData>& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::LineSearch::Backtrack::reset(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Teuchos::ParameterList& p = params.sublist("Backtrack");
 
@@ -67,8 +69,8 @@ bool NOX::NLN::LineSearch::Backtrack::reset(
     throwError("reset", msg.str());
   }
 
-  checkType_ =
-      Teuchos::getIntegralValue<NOX::StatusTest::CheckType>(params, "Inner Status Test Check Type");
+  checkType_ = Teuchos::getIntegralValue<::NOX::StatusTest::CheckType>(
+      params, "Inner Status Test Check Type");
 
   fp_except_.shall_be_caught_ = p.get("Allow Exceptions", false);
 
@@ -91,8 +93,8 @@ void NOX::NLN::LineSearch::Backtrack::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double& step,
-    const NOX::Abstract::Vector& dir, const NOX::Solver::Generic& s)
+bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
   fp_except_.precompute();
   // -------------------------------------------------
@@ -100,7 +102,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   // -------------------------------------------------
   reset();
   // get the old solution group
-  const NOX::Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
+  const ::NOX::Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   // update the search direction pointer
   searchDirectionPtr_ = Teuchos::rcpFromRef(dir);
   // set the step pointer to the inserted step variable
@@ -115,7 +117,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   // want to access the jacobian, we have to use the oldGrp
   // (target of the copy process), instead.                hiermeier 08/15
   // ----------------------------------------------------------------------
-  const NOX::Epetra::Group* epetraOldGrpPtr = dynamic_cast<const NOX::Epetra::Group*>(&oldGrp);
+  const ::NOX::Epetra::Group* epetraOldGrpPtr = dynamic_cast<const ::NOX::Epetra::Group*>(&oldGrp);
   if (not epetraOldGrpPtr->isJacobian()) throwError("compute()", "Ownership changed unexpectedly!");
 
   /* Setup the inner status test */
@@ -128,13 +130,13 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   // update the solution vector and get a trial point
   // -------------------------------------------------
   grp.computeX(oldGrp, dir, step);
-  NOX::Abstract::Group::ReturnType rtype = NOX::Abstract::Group::Ok;
+  ::NOX::Abstract::Group::ReturnType rtype = ::NOX::Abstract::Group::Ok;
   bool failed = false;
   try
   {
     failed = false;
     rtype = grp.computeF();
-    if (rtype != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F!");
+    if (rtype != ::NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F!");
 
     /* Safe-guarding of the inner status test:
      * If the outer NormF test is converged for a full step length,
@@ -147,11 +149,11 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
     const NOX::NLN::Solver::LineSearchBased& lsSolver =
         static_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
 
-    const NOX::StatusTest::StatusType ostatus = lsSolver.GetStatus<NOX::NLN::StatusTest::NormF>();
+    const ::NOX::StatusTest::StatusType ostatus = lsSolver.GetStatus<NOX::NLN::StatusTest::NormF>();
 
     /* Skip the inner status test, if the outer NormF test is
      * already converged! */
-    if (ostatus == NOX::StatusTest::Converged)
+    if (ostatus == ::NOX::StatusTest::Converged)
     {
       fp_except_.enable();
       return true;
@@ -162,7 +164,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   {
     if (not fp_except_.shall_be_caught_) dserror("An exception occurred: %s", e);
 
-    utils_->out(NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
+    utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
 
     status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
     failed = true;
@@ -174,14 +176,14 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   // print header if desired
   // -------------------------------------------------
 
-  utils_->out(NOX::Utils::InnerIteration) << "\n"
-                                          << NOX::Utils::fill(72, '=') << "\n"
-                                          << "-- Backtrack Line Search -- \n";
+  utils_->out(::NOX::Utils::InnerIteration) << "\n"
+                                            << ::NOX::Utils::fill(72, '=') << "\n"
+                                            << "-- Backtrack Line Search -- \n";
 
   if (not failed)
   {
     status_ = innerTestsPtr_->CheckStatus(*this, s, grp, checkType_);
-    PrintUpdate(utils_->out(NOX::Utils::InnerIteration));
+    PrintUpdate(utils_->out(::NOX::Utils::InnerIteration));
   }
   // -------------------------------------------------
   // inner backtracking loop
@@ -204,16 +206,16 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
     try
     {
       rtype = grp.computeF();
-      if (rtype != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F!");
+      if (rtype != ::NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F!");
       status_ = innerTestsPtr_->CheckStatus(*this, s, grp, checkType_);
-      PrintUpdate(utils_->out(NOX::Utils::InnerIteration));
+      PrintUpdate(utils_->out(::NOX::Utils::InnerIteration));
     }
     // catch error of the computeF method
     catch (const char* e)
     {
       if (not fp_except_.shall_be_caught_) dserror("An exception occurred: %s", e);
 
-      if (utils_->isPrintType(NOX::Utils::Warning))
+      if (utils_->isPrintType(::NOX::Utils::Warning))
         utils_->out() << "WARNING: Error caught = " << e << "\n";
 
       status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
@@ -225,7 +227,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
   // -------------------------------------------------
   // print footer if desired
   // -------------------------------------------------
-  utils_->out(NOX::Utils::InnerIteration) << NOX::Utils::fill(72, '=') << "\n";
+  utils_->out(::NOX::Utils::InnerIteration) << ::NOX::Utils::fill(72, '=') << "\n";
 
   if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_short)
     throwError("compute()",
@@ -244,7 +246,7 @@ int NOX::NLN::LineSearch::Backtrack::GetNumIterations() const { return lsIters_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const NOX::MeritFunction::Generic& NOX::NLN::LineSearch::Backtrack::GetMeritFunction() const
+const ::NOX::MeritFunction::Generic& NOX::NLN::LineSearch::Backtrack::GetMeritFunction() const
 {
   if (meritFunctionPtr_.is_null())
     throwError("GetMeritFunction", "The merit function pointer is not initialized!");
@@ -254,7 +256,7 @@ const NOX::MeritFunction::Generic& NOX::NLN::LineSearch::Backtrack::GetMeritFunc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection() const
+const ::NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection() const
 {
   if (searchDirectionPtr_.is_null())
     throwError("GetSearchDirection", "The search direction ptr is not initialized!");
@@ -285,8 +287,8 @@ void NOX::NLN::LineSearch::Backtrack::SetStepLength(double step)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::LineSearch::Backtrack::CheckInnerStatus(
-    const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-    NOX::StatusTest::CheckType checkType) const
+    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType) const
 {
   return innerTestsPtr_->CheckStatus(*this, solver, grp, checkType);
 }
@@ -298,18 +300,18 @@ void NOX::NLN::LineSearch::Backtrack::PrintUpdate(std::ostream& os) const
   // Print the status test parameters at each iteration if requested
   if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_long)
   {
-    os << NOX::Utils::fill(72, '-') << "\n";
+    os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Inner Status Test Results --\n";
     innerTestsPtr_->Print(os);
-    os << NOX::Utils::fill(72, '-') << "\n";
+    os << ::NOX::Utils::fill(72, '-') << "\n";
   }
   // Print the final parameter values of the status test
   if (status_ != NOX::NLN::INNER::StatusTest::status_step_too_long)
   {
-    os << NOX::Utils::fill(72, '-') << "\n";
+    os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Final Inner Status Test Results --\n";
     innerTestsPtr_->Print(os);
-    os << NOX::Utils::fill(72, '-') << "\n";
+    os << ::NOX::Utils::fill(72, '-') << "\n";
   }
 }
 
@@ -323,3 +325,5 @@ void NOX::NLN::LineSearch::Backtrack::throwError(
       << std::endl;
   dserror(msg.str());
 }
+
+BACI_NAMESPACE_CLOSE

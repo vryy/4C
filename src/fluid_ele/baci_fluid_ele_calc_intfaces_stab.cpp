@@ -34,6 +34,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
@@ -4256,3 +4257,5 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

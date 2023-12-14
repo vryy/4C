@@ -14,6 +14,7 @@
 #include "baci_geometry_pair_line_to_surface_evaluation_data.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -161,3 +162,5 @@ namespace GEOMETRYPAIR
   template class GeometryPairLineToSurfaceGaussPointProjection<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace GEOMETRYPAIR
+
+BACI_NAMESPACE_CLOSE

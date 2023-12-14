@@ -13,6 +13,8 @@
 
 #include "baci_ehl_base.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace EHL
 {
   class Partitioned : public Base
@@ -60,5 +62,7 @@ namespace EHL
     double ittol_;
   };
 }  // namespace EHL
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // EHL_PARTITIONED_H

@@ -27,6 +27,8 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
@@ -1015,3 +1017,5 @@ void DRT::ELEMENTS::NStet5Type::StressOutput(const INPAR::STR::StressType iostre
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

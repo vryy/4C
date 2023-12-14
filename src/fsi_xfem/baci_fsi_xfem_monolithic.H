@@ -16,6 +16,8 @@
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_mapextractor.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 // forward declarations
@@ -519,5 +521,7 @@ namespace FSI
     std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>> coup_man_;
   };
 }  // namespace FSI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -27,6 +27,8 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_projector.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
@@ -1986,3 +1988,5 @@ void CONTACT::CoCoupling3dManager::FindFeasibleMasterElements(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

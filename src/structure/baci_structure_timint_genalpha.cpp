@@ -22,6 +22,8 @@
 #include "baci_structure_new_impl_genalpha.H"
 #include "baci_structure_new_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
 {
@@ -932,3 +934,5 @@ bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> 
 
   return solelybeameles;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -17,6 +17,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -67,7 +69,7 @@ namespace CORE::LINALG
      */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix,
         Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null,
-        Teuchos::RCP<::DRT::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<BACI::DRT::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations
@@ -149,5 +151,7 @@ namespace CORE::LINALG
     int ncall_;
   };
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

@@ -20,6 +20,9 @@
 #include "baci_scatra_ele.H"
 #include "baci_so3_base.H"
 #include "baci_solid_ele.H"
+
+BACI_NAMESPACE_OPEN
+
 namespace BINSTRATEGY
 {
   namespace UTILS
@@ -345,3 +348,5 @@ namespace BINSTRATEGY
 
   }  // namespace UTILS
 }  // namespace BINSTRATEGY
+
+BACI_NAMESPACE_CLOSE

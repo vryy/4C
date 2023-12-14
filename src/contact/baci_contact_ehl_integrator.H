@@ -16,6 +16,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::LINALG
 {
@@ -101,4 +103,6 @@ namespace CONTACT
   };
 
 }  // namespace CONTACT
+BACI_NAMESPACE_CLOSE
+
 #endif  // CONTACT_EHL_INTEGRATOR_H

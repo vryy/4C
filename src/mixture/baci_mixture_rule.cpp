@@ -22,6 +22,13 @@
 #include "baci_mixture_rule_simple.H"
 #include "baci_utils_exceptions.H"
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace CORE::COMM
 {
@@ -30,10 +37,6 @@ namespace CORE::COMM
 namespace DRT::INPUT
 {
   class LineDefinition;
-}
-namespace Teuchos
-{
-  class ParameterList;
 }
 
 // Constructor of the material parameters
@@ -132,3 +135,4 @@ void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGI
   if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
+BACI_NAMESPACE_CLOSE

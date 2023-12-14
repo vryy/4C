@@ -24,8 +24,10 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(
-    const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
   Teuchos::ParameterList& p = params.sublist("Aitken");
@@ -44,7 +46,7 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(
 
 
 bool NOX::FSI::AitkenRelaxation::reset(
-    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   // We might want to constrain the step size of the first relaxation
   // in a new time step.
@@ -61,24 +63,24 @@ bool NOX::FSI::AitkenRelaxation::reset(
 }
 
 
-bool NOX::FSI::AitkenRelaxation::compute(
-    Abstract::Group& grp, double& step, const Abstract::Vector& dir, const Solver::Generic& s)
+bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& step,
+    const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
-  if (utils_->isPrintType(NOX::Utils::InnerIteration))
+  if (utils_->isPrintType(::NOX::Utils::InnerIteration))
   {
     utils_->out() << "\n"
-                  << NOX::Utils::fill(72) << "\n"
+                  << ::NOX::Utils::fill(72) << "\n"
                   << "-- Aitken Line Search -- \n";
   }
 
-  const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
-  const NOX::Abstract::Vector& F = oldGrp.getF();
+  const ::NOX::Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
+  const ::NOX::Abstract::Vector& F = oldGrp.getF();
 
 
   if (is_null(del_))
   {
-    del_ = F.clone(ShapeCopy);
-    del2_ = F.clone(ShapeCopy);
+    del_ = F.clone(::NOX::ShapeCopy);
+    del2_ = F.clone(::NOX::ShapeCopy);
     del_->init(1.0e20);
     del2_->init(0.0);
   }
@@ -116,18 +118,18 @@ bool NOX::FSI::AitkenRelaxation::compute(
   // is this reasonable at this point?
   double checkOrthogonality = fabs(grp.getF().innerProduct(dir));
 
-  if (utils_->isPrintType(Utils::InnerIteration))
+  if (utils_->isPrintType(::NOX::Utils::InnerIteration))
   {
     utils_->out() << std::setw(3) << "1"
                   << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << std::endl;
+    utils_->out() << "\n" << ::NOX::Utils::fill(72) << "\n" << std::endl;
   }
 
   // write omega
   double fnorm = grp.getF().norm();
-  if (dynamic_cast<const NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID() == 0)
+  if (dynamic_cast<const ::NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID() == 0)
   {
     static int count;
     static std::ofstream* out;
@@ -150,3 +152,5 @@ bool NOX::FSI::AitkenRelaxation::compute(
 
 
 double NOX::FSI::AitkenRelaxation::GetOmega() { return 1. - nu_; }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 #include "baci_ale_ale3.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
 
@@ -86,3 +88,5 @@ void DRT::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
   os << "Ale3Surface ";
   Element::Print(os);
 }
+
+BACI_NAMESPACE_CLOSE

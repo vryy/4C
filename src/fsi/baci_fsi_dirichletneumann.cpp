@@ -18,6 +18,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -77,3 +79,5 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, cons
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }
 }
+
+BACI_NAMESPACE_CLOSE

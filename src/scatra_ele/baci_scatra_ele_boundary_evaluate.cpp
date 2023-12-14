@@ -14,6 +14,8 @@
 #include "baci_scatra_ele_boundary_factory.H"
 #include "baci_scatra_ele_parameter_elch.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
@@ -141,3 +143,5 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

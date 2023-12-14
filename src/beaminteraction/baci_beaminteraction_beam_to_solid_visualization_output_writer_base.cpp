@@ -15,6 +15,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /**
  *
@@ -86,3 +88,5 @@ void BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::Write(
 {
   for (auto& it : visualization_writers_) it.second->Write(timestep_number, time);
 }
+
+BACI_NAMESPACE_CLOSE

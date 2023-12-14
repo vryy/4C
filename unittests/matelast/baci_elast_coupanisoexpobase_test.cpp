@@ -22,6 +22,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class CoupAnisoExpoBaseInterfaceFake : public MAT::ELASTIC::CoupAnisoExpoBaseInterface
   {
    public:

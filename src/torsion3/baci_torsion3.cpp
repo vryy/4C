@@ -15,6 +15,8 @@
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
 DRT::ELEMENTS::Torsion3Type& DRT::ELEMENTS::Torsion3Type::Instance() { return instance_; }
@@ -177,3 +179,5 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Torsion3::ParamsInte
 {
   return interface_ptr_;
 }
+
+BACI_NAMESPACE_CLOSE

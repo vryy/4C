@@ -13,6 +13,8 @@
 
 #include "baci_inpar_validparameters.H"
 
+BACI_NAMESPACE_OPEN
+
 void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -117,3 +119,5 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   /// Flag for considering the pure Reynolds Equation
   BoolParameter("PURE_LUB", "No", "the problem is pure lubrication", &lubricationdyn);
 }
+
+BACI_NAMESPACE_CLOSE

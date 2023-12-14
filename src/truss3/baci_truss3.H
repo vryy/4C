@@ -15,6 +15,8 @@
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Sacado.hpp>
+
+BACI_NAMESPACE_OPEN
 using FAD = Sacado::Fad::DFad<double>;
 
 namespace STR
@@ -332,5 +334,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // TRUSS3_H

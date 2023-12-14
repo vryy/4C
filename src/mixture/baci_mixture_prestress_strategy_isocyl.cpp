@@ -21,6 +21,8 @@
 #include "baci_mixture_rule.H"
 #include "baci_mixture_rule_growthremodel.H"
 
+BACI_NAMESPACE_OPEN
+
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : PrestressStrategy(matdata),
@@ -233,3 +235,4 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::Update(
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }
+BACI_NAMESPACE_CLOSE

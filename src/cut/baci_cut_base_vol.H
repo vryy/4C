@@ -13,6 +13,8 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -24,4 +26,7 @@ namespace CORE::GEO
     double base_function(std::vector<double> coordi, int base_num);
   }  // namespace CUT
 }  // namespace CORE::GEO
+
+BACI_NAMESPACE_CLOSE
+
 #endif

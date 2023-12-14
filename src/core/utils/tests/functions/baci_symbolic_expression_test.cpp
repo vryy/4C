@@ -10,6 +10,7 @@
 #include "baci_unittest_utils_assertions_test.H"
 #include "baci_utils_symbolic_expression.H"
 
+BACI_NAMESPACE_OPEN
 
 namespace
 {
@@ -159,3 +160,4 @@ namespace
 
 
 }  // namespace
+BACI_NAMESPACE_CLOSE

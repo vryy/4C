@@ -31,6 +31,8 @@
 #include <ctime>
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -535,5 +537,7 @@ namespace AIRWAY
 
 }  // namespace AIRWAY
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // RED_AIRWAYS_IMPLICITINTEGRATION_H

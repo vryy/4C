@@ -15,6 +15,8 @@
 
 #include <ml_MultiLevelPreconditioner.h>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
@@ -196,3 +198,5 @@ void CORE::LINALG::BGS2x2_Operator::LocalBlockRichardson(
     }
   }
 }
+
+BACI_NAMESPACE_CLOSE

@@ -22,6 +22,8 @@
 #include "baci_lib_discret_xfem.H"
 #include "baci_lib_globalproblem.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra_Comm& comm,
@@ -236,3 +238,5 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

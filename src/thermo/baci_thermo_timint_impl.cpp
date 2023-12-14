@@ -18,6 +18,8 @@
 
 #include <sstream>
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -72,9 +74,9 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-          ::DRT::Problem::Instance()->NDim(), ::DRT::Problem::Instance()->MortarCouplingParams(),
-          ::DRT::Problem::Instance()->ContactDynamicParams(),
-          ::DRT::Problem::Instance()->SpatialApproximationType()));
+          DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
+          DRT::Problem::Instance()->ContactDynamicParams(),
+          DRT::Problem::Instance()->SpatialApproximationType()));
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(
@@ -1200,3 +1202,5 @@ void THR::TimIntImpl::FDCheck()
 
 
 /*----------------------------------------------------------------------*/
+
+BACI_NAMESPACE_CLOSE

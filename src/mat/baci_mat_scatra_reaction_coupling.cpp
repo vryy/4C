@@ -11,6 +11,8 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_function.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16
  *----------------------------------------------------------------------*/
@@ -874,3 +876,5 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
   }
   return;
 }
+
+BACI_NAMESPACE_CLOSE

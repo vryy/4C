@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 namespace XFEM
 {
@@ -208,5 +210,7 @@ namespace XFEM
   }
 
 }  // namespace XFEM
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_XFIELD_STATE_UTILS_H

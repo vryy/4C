@@ -16,6 +16,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   class MultiplicativeSplitDefgradElastHyperServiceTest : public ::testing::Test
   {
    protected:

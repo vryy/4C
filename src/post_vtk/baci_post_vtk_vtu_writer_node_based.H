@@ -22,6 +22,9 @@
 // forward declarations
 class PostField;
 class PostResult;
+
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Discretization;
@@ -33,6 +36,7 @@ namespace DRT
   }
 }  // namespace DRT
 
+BACI_NAMESPACE_CLOSE
 
 /*
  \brief Base class for VTU node based output generation
@@ -89,24 +93,25 @@ class PostVtuWriterNode : public PostVtuWriter
   void WriteGeo() override;
 
   //! write the geometry of Nurbs Element
-  virtual void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+  virtual void WriteGeoNurbsEle(const BACI::DRT::Element* ele, std::vector<uint8_t>& celltypes,
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates);
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele, std::vector<uint8_t>& celltypes,
-      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) override;
+  void WriteGeoBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
-      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
-      const bool fillzeros);
+  virtual void WirteDofResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from, const bool fillzeros);
 
-  void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele, const int& ncomponents,
-      const int& numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector>& ghostedData,
-      const int& from, const bool fillzeros) override;
+  void WriteDofResultStepBeamEle(const BACI::DRT::ELEMENTS::Beam3Base* beamele,
+      const int& ncomponents, const int& numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+  virtual void WriteNodalResultStepNurbsEle(const BACI::DRT::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 

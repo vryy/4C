@@ -18,6 +18,8 @@
 #include <Epetra_Operator.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace NOX
 {
@@ -1669,7 +1671,7 @@ namespace CONTACT
 
     /*! \brief run pre-compute x routine for contact
      *
-     *  This routine is called in the end of a NOX::Solver::step() call.
+     *  This routine is called in the end of a ::NOX::Solver::step() call.
      *
      *  \param cparams (in)    : parameter interface between the contact objects
      *                           and the structural time integration
@@ -2309,5 +2311,7 @@ namespace CONTACT
 
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // CONTACT_ABSTRACT_STRATEGY_H

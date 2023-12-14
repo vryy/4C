@@ -19,6 +19,8 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
+BACI_NAMESPACE_OPEN
+
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
@@ -118,3 +120,5 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

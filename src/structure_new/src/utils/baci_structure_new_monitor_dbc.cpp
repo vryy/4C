@@ -25,6 +25,8 @@
 #include "baci_structure_new_timint_basedataio.H"
 #include "baci_structure_new_timint_basedataio_monitor_dbc.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
@@ -578,3 +580,5 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
   discret_ptr_->Comm().SumAll(lrmoment_xyz.A(), rmoment_xyz.A(), DIM);
   return rmoment_xyz.Norm2();
 }
+
+BACI_NAMESPACE_CLOSE

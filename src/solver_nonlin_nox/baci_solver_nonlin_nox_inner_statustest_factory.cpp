@@ -25,6 +25,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -37,7 +39,7 @@ NOX::NLN::INNER::StatusTest::Factory::Factory()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterList& p,
-    const NOX::Utils& u,
+    const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> status_test;
@@ -84,7 +86,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterLi
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // ------------------------------------------
   // Get c_1
@@ -123,11 +125,11 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   FilterParams fparams;
 
-  std::vector<Teuchos::RCP<NOX::MeritFunction::Generic>>& infeasibility_vec =
+  std::vector<Teuchos::RCP<::NOX::MeritFunction::Generic>>& infeasibility_vec =
       fparams.infeasibility_vec_;
 
   unsigned count = 0;
@@ -205,7 +207,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // Get upper bound as specified in xml file
   double upperboundval = p.get("Value", 1.0e10);
@@ -231,13 +233,13 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
 
   // Norm Type
   std::string norm_type_string = p.get("Norm Type", "Two Norm");
-  NOX::Abstract::Vector::NormType norm_type = NOX::Abstract::Vector::TwoNorm;
+  ::NOX::Abstract::Vector::NormType norm_type = ::NOX::Abstract::Vector::TwoNorm;
   if (norm_type_string == "Two Norm")
-    norm_type = NOX::Abstract::Vector::TwoNorm;
+    norm_type = ::NOX::Abstract::Vector::TwoNorm;
   else if (norm_type_string == "One Norm")
-    norm_type = NOX::Abstract::Vector::OneNorm;
+    norm_type = ::NOX::Abstract::Vector::OneNorm;
   else if (norm_type_string == "Max Norm")
-    norm_type = NOX::Abstract::Vector::MaxNorm;
+    norm_type = ::NOX::Abstract::Vector::MaxNorm;
   else
   {
     std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
@@ -253,19 +255,20 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
+NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p,
+    const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
   if (not p.isParameter("Combo Type")) dserror("You have to specify a \"Combo Type\".");
 
 
-  NOX::StatusTest::Combo::ComboType combo_type =
-      NOX::NLN::PUTILS::SetAndValidate<NOX::StatusTest::Combo::ComboType>(p, "Combo Type", "AND",
+  ::NOX::StatusTest::Combo::ComboType combo_type =
+      NOX::NLN::PUTILS::SetAndValidate<::NOX::StatusTest::Combo::ComboType>(p, "Combo Type", "AND",
           "Combination type to combine multiple inner "
           "status tests. Possible choices are AND and OR.",
           Teuchos::tuple<std::string>("AND", "OR"),
-          Teuchos::tuple<NOX::StatusTest::Combo::ComboType>(
-              NOX::StatusTest::Combo::AND, NOX::StatusTest::Combo::OR));
+          Teuchos::tuple<::NOX::StatusTest::Combo::ComboType>(
+              ::NOX::StatusTest::Combo::AND, ::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Combo> combo_test =
       Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Combo(combo_type, &u));
@@ -320,7 +323,7 @@ void NOX::NLN::INNER::StatusTest::Factory::throwError(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(Teuchos::ParameterList& p, const NOX::Utils& u,
+NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(Teuchos::ParameterList& p, const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
@@ -331,7 +334,7 @@ NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(Teuchos::ParameterList& p, co
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildVolumeChangeTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   VolumeChangeParams vcparams;
   vcparams.upper_bound_ = p.get<double>("Upper Bound", 2.0);
@@ -339,3 +342,5 @@ NOX::NLN::INNER::StatusTest::Factory::BuildVolumeChangeTest(
 
   return Teuchos::rcp(new VolumeChange(vcparams, u));
 }
+
+BACI_NAMESPACE_CLOSE

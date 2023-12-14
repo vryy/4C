@@ -18,6 +18,8 @@
 #include "baci_discretization_geometry_intersection_math.H"
 #include "baci_lib_element.H"
 
+BACI_NAMESPACE_OPEN
+
 
 namespace CORE::GEO
 {
@@ -96,5 +98,7 @@ namespace CORE::GEO
 
 }  // namespace CORE::GEO
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // DISCRETIZATION_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_H

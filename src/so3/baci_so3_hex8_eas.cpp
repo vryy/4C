@@ -12,6 +12,8 @@
 #include "baci_so3_sh8p8.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
@@ -441,3 +443,5 @@ void DRT::ELEMENTS::So_hex8::soh8_easrestore()
       break;
   }
 }
+
+BACI_NAMESPACE_CLOSE

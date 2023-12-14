@@ -22,6 +22,8 @@ analysis for supporting processors
 
 #include <hdf5.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  | "timeloop" for supporting procs                          ghamm 05/12 |
@@ -176,3 +178,5 @@ void STRUMULTI::np_support_drt()
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -12,6 +12,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 /*----------------------------------------------------------------------*
@@ -60,3 +62,5 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
   }
   return rule;
 }
+
+BACI_NAMESPACE_CLOSE

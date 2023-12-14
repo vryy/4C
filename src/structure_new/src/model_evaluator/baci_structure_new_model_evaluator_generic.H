@@ -18,13 +18,22 @@
 // forward declarations
 class Epetra_Vector;
 class Epetra_Map;
-
 namespace NOX
 {
   namespace Solver
   {
     class Generic;
   }  // namespace Solver
+}  // namespace NOX
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     class Group;
@@ -37,11 +46,6 @@ namespace CORE::LINALG
   class SparseOperator;
   class SparseMatrix;
 }  // namespace CORE::LINALG
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 namespace IO
 {
@@ -277,19 +281,19 @@ namespace STR
       virtual void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) = 0;
 
-      /*! \brief Executed at the end of the NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
+      /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
        *
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author hiermeier \date 03/17 */
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) = 0;
+      virtual void RunPostIterate(const ::NOX::Solver::Generic& solver) = 0;
 
-      /*! \brief Executed at the beginning of the NOX::Solver::Generic::solve() method
+      /*! \brief Executed at the beginning of the ::NOX::Solver::Generic::solve() method
        *
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author hiermeier */
-      virtual void RunPreSolve(const NOX::Solver::Generic& solver){};
+      virtual void RunPreSolve(const ::NOX::Solver::Generic& solver){};
 
       /*! \brief Executed at the end of the NOX::NLN::LinearSystem::applyJacobianInverse()
        *  method
@@ -537,5 +541,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_MODEL_EVALUATOR_GENERIC_H

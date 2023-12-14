@@ -17,6 +17,8 @@
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
+BACI_NAMESPACE_OPEN
+
 
 
 void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -155,26 +157,25 @@ void INPAR::BEAMPOTENTIAL::SetValidConditions(
           "BeamPotentialLineCharge", "Beam_Potential_Line_Charge_Density",
           DRT::Condition::BeamPotential_LineChargeDensity, false, DRT::Condition::Line));
 
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("POTLAW")));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::IntComponent("potlaw")));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
   rigidsphere_potential_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("POTLAW")));
-  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("potlaw")));
-  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
+      Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("FUNCT")));
   rigidsphere_potential_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 1)));
-  rigidsphere_potential_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::SeparatorComponent("FUNCT")));
-  rigidsphere_potential_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, true, true})));
+      Teuchos::rcp(new INPUT::IntVectorComponent("funct", 1, {0, false, true, true})));
 
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("POTLAW")));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("potlaw")));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("POTLAW")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new INPUT::IntComponent("potlaw")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
+  beam_potential_line_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("FUNCT")));
   beam_potential_line_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 1)));
-  beam_potential_line_charge->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("FUNCT")));
-  beam_potential_line_charge->AddComponent(
-      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, true, true})));
+      Teuchos::rcp(new INPUT::IntVectorComponent("funct", 1, {0, false, true, true})));
 
   condlist.push_back(rigidsphere_potential_charge);
   condlist.push_back(beam_potential_line_charge);
 }
+
+BACI_NAMESPACE_CLOSE

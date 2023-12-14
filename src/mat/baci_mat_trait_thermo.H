@@ -10,6 +10,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace MAT
 {
   namespace TRAIT
@@ -74,5 +76,7 @@ namespace MAT
     };
   }  // namespace TRAIT
 }  // namespace MAT
+
+BACI_NAMESPACE_CLOSE
 
 #endif

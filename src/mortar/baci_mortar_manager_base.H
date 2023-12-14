@@ -15,6 +15,12 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace IO
@@ -29,11 +35,6 @@ namespace DRT
   class Discretization;
   class Element;
 }  // namespace DRT
-
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 namespace MORTAR
 {
@@ -137,5 +138,7 @@ namespace MORTAR
   };  // class ManagerBase
 }  // namespace MORTAR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // MORTAR_MANAGER_BASE_H

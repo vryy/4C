@@ -20,6 +20,8 @@
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance()
@@ -228,3 +230,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Lines(
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
       CORE::COMM::buildLines, *this);
 }
+
+BACI_NAMESPACE_CLOSE

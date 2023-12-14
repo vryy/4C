@@ -18,13 +18,15 @@
 #include "baci_ssi_monolithic.H"
 #include "baci_ssi_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::DBCHandlerBase::DBCHandlerBase(const bool is_scatra_manifold,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : is_scatra_manifold_(is_scatra_manifold),
       scatra_(std::move(scatra)),
       scatra_manifold_(std::move(scatra_manifold)),
@@ -39,7 +41,7 @@ SSI::DBCHandlerSparse::DBCHandlerSparse(const bool is_scatra_manifold,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure)
 {
 }
@@ -50,7 +52,7 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure),
       position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
@@ -186,7 +188,7 @@ Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_mani
     CORE::LINALG::MatrixType matrixtype_ssi, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
 {
   Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler = Teuchos::null;
 
@@ -213,3 +215,4 @@ Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_mani
 
   return dbc_handler;
 }
+BACI_NAMESPACE_CLOSE

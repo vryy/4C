@@ -13,6 +13,8 @@
 
 #include "baci_adapter_scatra_fluid_ale_coupling_algo.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ELCH
 {
   /// ELCH algorithm with support for deforming meshes
@@ -103,5 +105,7 @@ namespace ELCH
   };
 
 }  // namespace ELCH
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // ELCH_MOVING_BOUNDARY_ALGORITHM_H

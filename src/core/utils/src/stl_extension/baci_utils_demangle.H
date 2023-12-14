@@ -13,6 +13,8 @@
 #include <memory>
 #include <string>
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::UTILS
 {
   /**
@@ -28,5 +30,7 @@ namespace CORE::UTILS
     return (status == 0 && result) ? std::string(result.get()) : std::string(mangledString);
   }
 }  // namespace CORE::UTILS
+
+BACI_NAMESPACE_CLOSE
 
 #endif

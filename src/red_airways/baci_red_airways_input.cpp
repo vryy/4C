@@ -15,6 +15,8 @@ RedAirBloodScatraLine3 elements
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_red_airways_elementbase.H"
 
+BACI_NAMESPACE_OPEN
+
 using namespace DRT::UTILS;
 
 
@@ -232,3 +234,5 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
 
   return true;
 }
+
+BACI_NAMESPACE_CLOSE

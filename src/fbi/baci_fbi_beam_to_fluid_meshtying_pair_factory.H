@@ -16,6 +16,8 @@ approach
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Element;
@@ -56,5 +58,7 @@ namespace FBI
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr);
   };
 }  // namespace FBI
+
+BACI_NAMESPACE_CLOSE
 
 #endif

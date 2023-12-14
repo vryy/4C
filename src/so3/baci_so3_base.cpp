@@ -14,6 +14,8 @@
 #include "baci_mat_so3_material.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/15|
@@ -165,3 +167,5 @@ void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
   SolidMaterial()->PostSetup(params, Id());
   material_post_setup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

@@ -16,6 +16,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -119,3 +121,5 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

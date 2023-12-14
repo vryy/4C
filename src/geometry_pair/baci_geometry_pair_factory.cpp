@@ -18,6 +18,7 @@
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
 #include "baci_geometry_pair_scalar_types.H"
 
+BACI_NAMESPACE_OPEN
 
 /**
  *
@@ -274,3 +275,5 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
         GEOMETRYPAIR::t_nurbs9>,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
     const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+
+BACI_NAMESPACE_CLOSE

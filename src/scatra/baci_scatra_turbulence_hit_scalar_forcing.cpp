@@ -21,6 +21,8 @@ passive-scalar transport
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
+BACI_NAMESPACE_OPEN
+
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
 
@@ -840,3 +842,5 @@ namespace SCATRA
 
 
 }  // namespace SCATRA
+
+BACI_NAMESPACE_CLOSE

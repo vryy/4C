@@ -15,6 +15,8 @@
 #include "baci_cut_point.H"
 #include "baci_lib_discret.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace XFEM
 {
   namespace UTILS
@@ -70,5 +72,7 @@ namespace XFEM
   }  // namespace UTILS
 }  // namespace XFEM
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // XFEM_UTILS_H

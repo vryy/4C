@@ -16,6 +16,8 @@ implementation
 
 #include <optional>
 
+BACI_NAMESPACE_OPEN
+
 template <CORE::FE::CellType celltype>
 DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
     : gauss_integration_(
@@ -243,3 +245,5 @@ template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex27>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet4>;
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet10>;
+
+BACI_NAMESPACE_CLOSE

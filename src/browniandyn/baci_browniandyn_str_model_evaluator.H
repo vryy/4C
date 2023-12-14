@@ -21,6 +21,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+BACI_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace DRT
@@ -98,7 +99,7 @@ namespace STR
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
+      void RunPostIterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -207,5 +208,7 @@ namespace STR
   }     // namespace MODELEVALUATOR
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

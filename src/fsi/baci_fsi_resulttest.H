@@ -16,6 +16,8 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace DRT
 {
@@ -89,4 +91,6 @@ namespace FSI
     Teuchos::RCP<FSI::Monolithic> fsi_;
   };
 }  // namespace FSI
+BACI_NAMESPACE_CLOSE
+
 #endif  // FSI_RESULTTEST_H

@@ -18,6 +18,8 @@
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_utils.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Interface::Impl(
@@ -108,3 +110,5 @@ inline void DRT::ELEMENTS::Ale3Surface_Impl<distype>::ElementNodeNormal(Ale3Surf
   CORE::DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
       ele, discretization, elevec1, mydispnp, false, true);
 }
+
+BACI_NAMESPACE_CLOSE

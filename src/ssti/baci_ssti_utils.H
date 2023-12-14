@@ -17,6 +17,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class Coupling;
@@ -269,5 +271,7 @@ namespace SSTI
     std::map<std::string, std::string> ConditionsToCopy() const override;
   };
 }  // namespace SSTI
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SSTI_UTILS_H

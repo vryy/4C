@@ -26,6 +26,12 @@ namespace NOX
   {
     class LinearSystem;
   }  // namespace Epetra
+}  // namespace NOX
+
+BACI_NAMESPACE_OPEN
+
+namespace NOX
+{
   namespace NLN
   {
     class GlobalData;
@@ -71,7 +77,7 @@ namespace STR
         INPAR::STR::ConvergenceStatus Solve() override;
 
         //! returns the outer status test object pointer
-        const NOX::StatusTest::Generic& GetOStatusTest() const
+        const ::NOX::StatusTest::Generic& GetOStatusTest() const
         {
           CheckInitSetup();
           dsassert(!ostatus_.is_null(), "The outer status test object is not defined!");
@@ -94,14 +100,14 @@ namespace STR
 
         //! Convert the final nox status into a structural status
         enum INPAR::STR::ConvergenceStatus ConvertFinalStatus(
-            const NOX::StatusTest::StatusType& finalstatus) const;
+            const ::NOX::StatusTest::StatusType& finalstatus) const;
 
        protected:
         //! pointer to the nox nln global data container
         Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
 
         //! NOX non-linear solver
-        Teuchos::RCP<NOX::Solver::Generic> nlnsolver_;
+        Teuchos::RCP<::NOX::Solver::Generic> nlnsolver_;
 
        private:
         //! @name Variables which stay constant after Init() and Setup() call
@@ -119,10 +125,10 @@ namespace STR
         Teuchos::RCP<NOX::NLN::Problem> problem_;
 
         //! linear system class
-        Teuchos::RCP<NOX::Epetra::LinearSystem> linsys_;
+        Teuchos::RCP<::NOX::Epetra::LinearSystem> linsys_;
 
         //! outer status test
-        Teuchos::RCP<NOX::StatusTest::Generic> ostatus_;
+        Teuchos::RCP<::NOX::StatusTest::Generic> ostatus_;
 
         //! inner status test
         Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> istatus_;
@@ -133,5 +139,7 @@ namespace STR
   }       // namespace NLN
 }  // namespace STR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // STRUCTURE_NEW_NLN_SOLVER_NOX_H

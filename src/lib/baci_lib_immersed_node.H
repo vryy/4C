@@ -13,6 +13,8 @@
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_node.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT
 {
   class Node;
@@ -162,5 +164,7 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode);
 
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // BACI_LIB_IMMERSED_NODE_H

@@ -20,6 +20,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+BACI_NAMESPACE_OPEN
+
 
 
 template <CORE::FE::CellType distype>
@@ -2173,3 +2175,5 @@ template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs27>;
+
+BACI_NAMESPACE_CLOSE

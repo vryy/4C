@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -116,5 +117,7 @@ namespace DRT
   };  // class FixedSizeDofSet
 
 }  // namespace DRT
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // LIB_DOFSET_FIXED_SIZE_H

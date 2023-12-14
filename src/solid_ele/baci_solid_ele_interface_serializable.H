@@ -15,6 +15,8 @@
 #ifndef BACI_SOLID_ELE_INTERFACE_SERIALIZABLE_H
 #define BACI_SOLID_ELE_INTERFACE_SERIALIZABLE_H
 
+BACI_NAMESPACE_OPEN
+
 namespace DRT::ELEMENTS
 {
   /*!
@@ -142,5 +144,7 @@ namespace DRT::ELEMENTS
     std::visit(DETAILS::UnpackAction(position, data), variant);
   }
 }  // namespace DRT::ELEMENTS
+
+BACI_NAMESPACE_CLOSE
 
 #endif  // SOLID_ELE_INTERFACE_SERIALIZABLE_H

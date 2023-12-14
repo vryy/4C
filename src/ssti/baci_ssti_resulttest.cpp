@@ -13,6 +13,8 @@
 #include "baci_ssti_algorithm.H"
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
@@ -69,3 +71,4 @@ double SSTI::SSTIResultTest::ResultSpecial(const std::string& quantity) const
 
   return result;
 }
+BACI_NAMESPACE_CLOSE

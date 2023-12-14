@@ -15,6 +15,8 @@
 #include "baci_io_linedefinition.H"
 #include "baci_mat_fluidporo_multiphase.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*
  ******************  PoroFluidMultiPhase ElementType *********************
@@ -508,3 +510,5 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBounda
 {
   dserror("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
 }
+
+BACI_NAMESPACE_CLOSE

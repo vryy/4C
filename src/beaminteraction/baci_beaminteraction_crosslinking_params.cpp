@@ -13,6 +13,8 @@
 #include "baci_mat_crosslinkermat.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -324,3 +326,5 @@ void BEAMINTERACTION::CrosslinkingParams::Setup()
 
   issetup_ = true;
 }
+
+BACI_NAMESPACE_CLOSE

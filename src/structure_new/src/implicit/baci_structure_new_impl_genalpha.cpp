@@ -28,6 +28,8 @@
 
 #include <Epetra_Vector.h>
 
+BACI_NAMESPACE_OPEN
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -427,7 +429,7 @@ void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::GenAlpha::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type) const
+    const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -593,3 +595,5 @@ void STR::IMPLICIT::GenAlpha::ResetEvalParams()
   EvalData().SetTimIntFactorDisp(timeintfac_dis);
   EvalData().SetTimIntFactorVel(timeintfac_vel);
 }
+
+BACI_NAMESPACE_CLOSE

@@ -14,6 +14,8 @@
 
 #include <NOX_Epetra_Group.H>
 
+BACI_NAMESPACE_OPEN
+
 // forward declarations
 namespace FSI
 {
@@ -25,31 +27,33 @@ namespace NOX
   namespace FSI
   {
     /// Special NOX group that always sets Jacobian and RHS at the same time.
-    class Group : public NOX::Epetra::Group
+    class Group : public ::NOX::Epetra::Group
     {
      public:
-      Group(::FSI::MonolithicInterface& mfsi,                       ///< monolithic FSI interface
-          Teuchos::ParameterList& printParams,                      ///< printing parameters
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  ///< NOX interface
-          const NOX::Epetra::Vector& x,                             ///< initial guess
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys     ///< linear system
+      Group(BACI::FSI::MonolithicInterface& mfsi,                     ///< monolithic FSI interface
+          Teuchos::ParameterList& printParams,                        ///< printing parameters
+          const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i,  ///< NOX interface
+          const ::NOX::Epetra::Vector& x,                             ///< initial guess
+          const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys     ///< linear system
       );
 
       /// fetch the known Jacobian and RHS from the field solvers
       void CaptureSystemState();
 
       /// calculate the RHS vector
-      NOX::Abstract::Group::ReturnType computeF() override;
+      ::NOX::Abstract::Group::ReturnType computeF() override;
 
       /// calculate the Jacobian matrix
-      NOX::Abstract::Group::ReturnType computeJacobian() override;
+      ::NOX::Abstract::Group::ReturnType computeJacobian() override;
 
-      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
+      ::NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
 
      private:
-      ::FSI::MonolithicInterface& mfsi_;
+      BACI::FSI::MonolithicInterface& mfsi_;
     };
   }  // namespace FSI
 }  // namespace NOX
+
+BACI_NAMESPACE_CLOSE
 
 #endif

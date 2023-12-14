@@ -13,6 +13,8 @@ St. Venant-Kirchhoff material
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -262,3 +264,4 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
   //**********************************************************************
   //**********************************************************************
 }
+BACI_NAMESPACE_CLOSE

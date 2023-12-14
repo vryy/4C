@@ -13,6 +13,8 @@
 
 #include "baci_adapter_fld_fluid_fsi.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace ADAPTER
 {
   class FluidACFSI : public FluidFSI
@@ -29,5 +31,7 @@ namespace ADAPTER
     //@}
   };
 }  // namespace ADAPTER
+
+BACI_NAMESPACE_CLOSE
 
 #endif

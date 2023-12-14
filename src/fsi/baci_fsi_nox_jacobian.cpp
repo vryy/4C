@@ -22,9 +22,11 @@
 
 #include <iostream>
 
+BACI_NAMESPACE_OPEN
+
 
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x)
+    const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x)
     : label("FSI-Matrix-Free"),
       interface(i),
       currentX(x),
@@ -87,8 +89,8 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   // vector space for norms and inner products.
   Teuchos::RCP<Epetra_Vector> wrappedX = Teuchos::rcp(new Epetra_Vector(View, X, 0));
   Teuchos::RCP<Epetra_Vector> wrappedY = Teuchos::rcp(new Epetra_Vector(View, Y, 0));
-  NOX::Epetra::Vector nevX(wrappedX, NOX::Epetra::Vector::CreateView);
-  NOX::Epetra::Vector nevY(wrappedY, NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector nevX(wrappedX, ::NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector nevY(wrappedY, ::NOX::Epetra::Vector::CreateView);
 
   // The trial vector x is not guaranteed to be a suitable interface
   // displacement. It might be much too large to fit the ALE
@@ -114,7 +116,7 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   if (!useGroupForComputeF)
   {
     interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
-        NOX::Epetra::Interface::Required::User);
+        ::NOX::Epetra::Interface::Required::User);
   }
   else
   {
@@ -181,9 +183,11 @@ bool NOX::FSI::FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Ope
 }
 
 
-void NOX::FSI::FSIMatrixFree::setGroupForComputeF(const NOX::Abstract::Group& group)
+void NOX::FSI::FSIMatrixFree::setGroupForComputeF(const ::NOX::Abstract::Group& group)
 {
   useGroupForComputeF = true;
   groupPtr = group.clone();
   return;
 }
+
+BACI_NAMESPACE_CLOSE

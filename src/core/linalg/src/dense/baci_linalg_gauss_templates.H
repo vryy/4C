@@ -10,6 +10,8 @@
 
 #include "baci_linalg_gauss.H"
 
+BACI_NAMESPACE_OPEN
+
 namespace CORE::LINALG
 {
   template <bool do_piv, unsigned dim, typename valtype>
@@ -158,5 +160,7 @@ namespace CORE::LINALG
   }
 
 }  // namespace CORE::LINALG
+
+BACI_NAMESPACE_CLOSE
 
 #endif

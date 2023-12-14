@@ -19,6 +19,7 @@
 
 #include <vector>
 
+BACI_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -423,5 +424,7 @@ namespace GEOMETRYPAIR
   };
 }  // namespace GEOMETRYPAIR
 
+
+BACI_NAMESPACE_CLOSE
 
 #endif

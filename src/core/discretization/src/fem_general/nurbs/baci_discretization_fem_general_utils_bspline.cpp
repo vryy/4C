@@ -11,6 +11,8 @@
 
 #include "baci_utils_exceptions.H"
 
+BACI_NAMESPACE_OPEN
+
 //--------------------------------------------------
 // Constructor
 //--------------------------------------------------
@@ -47,3 +49,5 @@ void CORE::DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string er
 
   return;
 }
+
+BACI_NAMESPACE_CLOSE

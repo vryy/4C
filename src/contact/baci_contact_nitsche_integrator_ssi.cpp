@@ -15,6 +15,8 @@
 #include "baci_so3_base.H"
 #include "baci_so3_scatra.H"
 
+BACI_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegratorNitscheSsi::CoIntegratorNitscheSsi(
@@ -479,3 +481,5 @@ template void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct<3>(
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
     double& cauchy_nt_wgt, CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
     CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
+
+BACI_NAMESPACE_CLOSE
