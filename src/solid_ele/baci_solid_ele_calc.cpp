@@ -36,9 +36,9 @@ void DRT::ELEMENTS::SolidEleCalc<celltype>::EvaluateNonlinearForceStiffnessMass(
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff{};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass{};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force{};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -82,119 +82,6 @@ void DRT::ELEMENTS::SolidEleCalc<celltype>::EvaluateNonlinearForceStiffnessMass(
         {
           AddElasticStiffnessMatrix(Bop, stress, integration_factor, *stiff);
           AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress, integration_factor, *stiff);
-        }
-
-        if (mass.has_value())
-        {
-          if (equal_integration_mass_stiffness)
-          {
-            AddMassMatrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
-          }
-          else
-          {
-            mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
-          }
-        }
-      });
-
-
-  if (mass.has_value() && !equal_integration_mass_stiffness)
-  {
-    // integrate mass matrix
-    dsassert(mean_density > 0, "It looks like the density is 0.0");
-    ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
-            const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
-        { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
-  }
-}
-
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidEleCalc<celltype>::EvaluateNonlinearForceStiffnessMassGEMM(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
-{
-  const double gemmalphaf = params.get<double>("alpha f");
-  const double gemmxi = params.get<double>("xi");
-
-  // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
-  if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
-  if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
-  if (force_vector != nullptr) force.emplace(*force_vector, true);
-
-  const ElementNodes<celltype> nodal_coordinates =
-      EvaluateElementNodes<celltype>(ele, discretization, lm);
-
-  const ElementNodes<celltype> nodal_coordinates_old =
-      EvaluateElementNodesOfPreviousTimestep<celltype>(ele, discretization, lm);
-
-  bool equal_integration_mass_stiffness =
-      CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
-
-  double mean_density = 0.0;
-
-  EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
-
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
-          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
-      {
-        SpatialMaterialMapping<celltype> spatial_material_mapping =
-            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
-
-        SpatialMaterialMapping<celltype> spatial_material_mapping_old =
-            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates_old);
-
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
-            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
-
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop_old =
-            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping_old);
-
-        CORE::LINALG::Matrix<num_dim_, num_dim_> cauchy_green =
-            EvaluateCauchyGreen(spatial_material_mapping);
-        CORE::LINALG::Matrix<num_dim_, num_dim_> cauchy_green_old =
-            EvaluateCauchyGreen(spatial_material_mapping_old);
-
-        CORE::LINALG::Matrix<num_str_, 1> gl_strain =
-            EvaluateGreenLagrangeStrain<celltype>(cauchy_green);
-        CORE::LINALG::Matrix<num_str_, 1> gl_strain_old =
-            EvaluateGreenLagrangeStrain<celltype>(cauchy_green_old);
-
-        // computed averaged mid-point quantities
-        // 1. non-linear mid-B-operator from Bop and Bop_old
-        // B_{m} = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> BopM(true);
-        BopM.Update(1.0 - gemmalphaf, Bop, gemmalphaf, Bop_old);
-
-        // 2. mid-strain GL-vector from gl_strains and gl_strains_old
-        // E_{m} = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_{n}
-        CORE::LINALG::Matrix<num_str_, 1> gl_strains_m(true);
-        gl_strains_m.Update(
-            1.0 - gemmalphaf + gemmxi, gl_strain, gemmalphaf - gemmxi, gl_strain_old);
-
-        EvaluateGPCoordinatesAndAddToParameterList<celltype>(
-            nodal_coordinates, shape_functions, params);
-
-        const Stress<celltype> stress =
-            EvaluateMaterialStressGEMM<celltype>(solid_material, gl_strain, gl_strain_old,
-                gl_strains_m, cauchy_green, cauchy_green_old, params, gp, ele.Id());
-
-        if (force.has_value()) AddInternalForceVector(BopM, stress, integration_factor, *force);
-
-        if (stiff.has_value())
-        {
-          AddElasticStiffnessMatrixGEMM(
-              Bop, BopM, stress, integration_factor * (1.0 - gemmalphaf + gemmxi), *stiff);
-          AddGeometricStiffnessMatrix(
-              jacobian_mapping.N_XYZ_, stress, integration_factor * (1.0 - gemmalphaf), *stiff);
         }
 
         if (mass.has_value())

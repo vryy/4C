@@ -743,16 +743,6 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceStiffnessMassGEMM(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
-{
-  dserror("GEMM is not implemented for EAS elements.");
-}
-
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)

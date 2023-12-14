@@ -58,18 +58,6 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_nlnstiff_gemm:
-    {
-      std::visit(
-          [&](auto& interface)
-          {
-            interface->EvaluateNonlinearForceStiffnessMassGEMM(
-                *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
-          },
-          solid_calc_variant_);
-
-      return 0;
-    }
     case struct_calc_internalforce:
     {
       std::visit(
