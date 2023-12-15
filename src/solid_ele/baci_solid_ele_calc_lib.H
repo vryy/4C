@@ -8,6 +8,7 @@
 #ifndef BACI_SOLID_ELE_CALC_LIB_H
 #define BACI_SOLID_ELE_CALC_LIB_H
 
+#include "baci_discretization_fem_general_cell_type_traits.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
@@ -80,56 +81,6 @@ namespace DRT::ELEMENTS::DETAILS
     return coordinates;
   }
 
-  /*!
-   * @brief Evaluates the nodal coordinates for the desired iteration (state)
-   *
-   * Extracts the displacement from the discretization and computes the current and reference
-   * position of the nodal coordinates
-   *
-   * @tparam celltype : Cell type
-   * @param ele (in) : Reference to the element
-   * @param discretization (in) : Reference to the discretization
-   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   * @param state_type (in) : State to obtain from discretization
-   * @return ElementNodes<celltype> : Nodal coordinates
-   */
-
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<celltype>, bool> = true>
-  DRT::ELEMENTS::ElementNodes<celltype> EvaluateElementNodes(const DRT::Element& ele,
-      const DRT::Discretization& discretization, const std::vector<int>& lm,
-      const std::string& state_type)
-  {
-    const Epetra_Vector& displacements = *discretization.GetState(state_type);
-
-    return GetNodalCoordinates<celltype>(ele, displacements, lm);
-  }
-
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::is_nurbs<celltype>, bool> = true>
-  DRT::ELEMENTS::ElementNodes<celltype> EvaluateElementNodes(const DRT::Element& ele,
-      const DRT::Discretization& discretization, const std::vector<int>& lm,
-      const std::string& state_type)
-  {
-    if (state_type == "old displacement")
-    {
-      dserror(
-          "The nodal evaluation for the old displacement for the GEMM implementation is not tested "
-          "for NURBS elements");
-    }
-
-    const Epetra_Vector& displacements = *discretization.GetState(state_type);
-
-    auto coordinates = GetNodalCoordinates<celltype>(ele, displacements, lm);
-
-    // Obtain the information required for a NURBS element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
-        discretization, &ele, coordinates.knots_, coordinates.weights_);
-    if (zero_size)
-      dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
-
-    return coordinates;
-  }
 }  // namespace DRT::ELEMENTS::DETAILS
 
 namespace DRT::ELEMENTS
@@ -238,26 +189,27 @@ namespace DRT::ELEMENTS
    * @brief Evaluates the nodal coordinates from this iteration
    *
    * @param ele (in) : Reference to the element
+   * @param discretization (in) : Discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <CORE::FE::CellType celltype>
   ElementNodes<celltype> EvaluateElementNodes(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
-    return DETAILS::EvaluateElementNodes<celltype>(ele, discretization, lm, "displacement");
-  }
+    const Epetra_Vector& displacements = *discretization.GetState("displacement");
 
-  /*!
-   * @brief Evaluates the nodal coordinates from the previous iteration (old)
-   *
-   * @param ele (in) : Reference to the element
-   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   */
-  template <CORE::FE::CellType celltype>
-  ElementNodes<celltype> EvaluateElementNodesOfPreviousTimestep(const DRT::Element& ele,
-      const DRT::Discretization& discretization, const std::vector<int>& lm)
-  {
-    return DETAILS::EvaluateElementNodes<celltype>(ele, discretization, lm, "old displacement");
+    auto coordinates = DETAILS::GetNodalCoordinates<celltype>(ele, displacements, lm);
+
+    if constexpr (CORE::FE::is_nurbs<celltype>)
+    {
+      // Obtain the information required for a NURBS element
+      bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
+          discretization, &ele, coordinates.knots_, coordinates.weights_);
+      if (zero_size)
+        dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
+    }
+
+    return coordinates;
   }
 
   /*!
@@ -778,40 +730,6 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the material stress (2. Piola-Kirchhoff stress tensor and the linearization
-   * w.r.t. Green-Lagrange strain)
-   *
-   * @tparam celltype : Cell type
-   * @param material (in) : Reference to the material
-   * @param strains (in) : Strain measures of the element
-   * @param strains_old (in) : Strain measures of the element old
-   * @param strains_m (in) : Strain measures of the element middle
-   * @param density (in) : Density
-   * @param params (in) : List of additional parameter to pass quantities from the time integrator
-   * to the material
-   * @param gp (in) : Gauss point
-   * @param eleGID (in) : Global element id
-   * @return Stress<celltype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
-   * linearization w.r.t. Green-Lagrange strain tensor
-   */
-  template <CORE::FE::CellType celltype>
-  Stress<celltype> EvaluateMaterialStressGEMM(MAT::So3Material& material,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1>& gl_strains,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1>& gl_strains_old,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1>& gl_strains_m,
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& rcg,
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& rcg_old,
-      const Teuchos::ParameterList& params, const int gp, const int eleGID)
-  {
-    Stress<celltype> stress;
-
-    material.EvaluateGEMM(&stress.pk2_, &stress.cmat_, &gl_strains_m, &gl_strains, &gl_strains_old,
-        &rcg, &rcg_old, gp, eleGID);
-
-    return stress;
-  }
-
-  /*!
    * @brief Adds the internal force vector contribution of one Gauss point
    *
    * @tparam celltype : Cell type
@@ -853,35 +771,6 @@ namespace DRT::ELEMENTS
         cb;
     cb.Multiply(stress.cmat_, Bop);
     stiffness_matrix.MultiplyTN(integration_fac, Bop, cb, 1.0);
-  }
-
-  /*!
-   * @brief Add GEMM elastic stiffness matrix contribution of one Gauss point
-   *
-   * @tparam celltype : Cell type
-   * @param Bop (in) : Strain gradient (B-Operator)
-   * @param BopM (in) : Mid point strain gradient (B-Operator at mid point)
-   * @param stress (in) : Stress measures
-   * @param pre_fac (in) : Pre-factor = detJ_w * (1 - alphaf + xi) with the integration factor
-   * detJ_w and the GEMM coefficients alphaf and xi
-   * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
-   */
-  template <CORE::FE::CellType celltype>
-  void AddElasticStiffnessMatrixGEMM(
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
-          DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
-          DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& BopM,
-      const Stress<celltype>& stress, const double pre_fac,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
-          DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
-  {
-    // GEMM contribution: (1.0 - gemmalphaf + gemmxi) * detJ_w * (BopM^T . cmat . Bop)
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
-        DETAIL::num_nodes<celltype> * DETAIL::num_dim<celltype>>
-        cb;
-    cb.Multiply(stress.cmat_, Bop);
-    stiffness_matrix.MultiplyTN(pre_fac, BopM, cb, 1.0);
   }
 
   /*!

@@ -48,13 +48,6 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
           CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
-      void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          CORE::LINALG::SerialDenseVector* force_vector,
-          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix);
-
       void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 

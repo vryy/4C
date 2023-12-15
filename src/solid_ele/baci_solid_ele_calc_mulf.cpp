@@ -213,16 +213,6 @@ void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessM
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::EvaluateNonlinearForceStiffnessMassGEMM(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
-{
-  dserror("GEMM not implemented for MULF prestressing");
-}
-
-template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidEleCalcMulf<celltype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
