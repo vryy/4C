@@ -25,12 +25,14 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename face_element_type>
-  void XtestSurfacePatchQuad4(const Teuchos::RCP<BACI::DRT::Discretization>& discret,
-      std::unordered_map<int, Teuchos::RCP<BACI::GEOMETRYPAIR::FaceElement>>& face_elements_map)
+  void XtestSurfacePatchQuad4(const Teuchos::RCP<DRT::Discretization>& discret,
+      std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
     using namespace BACI;
 

@@ -15,6 +15,9 @@
 
 namespace
 {
+
+  using namespace BACI;
+
   TEST(CsvReaderTest, DataProcessingCsvStream)
   {
     const std::vector<double> x = {0.2, 0.4, 0.45};
@@ -27,7 +30,7 @@ namespace
       test_csv_file_stream << std::to_string(x[i]) << "," << std::to_string(y[i]) << ","
                            << std::to_string(z[i]) << std::endl;
 
-    auto csv_values = BACI::IO::ReadCsv(3, test_csv_file_stream);
+    auto csv_values = IO::ReadCsv(3, test_csv_file_stream);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -51,7 +54,7 @@ namespace
     // close template file
     test_csv_file.close();
 
-    auto csv_values = BACI::IO::ReadCsv(3, csv_template_file_name);
+    auto csv_values = IO::ReadCsv(3, csv_template_file_name);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -67,7 +70,7 @@ namespace
     test_csv_file << "0.30," << std::endl;
 
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        BACI::IO::ReadCsv(3, test_csv_file), std::runtime_error, "same length");
+        IO::ReadCsv(3, test_csv_file), std::runtime_error, "same length");
   }
 
   TEST(CsvReaderTest, TrailingCommaThrows)
@@ -77,7 +80,7 @@ namespace
     test_csv_file << "0.30,4.40," << std::endl;
 
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        BACI::IO::ReadCsv(2, test_csv_file), std::runtime_error, "trailing comma");
+        IO::ReadCsv(2, test_csv_file), std::runtime_error, "trailing comma");
   }
 
   TEST(CsvReaderTest, WrongColumnNumberThrows)
@@ -86,7 +89,7 @@ namespace
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(BACI::IO::ReadCsv(3, test_csv_file), std::runtime_error, "");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(3, test_csv_file), std::runtime_error, "");
   }
 
   TEST(CsvReaderTest, WrongHeaderStyleThrows)
@@ -95,8 +98,7 @@ namespace
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(
-        BACI::IO::ReadCsv(2, test_csv_file), std::runtime_error, "header");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "header");
   }
 
   TEST(CsvReaderTest, WrongInputDataTypeThrows)
@@ -105,8 +107,7 @@ namespace
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,a" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(
-        BACI::IO::ReadCsv(2, test_csv_file), std::runtime_error, "numbers");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "numbers");
   }
 
   TEST(CsvReaderTest, WrongSeparatorThrows)
@@ -116,7 +117,7 @@ namespace
     test_csv_file << "0.30;4.40" << std::endl;
 
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        BACI::IO::ReadCsv(2, test_csv_file), std::runtime_error, "separated by commas");
+        IO::ReadCsv(2, test_csv_file), std::runtime_error, "separated by commas");
   }
 
 }  // namespace

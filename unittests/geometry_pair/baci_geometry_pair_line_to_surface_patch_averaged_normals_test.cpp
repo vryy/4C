@@ -21,6 +21,8 @@
 
 namespace
 {
+  using namespace BACI;
+
   /**
    * \brief Class to test the surface patch functionality of the geometry pairs.
    */
@@ -34,14 +36,14 @@ namespace
     {
       Teuchos::RCP<Epetra_SerialComm> comm =
           Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::rcp(new BACI::DRT::Discretization("unit_test", comm));
+      discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm));
     }
 
     /**
      * \brief Return a reference to the connected faces of a face element.
      */
     template <typename A>
-    std::map<int, BACI::GEOMETRYPAIR::ConnectedFace>& GetConnectedFaces(A& face_element)
+    std::map<int, GEOMETRYPAIR::ConnectedFace>& GetConnectedFaces(A& face_element)
     {
       return face_element->connected_faces_;
     }
@@ -56,7 +58,7 @@ namespace
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
-    Teuchos::RCP<BACI::DRT::Discretization> discret_;
+    Teuchos::RCP<DRT::Discretization> discret_;
   };
 
   /**

@@ -14,9 +14,11 @@
 
 namespace
 {
+  using namespace BACI;
+
   TEST(PstreamTest, UninitializedUseThrows)
   {
-    BACI::IO::Pstream ps;
+    IO::Pstream ps;
     EXPECT_THROW(ps.flush(), std::runtime_error);
     EXPECT_THROW((ps << "blub"), std::runtime_error);
     EXPECT_NO_THROW(ps.close());
@@ -24,7 +26,6 @@ namespace
 
   TEST(PstreamTest, DoubleInitializeThrows)
   {
-    using namespace BACI;
     IO::Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
     EXPECT_THROW(

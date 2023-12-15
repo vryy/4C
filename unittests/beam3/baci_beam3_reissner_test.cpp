@@ -21,13 +21,13 @@ const double testTolerance = 1e-14;
 
 namespace
 {
+  using namespace BACI;
+
   class Beam3r : public ::testing::Test
   {
    public:
     Beam3r()
     {
-      using namespace BACI;
-
       testdis_ =
           Teuchos::rcp(new DRT::Discretization("Beam3r", Teuchos::rcp(new Epetra_SerialComm)));
 
@@ -63,9 +63,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<BACI::DRT::Discretization> testdis_;
+    Teuchos::RCP<DRT::Discretization> testdis_;
     //! the beam3r element to be tested
-    Teuchos::RCP<BACI::DRT::ELEMENTS::Beam3r> testele_;
+    Teuchos::RCP<DRT::ELEMENTS::Beam3r> testele_;
   };
 
   /**

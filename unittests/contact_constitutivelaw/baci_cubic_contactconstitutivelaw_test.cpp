@@ -14,14 +14,13 @@
 
 namespace
 {
+  using namespace BACI;
   // class implementation
   class CubicConstitutiveLawTest : public ::testing::Test
   {
    public:
     CubicConstitutiveLawTest()
     {
-      using namespace BACI;
-
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
           Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(
@@ -39,7 +38,7 @@ namespace
       coconstlaw_ = cubiccoconstlaw;
     }
 
-    Teuchos::RCP<BACI::CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
   };
 
 
