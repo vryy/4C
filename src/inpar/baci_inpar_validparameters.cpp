@@ -151,6 +151,8 @@ void PrintHelpMessage()
             << "\t\tRestart the simulation from step <y>. \n"
                "\t\tIt always refers to the previously defined <dat_name> and <output_name>. \n"
                "\t\t(default: 0 or from <dat_name>)\n"
+               "\t\tIf y=last_possible, it will restart from the last restart step defined in the "
+               "control file.\n"
             << "\n"
             << "\trestartfrom=<restart_file_name>\n"
             << "\t\tRestart the simulation from the files prefixed with <restart_file_name>. \n"

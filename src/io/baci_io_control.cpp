@@ -394,4 +394,28 @@ size_t IO::RestartFinder(const std::string& filename)
   return std::string::npos;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int IO::GetLastPossibleRestartStep(IO::InputControl& inputcontrol)
+{
+  /* Go to the first symbol under the name "field" and get the
+   * corresponding step. Note that it will find the last "field"
+   * group starting from the end of the file and looking backwards. */
+
+  SYMBOL* symbol = map_find_symbol(inputcontrol.ControlFile(), "field");
+  if (symbol != nullptr && symbol_is_map(symbol))
+  {
+    MAP* map;
+    symbol_get_map(symbol, &map);
+    return map_read_int(map, "step");
+  }
+
+  dserror(
+      "No restart entry in symbol table. "
+      "Control file corrupt?\n\nLooking for control file at: %s",
+      inputcontrol.FileName().c_str());
+
+  return 0;
+}
+
 BACI_NAMESPACE_CLOSE
